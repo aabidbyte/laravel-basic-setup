@@ -517,19 +517,73 @@ PHP;
             return;
         }
 
-        // Add universal middleware group to withMiddleware
-        // Pattern: ->withMiddleware(function (Middleware $middleware): void {
-        if (preg_match('/->withMiddleware\(function \(Middleware \$middleware\): void \{([^}]*)\}/s', $appContent, $matches)) {
-            $middlewareBody = $matches[1];
+        // Validate PHP syntax before modifying
+        $tempFile = tempnam(sys_get_temp_dir(), 'bootstrap_app_');
+        file_put_contents($tempFile, $appContent);
+        exec("php -l {$tempFile} 2>&1", $output, $returnCode);
+        unlink($tempFile);
 
-            // Add universal group if it doesn't exist
-            if (! str_contains($middlewareBody, "group('universal'")) {
-                $universalGroup = "\n        \$middleware->group('universal', []);";
-                $newMiddlewareBody = $middlewareBody.$universalGroup;
-                $appContent = str_replace($matches[0], '->withMiddleware(function (Middleware $middleware): void {'.$newMiddlewareBody."\n    })", $appContent);
+        if ($returnCode !== 0) {
+            warning('bootstrap/app.php has syntax errors. Skipping universal routes middleware group addition.');
+            warning('Please fix the syntax errors first, then run the setup again.');
 
-                File::put($appPath, $appContent);
+            return;
+        }
+
+        // Find the withMiddleware function and add universal group before the closing brace
+        // Use a line-by-line approach for reliability
+        $lines = explode("\n", $appContent);
+        $newLines = [];
+        $inMiddlewareFunction = false;
+        $braceDepth = 0;
+        $inserted = false;
+
+        foreach ($lines as $line) {
+            // Detect start of withMiddleware function
+            if (str_contains($line, '->withMiddleware(function (Middleware $middleware): void {')) {
+                $inMiddlewareFunction = true;
+                $braceDepth = 1;
+                $newLines[] = $line;
+
+                continue;
+            }
+
+            // If we're in the middleware function, track brace depth
+            if ($inMiddlewareFunction) {
+                $braceDepth += substr_count($line, '{') - substr_count($line, '}');
+
+                // When we reach the closing brace of the function (braceDepth == 0)
+                // and the line contains the closing pattern
+                if ($braceDepth === 0 && ! $inserted && (trim($line) === '})' || str_ends_with(trim($line), '})'))) {
+                    // Insert universal group before the closing brace
+                    $indent = str_repeat(' ', 8);
+                    $newLines[] = $indent."\$middleware->group('universal', []);";
+                    $newLines[] = $line;
+                    $inserted = true;
+                    $inMiddlewareFunction = false;
+
+                    continue;
+                }
+            }
+
+            $newLines[] = $line;
+        }
+
+        if ($inserted) {
+            $newContent = implode("\n", $newLines);
+
+            // Validate the new content before writing
+            $tempFile = tempnam(sys_get_temp_dir(), 'bootstrap_app_new_');
+            file_put_contents($tempFile, $newContent);
+            exec("php -l {$tempFile} 2>&1", $validationOutput, $validationReturnCode);
+            unlink($tempFile);
+
+            if ($validationReturnCode === 0) {
+                File::put($appPath, $newContent);
                 info('✅ Added universal routes middleware group to bootstrap/app.php');
+            } else {
+                warning('Failed to add universal routes middleware group: syntax error would be introduced.');
+                warning('Output: '.implode("\n", $validationOutput));
             }
         }
     }
