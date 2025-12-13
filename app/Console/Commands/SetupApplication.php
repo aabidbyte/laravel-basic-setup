@@ -264,19 +264,40 @@ class SetupApplication extends Command
 
         info('✅ Package installed successfully');
 
+        // Regenerate autoloader and clear caches
+        info('');
+        info('Regenerating autoloader...');
+        $projectRoot = base_path();
+        exec("cd {$projectRoot} && composer dump-autoload --no-interaction 2>&1", $autoloadOutput, $autoloadReturnCode);
+
+        if ($autoloadReturnCode !== 0) {
+            warning('Warning: Autoloader regeneration had issues, but continuing...');
+        }
+
+        // Clear config cache to ensure new package is discovered
+        $this->call('config:clear');
+        $this->call('package:discover', ['--ansi' => true]);
+
         // Run tenancy:install command
         info('');
         info('Setting up tenancy configuration...');
-        try {
-            $this->call('tenancy:install', ['--no-interaction' => true]);
-            info('✅ Tenancy configuration files created');
-        } catch (\Exception $e) {
-            error('❌ Failed to run tenancy:install: '.$e->getMessage());
+
+        // Use shell execution in a fresh process to ensure the command is available
+        // This runs in a new PHP process where the newly installed package will be autoloaded
+        $tenancyInstallOutput = [];
+        $tenancyInstallReturnCode = 0;
+        exec("cd {$projectRoot} && php artisan tenancy:install --no-interaction 2>&1", $tenancyInstallOutput, $tenancyInstallReturnCode);
+
+        if ($tenancyInstallReturnCode !== 0) {
+            error('❌ Failed to run tenancy:install');
+            error('Output: '.implode("\n", $tenancyInstallOutput));
             info('');
             info('Please run manually: php artisan tenancy:install');
 
             return self::FAILURE;
         }
+
+        info('✅ Tenancy configuration files created');
 
         // Create Tenant model
         $this->createTenantModel();
