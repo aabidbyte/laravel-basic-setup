@@ -162,6 +162,9 @@ php artisan release:tag --tag-version=2.0.0 --message="Major release with new fe
 
 # Dry run (see what would be done)
 php artisan release:tag --dry-run
+
+# Skip uncommitted changes check (useful for CI/CD)
+php artisan release:tag --push --force
 ```
 
 **Features:**

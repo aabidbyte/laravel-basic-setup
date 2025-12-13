@@ -23,6 +23,7 @@ class ReleaseTag extends Command
                             {--tag-version= : Specific version to tag (e.g., 1.2.3)}
                             {--message= : Tag message (defaults to "Release {version}")}
                             {--push : Automatically push the tag to remote}
+                            {--force : Skip uncommitted changes check}
                             {--dry-run : Show what would be done without creating the tag}';
 
     /**
@@ -61,13 +62,18 @@ class ReleaseTag extends Command
         }
 
         // Check if there are uncommitted changes
+        $force = $this->option('force');
         $statusCheck = Process::run('git status --porcelain');
         if ($statusCheck->successful() && ! empty(trim($statusCheck->output()))) {
-            warning('⚠️  You have uncommitted changes.');
-            if (! confirm('Do you want to continue anyway?', default: false)) {
-                info('Aborted.');
+            if (! $force) {
+                warning('⚠️  You have uncommitted changes.');
+                if (! confirm('Do you want to continue anyway?', default: false)) {
+                    info('Aborted.');
 
-                return self::SUCCESS;
+                    return self::SUCCESS;
+                }
+            } else {
+                warning('⚠️  Uncommitted changes detected (--force flag used, continuing anyway)');
             }
         }
 

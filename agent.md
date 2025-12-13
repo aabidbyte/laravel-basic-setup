@@ -510,6 +510,9 @@ php artisan release:tag --tag-version=2.0.0 --message="Major release"
 
 # Dry run to see what would be done
 php artisan release:tag --dry-run
+
+# Skip uncommitted changes check (useful for CI/CD)
+php artisan release:tag --push --force
 ```
 
 **Behavior:**
@@ -517,7 +520,7 @@ php artisan release:tag --dry-run
 -   If no version is provided, automatically increments minor version (e.g., `v1.0.0` → `v1.1.0`)
 -   If no tags exist, starts with `v1.0.0`
 -   Validates semantic versioning format
--   Checks for uncommitted changes (warns but allows override)
+-   Checks for uncommitted changes (warns but allows override, or use `--force` to skip)
 -   Optionally pushes to remote with `--push` flag
 
 ## Intelephense Helper
