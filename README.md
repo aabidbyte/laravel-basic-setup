@@ -1,15 +1,13 @@
 # Laravel Basic Setup
 
-A comprehensive Laravel 12 starter kit with multi-stack frontend support, UUID-based models, authentication, monitoring, and development tools.
+A comprehensive Laravel 12 starter kit with Livewire, UUID-based models, authentication, monitoring, and development tools.
 
 ## 🚀 Features
 
-### Multi-Stack Frontend Support
+### Frontend
 
 -   **Livewire** - Server-side components with Volt (single-file components) and Flux UI
--   **React** - Inertia.js with React for modern SPA experience
--   **Vue** - Inertia.js with Vue 3 for reactive applications
--   Easy stack selection via `php artisan install:stack` command
+-   Installed automatically via `php artisan install:stack` command
 
 ### Backend Infrastructure
 
@@ -53,14 +51,6 @@ A comprehensive Laravel 12 starter kit with multi-stack frontend support, UUID-b
 -   **Stable Configurations** - Environment-aware Redis client selection (Predis for development, PhpRedis for production)
 -   **Secure Paths** - Protected monitoring tool paths
 
-#### Multi-Tenancy (Optional)
-
--   **Stancl/Tenancy** - Multi-database tenancy support (optional)
--   **Automatic Installation** - Installed and configured during `php artisan setup:application`
--   **Domain-Based Identification** - Automatic tenant identification via domains
--   **Separate Databases** - Each tenant gets its own database
--   **Automatic Setup** - Package installation, configuration, and migration organization handled automatically
-
 ## 📦 Installation
 
 ### Prerequisites
@@ -98,7 +88,7 @@ A comprehensive Laravel 12 starter kit with multi-stack frontend support, UUID-b
     npm install
     ```
 
-3. **Set up application (includes database and multi-tenancy):**
+3. **Set up application (includes database):**
 
     ```bash
     php artisan setup:application
@@ -106,10 +96,8 @@ A comprehensive Laravel 12 starter kit with multi-stack frontend support, UUID-b
 
     This interactive command will:
 
-    - Ask if you want to use multi-tenancy (optional)
     - Configure your database connection
     - Run fresh migrations (drops all tables and re-runs migrations by default)
-    - Set up multi-tenancy if selected (installs Stancl/Tenancy package automatically)
 
     ⚠️ **Warning:** By default, migrations run fresh, which will drop all existing tables and delete all data in the database. You will be prompted to confirm before proceeding.
 
@@ -311,11 +299,9 @@ git commit
 -   **Laravel**: 12.0
 -   **Database**: MySQL, PostgreSQL, SQLite, SQL Server
 
-### Frontend (Choose One)
+### Frontend
 
 -   **Livewire**: 3.x with Volt 1.x and Flux UI 2.x
--   **React**: Latest with Inertia.js
--   **Vue**: 3.x with Inertia.js
 
 ### Styling
 
@@ -345,10 +331,6 @@ git commit
 -   **Laravel Sail**: 1.41
 -   **Laravel Pail**: 1.2.2
 
-### Multi-Tenancy (Optional)
-
--   **Stancl/Tenancy**: Latest (installed when multi-tenancy is enabled)
-
 ## 📚 Quick Start Guides
 
 ### Livewire Stack
@@ -374,122 +356,6 @@ After installing the Livewire stack:
 
     Volt::route('my-page', 'my-page')->name('my.page');
     ```
-
-### React Stack
-
-After installing the React stack:
-
-1. **Create a page component:**
-
-    ```jsx
-    // resources/js/Pages/MyPage.jsx
-    import AppLayout from "@/Layouts/AppLayout";
-
-    export default function MyPage() {
-        return (
-            <AppLayout>
-                <h1>My Page</h1>
-            </AppLayout>
-        );
-    }
-    ```
-
-2. **Create a route:**
-
-    ```php
-    use Inertia\Inertia;
-
-    Route::get('/my-page', function () {
-        return Inertia::render('MyPage');
-    });
-    ```
-
-### Vue Stack
-
-After installing the Vue stack:
-
-1. **Create a page component:**
-
-    ```vue
-    <!-- resources/js/Pages/MyPage.vue -->
-    <template>
-        <AppLayout>
-            <h1>My Page</h1>
-        </AppLayout>
-    </template>
-
-    <script setup>
-    import AppLayout from "@/Layouts/AppLayout.vue";
-    </script>
-    ```
-
-2. **Create a route:**
-
-    ```php
-    use Inertia\Inertia;
-
-    Route::get('/my-page', function () {
-        return Inertia::render('MyPage');
-    });
-    ```
-
-## 🏢 Multi-Tenancy
-
-This starter kit includes optional multi-tenancy support using [Stancl/Tenancy](https://tenancyforlaravel.com/). Multi-tenancy allows you to serve multiple customers (tenants) from a single application instance, with each tenant having their own database.
-
-### Enabling Multi-Tenancy
-
-Multi-tenancy can be enabled during the initial setup:
-
-```bash
-php artisan setup:application
-```
-
-When prompted, select "Yes" to enable multi-tenancy. The setup process will:
-
-1. Install the `stancl/tenancy` package
-2. Create the `Tenant` model (`app/Models/Tenant.php`)
-3. Configure tenancy settings in `config/tenancy.php`
-4. Register `TenancyServiceProvider` in `bootstrap/providers.php`
-5. Creates `database/migrations/tenant/` directory (migrations are not automatically moved - organize them manually as needed)
-6. Create `routes/tenant.php` for tenant-specific routes
-7. Add `MULTI_TENANCY_ENABLED=true` to your `.env` file
-
-### Multi-Tenancy Structure
-
--   **Central Database**: Stores tenant information and domains
--   **Tenant Databases**: Each tenant has its own database with isolated data
--   **Central Routes**: Defined in `routes/web.php` (landing pages, tenant signup, etc.)
--   **Tenant Routes**: Defined in `routes/tenant.php` (your application routes)
-
-### Creating Tenants
-
-After enabling multi-tenancy, you can create tenants:
-
-```php
-use App\Models\Tenant;
-
-// Create a tenant
-$tenant = Tenant::create(['id' => 'acme-corp']);
-
-// Add a domain for the tenant
-$tenant->createDomain('acme.example.com');
-```
-
-### Tenant Identification
-
-Tenants are identified by domain. When a user visits `acme.example.com`, the package automatically:
-
--   Identifies the tenant
--   Switches to the tenant's database
--   Applies tenant-specific configurations
-
-### Documentation
-
-For detailed multi-tenancy documentation, visit:
-
--   [Stancl/Tenancy Documentation](https://tenancyforlaravel.com/docs)
--   [Quickstart Guide](https://tenancyforlaravel.com/docs/v3/quickstart)
 
 ## 🔧 Configuration
 
@@ -532,8 +398,6 @@ VITE_REVERB_HOST="${REVERB_HOST}"
 VITE_REVERB_PORT="${REVERB_PORT}"
 VITE_REVERB_SCHEME="${REVERB_SCHEME}"
 
-# Multi-Tenancy (set automatically during setup:application)
-MULTI_TENANCY_ENABLED=false
 ```
 
 ### Redis Client Selection

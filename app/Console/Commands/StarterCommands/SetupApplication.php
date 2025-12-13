@@ -4,8 +4,6 @@ namespace App\Console\Commands\StarterCommands;
 
 use App\Console\Commands\StarterCommands\Support\DatabaseSetup;
 use App\Console\Commands\StarterCommands\Support\EnvFileManager;
-use App\Console\Commands\StarterCommands\Support\MultiTenancyCleanup;
-use App\Console\Commands\StarterCommands\Support\MultiTenancySetup;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
@@ -51,27 +49,6 @@ class SetupApplication extends Command
 
         $envManager = new EnvFileManager;
 
-        // Ask if user wants to use multi-tenancy
-        $useMultiTenancy = confirm(
-            label: 'Would you like to use multi-tenancy?',
-            default: false,
-            hint: 'This will install and configure Stancl/Tenancy package for multi-tenant support.'
-        );
-
-        if ($useMultiTenancy) {
-            $multiTenancySetup = new MultiTenancySetup($envManager, $this);
-            $result = $multiTenancySetup->install();
-            if ($result !== self::SUCCESS) {
-                return $result;
-            }
-        } else {
-            // Clean up multi-tenancy code if it was previously enabled
-            $multiTenancyCleanup = new MultiTenancyCleanup($this);
-            $multiTenancyCleanup->cleanup();
-            // Add flag to .env indicating multi-tenancy is disabled
-            $envManager->update(['MULTI_TENANCY_ENABLED' => 'false']);
-        }
-
         // Ask if user wants to set up database
         $setupDatabase = confirm(
             label: 'Would you like to set up the database connection?',
@@ -82,7 +59,7 @@ class SetupApplication extends Command
         if (! $setupDatabase) {
             info('Skipping database setup.');
             info('Don\'t forget to configure your database in the .env file.');
-            $migrationCommand = $this->getMigrationCommand($useMultiTenancy, true);
+            $migrationCommand = $this->getMigrationCommand(true);
             info("You can run migrations later with: {$migrationCommand}");
 
             return self::SUCCESS;
@@ -134,7 +111,7 @@ class SetupApplication extends Command
         } else {
             // Database setup was skipped, skip migrations too
             $runMigrations = false;
-            $migrationCommand = $this->getMigrationCommand($useMultiTenancy, true);
+            $migrationCommand = $this->getMigrationCommand(true);
             info("Skipping migrations. You can run them later with: {$migrationCommand} (after configuring the database)");
         }
 
@@ -165,42 +142,10 @@ class SetupApplication extends Command
                 }
 
                 try {
-                    // Check if tenancy command exists, multi-tenancy is enabled, and tenant migrations exist
-                    $hasTenantMigrations = $this->hasTenantMigrations();
-                    $useTenancyCommand = $useMultiTenancy && $this->commandExists('tenants:migrate') && $hasTenantMigrations;
-
-                    if ($useTenancyCommand) {
-                        if ($fresh) {
-                            info('Running fresh central database migrations (dropping all tables)...');
-                            $this->call('migrate:fresh', ['--force' => true]);
-                            info('Running fresh tenant migrations (dropping all tables)...');
-                            // Try tenants:migrate:fresh first, then fallback to tenants:migrate --fresh
-                            if ($this->commandExists('tenants:migrate:fresh')) {
-                                $this->call('tenants:migrate:fresh', ['--force' => true]);
-                            } elseif ($this->commandExists('tenants:migrate')) {
-                                // Some versions of Stancl/Tenancy support --fresh flag on tenants:migrate
-                                try {
-                                    $this->call('tenants:migrate', ['--force' => true, '--fresh' => true]);
-                                } catch (\Exception $e) {
-                                    // If --fresh is not supported, inform user
-                                    warning('⚠️  Tenant migrations --fresh option not supported. Running regular tenant migrations.');
-                                    warning('⚠️  You may need to manually drop tenant databases or use tenants:migrate:fresh if available.');
-                                    $this->call('tenants:migrate', ['--force' => true]);
-                                }
-                            }
-                        } else {
-                            info('Running central database migrations...');
-                            $this->call('migrate', ['--force' => true]);
-                            info('Running tenant migrations...');
-                            $this->call('tenants:migrate', ['--force' => true]);
-                        }
+                    if ($fresh) {
+                        $this->call('migrate:fresh', ['--force' => true]);
                     } else {
-                        // Run central migrations only
-                        if ($fresh) {
-                            $this->call('migrate:fresh', ['--force' => true]);
-                        } else {
-                            $this->call('migrate', ['--force' => true]);
-                        }
+                        $this->call('migrate', ['--force' => true]);
                     }
                     info('✅ Migrations completed successfully!');
                 } catch (\Exception $e) {
@@ -213,7 +158,7 @@ class SetupApplication extends Command
             }
         } elseif (! $databaseSkipped) {
             $fresh = ! $this->option('no-fresh');
-            $migrationCommand = $this->getMigrationCommand($useMultiTenancy, $fresh);
+            $migrationCommand = $this->getMigrationCommand($fresh);
             info("Skipping migrations. You can run them later with: {$migrationCommand}");
         }
 
@@ -231,41 +176,13 @@ class SetupApplication extends Command
     }
 
     /**
-     * Get the appropriate migration command based on multi-tenancy status.
+     * Get the appropriate migration command.
      */
-    protected function getMigrationCommand(bool $useMultiTenancy, bool $fresh = true): string
+    protected function getMigrationCommand(bool $fresh = true): string
     {
         $migrateCommand = $fresh ? 'migrate:fresh' : 'migrate';
 
-        if ($useMultiTenancy && $this->commandExists('tenants:migrate') && $this->hasTenantMigrations()) {
-            if ($fresh) {
-                if ($this->commandExists('tenants:migrate:fresh')) {
-                    return "php artisan {$migrateCommand} && php artisan tenants:migrate:fresh";
-                }
-
-                return "php artisan {$migrateCommand} && php artisan tenants:migrate --fresh";
-            }
-
-            return "php artisan {$migrateCommand} && php artisan tenants:migrate";
-        }
-
         return "php artisan {$migrateCommand}";
-    }
-
-    /**
-     * Check if tenant migrations exist.
-     */
-    protected function hasTenantMigrations(): bool
-    {
-        $tenantMigrationsDir = database_path('migrations/tenant');
-
-        if (! File::isDirectory($tenantMigrationsDir)) {
-            return false;
-        }
-
-        $tenantMigrations = File::glob($tenantMigrationsDir.'/*.php');
-
-        return ! empty($tenantMigrations);
     }
 
     /**

@@ -30,7 +30,7 @@ This application uses **Spatie Permission v6.23** for role and permission manage
 ### Key Features
 
 -   **UUID Support**: Configured to use `model_uuid` instead of `model_id` for UUID-based User models
--   **Teams Permissions**: Enabled by default for multi-tenant scenarios
+-   **Teams Permissions**: Enabled by default
 -   **User Model**: `App\Models\User` includes the `HasRoles` trait
 -   **Configuration**: `config/permission.php`
 -   **Migration**: Modified to support UUIDs in pivot tables
