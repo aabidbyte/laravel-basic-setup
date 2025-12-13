@@ -551,12 +551,31 @@ PHP;
         $comment = "\n// Multi-tenancy: Routes in this file are accessible on central domains only.\n";
         $comment .= "// Tenant routes should be defined in routes/tenant.php\n";
 
-        // Insert after the opening PHP tag and use statements
-        $routesContent = preg_replace(
-            '/(use Laravel\\Fortify\\Features;)/',
-            "$1{$comment}",
-            $routesContent
-        );
+        // Insert after the last use statement
+        if (preg_match('/(use Laravel\\Fortify\\Features;)/', $routesContent)) {
+            $routesContent = preg_replace(
+                '/(use Laravel\\Fortify\\Features;)/',
+                '$1'.$comment,
+                $routesContent
+            );
+        } else {
+            // Fallback: insert after the last use statement or after opening PHP tag
+            if (preg_match('/(use [^;]+;)\s*\n/', $routesContent, $matches)) {
+                $routesContent = preg_replace(
+                    '/(use [^;]+;)\s*\n/',
+                    '$1'.$comment,
+                    $routesContent,
+                    1
+                );
+            } else {
+                // Insert after opening PHP tag
+                $routesContent = preg_replace(
+                    '/^<\?php\s*\n/',
+                    '<?php'.$comment,
+                    $routesContent
+                );
+            }
+        }
 
         File::put($routesPath, $routesContent);
         info('✅ Added multi-tenancy routing comments');

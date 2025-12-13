@@ -23,6 +23,7 @@ class ReleaseTag extends Command
                             {--tag-version= : Specific version to tag (e.g., 1.2.3)}
                             {--message= : Tag message (defaults to "Release {version}")}
                             {--push : Automatically push the tag to remote}
+                            {--major : Increment major version (X.0.0) and reset minor and patch to 0}
                             {--fix : Increment patch version (1.1.X) instead of minor version}
                             {--force : Skip uncommitted changes check}
                             {--dry-run : Show what would be done without creating the tag}';
@@ -32,7 +33,7 @@ class ReleaseTag extends Command
      *
      * @var string
      */
-    protected $description = 'Create and optionally push a new release tag with automatic version increment (minor by default, patch with --fix)';
+    protected $description = 'Create and optionally push a new release tag with automatic version increment (minor by default, patch with --fix, major with --major)';
 
     /**
      * Execute the console command.
@@ -99,10 +100,12 @@ class ReleaseTag extends Command
         }
 
         if ($dryRun) {
+            $isMajor = $this->option('major');
             $isFix = $this->option('fix');
+            $releaseType = $isMajor ? 'Major release' : ($isFix ? 'Patch release (fix)' : 'Minor release');
             info("📋 Dry run - would create tag: {$tagName}");
             info("📝 Message: {$message}");
-            info('📦 Type: '.($isFix ? 'Patch release (fix)' : 'Minor release'));
+            info("📦 Type: {$releaseType}");
             if ($push) {
                 info('🚀 Would push to remote');
             } else {
@@ -165,8 +168,17 @@ class ReleaseTag extends Command
         }
 
         // Parse and increment version
+        $isMajor = $this->option('major');
         $isFix = $this->option('fix');
-        $incremented = $isFix ? $this->incrementPatchVersion($latestTag) : $this->incrementMinorVersion($latestTag);
+
+        if ($isMajor) {
+            $incremented = $this->incrementMajorVersion($latestTag);
+        } elseif ($isFix) {
+            $incremented = $this->incrementPatchVersion($latestTag);
+        } else {
+            $incremented = $this->incrementMinorVersion($latestTag);
+        }
+
         info("Latest tag: {$latestTag}");
         info("Next version: {$incremented}");
 
@@ -221,6 +233,42 @@ class ReleaseTag extends Command
         $parts[1] = (string) ((int) $parts[1] + 1);
 
         // Reset patch version to 0 when incrementing minor
+        $parts[2] = '0';
+
+        return implode('.', array_slice($parts, 0, 3));
+    }
+
+    /**
+     * Increment the major version.
+     */
+    protected function incrementMajorVersion(string $version): string
+    {
+        // Remove 'v' prefix if present
+        $version = ltrim($version, 'v');
+
+        // Parse version parts
+        $parts = explode('.', $version);
+
+        // Ensure we have at least major
+        if (count($parts) < 1) {
+            $parts = ['0'];
+        }
+
+        // Ensure we have minor version
+        if (count($parts) < 2) {
+            $parts[] = '0';
+        }
+
+        // Ensure we have patch version
+        if (count($parts) < 3) {
+            $parts[] = '0';
+        }
+
+        // Increment major version
+        $parts[0] = (string) ((int) $parts[0] + 1);
+
+        // Reset minor and patch versions to 0 when incrementing major
+        $parts[1] = '0';
         $parts[2] = '0';
 
         return implode('.', array_slice($parts, 0, 3));
