@@ -656,8 +656,9 @@ If you see `Auth::guard('web')->logout()` causing an error:
     -   Updates tenancy configuration with custom Tenant model and central domains
     -   Adds MULTI_TENANCY_ENABLED flag to .env file
     -   **Rule**: Multi-tenancy is optional and can be enabled during initial setup or added later manually
-    -   **Migration Order**: When multi-tenancy is enabled and tenant migrations exist in `database/migrations/tenant/`, tenant migrations (`php artisan tenants:migrate`) run before central database migrations (`php artisan migrate`) during setup. If no tenant migrations exist, only central migrations run.
+    -   **Migration Order**: When multi-tenancy is enabled and tenant migrations exist in `database/migrations/tenant/`, tenant migrations (`php artisan tenants:migrate`) run after central database migrations (`php artisan migrate`) during setup. If no tenant migrations exist, only central migrations run.
     -   **Migration Organization**: Migrations are NOT automatically moved. All migrations stay in `database/migrations/` by default. Users should manually organize migrations into `database/migrations/tenant/` if they need tenant-specific migrations.
+    -   **Fresh Migrations**: The `setup:application` command runs fresh migrations by default (drops all tables and re-runs migrations). It shows a warning that all existing data will be deleted and requires confirmation before proceeding. Use `--no-fresh` to keep existing data and run migrations without dropping tables.
 
 ---
 

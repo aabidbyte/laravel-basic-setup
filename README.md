@@ -108,8 +108,16 @@ A comprehensive Laravel 12 starter kit with multi-stack frontend support, UUID-b
 
     - Ask if you want to use multi-tenancy (optional)
     - Configure your database connection
-    - Run migrations
+    - Run fresh migrations (drops all tables and re-runs migrations by default)
     - Set up multi-tenancy if selected (installs Stancl/Tenancy package automatically)
+
+    ⚠️ **Warning:** By default, migrations run fresh, which will drop all existing tables and delete all data in the database. You will be prompted to confirm before proceeding.
+
+    **Note:** To keep existing data, use the `--no-fresh` option:
+
+    ```bash
+    php artisan setup:application --no-fresh
+    ```
 
 4. **Install your frontend stack:**
 

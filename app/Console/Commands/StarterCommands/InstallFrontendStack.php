@@ -31,6 +31,9 @@ class InstallFrontendStack extends Command
      */
     public function handle(): int
     {
+        // Fix any broken bootstrap/app.php from previous multi-tenancy setup attempts
+        $this->fixBrokenBootstrapApp();
+
         $stack = $this->option('stack') ?? select(
             label: 'Which frontend stack would you like to install?',
             options: [
@@ -828,6 +831,51 @@ PHP;
         );
 
         File::put($appFile, $content);
+    }
+
+    /**
+     * Fix broken bootstrap/app.php file that may have invalid tenant parameter.
+     * This can happen if a previous multi-tenancy installation attempt failed.
+     */
+    protected function fixBrokenBootstrapApp(): void
+    {
+        $appPath = base_path('bootstrap/app.php');
+
+        if (! File::exists($appPath)) {
+            return;
+        }
+
+        $appContent = File::get($appPath);
+
+        // Check if there's an invalid tenant parameter in withRouting
+        if (preg_match("/tenant:\s*__DIR__\.'\/\.\.\/routes\/tenant\.php'/", $appContent)) {
+            warning('Found invalid tenant parameter in bootstrap/app.php. Fixing...');
+
+            // Remove tenant route registration from withRouting
+            // Pattern 1: tenant: __DIR__.'/../routes/tenant.php', (with comma and newline)
+            $appContent = preg_replace(
+                '/,\s*tenant:\s*__DIR__\.\'\/\.\.\/routes\/tenant\.php\'\s*,?\s*\n/',
+                '',
+                $appContent
+            );
+
+            // Pattern 2: tenant: __DIR__.'/../routes/tenant.php' (last item, no comma)
+            $appContent = preg_replace(
+                '/,\s*tenant:\s*__DIR__\.\'\/\.\.\/routes\/tenant\.php\'/',
+                '',
+                $appContent
+            );
+
+            // Pattern 3: tenant: __DIR__.'/../routes/tenant.php', (standalone line)
+            $appContent = preg_replace(
+                '/\s*tenant:\s*__DIR__\.\'\/\.\.\/routes\/tenant\.php\'\s*,?\s*\n/',
+                '',
+                $appContent
+            );
+
+            File::put($appPath, $appContent);
+            info('✅ Fixed broken bootstrap/app.php (removed invalid tenant parameter)');
+        }
     }
 
     /**

@@ -409,9 +409,55 @@ PHP;
     }
 
     /**
-     * Register tenant routes in bootstrap/app.php.
+     * Create tenant routes file.
+     * Note: Tenant routes are loaded by TenancyServiceProvider, not through withRouting().
      */
     protected function registerTenantRoutes(): void
+    {
+        // First, fix any broken bootstrap/app.php from previous attempts
+        $this->fixBrokenBootstrapApp();
+
+        // Ensure universal routes middleware group exists in bootstrap/app.php
+        $this->ensureUniversalRoutesMiddlewareGroup();
+
+        $tenantRoutesPath = base_path('routes/tenant.php');
+
+        // Create tenant routes file if it doesn't exist
+        if (! File::exists($tenantRoutesPath)) {
+            $tenantRoutesContent = <<<'PHP'
+<?php
+
+use Illuminate\Support\Facades\Route;
+use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
+use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
+
+// Tenant routes are automatically loaded by TenancyServiceProvider
+// These routes are only accessible on tenant domains
+Route::middleware([
+    'web',
+    InitializeTenancyByDomain::class,
+    PreventAccessFromCentralDomains::class,
+])->group(function () {
+    Route::get('/', function () {
+        return 'This is your multi-tenant application. The id of the current tenant is ' . tenant('id');
+    });
+});
+PHP;
+            File::put($tenantRoutesPath, $tenantRoutesContent);
+            info('✅ Created tenant routes file (routes/tenant.php)');
+        } else {
+            info('Tenant routes file already exists.');
+        }
+
+        // Ensure TenancyServiceProvider loads tenant routes
+        $this->ensureTenancyServiceProviderLoadsTenantRoutes();
+    }
+
+    /**
+     * Fix broken bootstrap/app.php file that may have invalid tenant parameter.
+     * This can happen if a previous installation attempt failed.
+     */
+    protected function fixBrokenBootstrapApp(): void
     {
         $appPath = base_path('bootstrap/app.php');
 
@@ -421,26 +467,111 @@ PHP;
 
         $appContent = File::get($appPath);
 
-        // Check if tenant routes are already registered
-        if (str_contains($appContent, 'tenant.php')) {
-            info('Tenant routes already registered in bootstrap/app.php.');
+        // Check if there's an invalid tenant parameter in withRouting
+        if (preg_match("/tenant:\s*__DIR__\.'\/\.\.\/routes\/tenant\.php'/", $appContent)) {
+            warning('Found invalid tenant parameter in bootstrap/app.php. Fixing...');
+
+            // Remove tenant route registration from withRouting
+            // Pattern 1: tenant: __DIR__.'/../routes/tenant.php', (with comma and newline)
+            $appContent = preg_replace(
+                '/,\s*tenant:\s*__DIR__\.\'\/\.\.\/routes\/tenant\.php\'\s*,?\s*\n/',
+                '',
+                $appContent
+            );
+
+            // Pattern 2: tenant: __DIR__.'/../routes/tenant.php' (last item, no comma)
+            $appContent = preg_replace(
+                '/,\s*tenant:\s*__DIR__\.\'\/\.\.\/routes\/tenant\.php\'/',
+                '',
+                $appContent
+            );
+
+            // Pattern 3: tenant: __DIR__.'/../routes/tenant.php', (standalone line)
+            $appContent = preg_replace(
+                '/\s*tenant:\s*__DIR__\.\'\/\.\.\/routes\/tenant\.php\'\s*,?\s*\n/',
+                '',
+                $appContent
+            );
+
+            File::put($appPath, $appContent);
+            info('✅ Fixed broken bootstrap/app.php (removed invalid tenant parameter)');
+        }
+    }
+
+    /**
+     * Ensure universal routes middleware group exists in bootstrap/app.php.
+     * This is required for universal routes feature to work properly.
+     */
+    protected function ensureUniversalRoutesMiddlewareGroup(): void
+    {
+        $appPath = base_path('bootstrap/app.php');
+
+        if (! File::exists($appPath)) {
+            return;
+        }
+
+        $appContent = File::get($appPath);
+
+        // Check if universal middleware group already exists
+        if (str_contains($appContent, "->group('universal'") || str_contains($appContent, "middleware->group('universal'")) {
+            return;
+        }
+
+        // Add universal middleware group to withMiddleware
+        // Pattern: ->withMiddleware(function (Middleware $middleware): void {
+        if (preg_match('/->withMiddleware\(function \(Middleware \$middleware\): void \{([^}]*)\}/s', $appContent, $matches)) {
+            $middlewareBody = $matches[1];
+
+            // Add universal group if it doesn't exist
+            if (! str_contains($middlewareBody, "group('universal'")) {
+                $universalGroup = "\n        \$middleware->group('universal', []);";
+                $newMiddlewareBody = $middlewareBody.$universalGroup;
+                $appContent = str_replace($matches[0], '->withMiddleware(function (Middleware $middleware): void {'.$newMiddlewareBody."\n    })", $appContent);
+
+                File::put($appPath, $appContent);
+                info('✅ Added universal routes middleware group to bootstrap/app.php');
+            }
+        }
+    }
+
+    /**
+     * Ensure TenancyServiceProvider loads tenant routes.
+     */
+    protected function ensureTenancyServiceProviderLoadsTenantRoutes(): void
+    {
+        $providerPath = app_path('Providers/TenancyServiceProvider.php');
+
+        if (! File::exists($providerPath)) {
+            // TenancyServiceProvider will be created by tenancy:install command
+            // It should automatically load tenant routes
+            return;
+        }
+
+        $providerContent = File::get($providerPath);
+
+        // Check if tenant routes are already being loaded
+        if (str_contains($providerContent, 'routes/tenant.php') || str_contains($providerContent, 'loadRoutesFrom')) {
+            info('Tenant routes are already configured in TenancyServiceProvider.');
 
             return;
         }
 
-        // Add tenant route to withRouting call
-        // Pattern: ->withRouting(web: ..., api: ..., tenant: ...)
-        if (preg_match("/->withRouting\s*\(/", $appContent)) {
-            // Add tenant route after the last route parameter
-            $appContent = preg_replace(
-                "/(health:\s*'\/up',)/",
-                "$1\n        tenant: __DIR__.'/../routes/tenant.php',",
-                $appContent
-            );
-        }
+        // Add code to load tenant routes in boot method
+        $loadRoutesCode = "\n        // Load tenant routes\n        \$this->loadRoutesFrom(base_path('routes/tenant.php'));";
 
-        File::put($appPath, $appContent);
-        info('✅ Registered tenant routes in bootstrap/app.php');
+        // Find the boot method and add the route loading code
+        if (preg_match('/public function boot\(\): void\s*\{([^}]*)\}/s', $providerContent, $matches)) {
+            $bootMethodContent = $matches[1];
+
+            // Add call to loadRoutesFrom at the end of boot method
+            if (! str_contains($bootMethodContent, 'loadRoutesFrom')) {
+                $newBootMethod = $bootMethodContent.$loadRoutesCode;
+                $providerContent = str_replace($matches[0], 'public function boot(): void {'.$newBootMethod."\n    }", $providerContent);
+
+                File::put($providerPath, $providerContent);
+                info('✅ Configured TenancyServiceProvider to load tenant routes');
+            }
+        }
     }
 
     /**
@@ -481,17 +612,32 @@ PHP;
             return;
         }
 
-        // Add Telescope tags to features array
+        // Add Telescope tags and UniversalRoutes to features array
         // Look for 'features' => [...] pattern
         if (preg_match("/'features'\s*=>\s*\[/", $configContent)) {
-            // Add TelescopeTags to features array
-            $configContent = preg_replace(
-                "/('features'\s*=>\s*\[)/",
-                "$1\n        \\Stancl\\Tenancy\\Features\\TelescopeTags::class,",
-                $configContent
-            );
+            // Check if features are already added
+            $needsTelescopeTags = ! str_contains($configContent, 'TelescopeTags');
+            $needsUniversalRoutes = ! str_contains($configContent, 'UniversalRoutes');
+
+            if ($needsTelescopeTags || $needsUniversalRoutes) {
+                $featuresToAdd = [];
+                if ($needsTelescopeTags) {
+                    $featuresToAdd[] = '\\Stancl\\Tenancy\\Features\\TelescopeTags::class,';
+                }
+                if ($needsUniversalRoutes) {
+                    $featuresToAdd[] = '\\Stancl\\Tenancy\\Features\\UniversalRoutes::class,';
+                }
+
+                if (! empty($featuresToAdd)) {
+                    $configContent = preg_replace(
+                        "/('features'\s*=>\s*\[)/",
+                        "$1\n        ".implode("\n        ", $featuresToAdd),
+                        $configContent
+                    );
+                }
+            }
         } else {
-            warning('Could not find features array in tenancy config. Please enable Telescope tags manually.');
+            warning('Could not find features array in tenancy config. Please enable Telescope tags and UniversalRoutes manually.');
         }
 
         // Enable universal routes (needed for Livewire and Sanctum)
@@ -515,7 +661,7 @@ PHP;
         }
 
         File::put($configPath, $configContent);
-        info('✅ Enabled Telescope tags and universal routes in tenancy config');
+        info('✅ Enabled Telescope tags and UniversalRoutes feature in tenancy config');
     }
 
     /**
