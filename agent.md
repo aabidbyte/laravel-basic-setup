@@ -491,6 +491,35 @@ php artisan make:test --pest Feature/ExampleTest
 php artisan make:request StoreProductRequest
 ```
 
+### Creating Release Tags
+
+Use the `release:tag` command to automatically create and push release tags:
+
+```bash
+# Auto-increment minor version (default behavior)
+php artisan release:tag
+
+# Auto-increment and push to remote
+php artisan release:tag --push
+
+# Specify a custom version
+php artisan release:tag --version=2.0.0
+
+# Custom version with custom message
+php artisan release:tag --version=2.0.0 --message="Major release"
+
+# Dry run to see what would be done
+php artisan release:tag --dry-run
+```
+
+**Behavior:**
+
+-   If no version is provided, automatically increments minor version (e.g., `v1.0.0` → `v1.1.0`)
+-   If no tags exist, starts with `v1.0.0`
+-   Validates semantic versioning format
+-   Checks for uncommitted changes (warns but allows override)
+-   Optionally pushes to remote with `--push` flag
+
 ## Intelephense Helper
 
 The project includes `IntelephenseHelper.php` at the root to provide type hints for Intelephense (PHP language server). This file contains interface definitions for Laravel facades and contracts to help Intelephense understand method signatures and return types.

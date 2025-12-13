@@ -143,6 +143,35 @@ If you want to publish this starter to Packagist so users can install it via `co
 3. Packagist will automatically detect updates when you push tags
 4. Users can then install with: `composer create-project aabidbyte/laravel-basic-setup my-app`
 
+#### Creating Release Tags
+
+Use the built-in Artisan command to automatically create and push release tags:
+
+```bash
+# Auto-increment minor version (e.g., 1.0.0 -> 1.1.0)
+php artisan release:tag
+
+# Auto-increment and push to remote
+php artisan release:tag --push
+
+# Specify a custom version
+php artisan release:tag --version=2.0.0
+
+# Custom version with custom message
+php artisan release:tag --version=2.0.0 --message="Major release with new features"
+
+# Dry run (see what would be done)
+php artisan release:tag --dry-run
+```
+
+**Features:**
+
+-   Automatically increments minor version by default (e.g., `v1.0.0` → `v1.1.0`)
+-   If no tags exist, starts with `v1.0.0`
+-   Validates semantic versioning format
+-   Optionally pushes to remote with `--push` flag
+-   Supports custom version and message
+
 ## 🔄 Upgrading from the Starter Template
 
 If you've created a project from this starter template and want to pull in the latest updates:

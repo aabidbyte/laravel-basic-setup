@@ -88,7 +88,7 @@
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
         ],
         "post-create-project-cmd": [
-            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
+            "@php -r \"if (!file_exists('.env') && file_exists('.env.example')) { copy('.env.example', '.env'); }\"",
             "@php artisan key:generate --ansi",
             "@php artisan setup:application",
             "@php artisan install:stack --ansi"
