@@ -81,7 +81,7 @@ class SetupApplication extends Command
         if (! $setupDatabase) {
             info('Skipping database setup.');
             info('Don\'t forget to configure your database in the .env file.');
-            $migrationCommand = $useMultiTenancy ? 'php artisan tenancy:migrate' : 'php artisan migrate';
+            $migrationCommand = $this->getMigrationCommand($useMultiTenancy);
             info("You can run migrations later with: {$migrationCommand}");
 
             return self::SUCCESS;
@@ -133,7 +133,7 @@ class SetupApplication extends Command
         } else {
             // Database setup was skipped, skip migrations too
             $runMigrations = false;
-            $migrationCommand = $useMultiTenancy ? 'php artisan tenancy:migrate' : 'php artisan migrate';
+            $migrationCommand = $this->getMigrationCommand($useMultiTenancy);
             info("Skipping migrations. You can run them later with: {$migrationCommand} (after configuring the database)");
         }
 
@@ -141,9 +141,11 @@ class SetupApplication extends Command
             info('Running migrations...');
 
             try {
-                // Use tenancy:migrate if multi-tenancy is enabled, otherwise use migrate
-                if ($useMultiTenancy) {
-                    $this->call('tenancy:migrate', ['--force' => true]);
+                // Check if tenancy command exists and multi-tenancy is enabled
+                $useTenancyCommand = $useMultiTenancy && $this->commandExists('tenants:migrate');
+
+                if ($useTenancyCommand) {
+                    $this->call('tenants:migrate', ['--force' => true]);
                 } else {
                     $this->call('migrate', ['--force' => true]);
                 }
@@ -156,7 +158,7 @@ class SetupApplication extends Command
                 return self::FAILURE;
             }
         } elseif (! $databaseSkipped) {
-            $migrationCommand = $useMultiTenancy ? 'php artisan tenancy:migrate' : 'php artisan migrate';
+            $migrationCommand = $this->getMigrationCommand($useMultiTenancy);
             info("Skipping migrations. You can run them later with: {$migrationCommand}");
         }
 
@@ -171,5 +173,34 @@ class SetupApplication extends Command
         $this->call('optimize:clear');
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Get the appropriate migration command based on multi-tenancy status.
+     */
+    protected function getMigrationCommand(bool $useMultiTenancy): string
+    {
+        if ($useMultiTenancy && $this->commandExists('tenants:migrate')) {
+            return 'php artisan tenants:migrate';
+        }
+
+        return 'php artisan migrate';
+    }
+
+    /**
+     * Check if a command exists in Artisan.
+     */
+    protected function commandExists(string $command): bool
+    {
+        try {
+            $artisan = $this->getApplication();
+            if ($artisan === null) {
+                return false;
+            }
+
+            return $artisan->has($command);
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 }

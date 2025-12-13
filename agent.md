@@ -18,11 +18,13 @@ This is a Laravel 12 SaaS application built with Livewire Volt and Flux UI. The 
 
 -   **Laravel Fortify**: v1.30 (headless authentication)
 -   **Laravel Sanctum**: v4.0 (API authentication)
+-   **Spatie Permission**: v6.23 (role and permission management)
 -   **Features Enabled**:
     -   User registration
     -   Password reset
     -   Email verification
     -   Two-factor authentication (with password confirmation)
+    -   Role and permission management (via Spatie Permission)
 
 ### Frontend Stack
 
@@ -299,6 +301,23 @@ it('tests something', function () {
 -   **Actions**: Customize in `app/Actions/Fortify/`
 -   **Views**: Customize in `FortifyServiceProvider`
 -   **Features**: Configure in `config/fortify.php`
+
+### Authorization & Permissions
+
+-   **Package**: Spatie Permission (v6.23)
+-   **User Model**: `App\Models\User` includes `HasRoles` trait
+-   **UUID Support**: Configured to use `model_uuid` instead of `model_id` for UUID-based User models
+-   **Teams Permissions**: Enabled by default (`'teams' => true` in config)
+-   **Configuration**: `config/permission.php`
+-   **Migration**: Modified to support UUIDs in pivot tables (`model_has_permissions`, `model_has_roles`)
+-   **Middleware**: `App\Http\Middleware\TeamsPermission` - Sets team ID from session
+-   **Middleware Priority**: Registered in `AppServiceProvider` to run before `SubstituteBindings`
+-   **Documentation**: See `docs/spatie-permission.md` for complete rules, best practices, and guidelines
+-   **Constants**: Always use `App\Constants\Permissions` and `App\Constants\Roles` - **NO HARDCODED STRINGS ALLOWED**
+-   **Best Practice**: Always check for **permissions** (not roles) using `can()` and `@can` directives
+-   **Team ID**: Set via `session(['team_id' => $team->id])` on login, accessed via `setPermissionsTeamId()`
+-   **Important**: User model must NOT have `role`, `roles`, `permission`, or `permissions` properties/methods/relations
+-   **Switching Teams**: Always call `$user->unsetRelation('roles')->unsetRelation('permissions')` before querying after switching teams
 
 ### Testing
 

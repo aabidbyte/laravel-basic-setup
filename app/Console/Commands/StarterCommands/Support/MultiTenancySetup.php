@@ -90,6 +90,12 @@ class MultiTenancySetup
         // Update routes
         $this->updateRoutes();
 
+        // Register tenant routes in bootstrap/app.php
+        $this->registerTenantRoutes();
+
+        // Configure package integrations
+        $this->configurePackageIntegrations();
+
         // Update .env file
         $this->envManager->update(['MULTI_TENANCY_ENABLED' => 'true']);
 
@@ -357,5 +363,518 @@ PHP;
 
         File::put($routesPath, $routesContent);
         info('✅ Added multi-tenancy routing comments');
+    }
+
+    /**
+     * Register tenant routes in bootstrap/app.php.
+     */
+    protected function registerTenantRoutes(): void
+    {
+        $appPath = base_path('bootstrap/app.php');
+
+        if (! File::exists($appPath)) {
+            return;
+        }
+
+        $appContent = File::get($appPath);
+
+        // Check if tenant routes are already registered
+        if (str_contains($appContent, 'tenant.php')) {
+            info('Tenant routes already registered in bootstrap/app.php.');
+
+            return;
+        }
+
+        // Add tenant route to withRouting call
+        // Pattern: ->withRouting(web: ..., api: ..., tenant: ...)
+        if (preg_match("/->withRouting\s*\(/", $appContent)) {
+            // Add tenant route after the last route parameter
+            $appContent = preg_replace(
+                "/(health:\s*'\/up',)/",
+                "$1\n        tenant: __DIR__.'/../routes/tenant.php',",
+                $appContent
+            );
+        }
+
+        File::put($appPath, $appContent);
+        info('✅ Registered tenant routes in bootstrap/app.php');
+    }
+
+    /**
+     * Configure package integrations for multi-tenancy.
+     */
+    protected function configurePackageIntegrations(): void
+    {
+        // Configure Telescope tags
+        $this->configureTelescopeTags();
+
+        // Configure Livewire
+        $this->configureLivewire();
+
+        // Configure Sanctum
+        $this->configureSanctum();
+
+        // Configure Spatie Permission
+        $this->configureSpatiePermission();
+    }
+
+    /**
+     * Enable Telescope tags feature in tenancy config.
+     */
+    protected function configureTelescopeTags(): void
+    {
+        $configPath = config_path('tenancy.php');
+
+        if (! File::exists($configPath)) {
+            return;
+        }
+
+        $configContent = File::get($configPath);
+
+        // Check if Telescope tags are already configured
+        if (str_contains($configContent, 'telescope_tags') || str_contains($configContent, 'TelescopeTags')) {
+            info('Telescope tags already configured in tenancy config.');
+
+            return;
+        }
+
+        // Add Telescope tags to features array
+        // Look for 'features' => [...] pattern
+        if (preg_match("/'features'\s*=>\s*\[/", $configContent)) {
+            // Add TelescopeTags to features array
+            $configContent = preg_replace(
+                "/('features'\s*=>\s*\[)/",
+                "$1\n        \\Stancl\\Tenancy\\Features\\TelescopeTags::class,",
+                $configContent
+            );
+        } else {
+            warning('Could not find features array in tenancy config. Please enable Telescope tags manually.');
+        }
+
+        // Enable universal routes (needed for Livewire and Sanctum)
+        if (! str_contains($configContent, "'universal' => true") && ! str_contains($configContent, "'universal' => false")) {
+            // Add universal routes configuration
+            // Look for a good place to add it, typically near the top of the config array
+            if (preg_match("/return\s*\[/", $configContent)) {
+                $configContent = preg_replace(
+                    "/(return\s*\[)/",
+                    "$1\n    'universal' => true,\n",
+                    $configContent
+                );
+            }
+        } elseif (preg_match("/'universal'\s*=>\s*false/", $configContent)) {
+            // Update if it's set to false
+            $configContent = preg_replace(
+                "/'universal'\s*=>\s*false/",
+                "'universal' => true",
+                $configContent
+            );
+        }
+
+        File::put($configPath, $configContent);
+        info('✅ Enabled Telescope tags and universal routes in tenancy config');
+    }
+
+    /**
+     * Configure Livewire for multi-tenancy.
+     */
+    protected function configureLivewire(): void
+    {
+        // Check if Livewire is installed
+        if (! class_exists(\Livewire\Livewire::class)) {
+            info('Livewire not installed, skipping Livewire configuration.');
+
+            return;
+        }
+
+        // Update TenancyServiceProvider to configure Livewire routes
+        $this->updateTenancyServiceProviderForLivewire();
+
+        // Note: Livewire file upload temporary_file_upload.middleware config
+        // needs to be updated manually in config/livewire.php if it exists
+        // to include: 'throttle:60,1', 'universal', InitializeTenancyByDomain::class
+        info('✅ Configured Livewire for multi-tenancy');
+    }
+
+    /**
+     * Update TenancyServiceProvider to configure Livewire update route.
+     */
+    protected function updateTenancyServiceProviderForLivewire(): void
+    {
+        $providerPath = app_path('Providers/TenancyServiceProvider.php');
+
+        if (! File::exists($providerPath)) {
+            warning('TenancyServiceProvider not found. Livewire configuration will need to be done manually.');
+
+            return;
+        }
+
+        $providerContent = File::get($providerPath);
+
+        // Check if Livewire configuration already exists
+        if (str_contains($providerContent, 'Livewire::setUpdateRoute') || str_contains($providerContent, 'livewire/update')) {
+            info('Livewire already configured in TenancyServiceProvider.');
+
+            return;
+        }
+
+        // Add Livewire configuration to boot method
+        $livewireConfig = <<<'PHP'
+
+    /**
+     * Configure Livewire for multi-tenancy.
+     */
+    protected function configureLivewire(): void
+    {
+        if (! class_exists(\Livewire\Livewire::class)) {
+            return;
+        }
+
+        \Livewire\Livewire::setUpdateRoute(function ($handle) {
+            return \Illuminate\Support\Facades\Route::post('/livewire/update', $handle)
+                ->middleware(
+                    'web',
+                    'universal',
+                    \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
+                );
+        });
+
+        // Configure file upload middleware if FilePreviewController exists
+        if (class_exists(\Livewire\Features\SupportFileUploads\FilePreviewController::class)) {
+            \Livewire\Features\SupportFileUploads\FilePreviewController::$middleware = [
+                'web',
+                'universal',
+                \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
+            ];
+        }
+    }
+PHP;
+
+        // Find the boot method and add the configuration
+        if (preg_match('/public function boot\(\): void\s*\{([^}]*)\}/s', $providerContent, $matches)) {
+            $bootMethodContent = $matches[1];
+
+            // Add call to configureLivewire at the end of boot method
+            if (! str_contains($bootMethodContent, 'configureLivewire')) {
+                $newBootMethod = $bootMethodContent."\n        \$this->configureLivewire();";
+                $providerContent = str_replace($matches[0], 'public function boot(): void {'.$newBootMethod."\n    }", $providerContent);
+            }
+
+            // Add the configureLivewire method before the closing brace of the class
+            if (! str_contains($providerContent, 'protected function configureLivewire')) {
+                $providerContent = preg_replace(
+                    '/(\n\})$/',
+                    $livewireConfig.'$1',
+                    $providerContent
+                );
+            }
+
+            File::put($providerPath, $providerContent);
+            info('✅ Updated TenancyServiceProvider for Livewire');
+        } else {
+            warning('Could not find boot method in TenancyServiceProvider. Livewire configuration will need to be done manually.');
+        }
+    }
+
+    /**
+     * Configure Sanctum for multi-tenancy.
+     */
+    protected function configureSanctum(): void
+    {
+        // Check if Sanctum is installed
+        if (! class_exists(\Laravel\Sanctum\Sanctum::class)) {
+            info('Sanctum not installed, skipping Sanctum configuration.');
+
+            return;
+        }
+
+        // Update Sanctum config
+        $this->updateSanctumConfig();
+
+        // Update AuthServiceProvider to ignore migrations
+        $this->updateAuthServiceProviderForSanctum();
+
+        // Add Sanctum csrf-cookie route to tenant routes
+        $this->addSanctumRouteToTenantRoutes();
+
+        // Move Sanctum migrations to tenant folder
+        $this->moveSanctumMigrationsToTenant();
+    }
+
+    /**
+     * Update Sanctum config to disable routes.
+     */
+    protected function updateSanctumConfig(): void
+    {
+        $configPath = config_path('sanctum.php');
+
+        if (! File::exists($configPath)) {
+            return;
+        }
+
+        $configContent = File::get($configPath);
+
+        // Check if already configured
+        if (preg_match("/'routes'\s*=>\s*(true|false)/", $configContent)) {
+            // Update to false
+            $configContent = preg_replace(
+                "/'routes'\s*=>\s*(true|false)/",
+                "'routes' => false",
+                $configContent
+            );
+        } else {
+            // Add routes => false before the closing bracket
+            $configContent = preg_replace(
+                '/(\];\s*)$/',
+                "    'routes' => false,\n$1",
+                $configContent
+            );
+        }
+
+        File::put($configPath, $configContent);
+        info('✅ Updated Sanctum config to disable routes');
+    }
+
+    /**
+     * Update AuthServiceProvider to ignore Sanctum migrations.
+     */
+    protected function updateAuthServiceProviderForSanctum(): void
+    {
+        $providerPath = app_path('Providers/AuthServiceProvider.php');
+
+        if (! File::exists($providerPath)) {
+            // AuthServiceProvider might not exist in Laravel 12
+            return;
+        }
+
+        $providerContent = File::get($providerPath);
+
+        // Check if already configured
+        if (str_contains($providerContent, 'Sanctum::ignoreMigrations')) {
+            info('Sanctum migrations already ignored in AuthServiceProvider.');
+
+            return;
+        }
+
+        // Add Sanctum::ignoreMigrations() to register method
+        if (preg_match('/public function register\(\): void\s*\{([^}]*)\}/s', $providerContent, $matches)) {
+            $registerMethodContent = $matches[1];
+
+            if (! str_contains($registerMethodContent, 'Sanctum::ignoreMigrations')) {
+                $newRegisterMethod = $registerMethodContent."\n        \\Laravel\\Sanctum\\Sanctum::ignoreMigrations();";
+                $providerContent = str_replace($matches[0], 'public function register(): void {'.$newRegisterMethod."\n    }", $providerContent);
+
+                File::put($providerPath, $providerContent);
+                info('✅ Updated AuthServiceProvider to ignore Sanctum migrations');
+            }
+        }
+    }
+
+    /**
+     * Add Sanctum csrf-cookie route to tenant routes.
+     */
+    protected function addSanctumRouteToTenantRoutes(): void
+    {
+        $tenantRoutesPath = base_path('routes/tenant.php');
+
+        if (! File::exists($tenantRoutesPath)) {
+            // Create tenant routes file if it doesn't exist
+            $tenantRoutesContent = "<?php\n\nuse Illuminate\\Support\\Facades\\Route;\n";
+            File::put($tenantRoutesPath, $tenantRoutesContent);
+        }
+
+        $routesContent = File::get($tenantRoutesPath);
+
+        // Check if Sanctum route already exists
+        if (str_contains($routesContent, 'sanctum.csrf-cookie') || str_contains($routesContent, 'sanctum/csrf-cookie')) {
+            info('Sanctum csrf-cookie route already exists in tenant routes.');
+
+            return;
+        }
+
+        // Add Sanctum route
+        $sanctumRoute = <<<'PHP'
+
+// Sanctum csrf-cookie route for tenant app
+Route::group(['prefix' => config('sanctum.prefix', 'sanctum')], static function () {
+    Route::get('/csrf-cookie', [\Laravel\Sanctum\Http\Controllers\CsrfCookieController::class, 'show'])
+        ->middleware([
+            'web',
+            \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
+        ])->name('sanctum.csrf-cookie');
+});
+PHP;
+
+        // Append to the end of the file before closing PHP tag
+        $routesContent = rtrim($routesContent)."\n".$sanctumRoute."\n";
+
+        File::put($tenantRoutesPath, $routesContent);
+        info('✅ Added Sanctum csrf-cookie route to tenant routes');
+    }
+
+    /**
+     * Configure Spatie Permission for multi-tenancy.
+     */
+    protected function configureSpatiePermission(): void
+    {
+        // Check if Spatie Permission is installed
+        if (! class_exists(\Spatie\Permission\PermissionServiceProvider::class)) {
+            info('Spatie Permission not installed, skipping Spatie Permission configuration.');
+
+            return;
+        }
+
+        // Publish and move migrations
+        $this->publishAndMoveSpatiePermissionMigrations();
+
+        // Add event listeners to TenancyServiceProvider
+        $this->addSpatiePermissionEventListeners();
+    }
+
+    /**
+     * Publish Spatie Permission migrations and move them to tenant folder.
+     */
+    protected function publishAndMoveSpatiePermissionMigrations(): void
+    {
+        $projectRoot = base_path();
+
+        // Publish migrations
+        info('Publishing Spatie Permission migrations...');
+        $publishOutput = [];
+        $publishReturnCode = 0;
+        exec("cd {$projectRoot} && php artisan vendor:publish --provider=\"Spatie\Permission\PermissionServiceProvider\" --tag=\"migrations\" --no-interaction 2>&1", $publishOutput, $publishReturnCode);
+
+        if ($publishReturnCode !== 0) {
+            warning('Could not publish Spatie Permission migrations. You may need to run this manually.');
+            warning('Command: php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider" --tag="migrations"');
+
+            return;
+        }
+
+        info('✅ Published Spatie Permission migrations');
+
+        // Move migrations to tenant folder
+        $migrationsPath = database_path('migrations');
+        $tenantMigrationsPath = database_path('migrations/tenant');
+
+        // Create tenant migrations directory if it doesn't exist
+        if (! File::isDirectory($tenantMigrationsPath)) {
+            File::makeDirectory($tenantMigrationsPath, 0755, true);
+        }
+
+        // Find Spatie Permission migrations
+        $migrationFiles = File::glob($migrationsPath.'/*_create_permission_tables.php');
+
+        foreach ($migrationFiles as $migrationFile) {
+            $fileName = basename($migrationFile);
+            $destination = $tenantMigrationsPath.'/'.$fileName;
+
+            if (! File::exists($destination)) {
+                File::move($migrationFile, $destination);
+                info("✅ Moved Spatie Permission migration {$fileName} to tenant migrations folder");
+            } else {
+                // If already exists in tenant folder, remove the one in main folder
+                File::delete($migrationFile);
+                info("✅ Removed duplicate Spatie Permission migration {$fileName} from main migrations folder");
+            }
+        }
+    }
+
+    /**
+     * Add Spatie Permission event listeners to TenancyServiceProvider.
+     */
+    protected function addSpatiePermissionEventListeners(): void
+    {
+        $providerPath = app_path('Providers/TenancyServiceProvider.php');
+
+        if (! File::exists($providerPath)) {
+            warning('TenancyServiceProvider not found. Spatie Permission event listeners will need to be added manually.');
+
+            return;
+        }
+
+        $providerContent = File::get($providerPath);
+
+        // Check if Spatie Permission listeners already exist
+        if (str_contains($providerContent, 'PermissionRegistrar') || str_contains($providerContent, 'spatie.permission.cache')) {
+            info('Spatie Permission event listeners already configured in TenancyServiceProvider.');
+
+            return;
+        }
+
+        // Spatie Permission event listeners code
+        $spatieListeners = "            \Stancl\Tenancy\Events\TenancyBootstrapped::class => [\n                function (\Stancl\Tenancy\Events\TenancyBootstrapped \$event) {\n                    \$permissionRegistrar = app(\Spatie\Permission\PermissionRegistrar::class);\n                    \$permissionRegistrar->cacheKey = 'spatie.permission.cache.tenant.' . \$event->tenancy->tenant->getTenantKey();\n                },\n            ],\n            \Stancl\Tenancy\Events\TenancyEnded::class => [\n                function (\Stancl\Tenancy\Events\TenancyEnded \$event) {\n                    \$permissionRegistrar = app(\Spatie\Permission\PermissionRegistrar::class);\n                    \$permissionRegistrar->cacheKey = 'spatie.permission.cache';\n                },\n            ],";
+
+        // Check if events() method already exists
+        if (preg_match('/public function events\(\): array/', $providerContent)) {
+            // Update existing events method to include Spatie Permission listeners
+            if (preg_match('/public function events\(\): array\s*\{([^}]*return\s*\[)([^\]]*)(\]\s*;?\s*)\}/s', $providerContent, $matches)) {
+                $beforeReturn = $matches[1];
+                $existingListeners = $matches[2];
+                $afterReturn = $matches[3];
+
+                // Check if Spatie listeners are already in the array
+                if (! str_contains($existingListeners, 'PermissionRegistrar')) {
+                    // Add Spatie listeners to existing return array
+                    $newListeners = $existingListeners;
+                    if (! empty(trim($existingListeners))) {
+                        $newListeners .= ",\n";
+                    }
+                    $newListeners .= $spatieListeners;
+
+                    $providerContent = str_replace(
+                        $matches[0],
+                        'public function events(): array {'.$beforeReturn.$newListeners.$afterReturn.'}',
+                        $providerContent
+                    );
+                }
+            } else {
+                // Try simpler pattern - just add before closing brace of events method
+                $providerContent = preg_replace(
+                    '/(public function events\(\): array\s*\{[^}]*return\s*\[)([^\]]*)(\]\s*;?\s*\})/s',
+                    '$1$2,'."\n".$spatieListeners.'$3',
+                    $providerContent
+                );
+            }
+        } else {
+            // Add events() method before the closing brace of the class
+            $eventsMethod = "\n\n    /**\n     * Configure event listeners for multi-tenancy.\n     */\n    public function events(): array\n    {\n        return [\n".$spatieListeners."\n        ];\n    }";
+
+            $providerContent = preg_replace(
+                '/(\n\})$/',
+                $eventsMethod.'$1',
+                $providerContent
+            );
+        }
+
+        File::put($providerPath, $providerContent);
+        info('✅ Added Spatie Permission event listeners to TenancyServiceProvider');
+    }
+
+    /**
+     * Move Sanctum migrations to tenant folder.
+     */
+    protected function moveSanctumMigrationsToTenant(): void
+    {
+        $migrationsPath = database_path('migrations');
+        $tenantMigrationsPath = database_path('migrations/tenant');
+
+        // Create tenant migrations directory if it doesn't exist
+        if (! File::isDirectory($tenantMigrationsPath)) {
+            File::makeDirectory($tenantMigrationsPath, 0755, true);
+        }
+
+        // Find Sanctum migrations
+        $migrationFiles = File::glob($migrationsPath.'/*_create_personal_access_tokens_table.php');
+
+        foreach ($migrationFiles as $migrationFile) {
+            $fileName = basename($migrationFile);
+            $destination = $tenantMigrationsPath.'/'.$fileName;
+
+            if (! File::exists($destination)) {
+                File::move($migrationFile, $destination);
+                info("✅ Moved Sanctum migration {$fileName} to tenant migrations folder");
+            }
+        }
     }
 }

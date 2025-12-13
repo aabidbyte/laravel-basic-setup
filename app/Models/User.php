@@ -6,10 +6,11 @@ namespace App\Models;
 use App\Models\Base\BaseUserModel;
 use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends BaseUserModel
 {
-    use TwoFactorAuthenticatable;
+    use HasRoles, TwoFactorAuthenticatable;
 
     /**
      * The attributes that are mass assignable.

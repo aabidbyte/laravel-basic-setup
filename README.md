@@ -26,6 +26,7 @@ A comprehensive Laravel 12 starter kit with multi-stack frontend support, UUID-b
 -   **Email Verification** - Built-in email verification flow
 -   **Password Reset** - Secure password reset functionality
 -   **Password Confirmation** - Protected routes with password confirmation
+-   **Spatie Permission** - Role and permission management with UUID support
 
 #### Monitoring & Queue Management
 
@@ -317,6 +318,7 @@ git commit
 
 -   **Laravel Fortify**: 1.30
 -   **Laravel Sanctum**: 4.0 (API authentication)
+-   **Spatie Permission**: 6.23 (role and permission management)
 
 ### Monitoring
 
@@ -651,6 +653,77 @@ All authentication features are configured via Laravel Fortify. Customize in:
 -   `config/fortify.php` - Feature configuration
 -   `app/Providers/FortifyServiceProvider.php` - View and action configuration
 -   `app/Actions/Fortify/` - Business logic customization
+
+### Authorization & Permissions
+
+Role and permission management is handled by Spatie Permission. The package is configured to work with UUID-based User models.
+
+**Configuration:**
+
+-   Config file: `config/permission.php`
+-   Migration: Modified to use `model_uuid` instead of `model_id` for UUID support
+-   User model: `App\Models\User` includes the `HasRoles` trait
+
+**Basic Usage:**
+
+```php
+// Assign a role to a user
+$user->assignRole('admin');
+
+// Check if user has a role
+if ($user->hasRole('admin')) {
+    // User is an admin
+}
+
+// Give permission to a user
+$user->givePermissionTo('edit posts');
+
+// Check if user has permission
+if ($user->can('edit posts')) {
+    // User can edit posts
+}
+
+// Create a role with permissions
+$role = Role::create(['name' => 'writer']);
+$role->givePermissionTo('edit posts');
+```
+
+**Teams Permissions:**
+
+Teams permissions are enabled by default, allowing flexible control for multi-tenant scenarios. The middleware `TeamsPermission` automatically sets the team ID from the session.
+
+**Configuration:**
+
+-   Teams enabled: `config/permission.php` → `'teams' => true`
+-   Custom team foreign key: Set `'team_foreign_key' => 'custom_team_id'` in config if needed
+-   Middleware: `app/Http/Middleware/TeamsPermission.php` (sets team ID from session)
+
+**Usage with Teams:**
+
+```php
+// Set team ID in session (typically on login)
+session(['team_id' => $team->id]);
+
+// Create roles with team_id
+Role::create(['name' => 'writer', 'team_id' => null]); // Global role
+Role::create(['name' => 'reader', 'team_id' => 1]); // Team-specific role
+
+// Switch active team
+setPermissionsTeamId($new_team_id);
+$user->unsetRelation('roles')->unsetRelation('permissions');
+
+// Now check roles/permissions for the new team
+$user->hasRole('admin');
+$user->can('edit posts');
+```
+
+**Important Notes:**
+
+-   The User model must NOT have `role`, `roles`, `permission`, or `permissions` properties/methods/relations
+-   The package uses UUIDs for the User model relationships (configured in `config/permission.php`)
+-   Teams middleware must run before `SubstituteBindings` (configured in `AppServiceProvider`)
+-   When switching teams, always unset cached relations before querying
+-   See [Spatie Permission Documentation](https://spatie.be/docs/laravel-permission) for more details
 
 ## 📝 License
 

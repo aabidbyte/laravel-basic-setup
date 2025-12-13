@@ -25,7 +25,8 @@
         "laravel/sanctum": "^4.0",
         "laravel/telescope": "^5.16",
         "laravel/tinker": "^2.10.1",
-        "predis/predis": "^3.3"
+        "predis/predis": "^3.3",
+        "spatie/laravel-permission": "^6.23"
     },
     "suggest": {
         "livewire/livewire": "Required for Livewire frontend stack",
