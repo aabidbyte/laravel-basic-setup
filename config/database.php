@@ -156,7 +156,7 @@ return [
 
     'redis' => [
 
-        'client' => env('REDIS_CLIENT', (isDevelopment() || isTesting()) ? 'predis' : 'phpredis'),
+        'client' => env('REDIS_CLIENT', (isProduction() || isStaging()) ? 'phpredis' : 'predis'),
 
         'options' => [
             'cluster' => 'redis',
