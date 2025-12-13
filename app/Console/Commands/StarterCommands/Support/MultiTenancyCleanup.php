@@ -124,7 +124,7 @@ class MultiTenancyCleanup
     }
 
     /**
-     * Clean up tenant route registration from bootstrap/app.php.
+     * Clean up tenant route registration and universal routes middleware from bootstrap/app.php.
      */
     protected function cleanupBootstrapAppTenantRoutes(): void
     {
@@ -135,29 +135,42 @@ class MultiTenancyCleanup
         }
 
         $appContent = File::get($appPath);
+        $modified = false;
 
-        // Check if tenant routes are registered
-        if (! str_contains($appContent, 'tenant.php')) {
-            return;
+        // Check if tenant routes are registered (invalid parameter)
+        if (str_contains($appContent, 'tenant.php')) {
+            // Remove tenant route registration from withRouting
+            // Pattern: tenant: __DIR__.'/../routes/tenant.php',
+            $appContent = preg_replace(
+                '/,\s*tenant:\s*__DIR__\.\'\/\.\.\/routes\/tenant\.php\'\s*,?\s*\n/',
+                '',
+                $appContent
+            );
+
+            // Also handle if it's the last item in withRouting
+            $appContent = preg_replace(
+                '/,\s*tenant:\s*__DIR__\.\'\/\.\.\/routes\/tenant\.php\'/',
+                '',
+                $appContent
+            );
+            $modified = true;
         }
 
-        // Remove tenant route registration from withRouting
-        // Pattern: tenant: __DIR__.'/../routes/tenant.php',
-        $appContent = preg_replace(
-            '/,\s*tenant:\s*__DIR__\.\'\/\.\.\/routes\/tenant\.php\'\s*,?\s*\n/',
-            '',
-            $appContent
-        );
+        // Remove universal routes middleware group if it exists
+        if (str_contains($appContent, "->group('universal'") || str_contains($appContent, "middleware->group('universal'")) {
+            // Remove the universal middleware group line
+            $appContent = preg_replace(
+                '/\s*\$middleware->group\(\'universal\',\s*\[\]\);\s*\n?/',
+                '',
+                $appContent
+            );
+            $modified = true;
+        }
 
-        // Also handle if it's the last item in withRouting
-        $appContent = preg_replace(
-            '/,\s*tenant:\s*__DIR__\.\'\/\.\.\/routes\/tenant\.php\'/',
-            '',
-            $appContent
-        );
-
-        File::put($appPath, $appContent);
-        info('✅ Cleaned up tenant route registration from bootstrap/app.php');
+        if ($modified) {
+            File::put($appPath, $appContent);
+            info('✅ Cleaned up tenant routes and universal middleware from bootstrap/app.php');
+        }
     }
 
     /**
