@@ -1549,6 +1549,19 @@ class HandleInertiaRequests extends Middleware
     }
 }
 
+namespace Livewire;
+
+/**
+ * Livewire main class.
+ *
+ * This class is provided by the livewire/livewire package.
+ * It's defined here for Intelephense support when the package is not yet installed.
+ */
+class Livewire
+{
+    // Stub class for Intelephense
+}
+
 namespace Livewire\Volt;
 
 /**

@@ -278,22 +278,35 @@ PHP;
     }
 
     /**
-     * Organize migrations by moving user migration to tenant folder.
+     * Organize migrations by moving user migration and two-factor columns migration to tenant folder.
      */
     protected function organizeMigrations(): void
     {
-        $usersMigration = database_path('migrations/0001_01_01_000000_create_users_table.php');
         $tenantMigrationsDir = database_path('migrations/tenant');
-
-        if (! File::exists($usersMigration)) {
-            info('Users migration not found, skipping migration organization.');
-
-            return;
-        }
 
         // Create tenant migrations directory if it doesn't exist
         if (! File::isDirectory($tenantMigrationsDir)) {
             File::makeDirectory($tenantMigrationsDir, 0755, true);
+        }
+
+        // Move users table migration
+        $this->moveUsersTableMigration($tenantMigrationsDir);
+
+        // Move two-factor columns migration
+        $this->moveTwoFactorColumnsMigration($tenantMigrationsDir);
+    }
+
+    /**
+     * Move users table migration to tenant folder.
+     */
+    protected function moveUsersTableMigration(string $tenantMigrationsDir): void
+    {
+        $usersMigration = database_path('migrations/0001_01_01_000000_create_users_table.php');
+
+        if (! File::exists($usersMigration)) {
+            info('Users migration not found, skipping.');
+
+            return;
         }
 
         $destination = $tenantMigrationsDir.'/0001_01_01_000000_create_users_table.php';
@@ -306,6 +319,35 @@ PHP;
 
         File::move($usersMigration, $destination);
         info('✅ Moved users migration to tenant migrations folder');
+    }
+
+    /**
+     * Move two-factor columns migration to tenant folder.
+     */
+    protected function moveTwoFactorColumnsMigration(string $tenantMigrationsDir): void
+    {
+        // Find two-factor columns migration using glob pattern
+        $twoFactorMigrations = File::glob(database_path('migrations/*_add_two_factor_columns_to_users_table.php'));
+
+        if (empty($twoFactorMigrations)) {
+            info('Two-factor columns migration not found, skipping.');
+
+            return;
+        }
+
+        foreach ($twoFactorMigrations as $twoFactorMigration) {
+            $fileName = basename($twoFactorMigration);
+            $destination = $tenantMigrationsDir.'/'.$fileName;
+
+            if (File::exists($destination)) {
+                info("Two-factor columns migration {$fileName} already in tenant folder, skipping.");
+
+                continue;
+            }
+
+            File::move($twoFactorMigration, $destination);
+            info("✅ Moved two-factor columns migration {$fileName} to tenant migrations folder");
+        }
     }
 
     /**
@@ -720,43 +762,85 @@ PHP;
         // Check if Spatie Permission is installed
         if (! class_exists(\Spatie\Permission\PermissionServiceProvider::class)) {
             info('Spatie Permission not installed, skipping Spatie Permission configuration.');
+            info('💡 To use Spatie Permission with multi-tenancy, install it first: composer require spatie/laravel-permission');
 
             return;
         }
 
         // Publish and move migrations
-        $this->publishAndMoveSpatiePermissionMigrations();
+        $migrationsPublished = $this->publishAndMoveSpatiePermissionMigrations();
 
-        // Add event listeners to TenancyServiceProvider
-        $this->addSpatiePermissionEventListeners();
+        // Only add event listeners if migrations were successfully published or already exist
+        if ($migrationsPublished) {
+            // Add event listeners to TenancyServiceProvider
+            $this->addSpatiePermissionEventListeners();
+        }
     }
 
     /**
      * Publish Spatie Permission migrations and move them to tenant folder.
+     *
+     * @return bool Returns true if migrations were published/moved successfully, false otherwise
      */
-    protected function publishAndMoveSpatiePermissionMigrations(): void
+    protected function publishAndMoveSpatiePermissionMigrations(): bool
     {
         $projectRoot = base_path();
-
-        // Publish migrations
-        info('Publishing Spatie Permission migrations...');
-        $publishOutput = [];
-        $publishReturnCode = 0;
-        exec("cd {$projectRoot} && php artisan vendor:publish --provider=\"Spatie\Permission\PermissionServiceProvider\" --tag=\"migrations\" --no-interaction 2>&1", $publishOutput, $publishReturnCode);
-
-        if ($publishReturnCode !== 0) {
-            warning('Could not publish Spatie Permission migrations. You may need to run this manually.');
-            warning('Command: php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider" --tag="migrations"');
-
-            return;
-        }
-
-        info('✅ Published Spatie Permission migrations');
-
-        // Move migrations to tenant folder
         $migrationsPath = database_path('migrations');
         $tenantMigrationsPath = database_path('migrations/tenant');
 
+        // Check if migrations already exist in tenant folder
+        $existingTenantMigrations = File::glob($tenantMigrationsPath.'/*_create_permission_tables.php');
+        if (! empty($existingTenantMigrations)) {
+            info('Spatie Permission migrations already exist in tenant folder.');
+            // Check if there are any in main folder that need to be moved
+            $mainMigrations = File::glob($migrationsPath.'/*_create_permission_tables.php');
+            if (! empty($mainMigrations)) {
+                foreach ($mainMigrations as $migrationFile) {
+                    $fileName = basename($migrationFile);
+                    File::delete($migrationFile);
+                    info("✅ Removed duplicate Spatie Permission migration {$fileName} from main migrations folder");
+                }
+            }
+
+            return true;
+        }
+
+        // Check if migrations exist in main folder (maybe already published)
+        $existingMigrations = File::glob($migrationsPath.'/*_create_permission_tables.php');
+        if (! empty($existingMigrations)) {
+            info('Found existing Spatie Permission migrations in main folder, moving to tenant folder...');
+        } else {
+            // Publish migrations
+            info('Publishing Spatie Permission migrations...');
+            $publishOutput = [];
+            $publishReturnCode = 0;
+            exec("cd {$projectRoot} && php artisan vendor:publish --provider=\"Spatie\Permission\PermissionServiceProvider\" --tag=\"migrations\" --no-interaction 2>&1", $publishOutput, $publishReturnCode);
+
+            if ($publishReturnCode !== 0) {
+                $outputString = implode("\n", $publishOutput);
+                // Check if the error is because migrations are already published
+                if (str_contains($outputString, 'Nothing to publish') || str_contains($outputString, 'already exists')) {
+                    // Check again if migrations exist
+                    $existingMigrations = File::glob($migrationsPath.'/*_create_permission_tables.php');
+                    if (empty($existingMigrations)) {
+                        warning('Spatie Permission migrations could not be published. They may already be published or the package may not be properly installed.');
+                        warning('You can try manually: php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider" --tag="migrations"');
+
+                        return false;
+                    }
+                } else {
+                    warning('Could not publish Spatie Permission migrations.');
+                    warning('Output: '.$outputString);
+                    warning('You may need to run manually: php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider" --tag="migrations"');
+
+                    return false;
+                }
+            } else {
+                info('✅ Published Spatie Permission migrations');
+            }
+        }
+
+        // Move migrations to tenant folder
         // Create tenant migrations directory if it doesn't exist
         if (! File::isDirectory($tenantMigrationsPath)) {
             File::makeDirectory($tenantMigrationsPath, 0755, true);
@@ -764,6 +848,12 @@ PHP;
 
         // Find Spatie Permission migrations
         $migrationFiles = File::glob($migrationsPath.'/*_create_permission_tables.php');
+
+        if (empty($migrationFiles)) {
+            warning('No Spatie Permission migrations found to move. They may have already been moved or published to a different location.');
+
+            return false;
+        }
 
         foreach ($migrationFiles as $migrationFile) {
             $fileName = basename($migrationFile);
@@ -778,6 +868,8 @@ PHP;
                 info("✅ Removed duplicate Spatie Permission migration {$fileName} from main migrations folder");
             }
         }
+
+        return true;
     }
 
     /**
