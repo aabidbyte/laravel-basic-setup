@@ -196,8 +196,13 @@ class SetupApplication extends Command
         // Clear config cache to ensure new .env values are loaded
         $this->call('config:clear');
 
-        // Log the database credentials that Laravel will use
+        // Reload environment variables and config
+        // Clear the config cache and reload .env
+        if (function_exists('app')) {
+            app()->make('config')->clear();
+        }
 
+        // Log the database credentials that Laravel will use (from reloaded config)
         info('Database credentials that Laravel will use:');
         info('  Connection: '.config('database.connections.'.$connection.'.driver', $connection));
         info('  Host: '.config('database.connections.'.$connection.'.host', $dbHost));
