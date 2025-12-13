@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'default' => 'redis',
+    'default' => env('CACHE_STORE', 'redis'),
 
     /*
     |--------------------------------------------------------------------------
@@ -32,6 +32,11 @@ return [
     */
 
     'stores' => [
+
+        'array' => [
+            'driver' => 'array',
+            'serialize' => false,
+        ],
 
         'redis' => [
             'driver' => 'redis',

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Models\Base\BaseModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
+use Tests\Support\Models\TestModel;
 
 uses(RefreshDatabase::class);
 
@@ -16,13 +16,6 @@ beforeEach(function (): void {
         $table->timestamps();
     });
 });
-
-class TestModel extends BaseModel
-{
-    protected $table = 'test_models';
-
-    protected $fillable = ['name', 'uuid'];
-}
 
 it('automatically generates a UUID when creating a model', function (): void {
     $model = TestModel::create(['name' => 'Test']);

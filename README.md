@@ -65,25 +65,37 @@ A comprehensive Laravel 12 starter kit with multi-stack frontend support, UUID-b
 
 1. **Create a new project:**
 
+    **Option A: Using Git (Recommended)**
+
+    ```bash
+    git clone https://github.com/aabidbyte/laravel-basic-setup.git my-app
+    cd my-app
+    composer install
+    ```
+
+    **Option B: Using Composer (if published to Packagist)**
+
     ```bash
     composer create-project aabidbyte/laravel-basic-setup my-app
     cd my-app
     ```
 
-2. **Install your frontend stack:**
+    > **Note:** If the package is not yet on Packagist, use Option A (Git clone) instead.
+
+2. **Install dependencies** (if using Git clone, `composer install` was already run):
+
+    ```bash
+    composer install
+    npm install
+    ```
+
+3. **Install your frontend stack:**
 
     ```bash
     php artisan install:stack
     ```
 
     This will prompt you to choose between Livewire, React, or Vue.
-
-3. **Install dependencies:**
-
-    ```bash
-    composer install
-    npm install
-    ```
 
 4. **Set up environment:**
 
@@ -122,6 +134,15 @@ A comprehensive Laravel 12 starter kit with multi-stack frontend support, UUID-b
     php artisan serve
     ```
 
+### Publishing to Packagist (Optional)
+
+If you want to publish this starter to Packagist so users can install it via `composer create-project`:
+
+1. Create an account on [Packagist.org](https://packagist.org)
+2. Submit your repository: `https://github.com/aabidbyte/laravel-basic-setup`
+3. Packagist will automatically detect updates when you push tags
+4. Users can then install with: `composer create-project aabidbyte/laravel-basic-setup my-app`
+
 ## 🔄 Upgrading from the Starter Template
 
 If you've created a project from this starter template and want to pull in the latest updates:
@@ -131,10 +152,11 @@ php artisan starter:upgrade
 ```
 
 This command will:
-- Check for the upstream remote (adds it if missing)
-- Fetch the latest changes from the starter repository
-- Show you what has changed
-- Allow you to merge updates into your project
+
+-   Check for the upstream remote (adds it if missing)
+-   Fetch the latest changes from the starter repository
+-   Show you what has changed
+-   Allow you to merge updates into your project
 
 ### Upgrade Options
 

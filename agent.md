@@ -166,6 +166,77 @@ These helpers are automatically loaded via Composer autoload and should be used 
     -   Use appropriate type hints for method parameters
 -   **PHPDoc**: Prefer PHPDoc blocks over inline comments
 
+### PSR-4 Autoloading Standards
+
+**All classes MUST comply with PSR-4 autoloading standards.** This ensures proper class loading and prevents autoloader warnings.
+
+#### Autoload Mappings
+
+The project uses the following PSR-4 autoload mappings (defined in `composer.json`):
+
+-   **Application Classes**: `App\` → `app/`
+-   **Database Factories**: `Database\Factories\` → `database/factories/`
+-   **Database Seeders**: `Database\Seeders\` → `database/seeders/`
+-   **Test Classes**: `Tests\` → `tests/` (dev only)
+
+#### Rules for Class Organization
+
+1.  **Application Classes**:
+
+    -   All classes in `app/` must use the `App\` namespace
+    -   Directory structure must match namespace structure
+    -   Example: `app/Models/User.php` → `namespace App\Models;`
+
+2.  **Test Support Classes**:
+
+    -   **Test models, helpers, and support classes MUST be in `tests/Support/`**
+    -   Use namespace `Tests\Support\{Category}` matching directory structure
+    -   Example: `tests/Support/Models/TestModel.php` → `namespace Tests\Support\Models;`
+    -   **Never define classes directly in test files** - always create separate files in `tests/Support/`
+    -   Test support classes are automatically autoloaded via the `Tests\` → `tests/` mapping
+
+3.  **Test Files**:
+    -   Test files themselves should be in `tests/Feature/` or `tests/Unit/`
+    -   Test files don't need namespaces (Pest handles this)
+    -   Import test support classes using their full namespace: `use Tests\Support\Models\TestModel;`
+
+#### Common Patterns
+
+**❌ Incorrect - Class defined in test file:**
+
+```php
+// tests/Feature/Models/HasUuidTraitTest.php
+class TestModel extends BaseModel { } // ❌ Violates PSR-4
+```
+
+**✅ Correct - Class in support directory:**
+
+```php
+// tests/Support/Models/TestModel.php
+<?php
+namespace Tests\Support\Models;
+
+use App\Models\Base\BaseModel;
+
+class TestModel extends BaseModel { }
+```
+
+```php
+// tests/Feature/Models/HasUuidTraitTest.php
+<?php
+use Tests\Support\Models\TestModel; // ✅ Proper import
+
+it('tests something', function () {
+    $model = TestModel::create([...]);
+});
+```
+
+#### Verification
+
+-   After creating new classes, run `composer dump-autoload` to regenerate autoloader
+-   Check for PSR-4 warnings: Classes should autoload without warnings
+-   Verify with: `php -r "require 'vendor/autoload.php'; var_dump(class_exists('Your\\Namespace\\Class'));"`
+
 ### Component Development
 
 -   **Primary Pattern**: Livewire Volt (single-file components)
@@ -435,14 +506,15 @@ The project includes `IntelephenseHelper.php` at the root to provide type hints 
 
 ### Common Patterns
 
-- **Facade methods**: Add static methods to the facade interface (e.g., `Auth::logout()`)
-- **Guard methods**: Add instance methods to `Guard` or `StatefulGuard` interfaces
-- **Builder methods**: Add methods to `Builder` interface for query builder macros
-- **Model methods**: Add methods to model-related interfaces if needed
+-   **Facade methods**: Add static methods to the facade interface (e.g., `Auth::logout()`)
+-   **Guard methods**: Add instance methods to `Guard` or `StatefulGuard` interfaces
+-   **Builder methods**: Add methods to `Builder` interface for query builder macros
+-   **Model methods**: Add methods to model-related interfaces if needed
 
 ### Example
 
 If you see `Auth::guard('web')->logout()` causing an error:
+
 1. Add `logout(): void` to the `StatefulGuard` interface
 2. Update `Auth::guard()` return type to `StatefulGuard` instead of `Guard`
 3. Optionally add `logout()` directly to `Auth` facade for convenience
@@ -459,7 +531,8 @@ If you see `Auth::guard('web')->logout()` causing an error:
 8. **UUID columns required** - ALL tables must have a UUID column in their migrations
 9. **UUID generation required** - ALL models automatically generate UUIDs via base classes
 10. **Fix Intelephense errors** - Always update `IntelephenseHelper.php` when encountering undefined method errors
-11. **Update this file** when adding new patterns, conventions, or features
+11. **PSR-4 compliance required** - ALL classes must follow PSR-4 autoloading standards. Test support classes must be in `tests/Support/` with proper namespaces, never defined directly in test files
+12. **Update this file** when adding new patterns, conventions, or features
 
 ## Changelog
 
@@ -489,6 +562,13 @@ If you see `Auth::guard('web')->logout()` causing an error:
     -   Added `logout()`, `login()`, `attempt()` methods to `StatefulGuard` and `Auth` interfaces
     -   Added `Session` facade interface with common methods (`invalidate()`, `regenerateToken()`, etc.)
     -   **Rule**: Always fix Intelephense errors by adding missing method definitions to `IntelephenseHelper.php`
+-   **PSR-4 Autoloading Standards**: Added comprehensive PSR-4 autoloading rules
+    -   Documented autoload mappings in `composer.json`
+    -   **Rule**: Test support classes (models, helpers) MUST be in `tests/Support/` with proper namespaces
+    -   **Rule**: Never define classes directly in test files - always create separate files in `tests/Support/`
+    -   Moved `TestModel` from test file to `tests/Support/Models/TestModel.php` with namespace `Tests\Support\Models`
+    -   Added examples of correct vs incorrect patterns
+    -   **Rule**: All classes must comply with PSR-4 autoloading standards to prevent autoloader warnings
 
 ---
 
