@@ -165,6 +165,27 @@ class DatabaseSetup
 
         info('✅ Database credentials saved to .env file');
 
+        // Update Config facade and clear DB connection cache
+        $this->updateConfigAndClearCache($credentials);
+
+        // Log the database credentials that Laravel will use
+        $this->logDatabaseConfig($connection, $dbHost, $dbPort, $dbDatabase, $dbUsername, $dbPassword);
+    }
+
+    /**
+     * Update Config facade with database credentials and clear DB connection cache.
+     *
+     * @param  array<string, mixed>  $credentials
+     */
+    protected function updateConfigAndClearCache(array $credentials): void
+    {
+        $connection = $credentials['connection'];
+        $dbHost = $credentials['host'];
+        $dbPort = $credentials['port'];
+        $dbDatabase = $credentials['database'];
+        $dbUsername = $credentials['username'];
+        $dbPassword = $credentials['password'];
+
         // Set database config values directly using Config facade
         Config::set('database.default', $connection);
         Config::set('database.connections.'.$connection.'.driver', $connection);
@@ -180,8 +201,8 @@ class DatabaseSetup
             Config::set('database.connections.'.$connection.'.charset', 'utf8');
         }
 
-        // Log the database credentials that Laravel will use
-        $this->logDatabaseConfig($connection, $dbHost, $dbPort, $dbDatabase, $dbUsername, $dbPassword);
+        // Clear DB connection cache to ensure new config is used
+        DB::purge($connection);
     }
 
     /**
@@ -192,6 +213,10 @@ class DatabaseSetup
         info('Testing database connection...');
 
         try {
+            // Clear DB connection cache before testing
+            $connection = Config::get('database.default');
+            DB::purge($connection);
+
             // Test connection by trying to get database connection
             DB::connection()->getPdo();
             info('✅ Database connection successful!');
@@ -213,7 +238,42 @@ class DatabaseSetup
                 info('   FLUSH PRIVILEGES;');
 
             } elseif (str_contains($errorMessage, 'Access denied')) {
-                info('💡 Please verify your database username and password are correct.');
+                // Check if this is a Docker connection issue
+                if (preg_match('/@\'?(\d+\.\d+\.\d+\.\d+)\'?/', $errorMessage, $matches)) {
+                    $connectingFrom = $matches[1];
+                    // Check if it's a Docker network IP (common ranges: 172.16-31.x.x, 192.168.x.x, 10.x.x.x)
+                    if (preg_match('/^172\.(1[6-9]|2[0-9]|3[0-1])\./', $connectingFrom) ||
+                        preg_match('/^192\.168\./', $connectingFrom) ||
+                        preg_match('/^10\./', $connectingFrom)) {
+                        info('💡 Docker network detected. The connection is coming from: '.$connectingFrom);
+                        $connection = Config::get('database.default');
+                        $dbHost = Config::get('database.connections.'.$connection.'.host');
+                        $dbUsername = Config::get('database.connections.'.$connection.'.username');
+
+                        if ($dbHost === '127.0.0.1' || $dbHost === 'localhost') {
+                            info('');
+                            info('   If you\'re running Laravel in Docker, try one of these solutions:');
+                            info('   1. Use "host.docker.internal" as the database host (Docker Desktop)');
+                            info('   2. Use your Docker service name if MySQL is in the same Docker network');
+                            info('   3. Grant MySQL access from any host (for Docker):');
+                            info('      CREATE USER IF NOT EXISTS \''.$dbUsername.'\'@\'%\' IDENTIFIED BY \'your_password\';');
+                            info('      GRANT ALL PRIVILEGES ON *.* TO \''.$dbUsername.'\'@\'%\';');
+                            info('      FLUSH PRIVILEGES;');
+                        } else {
+                            info('');
+                            info('   The MySQL user may not have permissions from this IP address.');
+                            info('   Grant access from any host (for Docker):');
+                            info('   CREATE USER IF NOT EXISTS \''.$dbUsername.'\'@\'%\' IDENTIFIED BY \'your_password\';');
+                            info('   GRANT ALL PRIVILEGES ON *.* TO \''.$dbUsername.'\'@\'%\';');
+                            info('   FLUSH PRIVILEGES;');
+                        }
+                    } else {
+                        info('💡 Please verify your database username and password are correct.');
+                        info('   Connection attempted from: '.$connectingFrom);
+                    }
+                } else {
+                    info('💡 Please verify your database username and password are correct.');
+                }
 
             } elseif (str_contains($errorMessage, 'Unknown database')) {
                 info('💡 The database does not exist. Please create it first.');
@@ -230,13 +290,23 @@ class DatabaseSetup
     /**
      * Test database connection with retry options.
      *
+     * @param  array<string, mixed>|null  $credentials  Optional credentials to update Config before testing
      * @return string Returns 'success', 'retry_same', 'retry_new', or 'exit'
      */
-    public function testConnectionWithRetry(): string
+    public function testConnectionWithRetry(?array $credentials = null): string
     {
         info('Testing database connection...');
 
         try {
+            // Update Config facade if credentials are provided (for retry scenarios)
+            if ($credentials !== null) {
+                $this->updateConfigAndClearCache($credentials);
+            } else {
+                // Clear DB connection cache before testing
+                $connection = Config::get('database.default');
+                DB::purge($connection);
+            }
+
             // Test connection by trying to get database connection
             DB::connection()->getPdo();
             info('✅ Database connection successful!');
@@ -258,7 +328,42 @@ class DatabaseSetup
                 info('   FLUSH PRIVILEGES;');
 
             } elseif (str_contains($errorMessage, 'Access denied')) {
-                info('💡 Please verify your database username and password are correct.');
+                // Check if this is a Docker connection issue
+                if (preg_match('/@\'?(\d+\.\d+\.\d+\.\d+)\'?/', $errorMessage, $matches)) {
+                    $connectingFrom = $matches[1];
+                    // Check if it's a Docker network IP (common ranges: 172.16-31.x.x, 192.168.x.x, 10.x.x.x)
+                    if (preg_match('/^172\.(1[6-9]|2[0-9]|3[0-1])\./', $connectingFrom) ||
+                        preg_match('/^192\.168\./', $connectingFrom) ||
+                        preg_match('/^10\./', $connectingFrom)) {
+                        info('💡 Docker network detected. The connection is coming from: '.$connectingFrom);
+                        $connection = Config::get('database.default');
+                        $dbHost = Config::get('database.connections.'.$connection.'.host');
+                        $dbUsername = Config::get('database.connections.'.$connection.'.username');
+
+                        if ($dbHost === '127.0.0.1' || $dbHost === 'localhost') {
+                            info('');
+                            info('   If you\'re running Laravel in Docker, try one of these solutions:');
+                            info('   1. Use "host.docker.internal" as the database host (Docker Desktop)');
+                            info('   2. Use your Docker service name if MySQL is in the same Docker network');
+                            info('   3. Grant MySQL access from any host (for Docker):');
+                            info('      CREATE USER IF NOT EXISTS \''.$dbUsername.'\'@\'%\' IDENTIFIED BY \'your_password\';');
+                            info('      GRANT ALL PRIVILEGES ON *.* TO \''.$dbUsername.'\'@\'%\';');
+                            info('      FLUSH PRIVILEGES;');
+                        } else {
+                            info('');
+                            info('   The MySQL user may not have permissions from this IP address.');
+                            info('   Grant access from any host (for Docker):');
+                            info('   CREATE USER IF NOT EXISTS \''.$dbUsername.'\'@\'%\' IDENTIFIED BY \'your_password\';');
+                            info('   GRANT ALL PRIVILEGES ON *.* TO \''.$dbUsername.'\'@\'%\';');
+                            info('   FLUSH PRIVILEGES;');
+                        }
+                    } else {
+                        info('💡 Please verify your database username and password are correct.');
+                        info('   Connection attempted from: '.$connectingFrom);
+                    }
+                } else {
+                    info('💡 Please verify your database username and password are correct.');
+                }
 
             } elseif (str_contains($errorMessage, 'Unknown database')) {
                 info('💡 The database does not exist. Please create it first.');
@@ -273,7 +378,7 @@ class DatabaseSetup
                 options: [
                     'retry_same' => 'Retry with the same credentials',
                     'retry_new' => 'Enter new database credentials',
-                    'exit' => 'Exit and fix the connection manually',
+                    'exit' => 'Skip and fix the connection manually later',
                 ],
                 default: 'retry_new',
                 hint: 'You can also manually update the .env file and run the setup again.'
@@ -290,7 +395,7 @@ class DatabaseSetup
 
                 return 'retry_new';
             } else {
-                info('Exiting setup. You can manually update the .env file and try again.');
+                info('Skipping database connection setup. You can manually update the .env file and try again.');
                 info('Or run: php artisan migrate (after fixing the database connection)');
 
                 return 'exit';

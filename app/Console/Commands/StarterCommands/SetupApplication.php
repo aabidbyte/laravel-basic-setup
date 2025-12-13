@@ -91,9 +91,10 @@ class SetupApplication extends Command
 
         // Collect database credentials and test connection with retry options
         $connectionSuccessful = false;
+        $databaseSkipped = false;
         $credentials = null;
 
-        while (! $connectionSuccessful) {
+        while (! $connectionSuccessful && ! $databaseSkipped) {
             // Only collect credentials if we don't have them or user wants new ones
             if ($credentials === null) {
                 // Collect database credentials
@@ -104,27 +105,37 @@ class SetupApplication extends Command
             }
 
             // Test database connection with retry options
-            $connectionResult = $databaseSetup->testConnectionWithRetry();
+            // Always pass credentials to ensure Config is updated before testing
+            $connectionResult = $databaseSetup->testConnectionWithRetry($credentials);
             if ($connectionResult === 'success') {
                 $connectionSuccessful = true;
             } elseif ($connectionResult === 'retry_new') {
                 // Reset credentials to collect new ones
                 $credentials = null;
             } elseif ($connectionResult === 'retry_same') {
-                // Retry with same credentials (credentials already set, just retry test)
+                // Retry with same credentials - Config will be re-set before testing
                 // No need to reset credentials
             } else {
-                // User chose to skip/exit
-                return self::FAILURE;
+                // User chose to skip database connection setup
+                info('Skipping database connection setup. You can configure it later in the .env file.');
+                $databaseSkipped = true;
             }
         }
 
-        // Ask if user wants to run migrations
-        $runMigrations = confirm(
-            label: 'Would you like to run database migrations?',
-            default: true,
-            hint: 'This will create all database tables.'
-        );
+        // Only ask about migrations if database connection was successful
+        if ($connectionSuccessful) {
+            // Ask if user wants to run migrations
+            $runMigrations = confirm(
+                label: 'Would you like to run database migrations?',
+                default: true,
+                hint: 'This will create all database tables.'
+            );
+        } else {
+            // Database setup was skipped, skip migrations too
+            $runMigrations = false;
+            $migrationCommand = $useMultiTenancy ? 'php artisan tenancy:migrate' : 'php artisan migrate';
+            info("Skipping migrations. You can run them later with: {$migrationCommand} (after configuring the database)");
+        }
 
         if ($runMigrations) {
             info('Running migrations...');
@@ -144,7 +155,7 @@ class SetupApplication extends Command
 
                 return self::FAILURE;
             }
-        } else {
+        } elseif (! $databaseSkipped) {
             $migrationCommand = $useMultiTenancy ? 'php artisan tenancy:migrate' : 'php artisan migrate';
             info("Skipping migrations. You can run them later with: {$migrationCommand}");
         }
