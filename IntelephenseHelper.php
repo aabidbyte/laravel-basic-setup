@@ -1548,3 +1548,26 @@ class HandleInertiaRequests extends Middleware
         ];
     }
 }
+
+namespace Livewire\Volt;
+
+/**
+ * Livewire Volt class for creating Volt routes.
+ *
+ * This class is provided by the livewire/volt package.
+ * It's defined here for Intelephense support when the package is not yet installed.
+ */
+class Volt
+{
+    /**
+     * Create a new Volt route.
+     *
+     * @param  string  $uri
+     * @param  string  $view
+     * @return \Illuminate\Routing\Route
+     */
+    public static function route(string $uri, string $view)
+    {
+        // Stub implementation for Intelephense
+    }
+}

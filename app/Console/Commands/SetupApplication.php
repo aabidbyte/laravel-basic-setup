@@ -200,8 +200,8 @@ class SetupApplication extends Command
         info('✅ Database credentials saved to .env file');
 
         // Clear config cache to ensure new .env values are loaded
+        // Don't cache config during setup as it may fail if packages aren't fully installed yet
         $this->call('config:clear');
-        $this->call('config:cache');
 
         // Log the database credentials that Laravel will use (from reloaded config)
         info('Database credentials that Laravel will use:');
