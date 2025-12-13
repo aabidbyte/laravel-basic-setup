@@ -1141,16 +1141,35 @@ PHP;
         // Spatie Permission event listeners code
         $spatieListeners = "            \Stancl\Tenancy\Events\TenancyBootstrapped::class => [\n                function (\Stancl\Tenancy\Events\TenancyBootstrapped \$event) {\n                    \$permissionRegistrar = app(\Spatie\Permission\PermissionRegistrar::class);\n                    \$permissionRegistrar->cacheKey = 'spatie.permission.cache.tenant.' . \$event->tenancy->tenant->getTenantKey();\n                },\n            ],\n            \Stancl\Tenancy\Events\TenancyEnded::class => [\n                function (\Stancl\Tenancy\Events\TenancyEnded \$event) {\n                    \$permissionRegistrar = app(\Spatie\Permission\PermissionRegistrar::class);\n                    \$permissionRegistrar->cacheKey = 'spatie.permission.cache';\n                },\n            ],";
 
-        // Check if events() method already exists
-        if (preg_match('/public function events\(\): array/', $providerContent)) {
-            // Update existing events method to include Spatie Permission listeners
-            if (preg_match('/public function events\(\): array\s*\{([^}]*return\s*\[)([^\]]*)(\]\s*;?\s*)\}/s', $providerContent, $matches)) {
-                $beforeReturn = $matches[1];
-                $existingListeners = $matches[2];
-                $afterReturn = $matches[3];
+        // Check if events() method already exists - count occurrences to detect duplicates
+        $eventsMethodCount = substr_count($providerContent, 'public function events(): array');
 
-                // Check if Spatie listeners are already in the array
-                if (! str_contains($existingListeners, 'PermissionRegistrar')) {
+        if ($eventsMethodCount > 1) {
+            warning('TenancyServiceProvider already has multiple events() methods. Skipping Spatie Permission event listeners.');
+            warning('Please manually add the event listeners or fix the duplicate methods.');
+
+            return;
+        }
+
+        if ($eventsMethodCount === 1) {
+            // Update existing events method to include Spatie Permission listeners
+            // Use a more robust pattern that handles multiline method bodies
+            if (preg_match('/public function events\(\): array\s*\{((?:[^{}]++|\{(?:[^{}]++|\{[^{}]*+\})*+\})*+)\}/s', $providerContent, $matches)) {
+                $methodBody = $matches[1];
+
+                // Check if Spatie listeners are already in the method
+                if (str_contains($methodBody, 'PermissionRegistrar')) {
+                    info('Spatie Permission event listeners already exist in events() method.');
+
+                    return;
+                }
+
+                // Find the return array and add listeners to it
+                if (preg_match('/(return\s*\[)([^\]]*)(\]\s*;?\s*)/s', $methodBody, $returnMatches)) {
+                    $beforeReturn = $returnMatches[1];
+                    $existingListeners = $returnMatches[2];
+                    $afterReturn = $returnMatches[3];
+
                     // Add Spatie listeners to existing return array
                     $newListeners = $existingListeners;
                     if (! empty(trim($existingListeners))) {
@@ -1158,29 +1177,59 @@ PHP;
                     }
                     $newListeners .= $spatieListeners;
 
-                    $providerContent = str_replace(
-                        $matches[0],
-                        'public function events(): array {'.$beforeReturn.$newListeners.$afterReturn.'}',
-                        $providerContent
-                    );
+                    $newMethodBody = str_replace($returnMatches[0], $beforeReturn.$newListeners.$afterReturn, $methodBody);
+                    $providerContent = str_replace($matches[0], 'public function events(): array {'.$newMethodBody.'}', $providerContent);
+                } else {
+                    warning('Could not find return array in existing events() method. Skipping Spatie Permission listeners.');
+
+                    return;
                 }
             } else {
-                // Try simpler pattern - just add before closing brace of events method
-                $providerContent = preg_replace(
-                    '/(public function events\(\): array\s*\{[^}]*return\s*\[)([^\]]*)(\]\s*;?\s*\})/s',
-                    '$1$2,'."\n".$spatieListeners.'$3',
-                    $providerContent
-                );
+                warning('Could not parse existing events() method. Skipping Spatie Permission listeners.');
+
+                return;
             }
         } else {
             // Add events() method before the closing brace of the class
-            $eventsMethod = "\n\n    /**\n     * Configure event listeners for multi-tenancy.\n     */\n    public function events(): array\n    {\n        return [\n".$spatieListeners."\n        ];\n    }";
+            // Find the last closing brace of the class (not nested)
+            $lines = explode("\n", $providerContent);
+            $newLines = [];
+            $braceDepth = 0;
+            $classStarted = false;
+            $inserted = false;
 
-            $providerContent = preg_replace(
-                '/(\n\})$/',
-                $eventsMethod.'$1',
-                $providerContent
-            );
+            foreach ($lines as $line) {
+                // Detect class start
+                if (preg_match('/^\s*class\s+\w+/', $line)) {
+                    $classStarted = true;
+                    $braceDepth = 0;
+                }
+
+                if ($classStarted) {
+                    $braceDepth += substr_count($line, '{') - substr_count($line, '}');
+
+                    // When we find the closing brace of the class (braceDepth == 0 after class started)
+                    if ($braceDepth === 0 && ! $inserted && trim($line) === '}') {
+                        // Insert events() method before the closing brace
+                        $eventsMethod = "\n    /**\n     * Configure event listeners for multi-tenancy.\n     */\n    public function events(): array\n    {\n        return [\n".$spatieListeners."\n        ];\n    }";
+                        $newLines[] = $eventsMethod;
+                        $newLines[] = $line;
+                        $inserted = true;
+
+                        continue;
+                    }
+                }
+
+                $newLines[] = $line;
+            }
+
+            if ($inserted) {
+                $providerContent = implode("\n", $newLines);
+            } else {
+                warning('Could not find class closing brace. Skipping Spatie Permission event listeners.');
+
+                return;
+            }
         }
 
         File::put($providerPath, $providerContent);
