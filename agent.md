@@ -651,11 +651,13 @@ If you see `Auth::guard('web')->logout()` causing an error:
     -   Integrated Stancl/Tenancy package installation into `php artisan setup:application`
     -   Automatic package installation, configuration, and setup when user selects multi-tenancy
     -   Creates Tenant model with HasDatabase and HasDomains traits
-    -   Automatically organizes migrations (moves users migration to tenant folder)
+    -   Does not automatically move migrations - migrations stay in their original location
     -   Registers TenancyServiceProvider conditionally in bootstrap/providers.php
     -   Updates tenancy configuration with custom Tenant model and central domains
     -   Adds MULTI_TENANCY_ENABLED flag to .env file
     -   **Rule**: Multi-tenancy is optional and can be enabled during initial setup or added later manually
+    -   **Migration Order**: When multi-tenancy is enabled and tenant migrations exist in `database/migrations/tenant/`, tenant migrations (`php artisan tenants:migrate`) run before central database migrations (`php artisan migrate`) during setup. If no tenant migrations exist, only central migrations run.
+    -   **Migration Organization**: Migrations are NOT automatically moved. All migrations stay in `database/migrations/` by default. Users should manually organize migrations into `database/migrations/tenant/` if they need tenant-specific migrations.
 
 ---
 

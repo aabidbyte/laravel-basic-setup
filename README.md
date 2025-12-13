@@ -443,7 +443,7 @@ When prompted, select "Yes" to enable multi-tenancy. The setup process will:
 2. Create the `Tenant` model (`app/Models/Tenant.php`)
 3. Configure tenancy settings in `config/tenancy.php`
 4. Register `TenancyServiceProvider` in `bootstrap/providers.php`
-5. Organize migrations (moves user migrations to `database/migrations/tenant/`)
+5. Creates `database/migrations/tenant/` directory (migrations are not automatically moved - organize them manually as needed)
 6. Create `routes/tenant.php` for tenant-specific routes
 7. Add `MULTI_TENANCY_ENABLED=true` to your `.env` file
 

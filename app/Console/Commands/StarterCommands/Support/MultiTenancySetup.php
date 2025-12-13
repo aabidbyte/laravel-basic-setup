@@ -84,8 +84,9 @@ class MultiTenancySetup
         // Register service provider
         $this->registerTenancyServiceProvider();
 
-        // Organize migrations
-        $this->organizeMigrations();
+        // Note: Migrations are not automatically moved. Users should organize migrations manually
+        // based on their needs. Central migrations stay in database/migrations/
+        // Tenant migrations should be placed in database/migrations/tenant/ if needed.
 
         // Update routes
         $this->updateRoutes();
@@ -453,11 +454,11 @@ PHP;
         // Configure Livewire
         $this->configureLivewire();
 
-        // Configure Sanctum
-        $this->configureSanctum();
+        // Configure Sanctum (without moving migrations)
+        $this->configureSanctumWithoutMovingMigrations();
 
-        // Configure Spatie Permission
-        $this->configureSpatiePermission();
+        // Configure Spatie Permission (without moving migrations)
+        $this->configureSpatiePermissionWithoutMovingMigrations();
     }
 
     /**
@@ -619,6 +620,30 @@ PHP;
     }
 
     /**
+     * Configure Sanctum for multi-tenancy without moving migrations.
+     */
+    protected function configureSanctumWithoutMovingMigrations(): void
+    {
+        // Check if Sanctum is installed
+        if (! class_exists(\Laravel\Sanctum\Sanctum::class)) {
+            info('Sanctum not installed, skipping Sanctum configuration.');
+
+            return;
+        }
+
+        // Update Sanctum config
+        $this->updateSanctumConfig();
+
+        // Update AuthServiceProvider to ignore migrations
+        $this->updateAuthServiceProviderForSanctum();
+
+        // Add Sanctum csrf-cookie route to tenant routes
+        $this->addSanctumRouteToTenantRoutes();
+
+        // Note: Migrations are not automatically moved. Users should organize migrations manually.
+    }
+
+    /**
      * Configure Sanctum for multi-tenancy.
      */
     protected function configureSanctum(): void
@@ -752,6 +777,25 @@ PHP;
 
         File::put($tenantRoutesPath, $routesContent);
         info('✅ Added Sanctum csrf-cookie route to tenant routes');
+    }
+
+    /**
+     * Configure Spatie Permission for multi-tenancy without moving migrations.
+     */
+    protected function configureSpatiePermissionWithoutMovingMigrations(): void
+    {
+        // Check if Spatie Permission is installed
+        if (! class_exists(\Spatie\Permission\PermissionServiceProvider::class)) {
+            info('Spatie Permission not installed, skipping Spatie Permission configuration.');
+            info('💡 To use Spatie Permission with multi-tenancy, install it first: composer require spatie/laravel-permission');
+
+            return;
+        }
+
+        // Add event listeners to TenancyServiceProvider
+        $this->addSpatiePermissionEventListeners();
+
+        // Note: Migrations are not automatically moved. Users should organize migrations manually.
     }
 
     /**

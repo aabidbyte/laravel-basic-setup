@@ -141,12 +141,17 @@ class SetupApplication extends Command
             info('Running migrations...');
 
             try {
-                // Check if tenancy command exists and multi-tenancy is enabled
-                $useTenancyCommand = $useMultiTenancy && $this->commandExists('tenants:migrate');
+                // Check if tenancy command exists, multi-tenancy is enabled, and tenant migrations exist
+                $hasTenantMigrations = $this->hasTenantMigrations();
+                $useTenancyCommand = $useMultiTenancy && $this->commandExists('tenants:migrate') && $hasTenantMigrations;
 
                 if ($useTenancyCommand) {
+                    info('Running central database migrations...');
+                    $this->call('migrate', ['--force' => true]);
+                    info('Running tenant migrations...');
                     $this->call('tenants:migrate', ['--force' => true]);
                 } else {
+                    // Run central migrations only
                     $this->call('migrate', ['--force' => true]);
                 }
                 info('✅ Migrations completed successfully!');
@@ -180,11 +185,27 @@ class SetupApplication extends Command
      */
     protected function getMigrationCommand(bool $useMultiTenancy): string
     {
-        if ($useMultiTenancy && $this->commandExists('tenants:migrate')) {
-            return 'php artisan tenants:migrate';
+        if ($useMultiTenancy && $this->commandExists('tenants:migrate') && $this->hasTenantMigrations()) {
+            return 'php artisan tenants:migrate && php artisan migrate';
         }
 
         return 'php artisan migrate';
+    }
+
+    /**
+     * Check if tenant migrations exist.
+     */
+    protected function hasTenantMigrations(): bool
+    {
+        $tenantMigrationsDir = database_path('migrations/tenant');
+
+        if (! File::isDirectory($tenantMigrationsDir)) {
+            return false;
+        }
+
+        $tenantMigrations = File::glob($tenantMigrationsDir.'/*.php');
+
+        return ! empty($tenantMigrations);
     }
 
     /**
