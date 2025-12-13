@@ -20,7 +20,7 @@ class ReleaseTag extends Command
      * @var string
      */
     protected $signature = 'release:tag
-                            {--version= : Specific version to tag (e.g., 1.2.3)}
+                            {--tag-version= : Specific version to tag (e.g., 1.2.3)}
                             {--message= : Tag message (defaults to "Release {version}")}
                             {--push : Automatically push the tag to remote}
                             {--dry-run : Show what would be done without creating the tag}';
@@ -141,7 +141,7 @@ class ReleaseTag extends Command
     protected function getVersion(): string
     {
         // If version is provided via option, use it
-        if ($version = $this->option('version')) {
+        if ($version = $this->option('tag-version')) {
             return $version;
         }
 

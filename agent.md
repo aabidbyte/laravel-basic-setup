@@ -503,10 +503,10 @@ php artisan release:tag
 php artisan release:tag --push
 
 # Specify a custom version
-php artisan release:tag --version=2.0.0
+php artisan release:tag --tag-version=2.0.0
 
 # Custom version with custom message
-php artisan release:tag --version=2.0.0 --message="Major release"
+php artisan release:tag --tag-version=2.0.0 --message="Major release"
 
 # Dry run to see what would be done
 php artisan release:tag --dry-run
