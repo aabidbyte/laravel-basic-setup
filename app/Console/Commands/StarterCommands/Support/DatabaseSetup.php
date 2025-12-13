@@ -54,28 +54,28 @@ class DatabaseSetup
             // Get database credentials
             $dbHost = text(
                 label: 'Database host',
-                default: '127.0.0.1',
+                default: config('database.connections.'.$connection.'.host', '127.0.0.1'),
                 required: true,
                 hint: 'The database server hostname or IP address.'
             );
 
             $dbPort = text(
                 label: 'Database port',
-                default: $connection === 'pgsql' ? '5432' : '3306',
+                default: config('database.connections.'.$connection.'.port', $connection === 'pgsql' ? '5432' : '3306'),
                 required: true,
                 hint: 'The database server port.'
             );
 
             $dbDatabase = text(
                 label: 'Database name',
-                default: '',
+                default: config('database.connections.'.$connection.'.database', 'laravel'),
                 required: true,
                 hint: 'The name of the database.'
             );
 
             $dbUsername = text(
                 label: 'Database username',
-                default: 'root',
+                default: config('database.connections.'.$connection.'.username', 'root'),
                 required: true,
                 hint: 'The database username.'
             );
@@ -310,7 +310,7 @@ class DatabaseSetup
         info('  Database: '.Config::get('database.connections.'.$connection.'.database', $dbDatabase ?: '(empty)'));
         info('  Username: '.Config::get('database.connections.'.$connection.'.username', $dbUsername ?: '(empty)'));
         $configPassword = Config::get('database.connections.'.$connection.'.password', '');
-        info('  Password: '.($configPassword ? '***'.str_repeat('*', min(8, strlen($configPassword))) : '(empty)'));
+        info('  Password: '.($configPassword ?: '(empty)'));
         if ($connection === 'mysql' || $connection === 'mariadb') {
             info('  Charset: '.Config::get('database.connections.'.$connection.'.charset', 'utf8mb4'));
             info('  Collation: '.Config::get('database.connections.'.$connection.'.collation', 'utf8mb4_unicode_ci'));
