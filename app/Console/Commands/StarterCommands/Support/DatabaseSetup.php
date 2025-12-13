@@ -12,6 +12,7 @@ use function Laravel\Prompts\info;
 use function Laravel\Prompts\password;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\text;
+use function Laravel\Prompts\warning;
 
 class DatabaseSetup
 {
@@ -223,6 +224,77 @@ class DatabaseSetup
             info('Or run: php artisan migrate (after fixing the database connection)');
 
             return false;
+        }
+    }
+
+    /**
+     * Test database connection with retry options.
+     *
+     * @return string Returns 'success', 'retry_same', 'retry_new', or 'exit'
+     */
+    public function testConnectionWithRetry(): string
+    {
+        info('Testing database connection...');
+
+        try {
+            // Test connection by trying to get database connection
+            DB::connection()->getPdo();
+            info('✅ Database connection successful!');
+
+            return 'success';
+        } catch (\Exception $e) {
+            error('❌ Database connection failed: '.$e->getMessage());
+
+            // Provide brief guidance for common MySQL errors
+            $errorMessage = $e->getMessage();
+            if (str_contains($errorMessage, 'mysql_native_password')) {
+                info('💡 MySQL authentication plugin issue detected.');
+                info('   Update your MySQL user to use caching_sha2_password (default for MySQL 8.0+):');
+                $connection = Config::get('database.default');
+                $dbUsername = Config::get('database.connections.'.$connection.'.username');
+                $dbHost = Config::get('database.connections.'.$connection.'.host');
+                $dbPassword = Config::get('database.connections.'.$connection.'.password');
+                info('   ALTER USER \''.$dbUsername.'\'@\''.$dbHost.'\' IDENTIFIED WITH caching_sha2_password BY \''.$dbPassword.'\';');
+                info('   FLUSH PRIVILEGES;');
+
+            } elseif (str_contains($errorMessage, 'Access denied')) {
+                info('💡 Please verify your database username and password are correct.');
+
+            } elseif (str_contains($errorMessage, 'Unknown database')) {
+                info('💡 The database does not exist. Please create it first.');
+
+            }
+
+            info('');
+
+            // Offer retry options
+            $retryOption = select(
+                label: 'What would you like to do?',
+                options: [
+                    'retry_same' => 'Retry with the same credentials',
+                    'retry_new' => 'Enter new database credentials',
+                    'exit' => 'Exit and fix the connection manually',
+                ],
+                default: 'retry_new',
+                hint: 'You can also manually update the .env file and run the setup again.'
+            );
+
+            if ($retryOption === 'retry_same') {
+                warning('Retrying connection with the same credentials...');
+                info('');
+
+                return 'retry_same';
+            } elseif ($retryOption === 'retry_new') {
+                info('Please provide new database credentials.');
+                info('');
+
+                return 'retry_new';
+            } else {
+                info('Exiting setup. You can manually update the .env file and try again.');
+                info('Or run: php artisan migrate (after fixing the database connection)');
+
+                return 'exit';
+            }
         }
     }
 

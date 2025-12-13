@@ -71,46 +71,71 @@ class SetupApplication extends Command
             $envManager->update(['MULTI_TENANCY_ENABLED' => 'false']);
         }
 
-        // Ask if user wants to run migrations
-        $runMigrations = confirm(
-            label: 'Would you like to run database migrations?',
+        // Ask if user wants to set up database
+        $setupDatabase = confirm(
+            label: 'Would you like to set up the database connection?',
             default: true,
-            hint: 'This will require database credentials.'
+            hint: 'This will collect database credentials and test the connection.'
         );
 
-        if (! $runMigrations) {
+        if (! $setupDatabase) {
             info('Skipping database setup.');
-            info('You can run migrations later with: php artisan migrate');
             info('Don\'t forget to configure your database in the .env file.');
+            $migrationCommand = $useMultiTenancy ? 'php artisan tenancy:migrate' : 'php artisan migrate';
+            info("You can run migrations later with: {$migrationCommand}");
 
             return self::SUCCESS;
         }
 
         $databaseSetup = new DatabaseSetup($envManager);
 
-        // Collect database credentials
-        $credentials = $databaseSetup->collectCredentials();
+        // Collect database credentials and test connection with retry options
+        $connectionSuccessful = false;
+        $credentials = null;
 
-        // Configure database
-        $databaseSetup->configure($credentials);
+        while (! $connectionSuccessful) {
+            // Only collect credentials if we don't have them or user wants new ones
+            if ($credentials === null) {
+                // Collect database credentials
+                $credentials = $databaseSetup->collectCredentials();
 
-        // Test database connection
-        if (! $databaseSetup->testConnection()) {
-            return self::FAILURE;
+                // Configure database
+                $databaseSetup->configure($credentials);
+            }
+
+            // Test database connection with retry options
+            $connectionResult = $databaseSetup->testConnectionWithRetry();
+            if ($connectionResult === 'success') {
+                $connectionSuccessful = true;
+            } elseif ($connectionResult === 'retry_new') {
+                // Reset credentials to collect new ones
+                $credentials = null;
+            } elseif ($connectionResult === 'retry_same') {
+                // Retry with same credentials (credentials already set, just retry test)
+                // No need to reset credentials
+            } else {
+                // User chose to skip/exit
+                return self::FAILURE;
+            }
         }
 
-        // Run migrations
-        $runMigrationsNow = confirm(
-            label: 'Would you like to run migrations now?',
+        // Ask if user wants to run migrations
+        $runMigrations = confirm(
+            label: 'Would you like to run database migrations?',
             default: true,
             hint: 'This will create all database tables.'
         );
 
-        if ($runMigrationsNow) {
+        if ($runMigrations) {
             info('Running migrations...');
 
             try {
-                $this->call('migrate', ['--force' => true]);
+                // Use tenancy:migrate if multi-tenancy is enabled, otherwise use migrate
+                if ($useMultiTenancy) {
+                    $this->call('tenancy:migrate', ['--force' => true]);
+                } else {
+                    $this->call('migrate', ['--force' => true]);
+                }
                 info('✅ Migrations completed successfully!');
             } catch (\Exception $e) {
                 error('❌ Migration failed: '.$e->getMessage());
@@ -120,7 +145,8 @@ class SetupApplication extends Command
                 return self::FAILURE;
             }
         } else {
-            info('Skipping migrations. You can run them later with: php artisan migrate');
+            $migrationCommand = $useMultiTenancy ? 'php artisan tenancy:migrate' : 'php artisan migrate';
+            info("Skipping migrations. You can run them later with: {$migrationCommand}");
         }
 
         info('✅ Setup completed!');
