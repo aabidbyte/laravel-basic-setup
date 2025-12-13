@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands;
+namespace App\Console\Commands\StarterCommands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Process;
