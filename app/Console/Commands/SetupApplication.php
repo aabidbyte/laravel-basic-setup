@@ -552,10 +552,13 @@ PHP;
         $comment .= "// Tenant routes should be defined in routes/tenant.php\n";
 
         // Insert after the last use statement
-        if (preg_match('/(use Laravel\\Fortify\\Features;)/', $routesContent)) {
+        // Use preg_quote to safely escape the namespace for regex
+        $fortifyPattern = '/'.preg_quote('use Laravel\Fortify\Features;', '/').'/';
+
+        if (preg_match($fortifyPattern, $routesContent)) {
             $routesContent = preg_replace(
-                '/(use Laravel\\Fortify\\Features;)/',
-                '$1'.$comment,
+                $fortifyPattern,
+                '$0'.$comment,
                 $routesContent
             );
         } else {
