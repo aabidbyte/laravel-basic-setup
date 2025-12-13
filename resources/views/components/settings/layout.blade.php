@@ -1,20 +1,40 @@
 <div class="flex items-start max-md:flex-col">
     <div class="me-10 w-full pb-4 md:w-[220px]">
-        <flux:navlist>
-            <flux:navlist.item :href="route('profile.edit')" wire:navigate>{{ __('Profile') }}</flux:navlist.item>
-            <flux:navlist.item :href="route('user-password.edit')" wire:navigate>{{ __('Password') }}</flux:navlist.item>
+        <ul class="menu bg-base-200 rounded-box p-2">
+            <li>
+                <a href="{{ route('profile.edit') }}" wire:navigate
+                    class="{{ request()->routeIs('profile.edit') ? 'active' : '' }}">
+                    {{ __('Profile') }}
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('user-password.edit') }}" wire:navigate
+                    class="{{ request()->routeIs('user-password.edit') ? 'active' : '' }}">
+                    {{ __('Password') }}
+                </a>
+            </li>
             @if (Laravel\Fortify\Features::canManageTwoFactorAuthentication())
-                <flux:navlist.item :href="route('two-factor.show')" wire:navigate>{{ __('Two-Factor Auth') }}</flux:navlist.item>
+                <li>
+                    <a href="{{ route('two-factor.show') }}" wire:navigate
+                        class="{{ request()->routeIs('two-factor.show') ? 'active' : '' }}">
+                        {{ __('Two-Factor Auth') }}
+                    </a>
+                </li>
             @endif
-            <flux:navlist.item :href="route('appearance.edit')" wire:navigate>{{ __('Appearance') }}</flux:navlist.item>
-        </flux:navlist>
+            <li>
+                <a href="{{ route('appearance.edit') }}" wire:navigate
+                    class="{{ request()->routeIs('appearance.edit') ? 'active' : '' }}">
+                    {{ __('Appearance') }}
+                </a>
+            </li>
+        </ul>
     </div>
 
-    <flux:separator class="md:hidden" />
+    <div class="divider md:hidden"></div>
 
     <div class="flex-1 self-stretch max-md:pt-6">
-        <flux:heading>{{ $heading ?? '' }}</flux:heading>
-        <flux:subheading>{{ $subheading ?? '' }}</flux:subheading>
+        <h2 class="text-2xl font-bold text-base-content">{{ $heading ?? '' }}</h2>
+        <p class="mt-2 text-base-content/70">{{ $subheading ?? '' }}</p>
 
         <div class="mt-5 w-full max-w-lg">
             {{ $slot }}

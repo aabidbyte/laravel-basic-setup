@@ -6,8 +6,8 @@ A comprehensive Laravel 12 starter kit with Livewire, UUID-based models, authent
 
 ### Frontend
 
--   **Livewire** - Server-side components with Volt (single-file components) and Flux UI
--   Installed automatically via `php artisan install:stack` command
+-   **Livewire** - Server-side components with single-file components
+-   Pre-installed and ready to use
 
 ### Backend Infrastructure
 
@@ -30,6 +30,7 @@ A comprehensive Laravel 12 starter kit with Livewire, UUID-based models, authent
 
 -   **Laravel Telescope** - Debugging and monitoring tool (path: `admin/system/debug/monitoring`)
 -   **Laravel Horizon** - Redis-based queue monitoring (path: `admin/system/queue-monitor`)
+-   **Log Viewer** - Fast and beautiful log viewer (path: `admin/system/log-viewer`)
 -   Secure access gates for production environments
 
 #### Real-time Support
@@ -107,15 +108,7 @@ A comprehensive Laravel 12 starter kit with Livewire, UUID-based models, authent
     php artisan setup:application --no-fresh
     ```
 
-4. **Install your frontend stack:**
-
-    ```bash
-    php artisan install:stack
-    ```
-
-    This will prompt you to choose between Livewire, React, or Vue.
-
-5. **Configure your database** in `.env` (if not done via setup:application):
+4. **Configure your database** in `.env` (if not done via setup:application):
 
     ```env
     DB_CONNECTION=mysql
@@ -126,13 +119,13 @@ A comprehensive Laravel 12 starter kit with Livewire, UUID-based models, authent
     DB_PASSWORD=your_password
     ```
 
-6. **Run migrations** (if not done via setup:application):
+5. **Run migrations** (if not done via setup:application):
 
     ```bash
     php artisan migrate
     ```
 
-7. **Build frontend assets:**
+6. **Build frontend assets:**
 
     ```bash
     npm run build
@@ -140,7 +133,7 @@ A comprehensive Laravel 12 starter kit with Livewire, UUID-based models, authent
     npm run dev
     ```
 
-8. **Start the development server:**
+7. **Start the development server:**
     ```bash
     php artisan serve
     ```
@@ -238,58 +231,22 @@ git commit
 
 > **Note:** Always test your application after upgrading and review any conflicts carefully.
 
-## 🎯 Stack Selection Guide
+## 🎯 About Livewire
 
-### When to Use Livewire
+This starter uses **Livewire** as its frontend framework, providing:
 
-**Choose Livewire if:**
+-   Server-side rendering with minimal JavaScript
+-   Interactive components without writing JavaScript
+-   Volt single-file components for simplicity
+-   Tailwind CSS for beautiful, responsive interfaces
+-   Real-time updates and reactive data binding
 
--   You prefer server-side rendering with minimal JavaScript
--   You want to build interactive components without writing JavaScript
--   You're building traditional web applications
--   You want the simplicity of Volt single-file components
--   You prefer Flux UI component library
-
-**Example use cases:**
+**Perfect for:**
 
 -   Admin panels
 -   Dashboards
 -   Forms and data entry
--   Traditional web applications
-
-### When to Use React
-
-**Choose React if:**
-
--   You need a modern SPA (Single Page Application) experience
--   You have a team familiar with React
--   You want to leverage the React ecosystem
--   You need complex client-side state management
--   You're building a modern web application
-
-**Example use cases:**
-
--   Modern web applications
--   Dashboards with complex interactions
--   Applications requiring real-time updates
--   Projects with existing React components
-
-### When to Use Vue
-
-**Choose Vue if:**
-
--   You want a progressive framework that's easy to learn
--   You prefer Vue's template syntax
--   You need a balance between simplicity and power
--   You're building reactive user interfaces
--   You want excellent developer experience
-
-**Example use cases:**
-
--   Modern web applications
--   Interactive dashboards
--   Real-time applications
--   Projects requiring reactive data binding
+-   Traditional and modern web applications
 
 ## 🛠️ Technology Stack
 
@@ -301,11 +258,12 @@ git commit
 
 ### Frontend
 
--   **Livewire**: 3.x with Volt 1.x and Flux UI 2.x
+-   **Livewire**: 4.x with single-file components
 
 ### Styling
 
 -   **Tailwind CSS**: 4.x
+-   **DaisyUI**: Component library for Tailwind CSS with theme-aware classes
 -   **Vite**: 7.x (asset bundling)
 
 ### Authentication
@@ -343,10 +301,10 @@ After installing the Livewire stack:
     php artisan make:volt MyComponent
     ```
 
-2. **Use Flux UI components:**
+2. **Use DaisyUI components with theme-aware classes:**
 
     ```blade
-    <flux:button wire:click="save">Save</flux:button>
+    <button wire:click="save" class="btn btn-primary">Save</button>
     ```
 
 3. **Create routes:**
@@ -511,10 +469,11 @@ if (inEnvironment('staging', 'production')) {
 
 ### Monitoring Tools Access
 
-Telescope and Horizon are protected by gates. Update the gates in:
+Telescope, Horizon, and Log Viewer are protected by gates. Update the gates in:
 
 -   `app/Providers/TelescopeServiceProvider.php`
 -   `app/Providers/HorizonServiceProvider.php`
+-   `app/Providers/LogViewerServiceProvider.php`
 
 Add authorized email addresses to the gate definitions.
 

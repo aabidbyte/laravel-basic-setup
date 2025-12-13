@@ -1,9 +1,29 @@
 <?php
 
+use App\Constants\LogChannels;
+use App\Constants\LogLevels;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
 use Monolog\Processor\PsrLogMessageProcessor;
+
+/**
+ * Create a level-specific log channel configuration with exact level filtering.
+ *
+ * @param  string  $channel
+ * @param  string  $level
+ * @return array<string, mixed>
+ */
+$createLevelSpecificChannel = function (string $channel, string $level): array {
+    return [
+        'driver' => 'custom',
+        'via' => \App\Logging\LevelSpecificLogChannelFactory::class,
+        'name' => $channel,
+        'path' => storage_path("logs/{$channel}/laravel.log"),
+        'level' => $level,
+        'days' => env('LOG_DAILY_DAYS', 14),
+    ];
+};
 
 return [
 
@@ -18,7 +38,7 @@ return [
     |
     */
 
-    'default' => env('LOG_CHANNEL', 'stack'),
+    'default' => env('LOG_CHANNEL', LogChannels::STACK),
 
     /*
     |--------------------------------------------------------------------------
@@ -32,7 +52,7 @@ return [
     */
 
     'deprecations' => [
-        'channel' => env('LOG_DEPRECATIONS_CHANNEL', 'null'),
+        'channel' => env('LOG_DEPRECATIONS_CHANNEL', LogChannels::DEPRECATIONS),
         'trace' => env('LOG_DEPRECATIONS_TRACE', false),
     ],
 
@@ -52,39 +72,59 @@ return [
 
     'channels' => [
 
-        'stack' => [
+        LogChannels::STACK => [
             'driver' => 'stack',
-            'channels' => explode(',', (string) env('LOG_STACK', 'single')),
+            'channels' => explode(',', (string) env('LOG_STACK', implode(',', LogChannels::levelChannels()))),
             'ignore_exceptions' => false,
         ],
 
-        'single' => [
+        LogChannels::SINGLE => [
             'driver' => 'single',
             'path' => storage_path('logs/laravel.log'),
-            'level' => env('LOG_LEVEL', 'debug'),
+            'level' => env('LOG_LEVEL', LogLevels::DEBUG),
             'replace_placeholders' => true,
         ],
 
-        'daily' => [
+        LogChannels::DAILY => [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),
-            'level' => env('LOG_LEVEL', 'debug'),
+            'level' => env('LOG_LEVEL', LogLevels::DEBUG),
             'days' => env('LOG_DAILY_DAYS', 14),
             'replace_placeholders' => true,
         ],
 
-        'slack' => [
+        // Log channels separated by level - each level has its own folder with daily rotation
+        // Each channel only logs messages of its exact level using FilterHandler
+        LogChannels::EMERGENCY => $createLevelSpecificChannel(LogChannels::EMERGENCY, LogLevels::EMERGENCY),
+
+        LogChannels::ALERT => $createLevelSpecificChannel(LogChannels::ALERT, LogLevels::ALERT),
+
+        LogChannels::CRITICAL => $createLevelSpecificChannel(LogChannels::CRITICAL, LogLevels::CRITICAL),
+
+        LogChannels::ERROR => $createLevelSpecificChannel(LogChannels::ERROR, LogLevels::ERROR),
+
+        LogChannels::WARNING => $createLevelSpecificChannel(LogChannels::WARNING, LogLevels::WARNING),
+
+        LogChannels::NOTICE => $createLevelSpecificChannel(LogChannels::NOTICE, LogLevels::NOTICE),
+
+        LogChannels::INFO => $createLevelSpecificChannel(LogChannels::INFO, LogLevels::INFO),
+
+        LogChannels::DEBUG => $createLevelSpecificChannel(LogChannels::DEBUG, LogLevels::DEBUG),
+
+        LogChannels::DEPRECATIONS => $createLevelSpecificChannel(LogChannels::DEPRECATIONS, LogLevels::WARNING),
+
+        LogChannels::SLACK => [
             'driver' => 'slack',
             'url' => env('LOG_SLACK_WEBHOOK_URL'),
             'username' => env('LOG_SLACK_USERNAME', 'Laravel Log'),
             'emoji' => env('LOG_SLACK_EMOJI', ':boom:'),
-            'level' => env('LOG_LEVEL', 'critical'),
+            'level' => env('LOG_LEVEL', LogLevels::CRITICAL),
             'replace_placeholders' => true,
         ],
 
-        'papertrail' => [
+        LogChannels::PAPERTRAIL => [
             'driver' => 'monolog',
-            'level' => env('LOG_LEVEL', 'debug'),
+            'level' => env('LOG_LEVEL', LogLevels::DEBUG),
             'handler' => env('LOG_PAPERTRAIL_HANDLER', SyslogUdpHandler::class),
             'handler_with' => [
                 'host' => env('PAPERTRAIL_URL'),
@@ -94,9 +134,9 @@ return [
             'processors' => [PsrLogMessageProcessor::class],
         ],
 
-        'stderr' => [
+        LogChannels::STDERR => [
             'driver' => 'monolog',
-            'level' => env('LOG_LEVEL', 'debug'),
+            'level' => env('LOG_LEVEL', LogLevels::DEBUG),
             'handler' => StreamHandler::class,
             'handler_with' => [
                 'stream' => 'php://stderr',
@@ -105,26 +145,22 @@ return [
             'processors' => [PsrLogMessageProcessor::class],
         ],
 
-        'syslog' => [
+        LogChannels::SYSLOG => [
             'driver' => 'syslog',
-            'level' => env('LOG_LEVEL', 'debug'),
+            'level' => env('LOG_LEVEL', LogLevels::DEBUG),
             'facility' => env('LOG_SYSLOG_FACILITY', LOG_USER),
             'replace_placeholders' => true,
         ],
 
-        'errorlog' => [
+        LogChannels::ERRORLOG => [
             'driver' => 'errorlog',
-            'level' => env('LOG_LEVEL', 'debug'),
+            'level' => env('LOG_LEVEL', LogLevels::DEBUG),
             'replace_placeholders' => true,
         ],
 
-        'null' => [
+        LogChannels::NULL => [
             'driver' => 'monolog',
             'handler' => NullHandler::class,
-        ],
-
-        'emergency' => [
-            'path' => storage_path('logs/laravel.log'),
         ],
 
     ],

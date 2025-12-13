@@ -1,124 +1,106 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
-    <head>
-        @include('partials.head')
-    </head>
-    <body class="min-h-screen bg-white dark:bg-zinc-800">
-        <flux:header container class="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
-            <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
 
-            <a href="{{ route('dashboard') }}" class="ms-2 me-5 flex items-center space-x-2 rtl:space-x-reverse lg:ms-0" wire:navigate>
-                <x-app-logo />
+<head>
+    @include('partials.head')
+</head>
+
+<body class="min-h-screen bg-base-100">
+    <header class="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-base-300 bg-base-200 px-4">
+        <a href="{{ route('dashboard') }}" class="ms-2 me-5 flex items-center space-x-2 rtl:space-x-reverse lg:ms-0"
+            wire:navigate>
+            <x-app-logo />
+        </a>
+
+        <nav class="hidden lg:flex lg:items-center lg:gap-1">
+            <a href="{{ route('dashboard') }}" wire:navigate
+                class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors {{ request()->routeIs('dashboard') ? 'bg-base-300 text-base-content' : 'text-base-content/70 hover:bg-base-300 hover:text-base-content' }}">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                </svg>
+                {{ __('Dashboard') }}
             </a>
+        </nav>
 
-            <flux:navbar class="-mb-px max-lg:hidden">
-                <flux:navbar.item icon="layout-grid" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
-                    {{ __('Dashboard') }}
-                </flux:navbar.item>
-            </flux:navbar>
+        <div class="flex-1"></div>
 
-            <flux:spacer />
+        <nav class="hidden lg:flex lg:items-center lg:gap-1">
+            <a href="https://github.com/laravel/livewire-starter-kit" target="_blank"
+                class="flex h-10 items-center justify-center rounded-lg px-3 text-base-content/70 hover:bg-base-300 hover:text-base-content"
+                title="{{ __('Repository') }}">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                </svg>
+            </a>
+            <a href="https://laravel.com/docs/starter-kits#livewire" target="_blank"
+                class="flex h-10 items-center justify-center rounded-lg px-3 text-base-content/70 hover:bg-base-300 hover:text-base-content"
+                title="{{ __('Documentation') }}">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+            </a>
+        </nav>
 
-            <flux:navbar class="me-1.5 space-x-0.5 rtl:space-x-reverse py-0!">
-                <flux:tooltip :content="__('Search')" position="bottom">
-                    <flux:navbar.item class="!h-10 [&>div>svg]:size-5" icon="magnifying-glass" href="#" :label="__('Search')" />
-                </flux:tooltip>
-                <flux:tooltip :content="__('Repository')" position="bottom">
-                    <flux:navbar.item
-                        class="h-10 max-lg:hidden [&>div>svg]:size-5"
-                        icon="folder-git-2"
-                        href="https://github.com/laravel/livewire-starter-kit"
-                        target="_blank"
-                        :label="__('Repository')"
-                    />
-                </flux:tooltip>
-                <flux:tooltip :content="__('Documentation')" position="bottom">
-                    <flux:navbar.item
-                        class="h-10 max-lg:hidden [&>div>svg]:size-5"
-                        icon="book-open-text"
-                        href="https://laravel.com/docs/starter-kits#livewire"
-                        target="_blank"
-                        label="Documentation"
-                    />
-                </flux:tooltip>
-            </flux:navbar>
+        <!-- Desktop User Menu -->
+        <div class="relative hidden lg:block" x-data="{ open: false }">
+            <button type="button" @click="open = !open" class="flex items-center gap-2 rounded-lg p-2">
+                <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-base-300 text-base-content">
+                    {{ auth()->user()->initials() }}
+                </span>
+            </button>
 
-            <!-- Desktop User Menu -->
-            <flux:dropdown position="top" align="end">
-                <flux:profile
-                    class="cursor-pointer"
-                    :initials="auth()->user()->initials()"
-                />
-
-                <flux:menu>
-                    <flux:menu.radio.group>
-                        <div class="p-0 text-sm font-normal">
-                            <div class="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
-                                <span class="relative flex h-8 w-8 shrink-0 overflow-hidden rounded-lg">
-                                    <span
-                                        class="flex h-full w-full items-center justify-center rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white"
-                                    >
-                                        {{ auth()->user()->initials() }}
-                                    </span>
-                                </span>
-
-                                <div class="grid flex-1 text-start text-sm leading-tight">
-                                    <span class="truncate font-semibold">{{ auth()->user()->name }}</span>
-                                    <span class="truncate text-xs">{{ auth()->user()->email }}</span>
-                                </div>
-                            </div>
+            <div x-show="open" @click.away="open = false" x-transition
+                class="absolute end-0 top-full mt-2 w-64 rounded-lg border border-base-300 bg-base-100 shadow-lg"
+                style="display: none;">
+                <div class="p-2">
+                    <div class="flex items-center gap-2 rounded-lg px-3 py-2">
+                        <span
+                            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-base-300 text-base-content">
+                            {{ auth()->user()->initials() }}
+                        </span>
+                        <div class="min-w-0 flex-1">
+                            <p class="truncate text-sm font-semibold text-base-content">{{ auth()->user()->name }}</p>
+                            <p class="truncate text-xs text-base-content/70">{{ auth()->user()->email }}
+                            </p>
                         </div>
-                    </flux:menu.radio.group>
+                    </div>
 
-                    <flux:menu.separator />
+                    <div class="divider my-2"></div>
 
-                    <flux:menu.radio.group>
-                        <flux:menu.item :href="route('profile.edit')" icon="cog" wire:navigate>{{ __('Settings') }}</flux:menu.item>
-                    </flux:menu.radio.group>
+                    <a href="{{ route('profile.edit') }}" wire:navigate
+                        class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-base-content hover:bg-base-200">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        {{ __('Settings') }}
+                    </a>
 
-                    <flux:menu.separator />
+                    <div class="divider my-2"></div>
 
-                    <form method="POST" action="{{ route('logout') }}" class="w-full">
+                    <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <flux:menu.item as="button" type="submit" icon="arrow-right-start-on-rectangle" class="w-full" data-test="logout-button">
+                        <button type="submit"
+                            class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-base-content hover:bg-base-200"
+                            data-test="logout-button">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
                             {{ __('Log Out') }}
-                        </flux:menu.item>
+                        </button>
                     </form>
-                </flux:menu>
-            </flux:dropdown>
-        </flux:header>
+                </div>
+            </div>
+        </div>
+    </header>
 
-        <!-- Mobile Menu -->
-        <flux:sidebar stashable sticky class="lg:hidden border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
-            <flux:sidebar.toggle class="lg:hidden" icon="x-mark" />
+    {{ $slot }}
+</body>
 
-            <a href="{{ route('dashboard') }}" class="ms-1 flex items-center space-x-2 rtl:space-x-reverse" wire:navigate>
-                <x-app-logo />
-            </a>
-
-            <flux:navlist variant="outline">
-                <flux:navlist.group :heading="__('Platform')">
-                    <flux:navlist.item icon="layout-grid" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
-                    {{ __('Dashboard') }}
-                    </flux:navlist.item>
-                </flux:navlist.group>
-            </flux:navlist>
-
-            <flux:spacer />
-
-            <flux:navlist variant="outline">
-                <flux:navlist.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
-                {{ __('Repository') }}
-                </flux:navlist.item>
-
-                <flux:navlist.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
-                {{ __('Documentation') }}
-                </flux:navlist.item>
-            </flux:navlist>
-        </flux:sidebar>
-
-        {{ $slot }}
-
-        @fluxScripts
-    </body>
 </html>

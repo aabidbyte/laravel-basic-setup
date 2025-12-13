@@ -2,10 +2,10 @@
     "mcpServers": {
         "laravel-boost": {
             "command": "php",
-            "args": [
-                "artisan",
-                "boost:mcp"
-            ]
+            "args": ["artisan", "boost:mcp"]
+        },
+        "daisyui-github": {
+            "url": "https://gitmcp.io/saadeghi/daisyui"
         }
     }
 }

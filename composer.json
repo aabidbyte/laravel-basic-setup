@@ -2,15 +2,12 @@
     "$schema": "https://getcomposer.org/schema.json",
     "name": "aabidbyte/laravel-basic-setup",
     "type": "project",
-    "description": "A comprehensive Laravel starter kit with multi-stack frontend support (Livewire, React, Vue), UUID models, authentication, monitoring, and development tools.",
+    "description": "A comprehensive Laravel starter kit with Livewire, UUID models, authentication, monitoring, and development tools.",
     "keywords": [
         "laravel",
         "framework",
         "starter-kit",
         "livewire",
-        "inertia",
-        "react",
-        "vue",
         "fortify",
         "telescope",
         "horizon"
@@ -18,6 +15,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "blade-ui-kit/blade-icons": "^1.8",
         "laravel/fortify": "^1.30",
         "laravel/framework": "^12.0",
         "laravel/horizon": "^5.40",
@@ -25,15 +23,10 @@
         "laravel/sanctum": "^4.0",
         "laravel/telescope": "^5.16",
         "laravel/tinker": "^2.10.1",
+        "livewire/livewire": "^4.0@beta",
+        "opcodesio/log-viewer": "^3.21",
         "predis/predis": "^3.3",
         "spatie/laravel-permission": "^6.23"
-    },
-    "suggest": {
-        "livewire/livewire": "Required for Livewire frontend stack",
-        "livewire/volt": "Required for Livewire frontend stack (single-file components)",
-        "livewire/flux": "Required for Livewire frontend stack (UI components)",
-        "inertiajs/inertia-laravel": "Required for React or Vue frontend stacks",
-        "tightenco/ziggy": "Recommended for Inertia.js to generate route helpers"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -91,8 +84,7 @@
         "post-create-project-cmd": [
             "@php -r \"if (!file_exists('.env') && file_exists('.env.example')) { copy('.env.example', '.env'); }\"",
             "@php artisan key:generate --ansi",
-            "@php artisan setup:application",
-            "@php artisan install:stack --ansi"
+            "@php artisan setup:application"
         ],
         "pre-package-uninstall": [
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"

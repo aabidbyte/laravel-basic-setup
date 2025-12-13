@@ -162,13 +162,16 @@ class SetupApplication extends Command
             info("Skipping migrations. You can run them later with: {$migrationCommand}");
         }
 
+        // Generate application keys
+        info('Generating application keys...');
+        $this->call('app:generate-keys');
+
         info('✅ Setup completed!');
 
         info('Next steps:');
         info('1. Run: npm install');
-        info('2. Run: php artisan install:stack (if not done already)');
-        info('3. Run: npm run build');
-        info('4. Start development: composer run dev');
+        info('2. Run: npm run build');
+        info('3. Start development: composer run dev');
 
         $this->call('optimize:clear');
 
