@@ -409,22 +409,31 @@ PHP;
     }
 
     /**
-     * Create tenant routes file.
+     * Create tenant routes file and configure routing.
      * Note: Tenant routes are loaded by TenancyServiceProvider, not through withRouting().
      */
     protected function registerTenantRoutes(): void
     {
-        // First, fix any broken bootstrap/app.php from previous attempts
         $this->fixBrokenBootstrapApp();
-
-        // Ensure universal routes middleware group exists in bootstrap/app.php
         $this->ensureUniversalRoutesMiddlewareGroup();
+        $this->createTenantRoutesFile();
+        $this->ensureTenancyServiceProviderLoadsTenantRoutes();
+    }
 
+    /**
+     * Create the tenant routes file if it doesn't exist.
+     */
+    protected function createTenantRoutesFile(): void
+    {
         $tenantRoutesPath = base_path('routes/tenant.php');
 
-        // Create tenant routes file if it doesn't exist
-        if (! File::exists($tenantRoutesPath)) {
-            $tenantRoutesContent = <<<'PHP'
+        if (File::exists($tenantRoutesPath)) {
+            info('Tenant routes file already exists.');
+
+            return;
+        }
+
+        $tenantRoutesContent = <<<'PHP'
 <?php
 
 use Illuminate\Support\Facades\Route;
@@ -443,14 +452,9 @@ Route::middleware([
     });
 });
 PHP;
-            File::put($tenantRoutesPath, $tenantRoutesContent);
-            info('✅ Created tenant routes file (routes/tenant.php)');
-        } else {
-            info('Tenant routes file already exists.');
-        }
 
-        // Ensure TenancyServiceProvider loads tenant routes
-        $this->ensureTenancyServiceProviderLoadsTenantRoutes();
+        File::put($tenantRoutesPath, $tenantRoutesContent);
+        info('✅ Created tenant routes file (routes/tenant.php)');
     }
 
     /**
@@ -512,34 +516,39 @@ PHP;
 
         $appContent = File::get($appPath);
 
-        // Check if universal middleware group already exists
-        if (str_contains($appContent, "->group('universal'") || str_contains($appContent, "middleware->group('universal'")) {
+        // Check if already exists
+        if (str_contains($appContent, "->group('universal'")) {
             return;
         }
 
-        // Validate PHP syntax before modifying
-        $tempFile = tempnam(sys_get_temp_dir(), 'bootstrap_app_');
-        file_put_contents($tempFile, $appContent);
-        exec("php -l {$tempFile} 2>&1", $output, $returnCode);
-        unlink($tempFile);
-
-        if ($returnCode !== 0) {
-            warning('bootstrap/app.php has syntax errors. Skipping universal routes middleware group addition.');
-            warning('Please fix the syntax errors first, then run the setup again.');
+        // Validate syntax before modifying
+        if (! $this->validatePhpSyntax($appContent)) {
+            warning('bootstrap/app.php has syntax errors. Skipping universal routes middleware group.');
 
             return;
         }
 
-        // Find the withMiddleware function and add universal group before the closing brace
-        // Use a line-by-line approach for reliability
-        $lines = explode("\n", $appContent);
+        // Find withMiddleware function and insert universal group
+        $newContent = $this->insertUniversalMiddlewareGroup($appContent);
+
+        if ($newContent && $this->validatePhpSyntax($newContent)) {
+            File::put($appPath, $newContent);
+            info('✅ Added universal routes middleware group to bootstrap/app.php');
+        }
+    }
+
+    /**
+     * Insert universal middleware group into withMiddleware function.
+     */
+    protected function insertUniversalMiddlewareGroup(string $content): ?string
+    {
+        $lines = explode("\n", $content);
         $newLines = [];
         $inMiddlewareFunction = false;
         $braceDepth = 0;
         $inserted = false;
 
         foreach ($lines as $line) {
-            // Detect start of withMiddleware function
             if (str_contains($line, '->withMiddleware(function (Middleware $middleware): void {')) {
                 $inMiddlewareFunction = true;
                 $braceDepth = 1;
@@ -548,19 +557,13 @@ PHP;
                 continue;
             }
 
-            // If we're in the middleware function, track brace depth
             if ($inMiddlewareFunction) {
                 $braceDepth += substr_count($line, '{') - substr_count($line, '}');
 
-                // When we reach the closing brace of the function (braceDepth == 0)
-                // and the line contains the closing pattern
                 if ($braceDepth === 0 && ! $inserted && (trim($line) === '})' || str_ends_with(trim($line), '})'))) {
-                    // Insert universal group before the closing brace
-                    $indent = str_repeat(' ', 8);
-                    $newLines[] = $indent."\$middleware->group('universal', []);";
+                    $newLines[] = str_repeat(' ', 8)."\$middleware->group('universal', []);";
                     $newLines[] = $line;
                     $inserted = true;
-                    $inMiddlewareFunction = false;
 
                     continue;
                 }
@@ -569,23 +572,7 @@ PHP;
             $newLines[] = $line;
         }
 
-        if ($inserted) {
-            $newContent = implode("\n", $newLines);
-
-            // Validate the new content before writing
-            $tempFile = tempnam(sys_get_temp_dir(), 'bootstrap_app_new_');
-            file_put_contents($tempFile, $newContent);
-            exec("php -l {$tempFile} 2>&1", $validationOutput, $validationReturnCode);
-            unlink($tempFile);
-
-            if ($validationReturnCode === 0) {
-                File::put($appPath, $newContent);
-                info('✅ Added universal routes middleware group to bootstrap/app.php');
-            } else {
-                warning('Failed to add universal routes middleware group: syntax error would be introduced.');
-                warning('Output: '.implode("\n", $validationOutput));
-            }
-        }
+        return $inserted ? implode("\n", $newLines) : null;
     }
 
     /**
@@ -596,34 +583,34 @@ PHP;
         $providerPath = app_path('Providers/TenancyServiceProvider.php');
 
         if (! File::exists($providerPath)) {
-            // TenancyServiceProvider will be created by tenancy:install command
-            // It should automatically load tenant routes
             return;
         }
 
         $providerContent = File::get($providerPath);
 
-        // Check if tenant routes are already being loaded
-        if (str_contains($providerContent, 'routes/tenant.php') || str_contains($providerContent, 'loadRoutesFrom')) {
+        // Check if already configured
+        if (str_contains($providerContent, 'routes/tenant.php')) {
             info('Tenant routes are already configured in TenancyServiceProvider.');
 
             return;
         }
 
-        // Add code to load tenant routes in boot method
-        $loadRoutesCode = "\n        // Load tenant routes\n        \$this->loadRoutesFrom(base_path('routes/tenant.php'));";
+        // Add loadRoutesFrom to boot method
+        if (preg_match('/(public function boot\(\): void\s*\{[^}]*)(\})/s', $providerContent, $matches)) {
+            $beforeClose = $matches[1];
+            $closing = $matches[2];
 
-        // Find the boot method and add the route loading code
-        if (preg_match('/public function boot\(\): void\s*\{([^}]*)\}/s', $providerContent, $matches)) {
-            $bootMethodContent = $matches[1];
+            if (! str_contains($beforeClose, 'loadRoutesFrom')) {
+                $newContent = str_replace(
+                    $matches[0],
+                    $beforeClose."\n        \$this->loadRoutesFrom(base_path('routes/tenant.php'));".$closing,
+                    $providerContent
+                );
 
-            // Add call to loadRoutesFrom at the end of boot method
-            if (! str_contains($bootMethodContent, 'loadRoutesFrom')) {
-                $newBootMethod = $bootMethodContent.$loadRoutesCode;
-                $providerContent = str_replace($matches[0], 'public function boot(): void {'.$newBootMethod."\n    }", $providerContent);
-
-                File::put($providerPath, $providerContent);
-                info('✅ Configured TenancyServiceProvider to load tenant routes');
+                if ($this->validatePhpSyntax($newContent)) {
+                    File::put($providerPath, $newContent);
+                    info('✅ Configured TenancyServiceProvider to load tenant routes');
+                }
             }
         }
     }
@@ -1118,6 +1105,7 @@ PHP;
 
     /**
      * Add Spatie Permission event listeners to TenancyServiceProvider.
+     * Merges listeners into existing events() method if it exists, otherwise creates a new one.
      */
     protected function addSpatiePermissionEventListeners(): void
     {
@@ -1131,199 +1119,192 @@ PHP;
 
         $providerContent = File::get($providerPath);
 
-        // First, check and fix duplicate events() methods
+        // Fix any duplicate events() methods first
         $providerContent = $this->fixDuplicateEventsMethods($providerContent);
 
-        // Check if Spatie Permission listeners already exist
-        if (str_contains($providerContent, 'PermissionRegistrar') || str_contains($providerContent, 'spatie.permission.cache')) {
-            info('Spatie Permission event listeners already configured in TenancyServiceProvider.');
+        // Check if Spatie listeners already exist
+        if (str_contains($providerContent, 'PermissionRegistrar')) {
+            info('Spatie Permission event listeners already configured.');
 
             return;
         }
 
-        // Spatie Permission event listeners code
+        // Spatie Permission event listeners
         $spatieListeners = "            \Stancl\Tenancy\Events\TenancyBootstrapped::class => [\n                function (\Stancl\Tenancy\Events\TenancyBootstrapped \$event) {\n                    \$permissionRegistrar = app(\Spatie\Permission\PermissionRegistrar::class);\n                    \$permissionRegistrar->cacheKey = 'spatie.permission.cache.tenant.' . \$event->tenancy->tenant->getTenantKey();\n                },\n            ],\n            \Stancl\Tenancy\Events\TenancyEnded::class => [\n                function (\Stancl\Tenancy\Events\TenancyEnded \$event) {\n                    \$permissionRegistrar = app(\Spatie\Permission\PermissionRegistrar::class);\n                    \$permissionRegistrar->cacheKey = 'spatie.permission.cache';\n                },\n            ],";
 
-        // Check if events() method already exists - count occurrences to detect duplicates
-        $eventsMethodCount = substr_count($providerContent, 'public function events(): array');
-
-        if ($eventsMethodCount > 1) {
-            warning('TenancyServiceProvider already has multiple events() methods. Skipping Spatie Permission event listeners.');
-            warning('Please manually add the event listeners or fix the duplicate methods.');
-
-            return;
-        }
-
-        if ($eventsMethodCount === 1) {
-            // Update existing events method to include Spatie Permission listeners
-            // Use a more robust pattern that handles multiline method bodies
-            if (preg_match('/public function events\(\): array\s*\{((?:[^{}]++|\{(?:[^{}]++|\{[^{}]*+\})*+\})*+)\}/s', $providerContent, $matches)) {
-                $methodBody = $matches[1];
-
-                // Check if Spatie listeners are already in the method
-                if (str_contains($methodBody, 'PermissionRegistrar')) {
-                    info('Spatie Permission event listeners already exist in events() method.');
-
-                    return;
-                }
-
-                // Find the return array and add listeners to it
-                if (preg_match('/(return\s*\[)([^\]]*)(\]\s*;?\s*)/s', $methodBody, $returnMatches)) {
-                    $beforeReturn = $returnMatches[1];
-                    $existingListeners = $returnMatches[2];
-                    $afterReturn = $returnMatches[3];
-
-                    // Add Spatie listeners to existing return array
-                    $newListeners = $existingListeners;
-                    if (! empty(trim($existingListeners))) {
-                        $newListeners .= ",\n";
-                    }
-                    $newListeners .= $spatieListeners;
-
-                    $newMethodBody = str_replace($returnMatches[0], $beforeReturn.$newListeners.$afterReturn, $methodBody);
-                    $providerContent = str_replace($matches[0], 'public function events(): array {'.$newMethodBody.'}', $providerContent);
-                } else {
-                    warning('Could not find return array in existing events() method. Skipping Spatie Permission listeners.');
-
-                    return;
-                }
-            } else {
-                warning('Could not parse existing events() method. Skipping Spatie Permission listeners.');
-
-                return;
-            }
+        // Check if events() method exists
+        if (str_contains($providerContent, 'public function events(): array')) {
+            $providerContent = $this->mergeIntoEventsMethod($providerContent, $spatieListeners);
         } else {
-            // Add events() method before the closing brace of the class
-            // Find the last closing brace of the class (not nested)
-            $lines = explode("\n", $providerContent);
-            $newLines = [];
-            $braceDepth = 0;
-            $classStarted = false;
-            $inserted = false;
-
-            foreach ($lines as $line) {
-                // Detect class start
-                if (preg_match('/^\s*class\s+\w+/', $line)) {
-                    $classStarted = true;
-                    $braceDepth = 0;
-                }
-
-                if ($classStarted) {
-                    $braceDepth += substr_count($line, '{') - substr_count($line, '}');
-
-                    // When we find the closing brace of the class (braceDepth == 0 after class started)
-                    if ($braceDepth === 0 && ! $inserted && trim($line) === '}') {
-                        // Insert events() method before the closing brace
-                        $eventsMethod = "\n    /**\n     * Configure event listeners for multi-tenancy.\n     */\n    public function events(): array\n    {\n        return [\n".$spatieListeners."\n        ];\n    }";
-                        $newLines[] = $eventsMethod;
-                        $newLines[] = $line;
-                        $inserted = true;
-
-                        continue;
-                    }
-                }
-
-                $newLines[] = $line;
-            }
-
-            if ($inserted) {
-                $providerContent = implode("\n", $newLines);
-            } else {
-                warning('Could not find class closing brace. Skipping Spatie Permission event listeners.');
-
-                return;
-            }
+            $providerContent = $this->addEventsMethod($providerContent, $spatieListeners);
         }
 
-        File::put($providerPath, $providerContent);
-        info('✅ Added Spatie Permission event listeners to TenancyServiceProvider');
+        if ($providerContent) {
+            File::put($providerPath, $providerContent);
+            info('✅ Added Spatie Permission event listeners to TenancyServiceProvider');
+        }
+    }
+
+    /**
+     * Merge Spatie listeners into existing events() method.
+     */
+    protected function mergeIntoEventsMethod(string $content, string $spatieListeners): ?string
+    {
+        // Find the return array in the events() method and insert before closing bracket
+        // Pattern: return [ ... ];
+        if (preg_match('/(public function events\(\): array\s*\{[^}]*return\s*\[)([^\]]*)(\]\s*;\s*\})/s', $content, $matches)) {
+            $beforeReturn = $matches[1];
+            $existingContent = $matches[2];
+            $closing = $matches[3];
+
+            // Add comma if there's existing content
+            $separator = ! empty(trim($existingContent)) ? ",\n" : '';
+
+            $newContent = str_replace(
+                $matches[0],
+                $beforeReturn.$existingContent.$separator.$spatieListeners.$closing,
+                $content
+            );
+
+            return $this->validatePhpSyntax($newContent) ? $newContent : null;
+        }
+
+        warning('Could not merge into existing events() method.');
+
+        return null;
+    }
+
+    /**
+     * Add new events() method to the class.
+     */
+    protected function addEventsMethod(string $content, string $spatieListeners): ?string
+    {
+        // Find the class closing brace
+        $lines = explode("\n", $content);
+        $newLines = [];
+        $classDepth = 0;
+        $inClass = false;
+        $inserted = false;
+
+        foreach ($lines as $line) {
+            if (preg_match('/^\s*class\s+\w+/', $line)) {
+                $inClass = true;
+                $classDepth = 0;
+            }
+
+            if ($inClass) {
+                $classDepth += substr_count($line, '{') - substr_count($line, '}');
+
+                if ($classDepth === 0 && ! $inserted && trim($line) === '}') {
+                    $eventsMethod = "\n    /**\n     * Configure event listeners for multi-tenancy.\n     */\n    public function events(): array\n    {\n        return [\n".$spatieListeners."\n        ];\n    }";
+                    $newLines[] = $eventsMethod;
+                    $newLines[] = $line;
+                    $inserted = true;
+
+                    continue;
+                }
+            }
+
+            $newLines[] = $line;
+        }
+
+        if (! $inserted) {
+            warning('Could not find class closing brace to add events() method.');
+
+            return null;
+        }
+
+        $newContent = implode("\n", $newLines);
+
+        return $this->validatePhpSyntax($newContent) ? $newContent : null;
+    }
+
+    /**
+     * Validate PHP syntax of content.
+     */
+    protected function validatePhpSyntax(string $content): bool
+    {
+        $tempFile = tempnam(sys_get_temp_dir(), 'php_validate_');
+        file_put_contents($tempFile, $content);
+        exec("php -l {$tempFile} 2>&1", $output, $returnCode);
+        unlink($tempFile);
+
+        if ($returnCode !== 0) {
+            warning('PHP syntax validation failed: '.implode("\n", $output));
+
+            return false;
+        }
+
+        return true;
     }
 
     /**
      * Fix duplicate events() methods in TenancyServiceProvider.
+     * Keeps only the first occurrence and removes all duplicates.
      */
     protected function fixDuplicateEventsMethods(string $content): string
     {
-        // Count occurrences of events() method
         $eventsMethodCount = substr_count($content, 'public function events(): array');
 
         if ($eventsMethodCount <= 1) {
             return $content;
         }
 
-        warning("Found {$eventsMethodCount} events() methods in TenancyServiceProvider. Removing duplicates...");
+        warning("Found {$eventsMethodCount} events() methods. Removing duplicates...");
 
-        // Find all events() method declarations
         $lines = explode("\n", $content);
         $newLines = [];
         $inEventsMethod = false;
-        $eventsMethodCount = 0;
+        $methodIndex = 0;
         $braceDepth = 0;
-        $keepFirst = true;
+        $keepMethod = true;
 
         foreach ($lines as $line) {
-            // Detect start of events() method
             if (preg_match('/public function events\(\): array/', $line)) {
-                $eventsMethodCount++;
+                $methodIndex++;
                 $inEventsMethod = true;
                 $braceDepth = 1;
+                $keepMethod = ($methodIndex === 1);
 
-                // Keep only the first events() method, skip duplicates
-                if ($eventsMethodCount === 1) {
+                if ($keepMethod) {
                     $newLines[] = $line;
-                    $keepFirst = true;
-                } else {
-                    // Skip this duplicate method
-                    $keepFirst = false;
                 }
 
                 continue;
             }
 
-            // If we're in an events() method, track braces
             if ($inEventsMethod) {
                 $braceDepth += substr_count($line, '{') - substr_count($line, '}');
 
-                // When we reach the end of the method (braceDepth == 0)
                 if ($braceDepth === 0) {
-                    if ($keepFirst) {
+                    if ($keepMethod) {
                         $newLines[] = $line;
                     }
-                    // else skip this line (closing brace of duplicate method)
                     $inEventsMethod = false;
-                    $keepFirst = true;
+                    $keepMethod = true;
 
                     continue;
                 }
 
-                // Add line if we're keeping this method
-                if ($keepFirst) {
+                if ($keepMethod) {
                     $newLines[] = $line;
                 }
             } else {
-                // Not in events() method, keep the line
                 $newLines[] = $line;
             }
         }
 
         $fixedContent = implode("\n", $newLines);
 
-        // Validate the fixed content
-        $tempFile = tempnam(sys_get_temp_dir(), 'tenancy_provider_');
-        file_put_contents($tempFile, $fixedContent);
-        exec("php -l {$tempFile} 2>&1", $output, $returnCode);
-        unlink($tempFile);
-
-        if ($returnCode === 0) {
-            info('✅ Removed duplicate events() methods from TenancyServiceProvider');
+        if ($this->validatePhpSyntax($fixedContent)) {
+            info('✅ Removed duplicate events() methods');
 
             return $fixedContent;
-        } else {
-            warning('Failed to fix duplicate events() methods. Please fix manually.');
-            warning('Output: '.implode("\n", $output));
-
-            return $content;
         }
+
+        warning('Failed to fix duplicate events() methods. Please fix manually.');
+
+        return $content;
     }
 
     /**
