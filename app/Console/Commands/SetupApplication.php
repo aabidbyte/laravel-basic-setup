@@ -36,7 +36,6 @@ class SetupApplication extends Command
     public function handle(): int
     {
         info('Welcome to Laravel Basic Setup!');
-        info('');
 
         // Ensure .env file exists
         if (! File::exists(base_path('.env'))) {
@@ -75,7 +74,7 @@ class SetupApplication extends Command
         );
 
         if (! $runMigrations) {
-            info('');
+
             info('Skipping database setup.');
             info('You can run migrations later with: php artisan migrate');
             info('Don\'t forget to configure your database in the .env file.');
@@ -83,7 +82,6 @@ class SetupApplication extends Command
             return self::SUCCESS;
         }
 
-        info('');
         info('Please provide your database credentials:');
 
         // Get database connection type
@@ -144,7 +142,7 @@ class SetupApplication extends Command
 
             // Ask about MySQL version if using MySQL/MariaDB
             if ($connection === 'mysql' || $connection === 'mariadb') {
-                info('');
+
                 $isMySQL8Plus = confirm(
                     label: 'Are you using MySQL 8.0+ or MariaDB 10.4+?',
                     default: true,
@@ -153,9 +151,9 @@ class SetupApplication extends Command
 
                 // Default to caching_sha2_password for MySQL 8.0+
                 if ($isMySQL8Plus) {
-                    info('');
+
                     info('✅ Will use "caching_sha2_password" authentication (default for MySQL 8.0+).');
-                    info('');
+
                 }
             }
         } else {
@@ -193,23 +191,35 @@ class SetupApplication extends Command
 
         $this->updateEnvFile($envUpdates);
 
-        info('');
         info('✅ Database credentials saved to .env file');
 
+        // Clear config cache to ensure new .env values are loaded
+        $this->call('config:clear');
+
+        // Log the database credentials that Laravel will use
+
+        info('Database credentials that Laravel will use:');
+        info('  Connection: '.config('database.connections.'.$connection.'.driver', $connection));
+        info('  Host: '.config('database.connections.'.$connection.'.host', $dbHost));
+        info('  Port: '.config('database.connections.'.$connection.'.port', $dbPort));
+        info('  Database: '.config('database.connections.'.$connection.'.database', $dbDatabase));
+        info('  Username: '.config('database.connections.'.$connection.'.username', $dbUsername));
+        info('  Password: '.(config('database.connections.'.$connection.'.password') ? '***'.str_repeat('*', min(8, strlen(config('database.connections.'.$connection.'.password')))) : '(empty)'));
+        if ($connection === 'mysql' || $connection === 'mariadb') {
+            info('  Charset: '.config('database.connections.'.$connection.'.charset', 'utf8mb4'));
+            info('  Collation: '.config('database.connections.'.$connection.'.collation', 'utf8mb4_unicode_ci'));
+        }
+
         // Test database connection
-        info('');
+
         info('Testing database connection...');
 
         try {
-            // Clear config cache to ensure new .env values are loaded
-            $this->call('config:clear');
-
             // Test connection by trying to get database connection
             DB::connection()->getPdo();
             info('✅ Database connection successful!');
         } catch (\Exception $e) {
             error('❌ Database connection failed: '.$e->getMessage());
-            info('');
 
             // Provide brief guidance for common MySQL errors
             $errorMessage = $e->getMessage();
@@ -218,13 +228,13 @@ class SetupApplication extends Command
                 info('   Update your MySQL user to use caching_sha2_password (default for MySQL 8.0+):');
                 info('   ALTER USER \''.$dbUsername.'\'@\''.$dbHost.'\' IDENTIFIED WITH caching_sha2_password BY \''.$dbPassword.'\';');
                 info('   FLUSH PRIVILEGES;');
-                info('');
+
             } elseif (str_contains($errorMessage, 'Access denied')) {
                 info('💡 Please verify your database username and password are correct.');
-                info('');
+
             } elseif (str_contains($errorMessage, 'Unknown database')) {
                 info('💡 The database does not exist. Please create it first.');
-                info('');
+
             }
 
             info('You can manually update the .env file and try again.');
@@ -234,7 +244,7 @@ class SetupApplication extends Command
         }
 
         // Run migrations
-        info('');
+
         $runMigrationsNow = confirm(
             label: 'Would you like to run migrations now?',
             default: true,
@@ -242,7 +252,7 @@ class SetupApplication extends Command
         );
 
         if ($runMigrationsNow) {
-            info('');
+
             info('Running migrations...');
 
             try {
@@ -250,19 +260,18 @@ class SetupApplication extends Command
                 info('✅ Migrations completed successfully!');
             } catch (\Exception $e) {
                 error('❌ Migration failed: '.$e->getMessage());
-                info('');
+
                 info('Please check the error above and try again.');
 
                 return self::FAILURE;
             }
         } else {
-            info('');
+
             info('Skipping migrations. You can run them later with: php artisan migrate');
         }
 
-        info('');
         info('✅ Setup completed!');
-        info('');
+
         info('Next steps:');
         info('1. Run: npm install');
         info('2. Run: php artisan install:stack (if not done already)');
@@ -277,7 +286,7 @@ class SetupApplication extends Command
      */
     protected function installMultiTenancy(): int
     {
-        info('');
+
         info('Installing multi-tenancy package...');
 
         // Install the package via composer
@@ -290,7 +299,7 @@ class SetupApplication extends Command
         if ($returnCode !== 0) {
             error('❌ Failed to install stancl/tenancy package.');
             error('Output: '.implode("\n", $output));
-            info('');
+
             info('Please run manually: composer require stancl/tenancy');
             info('You can continue with the setup and install multi-tenancy later.');
 
@@ -300,7 +309,7 @@ class SetupApplication extends Command
         info('✅ Package installed successfully');
 
         // Regenerate autoloader and clear caches
-        info('');
+
         info('Regenerating autoloader...');
         $projectRoot = base_path();
         exec("cd {$projectRoot} && composer dump-autoload --no-interaction 2>&1", $autoloadOutput, $autoloadReturnCode);
@@ -314,7 +323,7 @@ class SetupApplication extends Command
         $this->call('package:discover', ['--ansi' => true]);
 
         // Run tenancy:install command
-        info('');
+
         info('Setting up tenancy configuration...');
 
         // Use shell execution in a fresh process to ensure the command is available
@@ -326,7 +335,7 @@ class SetupApplication extends Command
         if ($tenancyInstallReturnCode !== 0) {
             error('❌ Failed to run tenancy:install');
             error('Output: '.implode("\n", $tenancyInstallOutput));
-            info('');
+
             info('Please run manually: php artisan tenancy:install');
 
             return self::FAILURE;
@@ -352,7 +361,6 @@ class SetupApplication extends Command
         // Update .env file
         $this->updateEnvFile(['MULTI_TENANCY_ENABLED' => 'true']);
 
-        info('');
         info('✅ Multi-tenancy setup completed!');
 
         return self::SUCCESS;
