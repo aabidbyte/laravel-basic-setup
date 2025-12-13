@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 
@@ -189,18 +190,18 @@ class SetupApplication extends Command
             $envUpdates['DB_PASSWORD'] = $dbPassword ?: '';
         }
 
+        // Check if database exists and create if needed (for MySQL/MariaDB/PostgreSQL)
+        if ($connection !== 'sqlite' && ($connection === 'mysql' || $connection === 'mariadb' || $connection === 'pgsql')) {
+            $this->checkAndCreateDatabase($connection, $dbHost, $dbPort, $dbDatabase, $dbUsername, $dbPassword);
+        }
+
         $this->updateEnvFile($envUpdates);
 
         info('✅ Database credentials saved to .env file');
 
         // Clear config cache to ensure new .env values are loaded
         $this->call('config:clear');
-
-        // Reload environment variables and config
-        // Clear the config cache and reload .env
-        if (function_exists('app')) {
-            app()->make('config')->clear();
-        }
+        $this->call('config:cache');
 
         // Log the database credentials that Laravel will use (from reloaded config)
         info('Database credentials that Laravel will use:');
@@ -282,6 +283,8 @@ class SetupApplication extends Command
         info('2. Run: php artisan install:stack (if not done already)');
         info('3. Run: npm run build');
         info('4. Start development: composer run dev');
+
+        $this->call('optimize:clear');
 
         return self::SUCCESS;
     }
@@ -630,6 +633,94 @@ PHP;
 
         File::put($routesPath, $routesContent);
         info('✅ Added multi-tenancy routing comments');
+    }
+
+    /**
+     * Check if database exists and create it if needed.
+     */
+    protected function checkAndCreateDatabase(string $connection, string $host, string $port, string $database, string $username, string $password): void
+    {
+        try {
+            // Connect to the database server without specifying a database
+            $dsn = match ($connection) {
+                'mysql', 'mariadb' => "mysql:host={$host};port={$port}",
+                'pgsql' => "pgsql:host={$host};port={$port}",
+                default => throw new \InvalidArgumentException("Unsupported connection type: {$connection}"),
+            };
+
+            $pdo = new \PDO($dsn, $username, $password);
+            $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+
+            // Check if database exists
+            $databaseExists = false;
+            if ($connection === 'mysql' || $connection === 'mariadb') {
+                $stmt = $pdo->query('SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '.$pdo->quote($database));
+                $databaseExists = $stmt->rowCount() > 0;
+            } elseif ($connection === 'pgsql') {
+                $stmt = $pdo->query('SELECT 1 FROM pg_database WHERE datname = '.$pdo->quote($database));
+                $databaseExists = $stmt->rowCount() > 0;
+            }
+
+            if (! $databaseExists) {
+                info('');
+                $createDatabase = confirm(
+                    label: "Database '{$database}' does not exist. Would you like to create it?",
+                    default: true,
+                    hint: 'The database will be created with the specified charset and collation.'
+                );
+
+                if ($createDatabase) {
+                    // Ask for charset and collation for MySQL/MariaDB
+                    $charset = 'utf8mb4';
+                    $collation = 'utf8mb4_unicode_ci';
+
+                    if ($connection === 'mysql' || $connection === 'mariadb') {
+                        $charset = text(
+                            label: 'Database charset',
+                            default: 'utf8mb4',
+                            required: true,
+                            hint: 'Character set for the database (e.g., utf8mb4, utf8).'
+                        );
+
+                        $collation = text(
+                            label: 'Database collation',
+                            default: 'utf8mb4_unicode_ci',
+                            required: true,
+                            hint: 'Collation for the database (e.g., utf8mb4_unicode_ci, utf8mb4_general_ci).'
+                        );
+                    }
+
+                    // Create the database
+                    try {
+                        if ($connection === 'mysql' || $connection === 'mariadb') {
+                            $pdo->exec("CREATE DATABASE `{$database}` CHARACTER SET {$charset} COLLATE {$collation}");
+                        } elseif ($connection === 'pgsql') {
+                            $pdo->exec("CREATE DATABASE \"{$database}\" ENCODING 'UTF8'");
+                        }
+
+                        info("✅ Database '{$database}' created successfully!");
+                        if ($connection === 'mysql' || $connection === 'mariadb') {
+                            info("   Charset: {$charset}");
+                            info("   Collation: {$collation}");
+                        }
+                    } catch (\PDOException $e) {
+                        error("❌ Failed to create database: {$e->getMessage()}");
+                        info('');
+                        info('Please create the database manually and try again.');
+                        throw $e;
+                    }
+                } else {
+                    info('');
+                    info('Skipping database creation. Please create the database manually and try again.');
+                }
+            } else {
+                info("✅ Database '{$database}' already exists.");
+            }
+        } catch (\PDOException $e) {
+            // If we can't connect to check, that's okay - we'll catch it in the connection test
+            warning("Could not check if database exists: {$e->getMessage()}");
+            info('Will attempt to connect to the database in the next step.');
+        }
     }
 
     /**
