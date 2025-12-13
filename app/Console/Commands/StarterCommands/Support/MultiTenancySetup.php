@@ -1131,6 +1131,9 @@ PHP;
 
         $providerContent = File::get($providerPath);
 
+        // First, check and fix duplicate events() methods
+        $providerContent = $this->fixDuplicateEventsMethods($providerContent);
+
         // Check if Spatie Permission listeners already exist
         if (str_contains($providerContent, 'PermissionRegistrar') || str_contains($providerContent, 'spatie.permission.cache')) {
             info('Spatie Permission event listeners already configured in TenancyServiceProvider.');
@@ -1234,6 +1237,93 @@ PHP;
 
         File::put($providerPath, $providerContent);
         info('✅ Added Spatie Permission event listeners to TenancyServiceProvider');
+    }
+
+    /**
+     * Fix duplicate events() methods in TenancyServiceProvider.
+     */
+    protected function fixDuplicateEventsMethods(string $content): string
+    {
+        // Count occurrences of events() method
+        $eventsMethodCount = substr_count($content, 'public function events(): array');
+
+        if ($eventsMethodCount <= 1) {
+            return $content;
+        }
+
+        warning("Found {$eventsMethodCount} events() methods in TenancyServiceProvider. Removing duplicates...");
+
+        // Find all events() method declarations
+        $lines = explode("\n", $content);
+        $newLines = [];
+        $inEventsMethod = false;
+        $eventsMethodCount = 0;
+        $braceDepth = 0;
+        $keepFirst = true;
+
+        foreach ($lines as $line) {
+            // Detect start of events() method
+            if (preg_match('/public function events\(\): array/', $line)) {
+                $eventsMethodCount++;
+                $inEventsMethod = true;
+                $braceDepth = 1;
+
+                // Keep only the first events() method, skip duplicates
+                if ($eventsMethodCount === 1) {
+                    $newLines[] = $line;
+                    $keepFirst = true;
+                } else {
+                    // Skip this duplicate method
+                    $keepFirst = false;
+                }
+
+                continue;
+            }
+
+            // If we're in an events() method, track braces
+            if ($inEventsMethod) {
+                $braceDepth += substr_count($line, '{') - substr_count($line, '}');
+
+                // When we reach the end of the method (braceDepth == 0)
+                if ($braceDepth === 0) {
+                    if ($keepFirst) {
+                        $newLines[] = $line;
+                    }
+                    // else skip this line (closing brace of duplicate method)
+                    $inEventsMethod = false;
+                    $keepFirst = true;
+
+                    continue;
+                }
+
+                // Add line if we're keeping this method
+                if ($keepFirst) {
+                    $newLines[] = $line;
+                }
+            } else {
+                // Not in events() method, keep the line
+                $newLines[] = $line;
+            }
+        }
+
+        $fixedContent = implode("\n", $newLines);
+
+        // Validate the fixed content
+        $tempFile = tempnam(sys_get_temp_dir(), 'tenancy_provider_');
+        file_put_contents($tempFile, $fixedContent);
+        exec("php -l {$tempFile} 2>&1", $output, $returnCode);
+        unlink($tempFile);
+
+        if ($returnCode === 0) {
+            info('✅ Removed duplicate events() methods from TenancyServiceProvider');
+
+            return $fixedContent;
+        } else {
+            warning('Failed to fix duplicate events() methods. Please fix manually.');
+            warning('Output: '.implode("\n", $output));
+
+            return $content;
+        }
     }
 
     /**

@@ -34,6 +34,9 @@ class InstallFrontendStack extends Command
         // Fix any broken bootstrap/app.php from previous multi-tenancy setup attempts
         $this->fixBrokenBootstrapApp();
 
+        // Fix duplicate methods in TenancyServiceProvider if it exists
+        $this->fixTenancyServiceProvider();
+
         $stack = $this->option('stack') ?? select(
             label: 'Which frontend stack would you like to install?',
             options: [
@@ -875,6 +878,94 @@ PHP;
 
             File::put($appPath, $appContent);
             info('✅ Fixed broken bootstrap/app.php (removed invalid tenant parameter)');
+        }
+    }
+
+    /**
+     * Fix duplicate methods in TenancyServiceProvider.
+     */
+    protected function fixTenancyServiceProvider(): void
+    {
+        $providerPath = app_path('Providers/TenancyServiceProvider.php');
+
+        if (! File::exists($providerPath)) {
+            return;
+        }
+
+        $providerContent = File::get($providerPath);
+
+        // Check for duplicate events() methods
+        $eventsMethodCount = substr_count($providerContent, 'public function events(): array');
+
+        if ($eventsMethodCount > 1) {
+            warning("Found {$eventsMethodCount} events() methods in TenancyServiceProvider. Fixing...");
+
+            // Remove duplicate events() methods, keeping only the first one
+            $lines = explode("\n", $providerContent);
+            $newLines = [];
+            $inEventsMethod = false;
+            $eventsMethodIndex = 0;
+            $braceDepth = 0;
+            $keepMethod = true;
+
+            foreach ($lines as $line) {
+                // Detect start of events() method
+                if (preg_match('/public function events\(\): array/', $line)) {
+                    $eventsMethodIndex++;
+                    $inEventsMethod = true;
+                    $braceDepth = 1;
+
+                    // Keep only the first events() method
+                    if ($eventsMethodIndex === 1) {
+                        $newLines[] = $line;
+                        $keepMethod = true;
+                    } else {
+                        // Skip duplicate methods
+                        $keepMethod = false;
+                    }
+
+                    continue;
+                }
+
+                // If we're in an events() method, track braces
+                if ($inEventsMethod) {
+                    $braceDepth += substr_count($line, '{') - substr_count($line, '}');
+
+                    // When we reach the end of the method
+                    if ($braceDepth === 0) {
+                        if ($keepMethod) {
+                            $newLines[] = $line;
+                        }
+                        $inEventsMethod = false;
+                        $keepMethod = true;
+
+                        continue;
+                    }
+
+                    // Add line if we're keeping this method
+                    if ($keepMethod) {
+                        $newLines[] = $line;
+                    }
+                } else {
+                    // Not in events() method, keep the line
+                    $newLines[] = $line;
+                }
+            }
+
+            $fixedContent = implode("\n", $newLines);
+
+            // Validate the fixed content
+            $tempFile = tempnam(sys_get_temp_dir(), 'tenancy_provider_');
+            file_put_contents($tempFile, $fixedContent);
+            exec("php -l {$tempFile} 2>&1", $output, $returnCode);
+            unlink($tempFile);
+
+            if ($returnCode === 0) {
+                File::put($providerPath, $fixedContent);
+                info('✅ Fixed duplicate events() methods in TenancyServiceProvider');
+            } else {
+                warning('Failed to fix duplicate events() methods. Please fix manually.');
+            }
         }
     }
 
