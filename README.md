@@ -122,6 +122,57 @@ A comprehensive Laravel 12 starter kit with multi-stack frontend support, UUID-b
     php artisan serve
     ```
 
+## 🔄 Upgrading from the Starter Template
+
+If you've created a project from this starter template and want to pull in the latest updates:
+
+```bash
+php artisan starter:upgrade
+```
+
+This command will:
+- Check for the upstream remote (adds it if missing)
+- Fetch the latest changes from the starter repository
+- Show you what has changed
+- Allow you to merge updates into your project
+
+### Upgrade Options
+
+```bash
+# Dry run (see what would change without making changes)
+php artisan starter:upgrade --dry-run
+
+# Specify a different upstream repository
+php artisan starter:upgrade --upstream=https://github.com/user/repo.git
+
+# Upgrade from a specific branch
+php artisan starter:upgrade --branch=develop
+```
+
+### Manual Upgrade
+
+If you prefer to upgrade manually:
+
+```bash
+# Add upstream remote (if not already added)
+git remote add upstream https://github.com/aabidbyte/laravel-basic-setup.git
+
+# Fetch latest changes
+git fetch upstream
+
+# View changes
+git log HEAD..upstream/main
+
+# Merge changes
+git merge upstream/main
+
+# Resolve any conflicts, then:
+git add .
+git commit
+```
+
+> **Note:** Always test your application after upgrading and review any conflicts carefully.
+
 ## 🎯 Stack Selection Guide
 
 ### When to Use Livewire

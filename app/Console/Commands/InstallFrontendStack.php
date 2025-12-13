@@ -108,6 +108,9 @@ class InstallFrontendStack extends Command
         // Create React app entry point
         $this->createReactApp();
 
+        // Create Inertia root view (after app entry point is created)
+        $this->createInertiaAppView('app.jsx');
+
         // Create example pages
         $this->createReactPages();
 
@@ -141,6 +144,9 @@ class InstallFrontendStack extends Command
 
         // Create Vue app entry point
         $this->createVueApp();
+
+        // Create Inertia root view (after app entry point is created)
+        $this->createInertiaAppView('app.js');
 
         // Create example pages
         $this->createVuePages();
@@ -503,8 +509,10 @@ JS;
      */
     protected function cleanupLivewire(): void
     {
-        // Don't remove Livewire views if they exist - they might be needed
-        // Just remove if explicitly switching away
+        // Remove Livewire-specific directories
+        if (File::exists(resource_path('views/livewire'))) {
+            File::deleteDirectory(resource_path('views/livewire'));
+        }
     }
 
     /**
@@ -512,15 +520,21 @@ JS;
      */
     protected function cleanupReact(): void
     {
+        // Remove React entry point
         if (File::exists(resource_path('js/app.jsx'))) {
             File::delete(resource_path('js/app.jsx'));
         }
+
+        // Remove React pages and layouts
         if (File::exists(resource_path('js/Pages'))) {
             File::deleteDirectory(resource_path('js/Pages'));
         }
         if (File::exists(resource_path('js/Layouts'))) {
             File::deleteDirectory(resource_path('js/Layouts'));
         }
+
+        // Remove Inertia-specific files (shared with Vue)
+        $this->cleanupInertia();
     }
 
     /**
@@ -528,12 +542,89 @@ JS;
      */
     protected function cleanupVue(): void
     {
+        // Remove Vue entry point if it contains Inertia/Vue code
+        $appJsPath = resource_path('js/app.js');
+        if (File::exists($appJsPath)) {
+            $content = File::get($appJsPath);
+            // Check if it's Vue's Inertia app.js (not the echo file)
+            if (str_contains($content, '@inertiajs/vue3') || str_contains($content, 'createInertiaApp')) {
+                File::delete($appJsPath);
+            }
+        }
+
+        // Remove Vue pages and layouts
         if (File::exists(resource_path('js/Pages'))) {
             File::deleteDirectory(resource_path('js/Pages'));
         }
         if (File::exists(resource_path('js/Layouts'))) {
             File::deleteDirectory(resource_path('js/Layouts'));
         }
+
+        // Remove Inertia-specific files (shared with React)
+        $this->cleanupInertia();
+    }
+
+    /**
+     * Clean up Inertia.js files (shared by React and Vue).
+     */
+    protected function cleanupInertia(): void
+    {
+        // Remove Inertia middleware
+        $middlewarePath = app_path('Http/Middleware/HandleInertiaRequests.php');
+        if (File::exists($middlewarePath)) {
+            File::delete($middlewarePath);
+        }
+
+        // Remove Inertia root view
+        $inertiaAppView = resource_path('views/app.blade.php');
+        if (File::exists($inertiaAppView)) {
+            File::delete($inertiaAppView);
+        }
+
+        // Remove Inertia middleware registration from bootstrap/app.php
+        $this->unregisterInertiaMiddleware();
+    }
+
+    /**
+     * Unregister Inertia middleware from bootstrap/app.php.
+     */
+    protected function unregisterInertiaMiddleware(): void
+    {
+        $appFile = base_path('bootstrap/app.php');
+        if (! File::exists($appFile)) {
+            return;
+        }
+
+        $content = File::get($appFile);
+
+        // Check if middleware is registered
+        if (! str_contains($content, 'HandleInertiaRequests')) {
+            return;
+        }
+
+        // Remove HandleInertiaRequests from middleware registration
+        $content = preg_replace(
+            '/\s*\\\\App\\\\Http\\\\Middleware\\\\HandleInertiaRequests::class,?\s*/',
+            '',
+            $content
+        );
+
+        // If the middleware array is now empty, reset to empty comment
+        if (preg_match('/->withMiddleware\(function \(Middleware \$middleware\): void \{([^}]+)\}/', $content, $matches)) {
+            $middlewareBody = $matches[1];
+            // Check if middleware body only contains empty array or whitespace
+            if (preg_match('/^\s*\$middleware->web\(append:\s*\[\s*\]\);\s*$/', trim($middlewareBody))) {
+                $content = preg_replace(
+                    '/->withMiddleware\(function \(Middleware \$middleware\): void \{[^}]+\}/',
+                    '->withMiddleware(function (Middleware $middleware): void {'."\n".
+                    '        //'."\n".
+                    '    })',
+                    $content
+                );
+            }
+        }
+
+        File::put($appFile, $content);
     }
 
     /**
@@ -596,6 +687,40 @@ PHP;
 
         // Update bootstrap/app.php to register the middleware
         $this->registerInertiaMiddleware();
+    }
+
+    /**
+     * Create Inertia root view (app.blade.php).
+     */
+    protected function createInertiaAppView(string $entryPoint): void
+    {
+        $appView = <<<'BLADE'
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title inertia>{{ config('app.name', 'Laravel') }}</title>
+
+        <!-- Fonts -->
+        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
+
+        <!-- Scripts -->
+        @routes
+        @vite(['resources/css/app.css', 'resources/js/ENTRY_POINT'])
+        @inertiaHead
+    </head>
+    <body class="font-sans antialiased">
+        @inertia
+    </body>
+</html>
+BLADE;
+
+        $appView = str_replace('ENTRY_POINT', $entryPoint, $appView);
+
+        File::put(resource_path('views/app.blade.php'), $appView);
     }
 
     /**
