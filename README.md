@@ -52,6 +52,14 @@ A comprehensive Laravel 12 starter kit with multi-stack frontend support, UUID-b
 -   **Stable Configurations** - Environment-aware Redis client selection (Predis for development, PhpRedis for production)
 -   **Secure Paths** - Protected monitoring tool paths
 
+#### Multi-Tenancy (Optional)
+
+-   **Stancl/Tenancy** - Multi-database tenancy support (optional)
+-   **Automatic Installation** - Installed and configured during `php artisan setup:application`
+-   **Domain-Based Identification** - Automatic tenant identification via domains
+-   **Separate Databases** - Each tenant gets its own database
+-   **Automatic Setup** - Package installation, configuration, and migration organization handled automatically
+
 ## 📦 Installation
 
 ### Prerequisites
@@ -89,7 +97,20 @@ A comprehensive Laravel 12 starter kit with multi-stack frontend support, UUID-b
     npm install
     ```
 
-3. **Install your frontend stack:**
+3. **Set up application (includes database and multi-tenancy):**
+
+    ```bash
+    php artisan setup:application
+    ```
+
+    This interactive command will:
+
+    - Ask if you want to use multi-tenancy (optional)
+    - Configure your database connection
+    - Run migrations
+    - Set up multi-tenancy if selected (installs Stancl/Tenancy package automatically)
+
+4. **Install your frontend stack:**
 
     ```bash
     php artisan install:stack
@@ -97,14 +118,7 @@ A comprehensive Laravel 12 starter kit with multi-stack frontend support, UUID-b
 
     This will prompt you to choose between Livewire, React, or Vue.
 
-4. **Set up environment:**
-
-    ```bash
-    cp .env.example .env
-    php artisan key:generate
-    ```
-
-5. **Configure your database** in `.env`:
+5. **Configure your database** in `.env` (if not done via setup:application):
 
     ```env
     DB_CONNECTION=mysql
@@ -115,7 +129,7 @@ A comprehensive Laravel 12 starter kit with multi-stack frontend support, UUID-b
     DB_PASSWORD=your_password
     ```
 
-6. **Run migrations:**
+6. **Run migrations** (if not done via setup:application):
 
     ```bash
     php artisan migrate
@@ -321,6 +335,10 @@ git commit
 -   **Laravel Sail**: 1.41
 -   **Laravel Pail**: 1.2.2
 
+### Multi-Tenancy (Optional)
+
+-   **Stancl/Tenancy**: Latest (installed when multi-tenancy is enabled)
+
 ## 📚 Quick Start Guides
 
 ### Livewire Stack
@@ -405,6 +423,64 @@ After installing the Vue stack:
     });
     ```
 
+## 🏢 Multi-Tenancy
+
+This starter kit includes optional multi-tenancy support using [Stancl/Tenancy](https://tenancyforlaravel.com/). Multi-tenancy allows you to serve multiple customers (tenants) from a single application instance, with each tenant having their own database.
+
+### Enabling Multi-Tenancy
+
+Multi-tenancy can be enabled during the initial setup:
+
+```bash
+php artisan setup:application
+```
+
+When prompted, select "Yes" to enable multi-tenancy. The setup process will:
+
+1. Install the `stancl/tenancy` package
+2. Create the `Tenant` model (`app/Models/Tenant.php`)
+3. Configure tenancy settings in `config/tenancy.php`
+4. Register `TenancyServiceProvider` in `bootstrap/providers.php`
+5. Organize migrations (moves user migrations to `database/migrations/tenant/`)
+6. Create `routes/tenant.php` for tenant-specific routes
+7. Add `MULTI_TENANCY_ENABLED=true` to your `.env` file
+
+### Multi-Tenancy Structure
+
+-   **Central Database**: Stores tenant information and domains
+-   **Tenant Databases**: Each tenant has its own database with isolated data
+-   **Central Routes**: Defined in `routes/web.php` (landing pages, tenant signup, etc.)
+-   **Tenant Routes**: Defined in `routes/tenant.php` (your application routes)
+
+### Creating Tenants
+
+After enabling multi-tenancy, you can create tenants:
+
+```php
+use App\Models\Tenant;
+
+// Create a tenant
+$tenant = Tenant::create(['id' => 'acme-corp']);
+
+// Add a domain for the tenant
+$tenant->createDomain('acme.example.com');
+```
+
+### Tenant Identification
+
+Tenants are identified by domain. When a user visits `acme.example.com`, the package automatically:
+
+-   Identifies the tenant
+-   Switches to the tenant's database
+-   Applies tenant-specific configurations
+
+### Documentation
+
+For detailed multi-tenancy documentation, visit:
+
+-   [Stancl/Tenancy Documentation](https://tenancyforlaravel.com/docs)
+-   [Quickstart Guide](https://tenancyforlaravel.com/docs/v3/quickstart)
+
 ## 🔧 Configuration
 
 ### Environment Variables
@@ -445,6 +521,9 @@ VITE_REVERB_APP_KEY="${REVERB_APP_KEY}"
 VITE_REVERB_HOST="${REVERB_HOST}"
 VITE_REVERB_PORT="${REVERB_PORT}"
 VITE_REVERB_SCHEME="${REVERB_SCHEME}"
+
+# Multi-Tenancy (set automatically during setup:application)
+MULTI_TENANCY_ENABLED=false
 ```
 
 ### Redis Client Selection

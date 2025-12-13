@@ -156,7 +156,15 @@ return [
 
     'redis' => [
 
-        'client' => env('REDIS_CLIENT', (isProduction() || isStaging()) ? 'phpredis' : 'predis'),
+        'client' => env('REDIS_CLIENT', (function () {
+            // In production/staging, prefer phpredis if extension is available
+            if ((isProduction() || isStaging()) && extension_loaded('redis')) {
+                return 'phpredis';
+            }
+
+            // Default to predis (works without extension)
+            return 'predis';
+        })()),
 
         'options' => [
             'cluster' => 'redis',

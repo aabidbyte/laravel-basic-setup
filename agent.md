@@ -64,6 +64,16 @@ This is a Laravel 12 SaaS application built with Livewire Volt and Flux UI. The 
     -   Automatic client selection based on environment
 -   **Database**: MySQL (default), SQLite (testing)
 
+### Multi-Tenancy (Optional)
+
+-   **Stancl/Tenancy**: Multi-database tenancy package (optional, installed during setup)
+    -   Automatic installation via `php artisan setup:application`
+    -   Multi-database tenancy with domain-based identification
+    -   Separate database per tenant
+    -   Automatic tenant database creation and migration
+    -   Tenant routes in `routes/tenant.php`
+    -   Central routes in `routes/web.php`
+
 ## Project Structure
 
 ### Key Directories
@@ -79,6 +89,7 @@ app/
 ├── Models/
 │   ├── Base/             # Base model classes (BaseModel, BaseUserModel)
 │   ├── Concerns/         # Model traits (HasUuid, etc.)
+│   ├── Tenant.php        # Tenant model (created when multi-tenancy is enabled)
 │   └── *.php             # Eloquent models
 └── Providers/            # Service providers
 
@@ -90,8 +101,9 @@ resources/
 │   └── partials/         # Reusable partials
 
 routes/
-├── web.php              # Web routes (uses Volt for pages)
+├── web.php              # Web routes (uses Volt for pages) - Central domain routes when multi-tenancy enabled
 ├── api.php              # API routes
+├── tenant.php           # Tenant routes (created when multi-tenancy is enabled)
 └── channels.php         # Broadcasting channels
 
 tests/
@@ -379,9 +391,21 @@ $increment = fn () => $this->count++;
 composer install
 npm install
 php artisan key:generate
-php artisan migrate
+php artisan setup:application  # Interactive setup including multi-tenancy option
 npm run build
 ```
+
+**Multi-Tenancy Setup:**
+
+When running `php artisan setup:application`, you'll be asked if you want to use multi-tenancy. If selected:
+
+-   Installs `stancl/tenancy` package automatically
+-   Creates `app/Models/Tenant.php` model
+-   Sets up `config/tenancy.php` configuration
+-   Registers `TenancyServiceProvider` in `bootstrap/providers.php`
+-   Moves user migrations to `database/migrations/tenant/` folder
+-   Creates `routes/tenant.php` for tenant-specific routes
+-   Adds `MULTI_TENANCY_ENABLED=true` to `.env` file
 
 ### Development
 
@@ -416,6 +440,8 @@ vendor/bin/pint --dirty            # Format only changed files
 ### Optional Environment Variables
 
 Most configurations have stable defaults. Only override when necessary.
+
+-   `MULTI_TENANCY_ENABLED`: Set to `true` if multi-tenancy is enabled (set automatically during setup)
 
 ## Security Considerations
 
@@ -564,7 +590,8 @@ If you see `Auth::guard('web')->logout()` causing an error:
 9. **UUID generation required** - ALL models automatically generate UUIDs via base classes
 10. **Fix Intelephense errors** - Always update `IntelephenseHelper.php` when encountering undefined method errors
 11. **PSR-4 compliance required** - ALL classes must follow PSR-4 autoloading standards. Test support classes must be in `tests/Support/` with proper namespaces, never defined directly in test files
-12. **Update this file** when adding new patterns, conventions, or features
+12. **Multi-tenancy support** - Multi-tenancy is optional and can be enabled during `php artisan setup:application`. When enabled, uses Stancl/Tenancy package for multi-database tenancy
+13. **Update this file** when adding new patterns, conventions, or features
 
 ## Changelog
 
@@ -601,6 +628,15 @@ If you see `Auth::guard('web')->logout()` causing an error:
     -   Moved `TestModel` from test file to `tests/Support/Models/TestModel.php` with namespace `Tests\Support\Models`
     -   Added examples of correct vs incorrect patterns
     -   **Rule**: All classes must comply with PSR-4 autoloading standards to prevent autoloader warnings
+-   **Multi-Tenancy Support**: Added optional multi-tenancy installation via setup command
+    -   Integrated Stancl/Tenancy package installation into `php artisan setup:application`
+    -   Automatic package installation, configuration, and setup when user selects multi-tenancy
+    -   Creates Tenant model with HasDatabase and HasDomains traits
+    -   Automatically organizes migrations (moves users migration to tenant folder)
+    -   Registers TenancyServiceProvider conditionally in bootstrap/providers.php
+    -   Updates tenancy configuration with custom Tenant model and central domains
+    -   Adds MULTI_TENANCY_ENABLED flag to .env file
+    -   **Rule**: Multi-tenancy is optional and can be enabled during initial setup or added later manually
 
 ---
 

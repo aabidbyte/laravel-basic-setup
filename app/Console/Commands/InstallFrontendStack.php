@@ -17,7 +17,7 @@ class InstallFrontendStack extends Command
      *
      * @var string
      */
-    protected $signature = 'install:stack {--stack= : The frontend stack to install (livewire, react, vue)}';
+    protected $signature = 'install:stack {--stack= : The frontend stack to install (blade, livewire, react, vue)}';
 
     /**
      * The console command description.
@@ -34,16 +34,17 @@ class InstallFrontendStack extends Command
         $stack = $this->option('stack') ?? select(
             label: 'Which frontend stack would you like to install?',
             options: [
+                'blade' => 'Blade (Traditional server-side rendering with Blade templates)',
                 'livewire' => 'Livewire (Server-side components with Volt & Flux UI)',
                 'react' => 'React (Inertia.js with React)',
                 'vue' => 'Vue (Inertia.js with Vue 3)',
             ],
-            default: 'livewire',
+            default: 'blade',
             hint: 'You can change this later by running the command again.'
         );
 
-        if (! in_array($stack, ['livewire', 'react', 'vue'])) {
-            error("Invalid stack: {$stack}. Must be 'livewire', 'react', or 'vue'.");
+        if (! in_array($stack, ['blade', 'livewire', 'react', 'vue'])) {
+            error("Invalid stack: {$stack}. Must be 'blade', 'livewire', 'react', or 'vue'.");
 
             return self::FAILURE;
         }
@@ -51,6 +52,7 @@ class InstallFrontendStack extends Command
         info("Installing {$stack} stack...");
 
         match ($stack) {
+            'blade' => $this->installBlade(),
             'livewire' => $this->installLivewire(),
             'react' => $this->installReact(),
             'vue' => $this->installVue(),
@@ -65,6 +67,36 @@ class InstallFrontendStack extends Command
         info('4. Run: php artisan migrate');
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Install Blade-only stack.
+     */
+    protected function installBlade(): void
+    {
+        $this->info('Setting up Blade-only stack...');
+
+        // Ensure app.js exists with basic setup
+        if (! File::exists(resource_path('js/app.js'))) {
+            $appJs = <<<'JS'
+/**
+ * Echo exposes an expressive API for subscribing to channels and listening
+ * for events that are broadcast by Laravel. Echo and event broadcasting
+ * allow your team to quickly build robust real-time web applications.
+ */
+
+import './echo';
+JS;
+            File::put(resource_path('js/app.js'), $appJs);
+        }
+
+        // Set up Vite config for Blade
+        $this->createBladeViteConfig();
+
+        // Clean up other stack files
+        $this->cleanupOtherStacks(['livewire', 'react', 'vue']);
+
+        $this->info('✅ Blade stack configured. No additional packages required.');
     }
 
     /**
@@ -125,7 +157,7 @@ class InstallFrontendStack extends Command
         }
 
         // Clean up other stack files
-        $this->cleanupOtherStacks(['livewire', 'vue']);
+        $this->cleanupOtherStacks(['blade', 'livewire', 'vue']);
     }
 
     /**
@@ -162,7 +194,7 @@ class InstallFrontendStack extends Command
         }
 
         // Clean up other stack files
-        $this->cleanupOtherStacks(['livewire', 'react']);
+        $this->cleanupOtherStacks(['blade', 'livewire', 'react']);
     }
 
     /**
@@ -412,6 +444,35 @@ VUE;
     }
 
     /**
+     * Create Blade Vite config.
+     */
+    protected function createBladeViteConfig(): void
+    {
+        $config = <<<'JS'
+import { defineConfig } from 'vite';
+import laravel from 'laravel-vite-plugin';
+import tailwindcss from "@tailwindcss/vite";
+
+export default defineConfig({
+    plugins: [
+        laravel({
+            input: ['resources/css/app.css', 'resources/js/app.js'],
+            refresh: true,
+        }),
+        tailwindcss(),
+    ],
+    server: {
+        cors: true,
+        watch: {
+            ignored: ['**/storage/framework/views/**'],
+        },
+    },
+});
+JS;
+        File::put(base_path('vite.config.js'), $config);
+    }
+
+    /**
      * Create React Vite config.
      */
     protected function createReactViteConfig(): void
@@ -497,11 +558,21 @@ JS;
     {
         foreach ($stacksToClean as $stack) {
             match ($stack) {
+                'blade' => $this->cleanupBlade(),
                 'livewire' => $this->cleanupLivewire(),
                 'react' => $this->cleanupReact(),
                 'vue' => $this->cleanupVue(),
             };
         }
+    }
+
+    /**
+     * Clean up Blade files.
+     */
+    protected function cleanupBlade(): void
+    {
+        // Blade doesn't have specific files to clean up
+        // This is mainly for consistency in the cleanup system
     }
 
     /**
