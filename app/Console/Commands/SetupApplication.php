@@ -104,6 +104,7 @@ class SetupApplication extends Command
         $dbDatabase = '';
         $dbUsername = 'root';
         $dbPassword = '';
+        $isMySQL8Plus = false;
 
         // SQLite doesn't need host, port, username, password
         if ($connection !== 'sqlite') {
@@ -140,6 +141,23 @@ class SetupApplication extends Command
                 label: 'Database password',
                 hint: 'The database password (leave empty if no password).'
             );
+
+            // Ask about MySQL version if using MySQL/MariaDB
+            if ($connection === 'mysql' || $connection === 'mariadb') {
+                info('');
+                $isMySQL8Plus = confirm(
+                    label: 'Are you using MySQL 8.0+ or MariaDB 10.4+?',
+                    default: true,
+                    hint: 'These versions use "caching_sha2_password" authentication by default.'
+                );
+
+                // Default to caching_sha2_password for MySQL 8.0+
+                if ($isMySQL8Plus) {
+                    info('');
+                    info('✅ Will use "caching_sha2_password" authentication (default for MySQL 8.0+).');
+                    info('');
+                }
+            }
         } else {
             // SQLite: ask for database file path
             $dbDatabase = text(
@@ -192,8 +210,25 @@ class SetupApplication extends Command
         } catch (\Exception $e) {
             error('❌ Database connection failed: '.$e->getMessage());
             info('');
-            info('Please check your database credentials and try again.');
-            info('You can manually update the .env file and run: php artisan migrate');
+
+            // Provide brief guidance for common MySQL errors
+            $errorMessage = $e->getMessage();
+            if (str_contains($errorMessage, 'mysql_native_password')) {
+                info('💡 MySQL authentication plugin issue detected.');
+                info('   Update your MySQL user to use caching_sha2_password (default for MySQL 8.0+):');
+                info('   ALTER USER \''.$dbUsername.'\'@\''.$dbHost.'\' IDENTIFIED WITH caching_sha2_password BY \''.$dbPassword.'\';');
+                info('   FLUSH PRIVILEGES;');
+                info('');
+            } elseif (str_contains($errorMessage, 'Access denied')) {
+                info('💡 Please verify your database username and password are correct.');
+                info('');
+            } elseif (str_contains($errorMessage, 'Unknown database')) {
+                info('💡 The database does not exist. Please create it first.');
+                info('');
+            }
+
+            info('You can manually update the .env file and try again.');
+            info('Or run: php artisan migrate (after fixing the database connection)');
 
             return self::FAILURE;
         }
