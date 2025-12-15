@@ -14,6 +14,7 @@
 
 <script>
     // Initialize theme from localStorage or system preference
+    // This runs synchronously to prevent FOUC (Flash of Unstyled Content)
     (function() {
         const theme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ?
             'dark' : 'light');

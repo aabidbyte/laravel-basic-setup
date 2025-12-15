@@ -29,10 +29,9 @@
                         </li>
                         <li><a href="{{ route('profile.edit') }}" wire:navigate>{{ __('Settings') }}</a></li>
                         <li>
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit" data-test="logout-button">{{ __('Log Out') }}</button>
-                            </form>
+                            <x-ui.form method="POST" action="{{ route('logout') }}">
+                                <x-ui.button type="submit" data-test="logout-button">{{ __('Log Out') }}</x-ui.button>
+                            </x-ui.form>
                         </li>
                     </ul>
                 </div>
@@ -108,10 +107,9 @@
                         </li>
                         <li><a href="{{ route('profile.edit') }}" wire:navigate>{{ __('Settings') }}</a></li>
                         <li>
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit" data-test="logout-button">{{ __('Log Out') }}</button>
-                            </form>
+                            <x-ui.form method="POST" action="{{ route('logout') }}">
+                                <x-ui.button type="submit" data-test="logout-button">{{ __('Log Out') }}</x-ui.button>
+                            </x-ui.form>
                         </li>
                     </ul>
                 </div>

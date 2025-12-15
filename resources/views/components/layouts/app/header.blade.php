@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
     @include('partials.head')
@@ -83,9 +83,8 @@
 
                     <div class="divider my-2"></div>
 
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit"
+                    <x-ui.form method="POST" action="{{ route('logout') }}">
+                        <x-ui.button type="submit"
                             class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-base-content hover:bg-base-200"
                             data-test="logout-button">
                             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,8 +92,8 @@
                                     d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                             </svg>
                             {{ __('Log Out') }}
-                        </button>
-                    </form>
+                        </x-ui.button>
+                    </x-ui.form>
                 </div>
             </div>
         </div>

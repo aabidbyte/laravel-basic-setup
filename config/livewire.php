@@ -15,7 +15,6 @@ return [
 
     'component_locations' => [
         resource_path('views/components'),
-        resource_path('views/pages'),
     ],
 
     /*
@@ -30,7 +29,7 @@ return [
     */
 
     'component_namespaces' => [
-        'layouts' => resource_path('views/layouts'),
+        'layouts' => resource_path('views/components/layouts'),
         'pages' => resource_path('views/pages'),
     ],
 
@@ -56,7 +55,7 @@ return [
     |
     */
 
-    'component_placeholder' => 'livewire.placeholder',
+    'component_placeholder' => 'components.ui.placeholder',
 
     /*
     |---------------------------------------------------------------------------

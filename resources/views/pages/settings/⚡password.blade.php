@@ -42,7 +42,7 @@ new class extends Component {
     @include('partials.settings-heading')
 
     <x-settings.layout :heading="__('Update password')" :subheading="__('Ensure your account is using a long, random password to stay secure')">
-        <form method="POST" wire:submit="updatePassword" class="mt-6 space-y-6">
+        <x-ui.form method="POST" wire:submit="updatePassword">
             <x-ui.input type="password" wire:model="current_password" name="current_password" :label="__('Current password')" required
                 autocomplete="current-password" />
 
@@ -61,6 +61,6 @@ new class extends Component {
                     {{ __('Saved.') }}
                 </x-action-message>
             </div>
-        </form>
+        </x-ui.form>
     </x-settings.layout>
 </section>

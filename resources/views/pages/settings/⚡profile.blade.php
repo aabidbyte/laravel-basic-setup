@@ -67,32 +67,29 @@ new class extends Component {
     @include('partials.settings-heading')
 
     <x-settings.layout :heading="__('Profile')" :subheading="__('Update your name and email address')">
-        <form wire:submit="updateProfileInformation" class="my-6 w-full space-y-6">
+        <x-ui.form wire:submit="updateProfileInformation" class="w-full">
             <x-ui.input type="text" wire:model="name" name="name" :label="__('Name')" required autofocus
                 autocomplete="name" />
 
-            <div>
-                <x-ui.input type="email" wire:model="email" name="email" :label="__('Email')" required
-                    autocomplete="email" />
+            <x-ui.input type="email" wire:model="email" name="email" :label="__('Email')" required autocomplete="email" />
 
-                @if (auth()->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !auth()->user()->hasVerifiedEmail())
-                    <div class="alert alert-info mt-4">
-                        <span class="text-sm">
-                            {{ __('Your email address is unverified.') }}
-                            <button type="button" wire:click.prevent="resendVerificationNotification"
-                                class="link link-primary">
-                                {{ __('Click here to re-send the verification email.') }}
-                            </button>
-                        </span>
+            @if (auth()->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !auth()->user()->hasVerifiedEmail())
+                <div class="alert alert-info mt-4">
+                    <span class="text-sm">
+                        {{ __('Your email address is unverified.') }}
+                        <button type="button" wire:click.prevent="resendVerificationNotification"
+                            class="link link-primary">
+                            {{ __('Click here to re-send the verification email.') }}
+                        </button>
+                    </span>
+                </div>
+
+                @if (session('status') === 'verification-link-sent')
+                    <div class="alert alert-success mt-2">
+                        <span>{{ __('A new verification link has been sent to your email address.') }}</span>
                     </div>
-
-                    @if (session('status') === 'verification-link-sent')
-                        <div class="alert alert-success mt-2">
-                            <span>{{ __('A new verification link has been sent to your email address.') }}</span>
-                        </div>
-                    @endif
                 @endif
-            </div>
+            @endif
 
             <div class="flex items-center gap-4">
                 <x-ui.button type="submit" variant="primary" class="w-full" data-test="update-profile-button">
@@ -103,7 +100,7 @@ new class extends Component {
                     {{ __('Saved.') }}
                 </x-action-message>
             </div>
-        </form>
+        </x-ui.form>
 
         <livewire:settings.delete-user-form />
     </x-settings.layout>

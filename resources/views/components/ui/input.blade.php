@@ -9,13 +9,16 @@
     $hasError = $error || ($errors->has($attributes->get('name')) ?? false);
 @endphp
 
-<label class="form-control w-full">
+<label class="flex flex-col gap-2">
     @if ($label)
         <div class="label">
             <span class="label-text">{{ $label }}@if ($required)
                     <span class="text-error">*</span>
                 @endif
             </span>
+            @isset($labelAppend)
+                {{ $labelAppend }}
+            @endisset
         </div>
     @endif
     <input

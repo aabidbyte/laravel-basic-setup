@@ -414,6 +414,22 @@ it('tests something', function () {
 -   **Styling**: Tailwind CSS v4 (use `@import "tailwindcss"` not `@tailwind` directives)
 -   **Dark Mode**: Support dark mode using `dark:` classes when applicable
 -   **Spacing**: Use `gap` utilities instead of margins for flex/grid layouts
+-   **Alpine.js Preference**: **Always prefer Alpine.js over plain JavaScript when possible**
+    -   Alpine.js is included with Livewire (no manual inclusion needed)
+    -   Use Alpine.js directives (`x-data`, `x-init`, `x-show`, `x-on:click`, `@click`, etc.) instead of `onclick`, `addEventListener`, `querySelector`, etc.
+    -   Use `$el` to reference the current element in Alpine.js expressions
+    -   Use `$nextTick()` for DOM updates that need to wait for the next render cycle
+    -   Use `$refs` for referencing child elements when possible (e.g., `x-ref="modal"` then `$refs.modal`)
+    -   **When plain JavaScript is acceptable:**
+        -   Complex third-party library integrations that require direct DOM manipulation
+        -   Web APIs that don't work well with Alpine.js (e.g., some browser APIs)
+        -   Debug instrumentation code (temporary logging/debugging)
+        -   When referencing elements by ID that aren't the current element (though `$refs` is preferred)
+    -   **Examples:**
+        -   ✅ `@click="$el.closest('dialog').close()"` instead of `onclick="document.getElementById('id').close()"`
+        -   ✅ `x-init="$nextTick(() => $el.showModal())"` instead of `x-init="$nextTick(() => { const modal = document.getElementById('id'); if (modal) modal.showModal(); })"`
+        -   ✅ `x-data="{ open: false }" x-show="open"` instead of manually toggling classes with JavaScript
+        -   ✅ `x-ref="modal"` then `$refs.modal.showModal()` instead of `document.getElementById('modal').showModal()`
 
 ## Key Features
 

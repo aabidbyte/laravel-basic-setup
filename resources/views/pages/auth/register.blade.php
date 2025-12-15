@@ -4,8 +4,7 @@
 
         <x-auth-session-status class="text-center" :status="session('status')" />
 
-        <form method="POST" action="{{ route('register.store') }}" class="flex flex-col gap-6">
-            @csrf
+        <x-ui.form method="POST" action="{{ route('register.store') }}" class="flex flex-col">
 
             <x-ui.input type="text" name="name" :label="__('Name')" :value="old('name')" required autofocus
                 autocomplete="name" :placeholder="__('Full name')" />
@@ -22,7 +21,7 @@
             <x-ui.button type="submit" variant="primary" class="w-full" data-test="register-user-button">
                 {{ __('Create account') }}
             </x-ui.button>
-        </form>
+        </x-ui.form>
 
         <div class="text-center text-sm text-base-content/70">
             <span>{{ __('Already have an account?') }}</span>
