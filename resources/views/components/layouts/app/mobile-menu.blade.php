@@ -30,7 +30,7 @@
                 <form method="POST" action="{{ route('logout') }}" class="w-full">
                     @csrf
                     <button type="submit" class="w-full" data-test="logout-button">
-                        {{ __('Log Out') }}
+                        {{ __('ui.actions.logout') }}
                     </button>
                 </form>
             </div>

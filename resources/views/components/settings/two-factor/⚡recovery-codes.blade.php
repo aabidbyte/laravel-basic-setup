@@ -52,16 +52,16 @@ new class extends Component {
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
-            <h3 class="text-lg font-bold text-base-content">{{ __('2FA Recovery Codes') }}</h3>
+            <h3 class="text-lg font-bold text-base-content">{{ __('ui.settings.two_factor.recovery.title') }}</h3>
         </div>
         <p class="text-sm text-base-content/70 mb-4">
-            {{ __('Recovery codes let you regain access if you lose your 2FA device. Store them in a secure password manager.') }}
+            {{ __('ui.settings.two_factor.recovery.description') }}
         </p>
 
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <x-ui.button type="button" x-show="!showRecoveryCodes" @click="showRecoveryCodes = true" variant="primary"
                 aria-expanded="false" aria-controls="recovery-codes-section">
-                {{ __('View Recovery Codes') }}
+                {{ __('ui.settings.two_factor.recovery.view_button') }}
             </x-ui.button>
 
             <x-ui.button type="button" x-show="showRecoveryCodes" @click="showRecoveryCodes = false" variant="primary"
@@ -72,7 +72,7 @@ new class extends Component {
             @if (filled($recoveryCodes))
                 <x-ui.button type="button" x-show="showRecoveryCodes" wire:click="regenerateRecoveryCodes"
                     variant="outline">
-                    {{ __('Regenerate Codes') }}
+                    {{ __('ui.settings.two_factor.recovery.regenerate_button') }}
                 </x-ui.button>
             @endif
         </div>
@@ -98,7 +98,7 @@ new class extends Component {
                     </div>
                 </div>
                 <p class="text-xs text-base-content/70 mt-2">
-                    {{ __('Each recovery code can be used once to access your account and will be removed after use. If you need more, click Regenerate Codes above.') }}
+                    {{ __('ui.settings.two_factor.recovery.warning') }}
                 </p>
             @endif
         </div>

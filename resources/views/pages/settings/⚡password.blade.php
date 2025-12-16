@@ -41,24 +41,24 @@ new class extends Component {
 <section class="w-full">
     @include('partials.settings-heading')
 
-    <x-settings.layout :heading="__('Update password')" :subheading="__('Ensure your account is using a long, random password to stay secure')">
+    <x-settings.layout :heading="__('ui.settings.password.title')" :subheading="__('ui.settings.password.description')">
         <x-ui.form method="POST" wire:submit="updatePassword">
-            <x-ui.input type="password" wire:model="current_password" name="current_password" :label="__('Current password')" required
+            <x-ui.input type="password" wire:model="current_password" name="current_password" :label="__('ui.settings.password.current_password_label')" required
                 autocomplete="current-password" />
 
-            <x-ui.input type="password" wire:model="password" name="password" :label="__('New password')" required
+            <x-ui.input type="password" wire:model="password" name="password" :label="__('ui.settings.password.new_password_label')" required
                 autocomplete="new-password" />
 
             <x-ui.input type="password" wire:model="password_confirmation" name="password_confirmation"
-                :label="__('Confirm Password')" required autocomplete="new-password" />
+                :label="__('ui.settings.password.confirm_password_label')" required autocomplete="new-password" />
 
             <div class="flex items-center gap-4">
                 <x-ui.button type="submit" variant="primary" class="w-full" data-test="update-password-button">
-                    {{ __('Save') }}
+                    {{ __('ui.actions.save') }}
                 </x-ui.button>
 
                 <x-action-message class="me-3" on="password-updated">
-                    {{ __('Saved.') }}
+                    {{ __('ui.settings.password.save_success') }}
                 </x-action-message>
             </div>
         </x-ui.form>

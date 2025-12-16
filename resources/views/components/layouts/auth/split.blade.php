@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ $i18n->getHtmlLangAttribute() }}" dir="{{ $i18n->getHtmlDirAttribute() }}">
 
 <head>
     @include('partials.head')

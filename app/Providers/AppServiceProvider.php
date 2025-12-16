@@ -28,7 +28,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-
         /** @var Kernel $kernel */
         $kernel = app()->make(Kernel::class);
 
@@ -36,6 +35,5 @@ class AppServiceProvider extends ServiceProvider
             TeamsPermission::class,
             SubstituteBindings::class,
         );
-
     }
 }

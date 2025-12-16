@@ -15,13 +15,11 @@
             },
         }">
             <div x-show="!showRecoveryInput">
-                <x-auth-header :title="__('Authentication Code')" :description="__('Enter the authentication code provided by your authenticator application.')" />
+                <x-auth-header :title="__('ui.auth.two_factor.title')" :description="__('ui.auth.two_factor.description')" />
             </div>
 
             <div x-show="showRecoveryInput">
-                <x-auth-header :title="__('Recovery Code')" :description="__(
-                    'Please confirm access to your account by entering one of your emergency recovery codes.',
-                )" />
+                <x-auth-header :title="__('ui.auth.two_factor.recovery_title')" :description="__('ui.auth.two_factor.recovery_description')" />
             </div>
 
             <form method="POST" action="{{ route('two-factor.login.store') }}">
@@ -48,19 +46,19 @@
                     <div x-show="showRecoveryInput">
                         <x-ui.input type="text" name="recovery_code" x-ref="recovery_code"
                             x-bind:required="showRecoveryInput" autocomplete="one-time-code" x-model="recovery_code"
-                            :label="__('Recovery Code')" />
+                            :label="__('ui.auth.two_factor.recovery_code_label')" />
                     </div>
 
                     <x-ui.button type="submit" variant="primary" class="w-full">
-                        {{ __('Continue') }}
+                        {{ __('ui.actions.continue') }}
                     </x-ui.button>
                 </div>
 
                 <div class="mt-5 text-center text-sm text-base-content/70">
-                    <span>{{ __('or you can') }}</span>
+                    <span>{{ __('ui.auth.two_factor.switch_to_recovery') }}</span>
                     <button type="button" @click="toggleInput()" class="link link-primary">
-                        <span x-show="!showRecoveryInput">{{ __('login using a recovery code') }}</span>
-                        <span x-show="showRecoveryInput">{{ __('login using an authentication code') }}</span>
+                        <span x-show="!showRecoveryInput">{{ __('ui.auth.two_factor.use_recovery_code') }}</span>
+                        <span x-show="showRecoveryInput">{{ __('ui.auth.two_factor.use_auth_code') }}</span>
                     </button>
                 </div>
             </form>

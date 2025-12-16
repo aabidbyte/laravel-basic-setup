@@ -4,13 +4,13 @@
             <li>
                 <a href="{{ route('profile.edit') }}" wire:navigate
                     class="{{ request()->routeIs('profile.edit') ? 'active' : '' }}">
-                    {{ __('Profile') }}
+                    {{ __('ui.settings.profile.title') }}
                 </a>
             </li>
             <li>
                 <a href="{{ route('user-password.edit') }}" wire:navigate
                     class="{{ request()->routeIs('user-password.edit') ? 'active' : '' }}">
-                    {{ __('Password') }}
+                    {{ __('ui.settings.password.title') }}
                 </a>
             </li>
             @if (Laravel\Fortify\Features::canManageTwoFactorAuthentication())
@@ -24,7 +24,7 @@
             <li>
                 <a href="{{ route('appearance.edit') }}" wire:navigate
                     class="{{ request()->routeIs('appearance.edit') ? 'active' : '' }}">
-                    {{ __('Appearance') }}
+                    {{ __('ui.settings.appearance.title') }}
                 </a>
             </li>
         </ul>

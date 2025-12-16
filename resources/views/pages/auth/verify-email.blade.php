@@ -2,14 +2,14 @@
     <div class="mt-4 flex flex-col gap-6">
         <div class="alert">
             <span class="text-base-content/70">
-                {{ __('Please verify your email address by clicking on the link we just emailed to you.') }}
+                {{ __('ui.auth.verify_email.message') }}
             </span>
         </div>
 
         @if (session('status') == 'verification-link-sent')
             <div class="alert alert-success">
                 <span>
-                    {{ __('A new verification link has been sent to the email address you provided during registration.') }}
+                    {{ __('ui.auth.verify_email.resend_success') }}
                 </span>
             </div>
         @endif
@@ -18,14 +18,14 @@
             <form method="POST" action="{{ route('verification.send') }}">
                 @csrf
                 <x-ui.button type="submit" variant="primary" class="w-full">
-                    {{ __('Resend verification email') }}
+                    {{ __('ui.auth.verify_email.resend_button') }}
                 </x-ui.button>
             </form>
 
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <x-ui.button type="submit" variant="ghost" class="text-sm" data-test="logout-button">
-                    {{ __('Log out') }}
+                    {{ __('ui.actions.logout') }}
                 </x-ui.button>
             </form>
         </div>

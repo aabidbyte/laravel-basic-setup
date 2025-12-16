@@ -17,10 +17,10 @@ class SideBarMenuService
     public function getTopMenus(): array
     {
         return NavigationBuilder::make()
-            ->title(__('Platform'))
+            ->title(__('ui.navigation.platform'))
             ->items(
                 NavigationItem::make()
-                    ->title(__('Dashboard'))
+                    ->title(__('ui.navigation.dashboard'))
                     ->route('dashboard')
                     ->icon('home')
             )
@@ -60,10 +60,10 @@ class SideBarMenuService
     public function getUserMenus(): array
     {
         return NavigationBuilder::make()
-            ->title(__('User'))
+            ->title(__('ui.navigation.user'))
             ->items(
                 NavigationItem::make()
-                    ->title(__('Settings'))
+                    ->title(__('ui.navigation.settings'))
                     ->route('profile.edit')
             )
             ->toArray();

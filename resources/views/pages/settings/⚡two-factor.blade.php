@@ -153,9 +153,9 @@ new class extends Component {
     {
         if ($this->twoFactorEnabled) {
             return [
-                'title' => __('Two-Factor Authentication Enabled'),
-                'description' => __('Two-factor authentication is now enabled. Scan the QR code or enter the setup key in your authenticator app.'),
-                'buttonText' => __('Close'),
+                'title' => __('ui.settings.two_factor.setup.title_enabled'),
+                'description' => __('ui.settings.two_factor.setup.description_enabled'),
+                'buttonText' => __('ui.actions.close'),
             ];
         }
 
@@ -168,9 +168,9 @@ new class extends Component {
         }
 
         return [
-            'title' => __('Enable Two-Factor Authentication'),
-            'description' => __('To finish enabling two-factor authentication, scan the QR code or enter the setup key in your authenticator app.'),
-            'buttonText' => __('Continue'),
+            'title' => __('ui.settings.two_factor.setup.title_setup'),
+            'description' => __('ui.settings.two_factor.setup.description_setup'),
+            'buttonText' => __('ui.actions.continue'),
         ];
     }
 }; ?>
@@ -178,7 +178,7 @@ new class extends Component {
 <section class="w-full">
     @include('partials.settings-heading')
 
-    <x-settings.layout :heading="__('Two Factor Authentication')" :subheading="__('Manage your two-factor authentication settings')">
+    <x-settings.layout :heading="__('ui.settings.two_factor.title')" :subheading="__('ui.settings.two_factor.description')">
         <div class="flex flex-col w-full mx-auto space-y-6" wire:cloak>
             @if ($twoFactorEnabled)
                 <div class="card bg-base-200">
@@ -188,14 +188,14 @@ new class extends Component {
                         </div>
 
                         <p class="text-base-content/70">
-                            {{ __('With two-factor authentication enabled, you will be prompted for a secure, random pin during login, which you can retrieve from the TOTP-supported application on your phone.') }}
+                            {{ __('ui.settings.two_factor.enabled_description') }}
                         </p>
 
                         <livewire:settings.two-factor.recovery-codes :$requiresConfirmation />
 
                         <div class="card-actions">
                             <x-ui.button type="button" wire:click="disable" variant="error">
-                                {{ __('Disable 2FA') }}
+                                {{ __('ui.settings.two_factor.disable_button') }}
                             </x-ui.button>
                         </div>
                     </div>
@@ -204,16 +204,16 @@ new class extends Component {
                 <div class="card bg-base-200">
                     <div class="card-body">
                         <div class="flex items-center gap-3">
-                            <span class="badge badge-error badge-lg">{{ __('Disabled') }}</span>
+                            <span class="badge badge-error badge-lg">{{ __('ui.settings.two_factor.disabled') }}</span>
                         </div>
 
                         <p class="text-base-content/70">
-                            {{ __('When you enable two-factor authentication, you will be prompted for a secure pin during login. This pin can be retrieved from a TOTP-supported application on your phone.') }}
+                            {{ __('ui.settings.two_factor.disabled_description') }}
                         </p>
 
                         <div class="card-actions">
                             <x-ui.button type="button" wire:click="enable" variant="primary">
-                                {{ __('Enable 2FA') }}
+                                {{ __('ui.settings.two_factor.enable_button') }}
                             </x-ui.button>
                         </div>
                     </div>

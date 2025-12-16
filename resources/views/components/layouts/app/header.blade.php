@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ $i18n->getHtmlLangAttribute() }}" dir="{{ $i18n->getHtmlDirAttribute() }}">
 
 <head>
     @include('partials.head')
@@ -19,7 +19,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                 </svg>
-                {{ __('Dashboard') }}
+                {{ __('ui.navigation.dashboard') }}
             </a>
         </nav>
 
@@ -28,7 +28,7 @@
         <nav class="hidden lg:flex lg:items-center lg:gap-1">
             <a href="https://github.com/laravel/livewire-starter-kit" target="_blank"
                 class="flex h-10 items-center justify-center rounded-lg px-3 text-base-content/70 hover:bg-base-300 hover:text-base-content"
-                title="{{ __('Repository') }}">
+                title="{{ __('ui.navigation.repository') }}">
                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
@@ -36,7 +36,7 @@
             </a>
             <a href="https://laravel.com/docs/starter-kits#livewire" target="_blank"
                 class="flex h-10 items-center justify-center rounded-lg px-3 text-base-content/70 hover:bg-base-300 hover:text-base-content"
-                title="{{ __('Documentation') }}">
+                title="{{ __('ui.navigation.documentation') }}">
                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
@@ -78,7 +78,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
-                        {{ __('Settings') }}
+                        {{ __('ui.navigation.settings') }}
                     </a>
 
                     <div class="divider my-2"></div>
@@ -91,7 +91,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                             </svg>
-                            {{ __('Log Out') }}
+                            {{ __('ui.actions.logout') }}
                         </x-ui.button>
                     </x-ui.form>
                 </div>

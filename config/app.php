@@ -73,16 +73,18 @@ return [
     |--------------------------------------------------------------------------
     |
     | The application locale determines the default locale that will be used
-    | by Laravel's translation / localization methods. This option can be
-    | set to any locale for which you plan to have translation strings.
+    | by Laravel's translation / localization methods. These values are now
+    | managed in config/i18n.php for centralized internationalization.
+    |
+    | See config/i18n.php for supported locales and metadata.
     |
     */
 
-    'locale' => env('APP_LOCALE', 'en'),
+    'locale' => config('i18n.default_locale', 'en_US'),
 
-    'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
+    'fallback_locale' => config('i18n.fallback_locale', 'en_US'),
 
-    'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
+    'faker_locale' => config('i18n.faker_locale', 'en_US'),
 
     /*
     |--------------------------------------------------------------------------

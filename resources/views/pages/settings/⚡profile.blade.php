@@ -66,38 +66,38 @@ new class extends Component {
 <section class="w-full">
     @include('partials.settings-heading')
 
-    <x-settings.layout :heading="__('Profile')" :subheading="__('Update your name and email address')">
+    <x-settings.layout :heading="__('ui.settings.profile.title')" :subheading="__('ui.settings.profile.description')">
         <x-ui.form wire:submit="updateProfileInformation" class="w-full">
-            <x-ui.input type="text" wire:model="name" name="name" :label="__('Name')" required autofocus
+            <x-ui.input type="text" wire:model="name" name="name" :label="__('ui.settings.profile.name_label')" required autofocus
                 autocomplete="name" />
 
-            <x-ui.input type="email" wire:model="email" name="email" :label="__('Email')" required autocomplete="email" />
+            <x-ui.input type="email" wire:model="email" name="email" :label="__('ui.settings.profile.email_label')" required autocomplete="email" />
 
             @if (auth()->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !auth()->user()->hasVerifiedEmail())
                 <div class="alert alert-info mt-4">
                     <span class="text-sm">
-                        {{ __('Your email address is unverified.') }}
+                        {{ __('ui.settings.profile.email_unverified') }}
                         <button type="button" wire:click.prevent="resendVerificationNotification"
                             class="link link-primary">
-                            {{ __('Click here to re-send the verification email.') }}
+                            {{ __('ui.settings.profile.resend_verification') }}
                         </button>
                     </span>
                 </div>
 
                 @if (session('status') === 'verification-link-sent')
                     <div class="alert alert-success mt-2">
-                        <span>{{ __('A new verification link has been sent to your email address.') }}</span>
+                        <span>{{ __('ui.settings.profile.verification_sent') }}</span>
                     </div>
                 @endif
             @endif
 
             <div class="flex items-center gap-4">
                 <x-ui.button type="submit" variant="primary" class="w-full" data-test="update-profile-button">
-                    {{ __('Save') }}
+                    {{ __('ui.actions.save') }}
                 </x-ui.button>
 
                 <x-action-message class="me-3" on="profile-updated">
-                    {{ __('Saved.') }}
+                    {{ __('ui.settings.profile.save_success') }}
                 </x-action-message>
             </div>
         </x-ui.form>

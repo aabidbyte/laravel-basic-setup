@@ -9,7 +9,7 @@ new class extends Component {
 <section class="w-full">
     @include('partials.settings-heading')
 
-    <x-settings.layout :heading="__('Appearance')" :subheading="__('Update the appearance settings for your account')">
+    <x-settings.layout :heading="__('ui.settings.appearance.title')" :subheading="__('ui.settings.appearance.description')">
         <div x-data="{
             theme: localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
             init() {
@@ -24,9 +24,9 @@ new class extends Component {
             }
         }" class="join join-vertical sm:join-horizontal">
             <input type="radio" name="theme-options" x-model="theme" value="light" class="btn join-item"
-                :class="{ 'btn-active': theme === 'light' }" aria-label="{{ __('Light') }}" />
+                :class="{ 'btn-active': theme === 'light' }" aria-label="{{ __('ui.settings.appearance.light') }}" />
             <input type="radio" name="theme-options" x-model="theme" value="dark" class="btn join-item"
-                :class="{ 'btn-active': theme === 'dark' }" aria-label="{{ __('Dark') }}" />
+                :class="{ 'btn-active': theme === 'dark' }" aria-label="{{ __('ui.settings.appearance.dark') }}" />
         </div>
     </x-settings.layout>
 </section>

@@ -80,11 +80,11 @@ new class extends Component {
 
             <div class="flex gap-2">
                 <x-ui.button type="button" variant="outline" wire:click="resetVerification" class="flex-1">
-                    {{ __('Back') }}
+                    {{ __('ui.actions.back') }}
                 </x-ui.button>
                 <x-ui.button type="button" variant="primary" wire:click="confirmTwoFactor"
                     x-bind:disabled="!$wire.code || $wire.code.length < 6" class="flex-1">
-                    {{ __('Confirm') }}
+                    {{ __('ui.actions.confirm') }}
                 </x-ui.button>
             </div>
         </div>
@@ -111,7 +111,7 @@ new class extends Component {
         </div>
     </div>
 
-    <div class="divider">{{ __('or, enter the code manually') }}</div>
+    <div class="divider">{{ __('ui.settings.two_factor.setup.manual_code_label') }}</div>
 
     <div class="join w-full">
         <input type="text" readonly value="{{ $manualSetupKey }}"
@@ -137,7 +137,7 @@ new class extends Component {
 
 <x-slot:actions>
     <x-ui.button type="button" variant="primary" wire:click="$parent.showVerificationIfNecessary">
-        {{ $modalConfig['buttonText'] ?? __('Continue') }}
+        {{ $modalConfig['buttonText'] ?? __('ui.actions.continue') }}
     </x-ui.button>
 </x-slot:actions>
 </x-ui.modal>

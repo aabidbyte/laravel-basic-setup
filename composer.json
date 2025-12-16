@@ -50,7 +50,9 @@
             "Database\\Seeders\\": "database/seeders/"
         },
         "files": [
-            "app/helpers/app-helpers.php"
+            "app/helpers/app-helpers.php",
+            "app/helpers/dateTime.php",
+            "app/helpers/currency.php"
         ]
     },
     "autoload-dev": {

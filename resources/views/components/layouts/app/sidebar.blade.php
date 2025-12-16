@@ -1,5 +1,3 @@
-@inject('menuService', \App\Services\SideBarMenuService::class)
-
 <div class="drawer lg:drawer-open">
     <input id="sidebar-drawer" type="checkbox" class="drawer-toggle" />
     <div class="drawer-content flex flex-col">

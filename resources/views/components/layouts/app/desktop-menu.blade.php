@@ -45,7 +45,7 @@
                     <form method="POST" action="{{ route('logout') }}" class="mx-auto">
                         @csrf
                         <x-ui.button type="submit" class="w-full">
-                            {{ __('Log Out') }}
+                            {{ __('ui.actions.logout') }}
                         </x-ui.button>
                     </form>
                 </div>

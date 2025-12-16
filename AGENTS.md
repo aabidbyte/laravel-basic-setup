@@ -181,7 +181,11 @@ These helpers are automatically loaded via Composer autoload and should be used 
     -   Use PHP 8 constructor property promotion
     -   Always use explicit return type declarations
     -   Use appropriate type hints for method parameters
+    -   **Always use function guards and early returns** - Check for invalid conditions first and return early to reduce nesting and improve readability
 -   **PHPDoc**: Prefer PHPDoc blocks over inline comments
+-   **Helper Functions**: **Do NOT use `function_exists()` checks in helper files** - Helper files are autoloaded via Composer and will only be loaded once, so function existence checks are unnecessary
+-   **I18nService**: **Always use `I18nService` for locale-related code** - Do not directly access `config('i18n.*')` in helper functions or other code. Use `I18nService` methods to centralize all locale-related logic (`getSupportedLocales()`, `getDefaultLocale()`, `getValidLocale()`, `getLocaleMetadata()`, etc.)
+-   **View Composers**: **Use View Composers instead of `@inject` for global data** - Register View Composers in service providers to share data globally with all views. This is more efficient and cleaner than using `@inject` directives in every template.
 
 ### Constants and Code Reusability
 
@@ -873,6 +877,146 @@ The command clears:
 -   All level-specific log folders (emergency, alert, critical, error, warning, notice, info, debug)
 -   Deprecated logs folder
 
+### Internationalization System
+
+The application uses a centralized internationalization (i18n) system. **See `docs/internationalization.md` for complete documentation.**
+
+#### Key Rules
+
+-   **Always use semantic translation keys by default**: `__('ui.auth.login.title')` not `__('Log In')`
+-   **Use JSON string keys only for very small UI labels** (optional, not recommended)
+-   **Translation keys are organized by namespace**:
+    -   `ui.*` - User interface elements (buttons, labels, navigation, forms)
+    -   `messages.*` - System messages, notifications, alerts, errors
+-   **All locale settings are centralized in `config/i18n.php`**
+-   **Default locale (`en_US`) is the source of truth** for syncing translations
+-   **Protected files** (`validation.php`, `auth.php`, `pagination.php`, `passwords.php`) are never pruned by `lang:sync`
+
+#### Translation File Structure
+
+```
+lang/
+├── en_US/              # Default locale (source of truth)
+│   ├── ui.php          # UI translations
+│   ├── messages.php    # System messages
+│   ├── extracted.php   # Newly discovered translations (temporary)
+│   └── [protected files]
+└── fr_FR/              # Other locales
+    └── [same structure]
+```
+
+#### The `lang:sync` Command
+
+```bash
+# Dry-run (default - shows what would be done)
+php artisan lang:sync
+
+# Actually write changes
+php artisan lang:sync --write
+
+# Prune unused keys (safe - only extracted.php)
+php artisan lang:sync --write --prune
+
+# Prune unused keys from all files (including ui.php, messages.php)
+php artisan lang:sync --write --prune-all
+```
+
+The command:
+
+-   Scans PHP and Blade files for translation usage
+-   Uses default locale as source of truth
+-   Syncs missing keys to other locales
+-   Optionally prunes unused keys (respects protected files)
+
+#### Helper Functions
+
+The application provides locale-aware helper functions for formatting dates, times, and currency:
+
+**Date/Time Helpers** (`app/helpers/dateTime.php`):
+
+-   `formatDate($date, ?string $locale = null): string` - Format dates using locale's `date_format`
+-   `formatTime($time, ?string $locale = null): string` - Format times using locale's `time_format`
+-   `formatDateTime($datetime, ?string $locale = null): string` - Format datetimes using locale's `datetime_format`
+
+**Currency Helper** (`app/helpers/currency.php`):
+
+-   `formatCurrency($amount, ?string $locale = null, ?string $currencyCode = null): string` - Format currency with locale-specific separators and symbol position
+
+All helpers:
+
+-   Accept Carbon instances, DateTime objects, or date strings
+-   Use `I18nService` internally (never access `config('i18n.*')` directly)
+-   Support locale overrides
+-   Handle null/empty values gracefully (return empty string)
+-   Use function guards and early returns
+-   Do NOT use `function_exists()` checks
+
+**Usage Examples:**
+
+```blade
+{{ formatDate(now()) }}              {{-- "12/16/2025" (en_US) or "16/12/2025" (fr_FR) --}}
+{{ formatCurrency(100.50) }}         {{-- "$100.50" (en_US) or "100,50 €" (fr_FR) --}}
+{{ formatCurrency(1000.50, 'fr_FR') }} {{-- "1 000,50 €" --}}
+```
+
+#### I18nService
+
+The `I18nService` (`App\Services\I18nService`) centralizes all locale-related operations:
+
+**Key Methods:**
+
+-   `getLocale()` - Get current locale
+-   `getDefaultLocale()` - Get default locale
+-   `getFallbackLocale()` - Get fallback locale
+-   `getSupportedLocales()` - Get all supported locales
+-   `getValidLocale(?string $locale)` - Get valid locale (fallback to default if not supported)
+-   `getLocaleMetadata(?string $locale)` - Get locale metadata
+-   `isLocaleSupported(string $locale)` - Check if locale is supported
+-   `isRtl(?string $locale)` - Check if locale is RTL
+-   `getHtmlLangAttribute()` - Get HTML lang attribute value
+-   `getHtmlDirAttribute()` - Get HTML dir attribute value
+
+**Rule**: Always use `I18nService` for locale-related code - Do not directly access `config('i18n.*')`.
+
+#### View Composers
+
+The `BladeServiceProvider` uses View Composers to share services with Blade templates:
+
+-   **I18nService**: Shared with layout templates (`components.layouts.app`, `components.layouts.app.*`, `components.layouts.auth`, `components.layouts.auth.*`)
+-   **SideBarMenuService**: Shared only with `components.layouts.app.sidebar`
+
+**Usage in Blade:**
+
+```blade
+{{-- $i18n is automatically available in layout templates --}}
+<html lang="{{ $i18n->getHtmlLangAttribute() }}" dir="{{ $i18n->getHtmlDirAttribute() }}">
+
+{{-- $menuService is automatically available in sidebar template --}}
+<x-layouts.app.sidebar>
+    {{-- Use $menuService here --}}
+</x-layouts.app.sidebar>
+```
+
+**Rule**: Use View Composers instead of `@inject` for global data shared with templates.
+
+#### RTL Support
+
+The system includes first-class RTL support:
+
+-   Layout components automatically set `dir="rtl"` for RTL locales
+-   Use Tailwind's `rtl:` variant for RTL-specific styling
+-   Configure `direction` in `config/i18n.php` for each locale
+
+#### Adding a New Locale
+
+1.  Add locale to `config/i18n.php`'s `supported_locales` array
+2.  Create `lang/{locale}/` directory
+3.  Copy structure from default locale
+4.  Run `php artisan lang:sync --write`
+5.  Translate keys in `lang/{locale}/ui.php` and `lang/{locale}/messages.php`
+
+**Documentation**: See `docs/internationalization.md` for complete guide, best practices, and troubleshooting.
+
 ### Creating Release Tags
 
 Use the `release:tag` command to automatically create and push release tags:
@@ -1031,6 +1175,33 @@ If you see `Auth::guard('web')->logout()` causing an error:
     -   Supports `--level` option to clear logs for a specific level only
     -   Uses constants from `LogChannels` class
     -   Provides helpful feedback with Laravel Prompts
+
+### 2025-12-16
+
+-   **DateTime and Currency Helper Functions**: Created locale-aware helper functions for formatting dates, times, and currency
+    -   Created `app/helpers/dateTime.php` with `formatDate()`, `formatTime()`, and `formatDateTime()` functions
+    -   Created `app/helpers/currency.php` with `formatCurrency()` function
+    -   Updated `config/i18n.php` to include `symbol_position`, `decimal_separator`, and `thousands_separator` for currency configuration
+    -   All helpers use `I18nService` internally instead of direct config access
+    -   Added comprehensive tests (18 tests for dateTime, 14 tests for currency)
+    -   Updated `composer.json` to autoload new helper files
+    -   Updated documentation (`docs/internationalization.md`) with helper function usage
+-   **I18nService Enhancements**: Enhanced `I18nService` with additional methods for centralized locale management
+    -   Added `getSupportedLocales()`, `getDefaultLocale()`, `getFallbackLocale()`
+    -   Added `getLocaleMetadata(?string $locale)`, `isLocaleSupported()`, `getValidLocale()`
+    -   Updated service to use its own methods internally for consistency
+    -   Added comprehensive tests (18 tests)
+-   **BladeServiceProvider**: Created dedicated service provider for Blade/view-related functionality
+    -   Moved View Composer logic from `AppServiceProvider` to `BladeServiceProvider`
+    -   Shares `I18nService` with layout templates via View Composers
+    -   Shares `SideBarMenuService` only with sidebar template
+    -   Replaced all `@inject` directives with View Composers
+    -   Added comprehensive tests (4 tests)
+-   **Code Style Rules**: Added new rules to `AGENTS.md`
+    -   Always use function guards and early returns
+    -   Do NOT use `function_exists()` checks in helper files
+    -   Always use `I18nService` for locale-related code
+    -   Use View Composers instead of `@inject` for global data
 
 ### 2025-01-XX
 
