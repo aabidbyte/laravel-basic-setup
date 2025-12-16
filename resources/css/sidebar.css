@@ -1,0 +1,55 @@
+@layer components {
+    /* Shared menu title styles */
+    .sidebar-desktop .menu .menu-title,
+    .sidebar-mobile .menu .menu-title,
+    .sidebar-top-menus .menu-title,
+    .sidebar-bottom-menus .menu-title,
+    .sidebar-user-menus .menu-title {
+        @apply text-xs font-semibold uppercase tracking-wider text-base-content/60 mb-2 mt-4 first:mt-0 px-2;
+    }
+
+    /* Shared menu item styles for main sections */
+    .sidebar-top-menus .menu-item,
+    .sidebar-bottom-menus .menu-item,
+    .sidebar-user-menus .menu-item {
+        @apply flex flex-row gap-2 items-center;
+
+        > a {
+            @apply flex flex-row gap-2 items-center;
+        }
+
+        > * {
+            @apply rounded-lg;
+        }
+    }
+
+    /* Legacy menu item styles (for backward compatibility) */
+    .sidebar-desktop .menu .menu-item,
+    .sidebar-mobile .menu .menu-item {
+        @apply mb-1;
+
+        > * {
+            @apply rounded-lg;
+        }
+    }
+
+    /* Top menus section */
+    .sidebar-top-menus {
+        @apply p-4 w-full flex flex-col gap-2;
+    }
+
+    /* Bottom menus section */
+    .sidebar-bottom-menus {
+        @apply p-4 w-full mt-auto;
+    }
+
+    /* User menus section */
+    .sidebar-user-menus {
+        @apply mb-2 z-[1] p-2 shadow bg-base-100 rounded-box w-52;
+    }
+
+    /* Mobile user menus section - override margin-top */
+    .sidebar-mobile .sidebar-user-menus {
+        @apply mt-3 mb-0;
+    }
+}

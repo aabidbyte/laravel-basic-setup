@@ -463,6 +463,163 @@ it('tests something', function () {
 
 -   Check project roadmap or issues for planned features
 
+## Navigation Builder System
+
+The project includes a fluent navigation builder system for dynamically generating menus and sidebars.
+
+### Architecture
+
+```
+app/Services/
+├── SideBarMenuService.php              # Main menu service with getTopMenus(), getBottomMenus(), getUserMenus()
+└── Navigation/
+    ├── NavigationBuilder.php           # Fluent builder for menu groups/sections
+    └── NavigationItem.php              # Fluent builder for individual menu items
+```
+
+### Key Classes
+
+**NavigationItem** (`app/Services/Navigation/NavigationItem.php`):
+
+-   Fluent builder for individual menu items
+-   Supports: title, URL/route, icons, badges, nested items, conditional visibility, external links, HTML attributes
+-   Methods: `make()`, `title()`, `url()`, `route()`, `icon()`, `show()`, `external()`, `items()`, `badge()`, `active()`, `attributes()`
+-   **Note**: Form and button support have been removed. Use static forms in Blade templates for actions like logout.
+-   **Attributes**: Returns attributes as an array (not a string) for use with `$attributes->merge()` in Blade components
+-   **Icons**: Accepts icon component names (e.g., 'home', 'user', 'settings') which are rendered using the `<x-ui.icon>` Blade component. Icons support multiple icon packs (heroicons, fontawesome, bootstrap, feather) and include security validation.
+
+**NavigationBuilder** (`app/Services/Navigation/NavigationBuilder.php`):
+
+-   Fluent builder for menu groups/sections
+-   Contains multiple NavigationItem instances
+-   Methods: `make()`, `title()`, `items()`, `icon()`, `show()`
+
+**SideBarMenuService** (`app/Services/SideBarMenuService.php`):
+
+-   Centralized service for defining navigation menus
+-   Three methods:
+    -   `getTopMenus()`: Returns array of NavigationBuilder for top section
+    -   `getBottomMenus()`: Returns array of NavigationBuilder for bottom section
+    -   `getUserMenus()`: Returns array of NavigationBuilder for user dropdown
+-   **Note**: Logout is handled as a static form in the sidebar components, not through NavigationItem
+
+### Usage Example
+
+```php
+// In SideBarMenuService.php
+public function getTopMenus(): array
+{
+    return [
+        NavigationBuilder::make()
+            ->title('Platform')
+            ->items(
+                NavigationItem::make()
+                    ->title('Dashboard')
+                    ->route('dashboard')
+                    ->icon('home')
+                    ->show(auth()->user()->hasRole('admin')),
+
+                NavigationItem::make()
+                    ->title('Users')
+                    ->route('users.index')
+                    ->badge(fn() => User::count())
+                    ->items(
+                        NavigationItem::make()
+                            ->title('Active Users')
+                            ->route('users.active')
+                    )
+            ),
+    ];
+}
+```
+
+### In Blade Templates
+
+```php
+@inject('menuService', \App\Services\SideBarMenuService::class)
+
+<!-- Render top menus -->
+<div class="menu">
+    @foreach($menuService->getTopMenus() as $group)
+        <x-navigation.group :group="$group" />
+    @endforeach
+</div>
+```
+
+### Sidebar Components
+
+The sidebar is split into separate components for better organization:
+
+-   **`sidebar.blade.php`**: Main wrapper component using DaisyUI drawer
+-   **`mobile-menu.blade.php`**: Mobile navbar (visible on small screens)
+-   **`desktop-menu.blade.php`**: Desktop sidebar (visible on large screens)
+
+**Usage**:
+
+```php
+@inject('menuService', \App\Services\SideBarMenuService::class)
+
+<x-layouts.app.sidebar>
+    <!-- Main content -->
+</x-layouts.app.sidebar>
+```
+
+**Note**: The sidebar uses `@inject` directive for service injection and passes menu data to child components. Navigation items use `<div>` elements instead of `<ul>`/`<li>` for semantic HTML flexibility.
+
+### Features
+
+-   ✅ Fluent, chainable API
+-   ✅ Permission-based visibility (`show()` with closures)
+-   ✅ **Backend filtering**: Invisible items are filtered server-side for security
+-   ✅ Nested menus (unlimited depth via `items()`)
+-   ✅ Dynamic badges (closures for real-time counts)
+-   ✅ External link handling
+-   ✅ Active state detection (automatic route matching)
+-   ✅ Icon support (icon component names via `<x-ui.icon>`, supports multiple icon packs with security validation)
+-   ✅ HTML attributes support (returns array for `$attributes->merge()`)
+-   ✅ Fully testable (24 unit tests)
+-   ✅ Reusable across multiple services
+-   ✅ **No form/button support**: Use static forms in Blade templates for actions
+-   ✅ **Semantic HTML**: Uses `<div>` elements instead of `<ul>`/`<li>` for flexibility
+
+### Testing
+
+-   Unit tests: `tests/Unit/Services/Navigation/`
+-   All unit tests pass (24 tests, 52 assertions)
+-   Tests cover: fluent API, visibility filters, nested items, badges, active states, attributes
+-   **Note**: Form/button tests have been removed as this functionality is no longer supported
+
+### Design Patterns
+
+-   **Builder Pattern**: Fluent interface for constructing navigation
+-   **Factory Pattern**: Static `make()` methods for instantiation
+-   **Composite Pattern**: Nested items (tree structure)
+-   **Service Pattern**: Centralized menu definition
+-   **Lazy Evaluation**: Closures for `show()` and `badge()` evaluated at render time
+
+### Security
+
+**Backend Filtering**: All visibility checks are performed server-side. Items with `show(false)` or failed permission checks are filtered out before being sent to the frontend, ensuring:
+
+-   No sensitive menu items are exposed in HTML/JavaScript
+-   Better performance (fewer items to render)
+-   Security by default (frontend cannot bypass visibility rules)
+
+The filtering happens at three levels:
+
+1. **NavigationItem**: `getItems()` only returns visible nested items
+2. **NavigationBuilder**: `getItems()` only returns visible items
+3. **SideBarMenuService**: Each method filters out invisible groups/items before returning
+
+### Extension Points
+
+To add new navigation sections:
+
+1. Add a new method to `SideBarMenuService` (e.g., `getAdminMenus()`)
+2. Use NavigationBuilder and NavigationItem to define the structure
+3. Filter invisible items: `array_filter($items, fn($item) => $item->isVisible())`
+4. Render in Blade using `<x-navigation.group>` component
+
 ## Important Patterns
 
 ### Livewire 4 Single-File Component Pattern
@@ -518,6 +675,45 @@ Route::livewire('/example', 'pages::example')->name('example');
 -   Use standard HTML elements with Tailwind CSS classes
 -   Check existing components before creating custom
 -   Components are built using Tailwind CSS utility classes
+
+#### Icon Component (`<x-ui.icon>`)
+
+The application includes a dynamic icon component located at `resources/views/components/ui/icon.blade.php` that provides secure, flexible icon rendering using Blade Icons.
+
+**Features:**
+
+-   **Multiple Icon Packs**: Supports heroicons (default), fontawesome, bootstrap, and feather
+-   **Security**: Input validation and sanitization for icon names, pack names, and CSS classes
+-   **Size Support**: Predefined sizes (xs, sm, md, lg, xl) or custom Tailwind classes
+-   **Fallback Handling**: Automatically falls back to a question mark icon if the requested icon doesn't exist
+-   **Blade Component**: Uses `@inject` for dependency injection (no Livewire overhead)
+
+**Usage:**
+
+```blade
+{{-- Basic usage --}}
+<x-ui.icon name="home" />
+
+{{-- With size --}}
+<x-ui.icon name="user" size="md" />
+
+{{-- With custom class --}}
+<x-ui.icon name="settings" class="h-5 w-5 text-primary" />
+
+{{-- With different icon pack --}}
+<x-ui.icon name="star" pack="fontawesome" size="lg" />
+```
+
+**Security Measures:**
+
+-   Icon names are sanitized to only allow alphanumeric characters, dashes, and underscores
+-   Pack names are validated against supported packs (falls back to 'heroicons' if invalid)
+-   CSS class attributes are sanitized to prevent XSS attacks
+-   Blade Icons handles SVG content sanitization internally
+
+**Component Location:** `resources/views/components/ui/icon.blade.php`
+
+**Service Dependency:** Uses `App\Services\IconPackMapper` (injected via `@inject` directive)
 
 ## Development Workflow
 
@@ -754,6 +950,33 @@ If you see `Auth::guard('web')->logout()` causing an error:
 13. **Update this file** when adding new patterns, conventions, or features
 
 ## Changelog
+
+### 2025-01-XX
+
+-   **Icon Component Refactoring**: Converted icon component from Livewire to Blade component
+    -   **Converted to Blade Component**: Changed from Livewire component (`⚡dynamic-icon-island.blade.php`) to regular Blade component (`ui/icon.blade.php`)
+    -   **Moved to UI Folder**: Component is now located at `resources/views/components/ui/icon.blade.php`
+    -   **Updated Usage**: All references changed from `<livewire:dynamic-icon-island>` to `<x-ui.icon>`
+    -   **Added Security**: Implemented input validation and sanitization for icon names, pack names, and CSS classes
+    -   **Size Support**: Added support for predefined sizes (xs, sm, md, lg, xl) for backward compatibility
+    -   **Performance**: Removed Livewire overhead for static icon rendering (no reactivity needed)
+    -   **Dependency Injection**: Uses `@inject` directive to inject `IconPackMapper` service
+    -   **Updated Documentation**: Navigation system documentation updated to reflect new icon component usage
+
+### 2025-01-XX
+
+-   **Navigation System Refactoring**: Simplified navigation system and split sidebar components
+    -   **Removed form/button support** from `NavigationItem`: Form and button methods (`form()`, `button()`) have been removed. Use static forms in Blade templates for actions like logout.
+    -   **Removed class property**: The `class()` method has been removed from `NavigationItem`. Use `attributes(['class' => '...'])` instead.
+    -   **Attributes as array**: `NavigationItem` now returns attributes as an array (not a string) for use with `$attributes->merge()` in Blade components.
+    -   **Sidebar component split**: Split `sidebar.blade.php` into three components:
+        -   `sidebar.blade.php`: Main wrapper component
+        -   `mobile-menu.blade.php`: Mobile navbar component
+        -   `desktop-menu.blade.php`: Desktop sidebar component
+    -   **Service injection**: Updated to use `@inject` Blade directive instead of `app()` helper for cleaner code.
+    -   **Semantic HTML**: Navigation components now use `<div>` elements instead of `<ul>`/`<li>` for better flexibility.
+    -   **Static logout form**: Logout is now handled as a static form in the sidebar components, not through `NavigationItem`.
+    -   **Updated tests**: Removed `NavigationItemFormTest.php` as form/button functionality no longer exists. Test count: 24 tests, 52 assertions.
 
 ### 2025-01-XX
 

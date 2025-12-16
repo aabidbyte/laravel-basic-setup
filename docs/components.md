@@ -438,81 +438,107 @@ A centralized form component that automatically handles CSRF tokens, method spoo
 
 ### Description
 
-A centralized SVG icon wrapper component that provides consistent sizing and styling for inline SVG icons.
+A dynamic icon component that provides secure, flexible icon rendering using Blade Icons. Supports multiple icon packs (heroicons, fontawesome, bootstrap, feather) with automatic fallback handling and comprehensive security validation.
 
 ### Props
 
-| Prop    | Type     | Default | Description                                                                         |
-| ------- | -------- | ------- | ----------------------------------------------------------------------------------- |
-| `size`  | `string` | `'sm'`  | Icon size: `xs`, `sm`, `md`, `lg`, `xl`, or custom Tailwind class (e.g., `w-6 h-6`) |
-| `class` | `string` | `''`    | Additional CSS classes                                                              |
+| Prop    | Type           | Default      | Description                                                                                                                            |
+| ------- | -------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`  | `string`       | **Required** | Icon name (e.g., 'home', 'user', 'settings'). Only alphanumeric characters, dashes, and underscores are allowed.                       |
+| `pack`  | `string\|null` | `null`       | Icon pack name: `heroicons` (default), `heroicons-solid`, `fontawesome`, `bootstrap`, `feather`. Falls back to `heroicons` if invalid. |
+| `size`  | `string\|null` | `null`       | Predefined size: `xs`, `sm`, `md`, `lg`, `xl`, or custom Tailwind class (e.g., `w-6 h-6`). Defaults to `w-6 h-6` if not provided.      |
+| `class` | `string`       | `''`         | Additional CSS classes. Valid CSS class characters only (alphanumeric, dash, underscore, space, dot).                                  |
 
-### Slots
+### Security Features
 
--   **Default slot:** SVG path elements (the actual icon paths)
+-   **Input Validation**: Icon names are sanitized to only allow alphanumeric characters, dashes, and underscores
+-   **Pack Validation**: Pack names are validated against supported packs (falls back to 'heroicons' if invalid)
+-   **Class Sanitization**: CSS class attributes are sanitized to prevent XSS attacks
+-   **SVG Sanitization**: Blade Icons handles SVG content sanitization internally
+-   **Fallback Handling**: Automatically falls back to a question mark icon if the requested icon doesn't exist
 
 ### Usage Examples
 
 #### Basic Icon
 
 ```blade
-<x-ui.icon>
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-</x-ui.icon>
+<x-ui.icon name="home" />
+```
+
+#### Icon with Size
+
+```blade
+<x-ui.icon name="user" size="md" />
+```
+
+#### Icon with Custom Class
+
+```blade
+<x-ui.icon name="settings" class="h-5 w-5 text-primary" />
 ```
 
 #### Icon Sizes
 
 ```blade
-<x-ui.icon size="xs">...</x-ui.icon> {{-- w-4 h-4 --}}
-<x-ui.icon size="sm">...</x-ui.icon> {{-- w-5 h-5 --}}
-<x-ui.icon size="md">...</x-ui.icon> {{-- w-6 h-6 --}}
-<x-ui.icon size="lg">...</x-ui.icon> {{-- w-8 h-8 --}}
-<x-ui.icon size="xl">...</x-ui.icon> {{-- w-10 h-10 --}}
+<x-ui.icon name="home" size="xs" /> {{-- w-4 h-4 --}}
+<x-ui.icon name="home" size="sm" /> {{-- w-5 h-5 --}}
+<x-ui.icon name="home" size="md" /> {{-- w-6 h-6 --}}
+<x-ui.icon name="home" size="lg" /> {{-- w-8 h-8 --}}
+<x-ui.icon name="home" size="xl" /> {{-- w-10 h-10 --}}
 ```
 
 #### Custom Size
 
 ```blade
-<x-ui.icon size="w-12 h-12">
-    <path d="..." />
-</x-ui.icon>
+<x-ui.icon name="star" class="w-12 h-12" />
 ```
 
-#### Icon with Additional Classes
+#### Different Icon Packs
 
 ```blade
-<x-ui.icon size="md" class="text-primary">
-    <path d="..." />
-</x-ui.icon>
+{{-- Heroicons (default) --}}
+<x-ui.icon name="home" />
+
+{{-- Heroicons Solid --}}
+<x-ui.icon name="home" pack="heroicons-solid" />
+
+{{-- FontAwesome --}}
+<x-ui.icon name="star" pack="fontawesome" size="lg" />
+
+{{-- Bootstrap Icons --}}
+<x-ui.icon name="gear" pack="bootstrap" />
+
+{{-- Feather Icons --}}
+<x-ui.icon name="user" pack="feather" />
 ```
 
 #### Icon in Button
 
 ```blade
 <x-ui.button variant="primary">
-    <x-ui.icon size="sm">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-    </x-ui.icon>
+    <x-ui.icon name="plus" size="sm" />
     Add Item
 </x-ui.button>
 ```
 
-### Dynamic Icons
-
-For dynamic icon loading (e.g., from icon packs), use the `<livewire:dynamic-icon-island>` component:
+#### Icon in Navigation
 
 ```blade
-<livewire:dynamic-icon-island name="heroicon-o-home" pack="heroicons" class="w-6 h-6" />
+<a href="{{ route('dashboard') }}" wire:navigate>
+    <x-ui.icon name="home" class="h-5 w-5" />
+    Dashboard
+</a>
 ```
 
 ### Implementation Details
 
--   Wraps SVG content in a standardized `<svg>` element
+-   Uses Blade Icons for icon rendering (supports multiple icon packs)
+-   Uses `@inject` directive to inject `IconPackMapper` service (no Livewire overhead)
 -   Provides consistent sizing through predefined size classes
 -   Supports custom sizes via Tailwind classes
--   Uses `currentColor` for stroke fill (inherits text color)
--   Default viewBox is `0 0 24 24` (standard for most icon sets)
+-   Automatically handles icon pack name mapping (e.g., 'home' → 'heroicon-o-home')
+-   Includes comprehensive error handling with fallback icons
+-   All input is validated and sanitized for security
 
 ---
 
@@ -572,7 +598,7 @@ When migrating existing custom implementations to centralized components:
 -   **Button** (`button.blade.php`) - Styled buttons with variants and sizes
 -   **Input** (`input.blade.php`) - Form inputs with labels and error handling
 -   **Form** (`form.blade.php`) - Form wrapper with automatic CSRF and method spoofing
--   **Icon** (`icon.blade.php`) - SVG icon wrapper with consistent sizing
+-   **Icon** (`icon.blade.php`) - Dynamic icon component with multiple icon pack support and security validation
 -   **Icon Placeholder** (`icon-placeholder.blade.php`) - Placeholder for icons
 -   **Placeholder** (`placeholder.blade.php`) - Generic placeholder component
 
@@ -585,6 +611,17 @@ When migrating existing custom implementations to centralized components:
 ---
 
 ## Changelog
+
+### 2025-01-XX
+
+-   **Icon Component Refactoring:** Converted icon component from static SVG wrapper to dynamic Blade Icons component
+    -   **Converted to Dynamic Component**: Changed from static SVG wrapper to dynamic icon component using Blade Icons
+    -   **Multiple Icon Pack Support**: Added support for heroicons, fontawesome, bootstrap, and feather icon packs
+    -   **Security Enhancements**: Implemented comprehensive input validation and sanitization for icon names, pack names, and CSS classes
+    -   **Fallback Handling**: Automatically falls back to question mark icon if requested icon doesn't exist
+    -   **Performance**: Uses `@inject` directive for dependency injection (no Livewire overhead)
+    -   **Updated Usage**: All references changed from static SVG slots to dynamic icon names (e.g., `<x-ui.icon name="home" />`)
+    -   **Size Support**: Maintains backward compatibility with predefined sizes (xs, sm, md, lg, xl) and custom Tailwind classes
 
 ### 2025-01-XX
 

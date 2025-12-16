@@ -20,6 +20,4 @@
         "Noto Color Emoji";
 }
 
-/* \[:where(&)\]:size-4 {
-    @apply size-4;
-} */
+@import "./sidebar.css";
