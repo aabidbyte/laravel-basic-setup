@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ $i18n->getHtmlLangAttribute() }}" dir="{{ $i18n->getHtmlDirAttribute() }}"
-    data-theme="{{ $preferences->getTheme() }}">
+<html lang="{{ $htmlLangAttribute }}" dir="{{ $htmlDirAttribute }}" data-theme="{{ $currentTheme }}">
 
 <head>
     @include('partials.head')
@@ -8,10 +7,10 @@
     @livewireStyles
 </head>
 
-<body>
-    <x-layouts.auth.simple :title="$title ?? null">
+<body class="min-h-screen bg-base-100">
+    <x-layouts.auth.split :title="$title ?? null">
         {{ $slot }}
-    </x-layouts.auth.simple>
+    </x-layouts.auth.split>
 
     @livewireScripts
 </body>

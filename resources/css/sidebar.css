@@ -45,7 +45,7 @@
 
     /* User menus section */
     .sidebar-user-menus {
-        @apply mb-2 z-[1] p-2 shadow bg-base-100 rounded-box w-52;
+        @apply mb-2 z-[1] p-2 shadow bg-base-100 rounded-box;
     }
 
     /* Mobile user menus section - override margin-top */

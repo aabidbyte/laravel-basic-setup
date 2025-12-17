@@ -174,6 +174,16 @@ return [
         'locale' => 'Language',
     ],
 
+    // Page Titles
+    'pages' => [
+        'dashboard' => 'Dashboard',
+        'settings' => [
+            'profile' => 'Profile Settings',
+            'password' => 'Password Settings',
+            'two_factor' => 'Two-Factor Authentication',
+        ],
+    ],
+
     // Common UI Elements
     'common' => [
         'saved' => 'Saved.',

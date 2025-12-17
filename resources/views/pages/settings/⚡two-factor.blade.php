@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\BasePageComponent;
 use Laravel\Fortify\Actions\ConfirmTwoFactorAuthentication;
 use Laravel\Fortify\Actions\DisableTwoFactorAuthentication;
 use Laravel\Fortify\Actions\EnableTwoFactorAuthentication;
@@ -8,10 +9,13 @@ use Laravel\Fortify\Fortify;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
-use Livewire\Component;
 use Symfony\Component\HttpFoundation\Response;
 
-new class extends Component {
+new class extends BasePageComponent {
+    public ?string $pageTitle = 'ui.pages.settings.two_factor';
+
+    public ?string $pageSubtitle = 'ui.settings.two_factor.description';
+
     #[Locked]
     public bool $twoFactorEnabled;
 
@@ -176,9 +180,7 @@ new class extends Component {
 }; ?>
 
 <section class="w-full">
-    @include('partials.settings-heading')
-
-    <x-settings.layout :heading="__('ui.settings.two_factor.title')" :subheading="__('ui.settings.two_factor.description')">
+    <x-settings.layout>
         <div class="flex flex-col w-full mx-auto space-y-6" wire:cloak>
             @if ($twoFactorEnabled)
                 <div class="card bg-base-200">

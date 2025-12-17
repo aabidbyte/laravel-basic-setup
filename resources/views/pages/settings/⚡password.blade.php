@@ -1,11 +1,15 @@
 <?php
 
+use App\Livewire\BasePageComponent;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
-use Livewire\Component;
 
-new class extends Component {
+new class extends BasePageComponent {
+    public ?string $pageTitle = 'ui.pages.settings.password';
+
+    public ?string $pageSubtitle = 'ui.settings.password.description';
+
     public string $current_password = '';
 
     public string $password = '';
@@ -39,9 +43,7 @@ new class extends Component {
 }; ?>
 
 <section class="w-full">
-    @include('partials.settings-heading')
-
-    <x-settings.layout :heading="__('ui.settings.password.title')" :subheading="__('ui.settings.password.description')">
+    <x-settings.layout>
         <x-ui.form method="POST" wire:submit="updatePassword">
             <x-ui.input type="password" wire:model="current_password" name="current_password" :label="__('ui.settings.password.current_password_label')" required
                 autocomplete="current-password" />

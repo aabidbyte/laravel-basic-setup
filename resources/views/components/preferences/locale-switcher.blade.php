@@ -1,7 +1,7 @@
 <div class="dropdown dropdown-end" x-data="{ open: false }">
     <div tabindex="0" role="button" class="btn btn-ghost btn-sm" @click="open = !open">
-        <x-ui.icon name="{{ $i18n->getLocaleMetadata($currentLocale)['icon']['name'] ?? 'globe-alt' }}"
-            pack="{{ $i18n->getLocaleMetadata($currentLocale)['icon']['pack'] ?? 'heroicons' }}" class="h-5 w-5" />
+        <x-ui.icon name="{{ $localeMetadata['icon']['name'] ?? 'globe-alt' }}"
+            pack="{{ $localeMetadata['icon']['pack'] ?? 'heroicons' }}" class="h-5 w-5" />
         <span class="sr-only">{{ __('ui.preferences.locale') }}</span>
     </div>
     <ul tabindex="0"

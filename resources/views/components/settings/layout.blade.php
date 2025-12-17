@@ -26,12 +26,7 @@
 
     <div class="divider md:hidden"></div>
 
-    <div class="flex-1 self-stretch max-md:pt-6">
-        <h2 class="text-2xl font-bold text-base-content">{{ $heading ?? '' }}</h2>
-        <p class="mt-2 text-base-content/70">{{ $subheading ?? '' }}</p>
-
-        <div class="mt-5 w-full max-w-lg">
-            {{ $slot }}
-        </div>
+    <div class="w-full max-w-lg ">
+        {{ $slot }}
     </div>
 </div>

@@ -1,9 +1,9 @@
 <?php
 
-use Livewire\Component;
+use App\Livewire\BasePageComponent;
 
-new class extends Component {
-    //
+new class extends BasePageComponent {
+    public ?string $pageTitle = 'ui.pages.dashboard';
 }; ?>
 
 <div class="flex h-full w-full flex-1 flex-col gap-4">

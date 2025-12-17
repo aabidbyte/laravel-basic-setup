@@ -437,24 +437,36 @@ All helper functions use `I18nService` internally to access locale configuration
 
 ## View Composers
 
-The application uses View Composers to share services with Blade templates. The `BladeServiceProvider` registers composers for:
+The application uses View Composers to share data with Blade templates. The `BladeServiceProvider` is organized into separate methods for better maintainability:
 
--   **I18nService**: Shared with all layout templates (`components.layouts.app`, `components.layouts.app.*`, `components.layouts.auth`, `components.layouts.auth.*`)
--   **SideBarMenuService**: Shared only with `components.layouts.app.sidebar`
+-   **`initLayoutVariables()`**: Shares theme, locale, and HTML attributes with layout templates
+-   **`initPageTitle()`**: Shares page title with header and head partials
+-   **`initPageSubtitle()`**: Shares page subtitle with header and head partials
+
+**Shared Variables:**
+
+-   **Layout Templates** (`components.layouts.app`, `components.layouts.auth`, `layouts::app`, `layouts::auth`):
+    -   `$currentTheme` - Current theme (light/dark)
+    -   `$htmlLangAttribute` - HTML lang attribute value
+    -   `$htmlDirAttribute` - HTML dir attribute value (ltr/rtl)
+-   **Locale Switcher** (`components.preferences.locale-switcher`):
+    -   `$currentLocale` - Current locale
+    -   `$supportedLocales` - Array of supported locales
+    -   `$localeMetadata` - Metadata for current locale (icon, name, etc.)
 
 **Usage in Blade:**
 
 ```blade
-{{-- I18nService is automatically available as $i18n --}}
-<html lang="{{ $i18n->getHtmlLangAttribute() }}" dir="{{ $i18n->getHtmlDirAttribute() }}">
+{{-- Specific values are automatically available in layout templates --}}
+<html lang="{{ $htmlLangAttribute }}" dir="{{ $htmlDirAttribute }}" data-theme="{{ $currentTheme }}">
 
-{{-- SideBarMenuService is automatically available as $menuService in sidebar --}}
-<x-layouts.app.sidebar>
-    {{-- $menuService is available here --}}
-</x-layouts.app.sidebar>
+{{-- Locale metadata is automatically available in locale switcher --}}
+<x-preferences.locale-switcher>
+    {{-- $currentLocale, $supportedLocales, $localeMetadata are available --}}
+</x-preferences.locale-switcher>
 ```
 
-**Note**: Do not use `@inject` directives for services that are shared via View Composers. Use View Composers for global data instead.
+**Note**: Do not use `@inject` directives for services that are shared via View Composers. The provider shares specific values rather than service objects for better performance and clarity.
 
 ## Reference
 

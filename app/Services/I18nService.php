@@ -107,7 +107,7 @@ class I18nService
      */
     public function getDefaultLocale(): string
     {
-        return config('i18n.default_locale', 'en_US');
+        return config('i18n.default_locale');
     }
 
     /**
@@ -115,6 +115,6 @@ class I18nService
      */
     public function getFallbackLocale(): string
     {
-        return config('i18n.fallback_locale', 'en_US');
+        return config('i18n.fallback_locale');
     }
 }

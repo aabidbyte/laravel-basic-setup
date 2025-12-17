@@ -44,7 +44,7 @@ function isStaging(): bool
  */
 function isLocal(): bool
 {
-    return strtolower(appEnv()) === 'local';
+    return strtolower(appEnv()) === 'local' || isDevelopment();
 }
 
 /**

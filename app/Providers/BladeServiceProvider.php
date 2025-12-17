@@ -7,6 +7,7 @@ use App\Services\I18nService;
 use App\Services\SideBarMenuService;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
 
 class BladeServiceProvider extends ServiceProvider
 {
@@ -15,32 +16,99 @@ class BladeServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Share I18nService and FrontendPreferencesService with layout templates and preference components
+        $this->initLayoutVariables();
+        $this->initPageTitle();
+        $this->initPageSubtitle();
+    }
+
+    private function initLayoutVariables()
+    {
+
         View::composer([
             'components.layouts.app',
-            'components.layouts.app.*',
             'components.layouts.auth',
-            'components.layouts.auth.*',
-            'components.preferences.*',
             'layouts::app',
-            'layouts::app.*',
             'layouts::auth',
-            'layouts::auth.*',
         ], function ($view) {
-            $i18n = app(I18nService::class);
             $preferences = app(FrontendPreferencesService::class);
+            $view->with('currentTheme', $preferences->getTheme());
 
-            $view->with('i18n', $i18n);
-            $view->with('preferences', $preferences);
+            $i18n = app(I18nService::class);
+            $view->with('htmlLangAttribute', $i18n->getHtmlLangAttribute());
+            $view->with('htmlDirAttribute', $i18n->getHtmlDirAttribute());
+        });
+
+        // Share I18nService and FrontendPreferencesService with layout templates and preference components
+        View::composer([
+            'components.preferences.locale-switcher',
+        ], function ($view) {
+            $preferences = app(FrontendPreferencesService::class);
+            $i18n = app(I18nService::class);
+
+            $view->with('currentLocale', $i18n->getLocale());
+            $view->with('supportedLocales', $i18n->getSupportedLocales());
+            $view->with('localeMetadata', $i18n->getLocaleMetadata($preferences->getLocale()));
+        });
+
+        View::composer([
+            'components.preferences.theme-switcher',
+        ], function ($view) {
+            $preferences = app(FrontendPreferencesService::class);
             // Share current values for components
             $view->with('currentTheme', $preferences->getTheme());
-            $view->with('currentLocale', $preferences->getLocale());
-            $view->with('supportedLocales', $i18n->getSupportedLocales());
         });
 
         // Share SideBarMenuService with sidebar template
-        View::composer('components.layouts.app.sidebar', function ($view) {
-            $view->with('menuService', app(SideBarMenuService::class));
+        View::composer('components.layouts.app.*', function ($view) {
+            $menuService = app(SideBarMenuService::class);
+
+            $sideBarTopMenus = $menuService->getTopMenus();
+            $sideBarBottomMenus = $menuService->getBottomMenus();
+            $sideBarUserMenus = $menuService->getUserMenus();
+
+            $view->with('sideBarTopMenus', $sideBarTopMenus);
+            $view->with('sideBarBottomMenus', $sideBarBottomMenus);
+            $view->with('sideBarUserMenus', $sideBarUserMenus);
+        });
+    }
+
+    private function initPageTitle(): void
+    {
+        View::composer(['partials.head', 'components.layouts.app.header'], function ($view) {
+            $pageTitle = null;
+
+            // Check view data (from controller, view, or View::share())
+            if (isset($view->getData()['pageTitle'])) {
+                $pageTitle = $view->getData()['pageTitle'];
+            }
+
+            // Check if shared via View::share() (from Livewire component)
+            if (! $pageTitle && View::shared('pageTitle')) {
+                $pageTitle = View::shared('pageTitle');
+            }
+
+            // Fallback
+            $view->with('pageTitle', $pageTitle ?? config('app.name'));
+        });
+    }
+
+    private function initPageSubtitle(): void
+    {
+        View::composer(['partials.head', 'components.layouts.app.header'], function ($view) {
+            $pageSubtitle = null;
+
+            // Check view data (from controller, view, or View::share())
+            if (isset($view->getData()['pageSubtitle'])) {
+                $pageSubtitle = $view->getData()['pageSubtitle'];
+            }
+
+            // Check if shared via View::share() (from Livewire component)
+            if (! $pageSubtitle && View::shared('pageSubtitle')) {
+                $pageSubtitle = View::shared('pageSubtitle');
+            }
+
+            // Share pageSubtitle (can be null)
+            $view->with('pageSubtitle', $pageSubtitle);
         });
     }
 }

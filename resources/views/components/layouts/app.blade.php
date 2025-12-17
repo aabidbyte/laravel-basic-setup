@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ $i18n->getHtmlLangAttribute() }}" dir="{{ $i18n->getHtmlDirAttribute() }}"
-    data-theme="{{ $preferences->getTheme() }}">
+<html lang="{{ $htmlLangAttribute }}" dir="{{ $htmlDirAttribute }}" data-theme="{{ $currentTheme }}">
 
 <head>
     @include('partials.head')
@@ -9,10 +8,8 @@
 </head>
 
 <body>
-    <x-layouts.app.sidebar :title="$title ?? null">
-        <main class="flex-1">
-            {{ $slot }}
-        </main>
+    <x-layouts.app.sidebar>
+        {{ $slot }}
     </x-layouts.app.sidebar>
 
     @livewireScripts

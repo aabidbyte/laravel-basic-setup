@@ -22,8 +22,9 @@ class AppServiceProvider extends ServiceProvider
             return new PasswordBrokerManager($app);
         });
 
-        // Register FrontendPreferencesService as singleton
         $this->app->singleton(\App\Services\FrontendPreferences\FrontendPreferencesService::class);
+        $this->app->singleton(\App\Services\I18nService::class);
+
     }
 
     /**

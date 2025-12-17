@@ -1,12 +1,16 @@
 <?php
 
+use App\Livewire\BasePageComponent;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\Rule;
-use Livewire\Component;
 
-new class extends Component {
+new class extends BasePageComponent {
+    public ?string $pageTitle = 'ui.pages.settings.profile';
+
+    public ?string $pageSubtitle = 'ui.settings.profile.description';
+
     public string $name = '';
 
     public string $email = '';
@@ -64,9 +68,7 @@ new class extends Component {
 }; ?>
 
 <section class="w-full">
-    @include('partials.settings-heading')
-
-    <x-settings.layout :heading="__('ui.settings.profile.title')" :subheading="__('ui.settings.profile.description')">
+    <x-settings.layout>
         <x-ui.form wire:submit="updateProfileInformation" class="w-full">
             <x-ui.input type="text" wire:model="name" name="name" :label="__('ui.settings.profile.name_label')" required autofocus
                 autocomplete="name" />

@@ -330,6 +330,16 @@ it('tests something', function () {
 -   **Component Namespaces**: Configured in `config/livewire.php`:
     -   `pages` namespace → `resources/views/pages/`
     -   `layouts` namespace → `resources/views/layouts/`
+-   **BasePageComponent**: **ALL full-page Livewire components MUST extend `App\Livewire\BasePageComponent`**
+    -   Provides automatic page title and subtitle management via `$pageTitle` and `$pageSubtitle` properties
+    -   Automatically shares title and subtitle with layout views via `View::share()` in `boot()` method (runs automatically)
+    -   **Required**: Every component MUST define `public string $pageTitle = 'ui.pages.example';` property
+    -   **Optional**: Components can define `public string $pageSubtitle = 'ui.pages.example.description';` property for subtitle text
+    -   **Translations**: Use translation keys (e.g., `'ui.pages.dashboard'`) - keys containing dots are automatically translated via `__()`
+    -   **Plain Strings**: Can also use plain strings (e.g., `'Dashboard'`) if translation is not needed
+    -   **Seamless**: No need to call `parent::mount()` - title and subtitle sharing happens automatically via `boot()` lifecycle hook
+    -   Example: `new class extends BasePageComponent { public string $pageTitle = 'ui.pages.dashboard'; public string $pageSubtitle = 'ui.pages.dashboard.description'; }`
+    -   **Rule**: Never extend `Livewire\Component` directly for full-page components - always use `BasePageComponent`
 -   **Naming**: Use descriptive names (e.g., `isRegisteredForDiscounts`, not `discount()`)
 -   **Documentation**: See `docs/livewire-4.md` for complete Livewire 4 documentation
 
@@ -552,23 +562,43 @@ public function getTopMenus(): array
 
 ### Sidebar Components
 
-The sidebar is split into separate components for better organization:
+The sidebar uses a unified component structure:
 
--   **`sidebar.blade.php`**: Main wrapper component using DaisyUI drawer
--   **`mobile-menu.blade.php`**: Mobile navbar (visible on small screens)
--   **`desktop-menu.blade.php`**: Desktop sidebar (visible on large screens)
+-   **`sidebar.blade.php`** (`<x-layouts.app.sidebar>`): Main wrapper component using DaisyUI drawer with integrated navbar and content area
+    -   Location: `resources/views/components/layouts/app/sidebar.blade.php`
+    -   Contains: Drawer structure, navbar with mobile toggle, main content area, and includes `<x-layouts.app.sidebar-menu />`
+-   **`sidebar-menu.blade.php`** (`<x-layouts.app.sidebar-menu />`): Unified sidebar menu component (handles both desktop and mobile via CSS classes)
+    -   Location: `resources/views/components/layouts/app/sidebar-menu.blade.php`
+    -   Contains: Desktop sidebar menu with top menus, bottom menus, and logo
+    -   Uses CSS classes (`sidebar-desktop`) to handle responsive behavior
+-   **`header.blade.php`** (`<x-layouts.app.header />`): Header component displaying page title, subtitle, and user menu
+    -   Location: `resources/views/components/layouts/app/header.blade.php`
+    -   Contains: Page title, optional subtitle, theme switcher, locale switcher, and user dropdown menu
 
 **Usage**:
 
 ```php
-@inject('menuService', \App\Services\SideBarMenuService::class)
-
 <x-layouts.app.sidebar>
-    <!-- Main content -->
+ <!-- Main content -->
 </x-layouts.app.sidebar>
 ```
 
-**Note**: The sidebar uses `@inject` directive for service injection and passes menu data to child components. Navigation items use `<div>` elements instead of `<ul>`/`<li>` for semantic HTML flexibility.
+**Component Structure**:
+
+```php
+<!-- sidebar.blade.php -->
+<div class="drawer lg:drawer-open">
+    <div class="drawer-content">
+        <div class="navbar">
+            <x-layouts.app.header />
+        </div>
+        <main>{{ $slot }}</main>
+    </div>
+    <x-layouts.app.sidebar-menu />
+</div>
+```
+
+**Note**: The sidebar uses View Composers (registered in `BladeServiceProvider`) to automatically inject menu data (`$sideBarTopMenus`, `$sideBarBottomMenus`, `$sideBarUserMenus`) into sidebar components. No manual service injection needed. Navigation items use `<div>` elements instead of `<ul>`/`<li>` for semantic HTML flexibility.
 
 ### Features
 
@@ -633,9 +663,13 @@ To add new navigation sections:
 ```php
 <?php
 
-use Livewire\Component;
+use App\Livewire\BasePageComponent;
 
-new class extends Component {
+new class extends BasePageComponent {
+    public string $pageTitle = 'ui.pages.example';
+
+    public string $pageSubtitle = 'ui.pages.example.description'; // Optional
+
     public int $count = 0;
 
     public function increment(): void
@@ -659,6 +693,12 @@ Route::livewire('/example', 'pages::example')->name('example');
 
 **Important Notes**:
 
+-   **ALL full-page Livewire components MUST extend `App\Livewire\BasePageComponent`** (not `Livewire\Component`)
+-   Set `public string $pageTitle = 'ui.pages.example';` property for automatic title management (use translation keys)
+-   **Optional**: Set `public string $pageSubtitle = 'ui.pages.example.description';` property for subtitle text (displayed below title in header)
+-   **Translations**: Translation keys (containing dots) are automatically translated - use `'ui.pages.*'` format
+-   **Plain Strings**: Can also use plain strings if translation is not needed
+-   **No `parent::mount()` needed** - title and subtitle sharing happens automatically via `boot()` lifecycle hook
 -   Single-file components must use `.blade.php` extension (not `.php`)
 -   Full-page components go in `resources/views/pages/` and use `pages::` namespace
 -   Nested/reusable Livewire components go in `resources/views/components/` and are referenced directly (e.g., `livewire:settings.delete-user-form`)
@@ -806,6 +846,11 @@ php artisan livewire:convert pages.example
 
 **Important**:
 
+-   **ALL full-page Livewire components MUST extend `App\Livewire\BasePageComponent`** (not `Livewire\Component`)
+-   After creating a full-page component, update it to extend `BasePageComponent` and add `public string $pageTitle = 'ui.pages.example';` (use translation keys)
+-   **Optional**: Add `public string $pageSubtitle = 'ui.pages.example.description';` for subtitle text (displayed below title in header)
+-   **Translations**: Use translation keys like `'ui.pages.dashboard'` - they are automatically translated
+-   **No `parent::mount()` needed** - title and subtitle sharing happens automatically via `boot()` lifecycle hook
 -   Full-page components are created in `resources/views/pages/` and use `pages::` namespace in routes
 -   Nested/reusable Livewire components are created in `resources/views/components/` and are referenced directly (e.g., `livewire:settings.delete-user-form`)
 -   All single-file components use `.blade.php` extension
@@ -980,24 +1025,87 @@ The `I18nService` (`App\Services\I18nService`) centralizes all locale-related op
 
 #### View Composers
 
-The `BladeServiceProvider` uses View Composers to share services with Blade templates:
+The `BladeServiceProvider` uses View Composers to share data with Blade templates. The provider is organized into separate methods for better maintainability:
 
--   **I18nService**: Shared with layout templates (`components.layouts.app`, `components.layouts.app.*`, `components.layouts.auth`, `components.layouts.auth.*`)
--   **SideBarMenuService**: Shared only with `components.layouts.app.sidebar`
+-   **`initLayoutVariables()`**: Shares theme, locale, and HTML attributes with layout templates
+-   **`initPageTitle()`**: Shares page title with header and head partials
+-   **`initPageSubtitle()`**: Shares page subtitle with header and head partials
+
+**Shared Variables**:
+
+-   **Layout Templates** (`components.layouts.app`, `components.layouts.auth`, `layouts::app`, `layouts::auth`):
+    -   `$currentTheme` - Current theme (light/dark)
+    -   `$htmlLangAttribute` - HTML lang attribute value
+    -   `$htmlDirAttribute` - HTML dir attribute value (ltr/rtl)
+-   **Locale Switcher** (`components.preferences.locale-switcher`):
+    -   `$currentLocale` - Current locale
+    -   `$supportedLocales` - Array of supported locales
+    -   `$localeMetadata` - Metadata for current locale (icon, name, etc.)
+-   **Theme Switcher** (`components.preferences.theme-switcher`):
+    -   `$currentTheme` - Current theme
+-   **Sidebar Components** (`components.layouts.app.*`):
+    -   `$sideBarTopMenus` - Top menu groups
+    -   `$sideBarBottomMenus` - Bottom menu groups
+    -   `$sideBarUserMenus` - User dropdown menu groups
+-   **Header & Head** (`components.layouts.app.header`, `partials.head`):
+    -   `$pageTitle` - Page title (from BasePageComponent or fallback)
+    -   `$pageSubtitle` - Page subtitle (optional, from BasePageComponent)
 
 **Usage in Blade:**
 
 ```blade
-{{-- $i18n is automatically available in layout templates --}}
-<html lang="{{ $i18n->getHtmlLangAttribute() }}" dir="{{ $i18n->getHtmlDirAttribute() }}">
+{{-- Specific values are automatically available in layout templates --}}
+<html lang="{{ $htmlLangAttribute }}" dir="{{ $htmlDirAttribute }}" data-theme="{{ $currentTheme }}">
 
-{{-- $menuService is automatically available in sidebar template --}}
+{{-- Menu data is automatically available in sidebar components --}}
 <x-layouts.app.sidebar>
-    {{-- Use $menuService here --}}
+    {{-- $sideBarTopMenus, $sideBarBottomMenus, $sideBarUserMenus are available --}}
 </x-layouts.app.sidebar>
 ```
 
-**Rule**: Use View Composers instead of `@inject` for global data shared with templates.
+**Rule**: Use View Composers instead of `@inject` for global data shared with templates. The provider shares specific values rather than service objects for better performance and clarity.
+
+#### View Composers and Reactivity
+
+**Critical Rule**: When using View Composers with services that have reactive state (like `FrontendPreferencesService`), **always access the service inside the closure**, not outside.
+
+**❌ Incorrect - Values captured once (not reactive):**
+
+```php
+// Service provider boot() runs ONCE per request
+$preferences = app(FrontendPreferencesService::class);
+$currentTheme = $preferences->getTheme(); // Captured value
+
+View::composer([...], function ($view) use ($currentTheme) {
+    // $currentTheme is a STATIC VALUE from when boot() ran
+    $view->with('currentTheme', $currentTheme);
+});
+```
+
+**✅ Correct - Service accessed inside closure (reactive):**
+
+```php
+View::composer([...], function ($view) {
+    // Service accessed EVERY TIME view is rendered
+    $preferences = app(FrontendPreferencesService::class);
+    $currentTheme = $preferences->getTheme(); // Fresh value from session/DB
+    $view->with('currentTheme', $currentTheme);
+});
+```
+
+**Why this matters:**
+
+-   Service provider `boot()` runs **once per request** when the application starts
+-   Values captured outside closures are **static** - they don't update during the request
+-   Services accessed **inside closures** run **every time the view is rendered**, getting fresh values from session/database
+-   This ensures preferences are **reactive** and reflect current user state
+
+**Performance Impact:**
+
+-   **Minimal overhead**: ~1-2ms per page (negligible)
+-   Service container returns **singleton instances** (no object creation overhead)
+-   Services use **session caching** (Redis) - first read ~1ms, subsequent reads ~0.1ms
+-   The performance cost is far outweighed by correctness and maintainability benefits
 
 #### RTL Support
 
@@ -1024,6 +1132,37 @@ The application includes a centralized **Frontend Preferences Service** that man
 #### Architecture
 
 **Service**: `App\Services\FrontendPreferences\FrontendPreferencesService` (singleton)
+
+**Service Registration**: **REQUIRED** - Must be registered as singleton in `AppServiceProvider`:
+
+```php
+// app/Providers/AppServiceProvider.php
+$this->app->singleton(\App\Services\FrontendPreferences\FrontendPreferencesService::class);
+```
+
+**Why Singleton Registration is Required:**
+
+-   **Internal State**: Service maintains cached state (`$persistentStore`, `$cacheStore`, `$loaded`)
+-   **State Preservation**: Without singleton, each `app()` call creates a new instance, losing cached state
+-   **Performance**: Avoids repeated instantiation and ensures cache stores persist across calls
+-   **Consistency**: Same instance everywhere ensures consistent behavior
+
+**I18nService Registration**: **RECOMMENDED** - Should be registered as singleton in `AppServiceProvider`:
+
+```php
+// app/Providers/AppServiceProvider.php
+$this->app->singleton(\App\Services\I18nService::class);
+```
+
+**Why I18nService Singleton is Recommended:**
+
+-   **Stateless Service**: `I18nService` has no internal state (unlike `FrontendPreferencesService`)
+-   **Performance**: Avoids creating multiple instances unnecessarily
+-   **Consistency**: Same instance everywhere ensures consistent behavior
+-   **Best Practice**: Services are typically singletons in Laravel
+-   **Usage Pattern**: Accessed via `app()` in multiple places (BladeServiceProvider, helpers)
+
+**Note**: While `I18nService` singleton registration is not strictly required for correctness (since it's stateless), it's recommended for performance and consistency.
 
 **Storage Strategy**:
 
@@ -1226,6 +1365,80 @@ If you see `Auth::guard('web')->logout()` causing an error:
 
 ### 2025-01-XX
 
+-   **BladeServiceProvider Refactoring**: Improved View Composer organization and data sharing
+
+    -   **Method Organization**: Split into separate methods (`initLayoutVariables()`, `initPageTitle()`, `initPageSubtitle()`) for better maintainability
+    -   **Value-Based Sharing**: Changed from sharing service objects (`$i18n`, `$preferences`, `$menuService`) to sharing specific values (`$htmlLangAttribute`, `$currentTheme`, `$sideBarTopMenus`, etc.)
+    -   **Targeted Composers**: Removed wildcard patterns, using more specific view paths for better performance
+    -   **Sidebar Menu Data**: Changed from sharing `$menuService` object to sharing specific menu arrays (`$sideBarTopMenus`, `$sideBarBottomMenus`, `$sideBarUserMenus`)
+    -   **Layout Templates**: Updated to use specific values (`$htmlLangAttribute`, `$htmlDirAttribute`, `$currentTheme`) instead of service objects
+    -   **Documentation**: Updated View Composers section to reflect new structure and shared variables
+
+-   **Auth Layout Simplification**: Streamlined authentication layout structure
+
+    -   **Removed Components**: Deleted `auth/card.blade.php` and `auth/simple.blade.php` components
+    -   **Single Layout**: Now only uses `auth/split.blade.php` component for all authentication pages
+    -   **Component Structure**: `split.blade.php` changed from full HTML document to component-only (removed DOCTYPE, html, head, body tags)
+    -   **Layout Wrapper**: `auth.blade.php` now wraps `split.blade.php` component instead of `simple.blade.php`
+    -   **Route Updates**: Changed logo links from `route('home')` to `route('dashboard')` in split layout
+    -   **File Structure**:
+        -   `resources/views/components/layouts/auth.blade.php` - Main auth layout wrapper
+        -   `resources/views/components/layouts/auth/split.blade.php` - Split-screen auth component
+
+-   **App Layout Simplification**: Cleaned up app layout structure
+
+    -   **Removed Nested Main**: Removed nested `<main>` tag from `app.blade.php` (moved to `sidebar.blade.php`)
+    -   **Value-Based Variables**: Changed from service objects to specific values (`$htmlLangAttribute`, `$currentTheme`)
+    -   **Simplified Structure**: Cleaner component hierarchy
+
+-   **I18nService Enhancement**: Removed default fallback values
+
+    -   **No Defaults**: `getDefaultLocale()` and `getFallbackLocale()` methods no longer have hardcoded fallback values
+    -   **Config Required**: These methods now rely entirely on `config('i18n.*')` values
+    -   **Better Error Handling**: Ensures configuration is properly set
+
+-   **BasePageComponent Enhancement**: Added subtitle support to page title management system
+
+    -   **Page Subtitle**: `BasePageComponent` now supports optional `$pageSubtitle` property alongside `$pageTitle`
+    -   **Automatic Sharing**: Subtitles are automatically shared via `View::share()` in `boot()` method, just like titles
+    -   **Translation Support**: Subtitles support translation keys (containing dots) - automatically translated via `__()`
+    -   **Header Display**: Header component (`components.layouts.app.header`) now conditionally displays subtitles below the title
+    -   **View Composers**: `BladeServiceProvider` updated to share `$pageSubtitle` with header and head partials
+    -   **Usage**: Set `public string $pageSubtitle = 'ui.pages.example.description';` property in components (optional)
+    -   **Updated Components**: Settings pages (profile, password, two-factor) now use subtitles for better UX
+    -   **Documentation**: Updated `AGENTS.md` with subtitle usage examples and requirements
+
+-   **Sidebar Component Refactoring**: Unified sidebar structure for better maintainability
+    -   **Unified Component**: Removed separate `desktop-menu.blade.php` and `mobile-menu.blade.php` components
+    -   **Single Component**: Created unified `sidebar-menu.blade.php` component (`<x-layouts.app.sidebar-menu />`) that handles both desktop and mobile via CSS classes
+    -   **File Structure**:
+        -   `resources/views/components/layouts/app/sidebar.blade.php` - Main wrapper (`<x-layouts.app.sidebar>`)
+        -   `resources/views/components/layouts/app/sidebar-menu.blade.php` - Unified menu component (`<x-layouts.app.sidebar-menu />`)
+        -   `resources/views/components/layouts/app/header.blade.php` - Header component (`<x-layouts.app.header />`)
+    -   **View Composers**: Sidebar now uses View Composers (in `BladeServiceProvider`) to inject menu data automatically
+    -   **No Props Needed**: Removed need to pass menu data as props - data is automatically available via View Composers
+    -   **Integrated Navbar**: Mobile menu toggle is now integrated directly into the navbar within `sidebar.blade.php`
+    -   **Simplified Structure**: Cleaner component hierarchy with fewer files to maintain
+    -   **Updated Documentation**: Updated sidebar component documentation to reflect unified structure with exact file paths and component references
+
+### 2025-01-XX
+
+-   **Automatic Page Title Management**: Implemented automatic page title management system using `$pageTitle` variable
+    -   **BasePageComponent**: Created `App\Livewire\BasePageComponent` base class for all full-page Livewire components
+    -   **Title Resolution**: Supports static (component property) and controller (view data) methods
+    -   **Translations**: Automatic translation support - translation keys (containing dots) are automatically translated via `__()`
+    -   **View Composer**: Added View Composer in `BladeServiceProvider` to share `$pageTitle` with `partials.head` and `components.layouts.app.header`
+    -   **SPA Navigation**: Full support for `wire:navigate` with automatic title updates via `View::share()` in component's `boot()` method
+    -   **Seamless**: Uses `boot()` lifecycle hook - no need to call `parent::mount()`
+    -   **Rule**: ALL full-page Livewire components MUST extend `BasePageComponent` (not `Livewire\Component`)
+    -   **Usage**: Set `public string $pageTitle = 'ui.pages.example';` property in components (use translation keys)
+    -   **Translation Files**: Added `ui.pages.*` section to translation files (`lang/en_US/ui.php`, `lang/fr_FR/ui.php`)
+    -   **Updated Components**: All existing Livewire page components now extend `BasePageComponent` and use translation keys
+    -   **Documentation**: Updated `AGENTS.md` with BasePageComponent requirement, translation usage, and usage examples
+    -   **Later Enhanced**: Added `$pageSubtitle` support for optional subtitle text displayed below page titles in header
+
+### 2025-01-XX
+
 -   **Icon Component Refactoring**: Converted icon component from Livewire to Blade component
     -   **Converted to Blade Component**: Changed from Livewire component (`⚡dynamic-icon-island.blade.php`) to regular Blade component (`ui/icon.blade.php`)
     -   **Moved to UI Folder**: Component is now located at `resources/views/components/ui/icon.blade.php`
@@ -1238,15 +1451,32 @@ If you see `Auth::guard('web')->logout()` causing an error:
 
 ### 2025-01-XX
 
+-   **BasePageComponent Enhancement**: Added subtitle support to page title management system
+
+    -   **Page Subtitle**: `BasePageComponent` now supports optional `$pageSubtitle` property alongside `$pageTitle`
+    -   **Automatic Sharing**: Subtitles are automatically shared via `View::share()` in `boot()` method, just like titles
+    -   **Translation Support**: Subtitles support translation keys (containing dots) - automatically translated via `__()`
+    -   **Header Display**: Header component (`components.layouts.app.header`) now conditionally displays subtitles below the title
+    -   **View Composers**: `BladeServiceProvider` updated to share `$pageSubtitle` with header and head partials
+    -   **Usage**: Set `public string $pageSubtitle = 'ui.pages.example.description';` property in components (optional)
+    -   **Updated Components**: Settings pages (profile, password, two-factor) now use subtitles for better UX
+    -   **Documentation**: Updated `AGENTS.md` with subtitle usage examples and requirements
+
+-   **Sidebar Component Refactoring**: Unified sidebar structure for better maintainability
+
+    -   **Unified Component**: Removed separate `desktop-menu.blade.php` and `mobile-menu.blade.php` components
+    -   **Single Component**: Created unified `sidebar-menu.blade.php` component that handles both desktop and mobile via CSS classes
+    -   **View Composers**: Sidebar now uses View Composers (in `BladeServiceProvider`) to inject menu data automatically
+    -   **No Props Needed**: Removed need to pass menu data as props - data is automatically available via View Composers
+    -   **Integrated Navbar**: Mobile menu toggle is now integrated directly into the navbar within `sidebar.blade.php`
+    -   **Simplified Structure**: Cleaner component hierarchy with fewer files to maintain
+    -   **Updated Documentation**: Updated sidebar component documentation to reflect unified structure
+
 -   **Navigation System Refactoring**: Simplified navigation system and split sidebar components
     -   **Removed form/button support** from `NavigationItem`: Form and button methods (`form()`, `button()`) have been removed. Use static forms in Blade templates for actions like logout.
     -   **Removed class property**: The `class()` method has been removed from `NavigationItem`. Use `attributes(['class' => '...'])` instead.
     -   **Attributes as array**: `NavigationItem` now returns attributes as an array (not a string) for use with `$attributes->merge()` in Blade components.
-    -   **Sidebar component split**: Split `sidebar.blade.php` into three components:
-        -   `sidebar.blade.php`: Main wrapper component
-        -   `mobile-menu.blade.php`: Mobile navbar component
-        -   `desktop-menu.blade.php`: Desktop sidebar component
-    -   **Service injection**: Updated to use `@inject` Blade directive instead of `app()` helper for cleaner code.
+    -   **Service injection**: Updated to use View Composers instead of `@inject` directive for automatic menu data injection.
     -   **Semantic HTML**: Navigation components now use `<div>` elements instead of `<ul>`/`<li>` for better flexibility.
     -   **Static logout form**: Logout is now handled as a static form in the sidebar components, not through `NavigationItem`.
     -   **Updated tests**: Removed `NavigationItemFormTest.php` as form/button functionality no longer exists. Test count: 24 tests, 52 assertions.
@@ -1313,7 +1543,7 @@ If you see `Auth::guard('web')->logout()` causing an error:
     -   **Storage**: Guest users store preferences in session; authenticated users persist to `users.frontend_preferences` JSON column
     -   **Performance**: First request loads from DB into session cache; subsequent reads use session cache only
     -   **Middleware**: `ApplyFrontendPreferences` automatically applies locale and timezone preferences on each request
-    -   **UI Components**: Language and theme switchers (`livewire:preferences.switchers`) in app/auth layouts
+    -   **UI Components**: Language and theme switchers (`<x-preferences.locale-switcher />`, `<x-preferences.theme-switcher />`) in app/auth layouts
     -   **Constants**: `App\Constants\FrontendPreferences` for session keys, preference keys, defaults, validation
     -   **Database**: Added `frontend_preferences` JSON column to `users` table with array cast
     -   **Removed**: Settings → Appearance page (theme switcher moved to header/sidebar)

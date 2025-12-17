@@ -1,15 +1,7 @@
-<!DOCTYPE html>
-<html lang="{{ $i18n->getHtmlLangAttribute() }}" dir="{{ $i18n->getHtmlDirAttribute() }}">
-
-<head>
-    @include('partials.head')
-</head>
-
-<body class="min-h-screen bg-base-100">
-    <div class="hero min-h-screen bg-base-200">
-        <div class="hero-content flex-col lg:flex-row-reverse">
+    <main class="hero min-h-screen bg-base-200">
+        <div class="hero-content grid grid-cols-1 lg:grid-cols-2 place-items-center">
             <div class="text-center lg:text-left hidden lg:block">
-                <a href="{{ route('home') }}" class="flex items-center text-lg font-medium mb-8" wire:navigate>
+                <a href="{{ route('dashboard') }}" class="flex items-center text-lg font-medium mb-8" wire:navigate>
                     <x-app-logo-icon class="me-2 h-7 fill-current text-base-content" />
                     {{ config('app.name', 'Laravel') }}
                 </a>
@@ -26,9 +18,13 @@
                 </blockquote>
             </div>
             <div class="card shrink-0 w-full max-w-sm shadow-2xl bg-base-100">
+                <div class="flex items-center justify-end gap-2 p-2">
+                    <x-preferences.theme-switcher />
+                    <x-preferences.locale-switcher />
+                </div>
                 <div class="card-body">
-                    <a href="{{ route('home') }}" class="flex flex-col items-center gap-2 font-medium lg:hidden mb-4"
-                        wire:navigate>
+                    <a href="{{ route('dashboard') }}"
+                        class="flex flex-col items-center gap-2 font-medium lg:hidden mb-4" wire:navigate>
                         <x-app-logo-icon class="size-9 fill-current text-base-content" />
                         <span class="sr-only">{{ config('app.name', 'Laravel') }}</span>
                     </a>
@@ -36,7 +32,4 @@
                 </div>
             </div>
         </div>
-    </div>
-</body>
-
-</html>
+    </main>

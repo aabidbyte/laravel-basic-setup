@@ -23,10 +23,10 @@ class PreferencesController extends Controller
     public function updateTheme(Request $request): RedirectResponse
     {
         $theme = $request->input('theme');
-
         if (! FrontendPreferences::isValidTheme($theme)) {
             return redirect()->back()->withErrors(['theme' => __('messages.preferences.invalid_theme')]);
         }
+
         $this->preferences->setTheme($theme);
 
         return redirect()->back()->with('success', __('messages.preferences.theme_updated'));
