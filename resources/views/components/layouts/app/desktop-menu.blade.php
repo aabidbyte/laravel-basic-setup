@@ -25,6 +25,10 @@
             </div>
         </div>
         <div class="p-4 border-t border-base-300">
+            <div class="mb-2 flex justify-center gap-2">
+                <x-preferences.theme-switcher />
+                <x-preferences.locale-switcher />
+            </div>
             <div class="dropdown dropdown-top">
                 <div tabindex="0" role="button" class="btn btn-ghost w-full justify-start"
                     data-test="sidebar-menu-button">

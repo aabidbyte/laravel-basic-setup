@@ -59,9 +59,10 @@ class LangSyncCommand extends Command
     protected string $extractedFile;
 
     /**
-     * Found translation keys from codebase scan.
+     * Found translation keys from codebase scan with their usage locations.
+     * Format: ['key' => ['file.php' => [10, 25], 'other.php' => [5]]]
      *
-     * @var array<string>
+     * @var array<string, array<string, array<int>>>
      */
     protected array $foundKeys = [];
 
@@ -92,6 +93,10 @@ class LangSyncCommand extends Command
         if (! $this->option('write')) {
             $this->warn('Running in dry-run mode. Use --write to apply changes.');
         }
+
+        // First, sync default locale with missing keys from codebase
+        $this->info('Syncing default locale with missing keys...');
+        $this->syncDefaultLocale();
 
         $this->info('Syncing locales...');
         $this->syncLocales();
@@ -149,47 +154,186 @@ class LangSyncCommand extends Command
             }
         }
 
-        // Remove duplicates and update stats
-        $this->foundKeys = array_unique($this->foundKeys);
+        // Update stats
         $this->stats['keys_found'] = count($this->foundKeys);
     }
 
     /**
-     * Scan a single file for translation keys.
+     * Scan a single file for translation keys and track their locations.
      */
     protected function scanFile(string $filePath): void
     {
         $content = File::get($filePath);
+        $lines = explode("\n", $content);
+        $relativePath = str_replace(base_path().'/', '', $filePath);
+
+        // Get comment ranges to exclude matches within comments
+        $commentRanges = $this->getCommentRanges($content);
 
         // Pattern 1: __('key') or __('namespace.key')
-        preg_match_all("/__\s*\(\s*['\"]([^'\"]+)['\"]\s*\)/", $content, $matches1);
-        if (! empty($matches1[1])) {
-            foreach ($matches1[1] as $key) {
-                $this->foundKeys[] = $key;
-            }
-        }
+        $this->scanPattern($content, $lines, "/__\s*\(\s*['\"]([^'\"]+)['\"]\s*\)/", $relativePath, $commentRanges);
 
         // Pattern 2: @lang('key')
-        preg_match_all("/@lang\s*\(\s*['\"]([^'\"]+)['\"]\s*\)/", $content, $matches2);
-        if (! empty($matches2[1])) {
-            foreach ($matches2[1] as $key) {
-                $this->foundKeys[] = $key;
-            }
-        }
+        $this->scanPattern($content, $lines, "/@lang\s*\(\s*['\"]([^'\"]+)['\"]\s*\)/", $relativePath, $commentRanges);
 
         // Pattern 3: trans('key')
-        preg_match_all("/trans\s*\(\s*['\"]([^'\"]+)['\"]\s*\)/", $content, $matches3);
-        if (! empty($matches3[1])) {
-            foreach ($matches3[1] as $key) {
-                $this->foundKeys[] = $key;
+        $this->scanPattern($content, $lines, "/trans\s*\(\s*['\"]([^'\"]+)['\"]\s*\)/", $relativePath, $commentRanges);
+
+        // Pattern 4: :label="__('key')" (Blade attributes)
+        $this->scanPattern($content, $lines, "/:\w+\s*=\s*__\s*\(\s*['\"]([^'\"]+)['\"]\s*\)/", $relativePath, $commentRanges);
+    }
+
+    /**
+     * Get comment ranges in the content.
+     * Returns array of [start, end] offset pairs for all comments.
+     *
+     * @return array<int, array{0: int, 1: int}>
+     */
+    protected function getCommentRanges(string $content): array
+    {
+        $ranges = [];
+        $length = strlen($content);
+        $i = 0;
+
+        while ($i < $length) {
+            // Single-line comment: //
+            if ($i + 1 < $length && $content[$i] === '/' && $content[$i + 1] === '/') {
+                $start = $i;
+                // Find end of line
+                while ($i < $length && $content[$i] !== "\n") {
+                    $i++;
+                }
+                $ranges[] = [$start, $i];
+
+                continue;
+            }
+
+            // Multi-line comment: /* ... */
+            if ($i + 1 < $length && $content[$i] === '/' && $content[$i + 1] === '*') {
+                $start = $i;
+                $i += 2;
+                // Find closing */
+                while ($i + 1 < $length) {
+                    if ($content[$i] === '*' && $content[$i + 1] === '/') {
+                        $i += 2;
+                        $ranges[] = [$start, $i];
+                        break;
+                    }
+                    $i++;
+                }
+
+                continue;
+            }
+
+            // Hash comment: # (less common in PHP, but handle it)
+            if ($content[$i] === '#') {
+                $start = $i;
+                // Find end of line
+                while ($i < $length && $content[$i] !== "\n") {
+                    $i++;
+                }
+                $ranges[] = [$start, $i];
+
+                continue;
+            }
+
+            // Skip string literals to avoid false positives
+            if ($content[$i] === '"' || $content[$i] === "'") {
+                $quote = $content[$i];
+                $i++;
+                // Skip escaped quotes and find closing quote
+                while ($i < $length) {
+                    if ($content[$i] === '\\') {
+                        $i += 2; // Skip escaped character
+
+                        continue;
+                    }
+                    if ($content[$i] === $quote) {
+                        $i++;
+                        break;
+                    }
+                    $i++;
+                }
+
+                continue;
+            }
+
+            $i++;
+        }
+
+        return $ranges;
+    }
+
+    /**
+     * Check if an offset is within any comment range.
+     *
+     * @param  array<int, array{0: int, 1: int}>  $commentRanges
+     */
+    protected function isInComment(int $offset, array $commentRanges): bool
+    {
+        foreach ($commentRanges as [$start, $end]) {
+            if ($offset >= $start && $offset < $end) {
+                return true;
             }
         }
 
-        // Pattern 4: :label="__('key')" (Blade attributes)
-        preg_match_all("/:\w+\s*=\s*__\s*\(\s*['\"]([^'\"]+)['\"]\s*\)/", $content, $matches4);
-        if (! empty($matches4[1])) {
-            foreach ($matches4[1] as $key) {
-                $this->foundKeys[] = $key;
+        return false;
+    }
+
+    /**
+     * Scan content for a pattern and track line numbers.
+     */
+    protected function scanPattern(string $content, array $lines, string $pattern, string $filePath, array $commentRanges = []): void
+    {
+        preg_match_all($pattern, $content, $matches, PREG_OFFSET_CAPTURE);
+
+        if (empty($matches[1])) {
+            return;
+        }
+
+        // $matches[0] contains full matches, $matches[1] contains captured groups
+        foreach ($matches[0] as $index => $fullMatch) {
+            if (! is_array($fullMatch) || ! isset($fullMatch[0], $fullMatch[1])) {
+                continue;
+            }
+
+            // Get the full match offset (start of __('key') or similar)
+            $fullMatchOffset = (int) $fullMatch[1];
+
+            // Skip if the full match is within a comment
+            if (! empty($commentRanges) && $this->isInComment($fullMatchOffset, $commentRanges)) {
+                continue;
+            }
+
+            // Get the captured key from $matches[1]
+            if (! isset($matches[1][$index]) || ! is_array($matches[1][$index])) {
+                continue;
+            }
+
+            $keyMatch = $matches[1][$index];
+            if (! isset($keyMatch[0], $keyMatch[1])) {
+                continue;
+            }
+
+            $key = (string) $keyMatch[0];
+            $keyOffset = (int) $keyMatch[1];
+
+            // Calculate line number from key offset
+            $lineNum = substr_count(substr($content, 0, $keyOffset), "\n") + 1;
+
+            // Initialize key if not exists
+            if (! isset($this->foundKeys[$key])) {
+                $this->foundKeys[$key] = [];
+            }
+
+            // Initialize file if not exists
+            if (! isset($this->foundKeys[$key][$filePath])) {
+                $this->foundKeys[$key][$filePath] = [];
+            }
+
+            // Add line number if not already present
+            if (! in_array($lineNum, $this->foundKeys[$key][$filePath], true)) {
+                $this->foundKeys[$key][$filePath][] = $lineNum;
             }
         }
     }
@@ -254,7 +398,7 @@ class LangSyncCommand extends Command
             $localeTranslations = File::exists($localeFile) ? require $localeFile : [];
 
             // Merge: add missing keys from default, keep existing locale values
-            $merged = $this->mergeTranslations($defaultTranslations, $localeTranslations);
+            $merged = $this->mergeTranslations($defaultTranslations, $localeTranslations, $file);
 
             // Check if there are changes
             if ($merged !== $localeTranslations) {
@@ -273,19 +417,162 @@ class LangSyncCommand extends Command
     }
 
     /**
-     * Merge translations, adding missing keys from default.
+     * Sync default locale with missing keys from codebase scan.
      */
-    protected function mergeTranslations(array $default, array $locale): array
+    protected function syncDefaultLocale(): void
+    {
+        $defaultLangPath = lang_path($this->defaultLocale);
+
+        if (! File::exists($defaultLangPath)) {
+            File::makeDirectory($defaultLangPath, 0755, true);
+        }
+
+        // Group keys by namespace (file)
+        $keysByFile = [];
+
+        foreach ($this->foundKeys as $key => $locations) {
+            // Determine which file this key belongs to based on namespace
+            $namespace = $this->getNamespaceFromKey($key);
+            if (! isset($keysByFile[$namespace])) {
+                $keysByFile[$namespace] = [];
+            }
+            $keysByFile[$namespace][$key] = $locations;
+        }
+
+        // Sync each translation file
+        foreach ($keysByFile as $filename => $keys) {
+            $filePath = "{$defaultLangPath}/{$filename}.php";
+            $existingTranslations = File::exists($filePath) ? require $filePath : [];
+
+            // Add missing keys with their usage locations
+            $updated = $this->addMissingKeysToDefault($existingTranslations, $keys, $filename);
+
+            if ($updated !== $existingTranslations) {
+                if ($this->option('write')) {
+                    $this->writeTranslationFile($filePath, $updated);
+                    $this->stats['files_updated']++;
+                    $this->info("Updated default locale: {$this->defaultLocale}/{$filename}.php");
+                } else {
+                    $this->line("Would update default locale: {$this->defaultLocale}/{$filename}.php");
+                }
+            }
+        }
+    }
+
+    /**
+     * Get namespace (filename) from translation key.
+     */
+    protected function getNamespaceFromKey(string $key): string
+    {
+        // Check if key starts with a known namespace
+        foreach ($this->namespaces as $namespace) {
+            if (str_starts_with($key, "{$namespace}.")) {
+                return $namespace;
+            }
+        }
+
+        // Default to extracted file for unknown keys
+        return $this->extractedFile;
+    }
+
+    /**
+     * Add missing keys to default locale translations with usage locations.
+     *
+     * @param  array<string, mixed>  $translations
+     * @param  array<string, array<string, array<int>>>  $keys
+     * @return array<string, mixed>
+     */
+    protected function addMissingKeysToDefault(array $translations, array $keys, string $filename): array
+    {
+        $updated = $translations;
+
+        foreach ($keys as $fullKey => $locations) {
+            // Remove namespace prefix if present
+            $keyWithoutNamespace = str_starts_with($fullKey, "{$filename}.")
+                ? substr($fullKey, strlen($filename) + 1)
+                : $fullKey;
+
+            // Build location string (can be multiple)
+            $locationStrings = [];
+            foreach ($locations as $file => $lines) {
+                foreach ($lines as $line) {
+                    $locationStrings[] = "{$file}:{$line}";
+                }
+            }
+            $locationValue = implode(', ', $locationStrings);
+
+            // For extracted file, always treat keys as simple (even if they contain dots)
+            // For other files, check if this is a namespaced key (has dots in the middle, not just at the end)
+            $isSimpleKey = $filename === $this->extractedFile
+                || ! str_contains($keyWithoutNamespace, '.')
+                || (str_ends_with($keyWithoutNamespace, '.') && substr_count($keyWithoutNamespace, '.') === 1);
+
+            if ($isSimpleKey) {
+                // Simple key - set directly
+                if (! isset($updated[$keyWithoutNamespace])) {
+                    $updated[$keyWithoutNamespace] = $locationValue;
+                    $this->stats['keys_added']++;
+                }
+            } else {
+                // Navigate/create nested structure for namespaced keys
+                $keyParts = explode('.', $keyWithoutNamespace);
+                $current = &$updated;
+
+                foreach ($keyParts as $i => $keyPart) {
+                    if (empty($keyPart) && $i < count($keyParts) - 1) {
+                        // Skip empty intermediate keys (shouldn't happen, but handle gracefully)
+                        continue;
+                    }
+
+                    if ($i === count($keyParts) - 1) {
+                        // Last key - set the value
+                        if (! isset($current[$keyPart])) {
+                            $current[$keyPart] = $locationValue;
+                            $this->stats['keys_added']++;
+                        }
+                    } else {
+                        // Intermediate key - ensure array exists
+                        if (! isset($current[$keyPart]) || ! is_array($current[$keyPart])) {
+                            $current[$keyPart] = [];
+                        }
+                        $current = &$current[$keyPart];
+                    }
+                }
+            }
+        }
+
+        return $updated;
+    }
+
+    /**
+     * Merge translations, adding missing keys from default.
+     *
+     * @param  array<string, mixed>  $default
+     * @param  array<string, mixed>  $locale
+     * @return array<string, mixed>
+     */
+    protected function mergeTranslations(array $default, array $locale, string $filename = '', string $prefix = ''): array
     {
         $merged = $locale;
 
         foreach ($default as $key => $value) {
+            $fullKey = $prefix ? "{$prefix}.{$key}" : $key;
+
             if (! isset($merged[$key])) {
-                // Key missing in locale, add from default
-                $merged[$key] = $value;
+                // Key missing in locale - set empty value
+                if (is_array($value)) {
+                    // If default value is an array, recursively merge with empty array
+                    $merged[$key] = $this->mergeTranslations($value, [], $filename, $fullKey);
+                } else {
+                    // For scalar values, set empty string
+                    $merged[$key] = '';
+                }
             } elseif (is_array($value) && is_array($merged[$key])) {
                 // Both are arrays, recursively merge
-                $merged[$key] = $this->mergeTranslations($value, $merged[$key]);
+                $merged[$key] = $this->mergeTranslations($value, $merged[$key], $filename, $fullKey);
+            } elseif (is_array($value) && ! is_array($merged[$key])) {
+                // Default is array but locale has scalar - replace with merged array
+                $merged[$key] = $this->mergeTranslations($value, [], $filename, $fullKey);
             }
         }
 
@@ -433,7 +720,7 @@ class LangSyncCommand extends Command
     protected function isKeyUsed(string $fullKey, array $context, string $shortKey, mixed $value): bool
     {
         // Check if the full key is found
-        if (in_array($fullKey, $this->foundKeys)) {
+        if (isset($this->foundKeys[$fullKey])) {
             return true;
         }
 
@@ -496,13 +783,18 @@ class LangSyncCommand extends Command
         $result = '';
 
         foreach ($array as $key => $value) {
-            $keyStr = is_string($key) && preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $key) ? $key : var_export($key, true);
+            // Format key: use simple string if valid identifier, otherwise use var_export
+            $keyStr = is_string($key) && preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $key)
+                ? "'{$key}'"
+                : var_export($key, true);
 
             if (is_array($value)) {
                 $result .= "{$spaces}{$keyStr} => [\n";
                 $result .= $this->arrayToPhpString($value, $indent + 1);
                 $result .= "{$spaces}],\n";
             } else {
+                // Properly escape string values using var_export
+                // var_export handles all escaping including quotes, newlines, etc.
                 $valueStr = var_export($value, true);
                 $result .= "{$spaces}{$keyStr} => {$valueStr},\n";
             }

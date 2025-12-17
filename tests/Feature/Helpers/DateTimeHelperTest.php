@@ -125,3 +125,60 @@ test('formatDate falls back to default locale for unsupported locale', function 
     // Should fall back to default locale (en_US)
     expect($result)->toBe('12/16/2025');
 });
+
+test('formatDate uses user timezone preference for display', function () {
+    $preferences = app(\App\Services\FrontendPreferences\FrontendPreferencesService::class);
+    $preferences->setTimezone('America/New_York');
+
+    // Date stored in UTC (app timezone) - use noon to avoid day boundary issues
+    $date = Carbon::parse('2025-12-16 12:00:00', 'UTC');
+
+    $result = formatDate($date);
+
+    // Should display in user's timezone (America/New_York is UTC-5 in December)
+    // 12:00 UTC = 07:00 EST, so date remains the same
+    expect($result)->toBe('12/16/2025');
+});
+
+test('formatTime uses user timezone preference for display', function () {
+    $preferences = app(\App\Services\FrontendPreferences\FrontendPreferencesService::class);
+    $preferences->setTimezone('America/New_York');
+
+    // Time stored in UTC (app timezone)
+    $time = Carbon::parse('2025-12-16 14:00:00', 'UTC');
+
+    $result = formatTime($time);
+
+    // Should display in user's timezone (America/New_York is UTC-5 in December)
+    // 14:00 UTC = 09:00 EST
+    expect($result)->toBe('09:00:00');
+});
+
+test('formatDateTime uses user timezone preference for display', function () {
+    $preferences = app(\App\Services\FrontendPreferences\FrontendPreferencesService::class);
+    $preferences->setTimezone('America/New_York');
+
+    // DateTime stored in UTC (app timezone)
+    $datetime = Carbon::parse('2025-12-16 14:00:00', 'UTC');
+
+    $result = formatDateTime($datetime);
+
+    // Should display in user's timezone (America/New_York is UTC-5 in December)
+    // 14:00 UTC = 09:00 EST
+    expect($result)->toBe('12/16/2025 09:00:00');
+});
+
+test('formatDate accepts timezone override', function () {
+    $preferences = app(\App\Services\FrontendPreferences\FrontendPreferencesService::class);
+    $preferences->setTimezone('America/New_York');
+
+    // Date stored in UTC
+    $date = Carbon::parse('2025-12-16 14:00:00', 'UTC');
+
+    // Override timezone
+    $result = formatDate($date, null, 'Europe/Paris');
+
+    // Should use override timezone (Europe/Paris is UTC+1 in December)
+    // 14:00 UTC = 15:00 CET, but date should remain same
+    expect($result)->toBe('12/16/2025');
+});

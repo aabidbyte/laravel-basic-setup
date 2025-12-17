@@ -21,6 +21,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->extend('auth.password', function ($manager, $app) {
             return new PasswordBrokerManager($app);
         });
+
+        // Register FrontendPreferencesService as singleton
+        $this->app->singleton(\App\Services\FrontendPreferences\FrontendPreferencesService::class);
     }
 
     /**

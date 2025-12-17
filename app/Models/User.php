@@ -45,6 +45,7 @@ class User extends BaseUserModel
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'frontend_preferences' => 'array',
         ];
     }
 

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="{{ $i18n->getHtmlLangAttribute() }}" dir="{{ $i18n->getHtmlDirAttribute() }}">
+<html lang="{{ $i18n->getHtmlLangAttribute() }}" dir="{{ $i18n->getHtmlDirAttribute() }}"
+    data-theme="{{ $preferences->getTheme() }}">
 
 <head>
     @include('partials.head')

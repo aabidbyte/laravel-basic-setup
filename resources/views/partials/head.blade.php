@@ -11,13 +11,3 @@
 <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
 
 @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-<script>
-    // Initialize theme from localStorage or system preference
-    // This runs synchronously to prevent FOUC (Flash of Unstyled Content)
-    (function() {
-        const theme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ?
-            'dark' : 'light');
-        document.documentElement.setAttribute('data-theme', theme);
-    })();
-</script>

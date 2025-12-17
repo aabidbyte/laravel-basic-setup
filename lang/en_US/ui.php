@@ -166,6 +166,14 @@ return [
         ],
     ],
 
+    // Preferences
+    'preferences' => [
+        'theme' => 'Theme',
+        'theme_light' => 'Light',
+        'theme_dark' => 'Dark',
+        'locale' => 'Language',
+    ],
+
     // Common UI Elements
     'common' => [
         'saved' => 'Saved.',

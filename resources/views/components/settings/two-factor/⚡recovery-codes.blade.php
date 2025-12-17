@@ -66,7 +66,7 @@ new class extends Component {
 
             <x-ui.button type="button" x-show="showRecoveryCodes" @click="showRecoveryCodes = false" variant="primary"
                 aria-expanded="true" aria-controls="recovery-codes-section">
-                {{ __('Hide Recovery Codes') }}
+                {{ __('ui.settings.two_factor.recovery.hide_button') }}
             </x-ui.button>
 
             @if (filled($recoveryCodes))

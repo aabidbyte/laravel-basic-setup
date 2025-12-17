@@ -1,6 +1,9 @@
 <?php
 
 return [
-    // System messages, notifications, alerts
-    // Use semantic keys: messages.{category}.{type}
+    'preferences' => [
+        'invalid_theme' => '',
+        'theme_updated' => '',
+        'invalid_locale' => '',
+    ],
 ];

@@ -11,7 +11,9 @@
             <x-app-logo />
         </a>
     </div>
-    <div class="flex-none">
+    <div class="flex-none flex items-center gap-2">
+        <x-preferences.theme-switcher />
+        <x-preferences.locale-switcher />
         <div class="dropdown dropdown-end">
             <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
                 <div class="w-10 rounded-full bg-base-300 text-base-content">

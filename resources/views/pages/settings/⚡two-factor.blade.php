@@ -161,9 +161,9 @@ new class extends Component {
 
         if ($this->showVerificationStep) {
             return [
-                'title' => __('Verify Authentication Code'),
-                'description' => __('Enter the 6-digit code from your authenticator app.'),
-                'buttonText' => __('Continue'),
+                'title' => __('ui.settings.two_factor.setup.title_verify'),
+                'description' => __('ui.settings.two_factor.setup.description_verify'),
+                'buttonText' => __('ui.actions.continue'),
             ];
         }
 
@@ -184,7 +184,7 @@ new class extends Component {
                 <div class="card bg-base-200">
                     <div class="card-body">
                         <div class="flex items-center gap-3">
-                            <span class="badge badge-success badge-lg">{{ __('Enabled') }}</span>
+                            <span class="badge badge-success badge-lg">{{ __('ui.settings.two_factor.enabled') }}</span>
                         </div>
 
                         <p class="text-base-content/70">

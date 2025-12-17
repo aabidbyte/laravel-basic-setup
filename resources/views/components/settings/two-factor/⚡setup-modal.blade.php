@@ -66,7 +66,7 @@ new class extends Component {
         <div class="space-y-4">
             <div class="form-control">
                 <label class="label">
-                    <span class="label-text">{{ __('OTP Code') }}</span>
+                    <span class="label-text">{{ __('ui.settings.two_factor.setup.otp_label') }}</span>
                 </label>
                 <input type="text" wire:model="code" maxlength="6" pattern="[0-9]{6}" inputmode="numeric"
                     class="input input-bordered w-full text-center text-2xl tracking-widest @error('code') input-error @enderror"

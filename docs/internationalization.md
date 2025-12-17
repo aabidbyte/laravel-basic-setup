@@ -262,6 +262,45 @@ php artisan lang:sync --write
 
 5. **Translate the keys**: Edit `lang/ar/ui.php` and `lang/ar/messages.php` with translations
 
+## Locale Switching
+
+The application uses the **Frontend Preferences Service** (`App\Services\FrontendPreferences\FrontendPreferencesService`) to manage user locale preferences. Users can switch locales via the language switcher component in the application header/sidebar.
+
+### How It Works
+
+1. **User Preference Storage**:
+
+    - **Guest users**: Locale preference stored in session
+    - **Authenticated users**: Locale preference stored in `users.frontend_preferences` JSON column + cached in session
+
+2. **Automatic Application**:
+
+    - The `ApplyFrontendPreferences` middleware automatically sets `app()->setLocale()` on each request
+    - Locale is validated via `I18nService::getValidLocale()` to ensure it's supported
+
+3. **UI Component**:
+    - Language switcher component (`livewire:preferences.switchers`) displays all supported locales
+    - Uses locale metadata from `config/i18n.php` (icons, native names)
+    - Changing locale triggers a page reload to apply the new locale
+
+### Usage
+
+**In Code:**
+
+```php
+use App\Services\FrontendPreferences\FrontendPreferencesService;
+
+$preferences = app(FrontendPreferencesService::class);
+
+// Get current locale preference
+$locale = $preferences->getLocale(); // Returns validated locale
+
+// Set locale preference
+$preferences->setLocale('fr_FR'); // Validated via I18nService
+```
+
+**Note**: The application locale is automatically set by middleware based on user preferences. You typically don't need to manually call `app()->setLocale()`.
+
 ## Pluralization
 
 Laravel's pluralization system is fully supported. Use `trans_choice()` for pluralized translations:
@@ -321,17 +360,22 @@ The application provides helper functions for formatting dates, times, and curre
 
 Located in `app/helpers/dateTime.php`:
 
--   **`formatDate($date, ?string $locale = null): string`** - Formats a date using the locale's `date_format`
--   **`formatTime($time, ?string $locale = null): string`** - Formats a time using the locale's `time_format`
--   **`formatDateTime($datetime, ?string $locale = null): string`** - Formats a datetime using the locale's `datetime_format`
+-   **`formatDate($date, ?string $locale = null, ?string $timezone = null): string`** - Formats a date using the locale's `date_format` and user's timezone preference (for display only)
+-   **`formatTime($time, ?string $locale = null, ?string $timezone = null): string`** - Formats a time using the locale's `time_format` and user's timezone preference (for display only)
+-   **`formatDateTime($datetime, ?string $locale = null, ?string $timezone = null): string`** - Formats a datetime using the locale's `datetime_format` and user's timezone preference (for display only)
 
 **Usage:**
 
 ```php
 // In Blade templates
 {{ formatDate(now()) }}           // "12/16/2025" (en_US) or "16/12/2025" (fr_FR)
-{{ formatTime(now()) }}           // "14:30:00"
-{{ formatDateTime(now()) }}       // "12/16/2025 14:30:00" (en_US)
+{{ formatTime(now()) }}           // "14:30:00" (converted to user's timezone preference)
+{{ formatDateTime(now()) }}       // "12/16/2025 14:30:00" (en_US, converted to user's timezone preference)
+
+**Timezone Handling:**
+-   All dates/times are stored in the database using the application timezone from `config/app.php`
+-   The helpers automatically convert dates/times to the user's timezone preference (from `FrontendPreferencesService`) when displaying
+-   You can override the timezone by passing it as the third parameter: `formatDateTime($date, 'en_US', 'America/New_York')`
 
 // With locale override
 {{ formatDate('2025-12-16', 'fr_FR') }}  // "16/12/2025"

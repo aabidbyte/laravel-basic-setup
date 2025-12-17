@@ -1,6 +1,6 @@
 <?php
 
 return [
-    // Newly discovered translations that need to be organized
-    // Run lang:sync to populate, then move keys to appropriate namespace files
+    // This file is for newly discovered translation keys that haven't been assigned to a namespace yet.
+    // Keys found here should be moved to appropriate files (ui.php or messages.php) with semantic keys.
 ];

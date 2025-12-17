@@ -29,7 +29,7 @@
                     <div x-show="!showRecoveryInput">
                         <div class="form-control">
                             <label for="code" class="label">
-                                <span class="label-text">{{ __('OTP Code') }}</span>
+                                <span class="label-text">{{ __('ui.settings.two_factor.setup.otp_label') }}</span>
                             </label>
                             <input type="text" x-model="code" name="code" id="code" maxlength="6"
                                 pattern="[0-9]{6}" inputmode="numeric"

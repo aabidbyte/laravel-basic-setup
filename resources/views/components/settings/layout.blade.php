@@ -17,16 +17,10 @@
                 <li>
                     <a href="{{ route('two-factor.show') }}" wire:navigate
                         class="{{ request()->routeIs('two-factor.show') ? 'active' : '' }}">
-                        {{ __('Two-Factor Auth') }}
+                        {{ __('ui.settings.two_factor.title') }}
                     </a>
                 </li>
             @endif
-            <li>
-                <a href="{{ route('appearance.edit') }}" wire:navigate
-                    class="{{ request()->routeIs('appearance.edit') ? 'active' : '' }}">
-                    {{ __('ui.settings.appearance.title') }}
-                </a>
-            </li>
         </ul>
     </div>
 

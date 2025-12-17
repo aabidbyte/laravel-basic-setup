@@ -1017,6 +1017,135 @@ The system includes first-class RTL support:
 
 **Documentation**: See `docs/internationalization.md` for complete guide, best practices, and troubleshooting.
 
+### Frontend Preferences System
+
+The application includes a centralized **Frontend Preferences Service** that manages user preferences for locale, theme, timezone, and other frontend settings. The system uses a session-backed caching strategy for fast reads and persists preferences to the database for authenticated users.
+
+#### Architecture
+
+**Service**: `App\Services\FrontendPreferences\FrontendPreferencesService` (singleton)
+
+**Storage Strategy**:
+
+-   **Guest users**: Preferences stored in session only
+-   **Authenticated users**: Preferences stored in `users.frontend_preferences` JSON column + cached in session
+-   **Performance**: First request loads from DB into session cache; subsequent reads use session cache only
+-   **Updates**: When preferences change, both DB (if authenticated) and session cache are updated
+
+**Stores** (SOLID design):
+
+-   `App\Services\FrontendPreferences\Contracts\PreferencesStore` - Interface
+-   `App\Services\FrontendPreferences\Stores\SessionPreferencesStore` - Session-based storage
+-   `App\Services\FrontendPreferences\Stores\UserJsonPreferencesStore` - Database JSON storage
+
+**Constants**: `App\Constants\FrontendPreferences` - Session keys, preference keys, defaults, validation
+
+#### Available Preferences
+
+-   **`locale`**: User's preferred language (validated via `I18nService`)
+-   **`theme`**: UI theme (`light` or `dark`, validated)
+-   **`timezone`**: User's timezone for display purposes only (validated PHP timezone identifier)
+    -   **Important**: Timezone preference is for display only. All dates/times are stored in the database using the application timezone from `config/app.php`
+    -   Date/time formatting helpers (`formatDate()`, `formatTime()`, `formatDateTime()`) automatically use the user's timezone preference when displaying dates/times
+
+#### Usage
+
+**In PHP Code:**
+
+```php
+use App\Services\FrontendPreferences\FrontendPreferencesService;
+
+$preferences = app(FrontendPreferencesService::class);
+
+// Get preferences
+$locale = $preferences->getLocale();
+$theme = $preferences->getTheme();
+$timezone = $preferences->getTimezone();
+
+// Set preferences
+$preferences->setLocale('fr_FR');
+$preferences->setTheme('dark');
+$preferences->setTimezone('America/New_York');
+
+// Generic get/set
+$value = $preferences->get('custom_key', 'default');
+$preferences->set('custom_key', 'value');
+
+// Refresh from persistent store
+$preferences->refresh();
+```
+
+**In Blade Templates:**
+
+The `FrontendPreferencesService` is automatically shared with layout templates via View Composers:
+
+```blade
+{{-- $preferences is automatically available in layout templates --}}
+<html data-theme="{{ $preferences->getTheme() }}">
+```
+
+#### Middleware
+
+**`App\Http\Middleware\ApplyFrontendPreferences`** automatically applies preferences on each request:
+
+-   Sets application locale: `app()->setLocale($preferences->getLocale())`
+-   **Timezone**: Timezone preference is NOT applied globally. It is used only by date/time formatting helpers (`formatDate()`, `formatTime()`, `formatDateTime()`) for display purposes. Database storage always uses the application timezone from `config/app.php`.
+
+Registered in `bootstrap/app.php` web middleware pipeline (after session middleware).
+
+#### UI Components
+
+**Separate Blade Components** (POST form-based, not Livewire):
+
+-   **Theme Switcher**: `resources/views/components/preferences/theme-switcher.blade.php`
+    -   Toggle between light/dark themes via POST form
+    -   Gets current theme from view composer (`$currentTheme`)
+    -   Updates theme via `PreferencesController@updateTheme`
+-   **Locale Switcher**: `resources/views/components/preferences/locale-switcher.blade.php`
+    -   Dropdown with all supported locales from `I18nService`
+    -   Gets current locale and supported locales from view composer (`$currentLocale`, `$supportedLocales`)
+    -   Updates locale via `PreferencesController@updateLocale`
+
+**View Composers** (in `BladeServiceProvider`):
+
+-   Shares `$currentTheme`, `$currentLocale`, `$supportedLocales`, and `$i18n` with layout templates
+-   Values are automatically available in components included within layouts
+
+**Usage:**
+
+```blade
+{{-- Include separately in layouts - no props needed, values come from view composers --}}
+<x-preferences.theme-switcher />
+<x-preferences.locale-switcher />
+```
+
+**Controller**: `App\Http\Controllers\PreferencesController`
+
+-   `updateTheme()` - Handles theme preference updates via POST
+-   `updateLocale()` - Handles locale preference updates via POST
+-   Both methods validate input and redirect back with success/error messages
+
+**Routes**:
+
+-   `POST /preferences/theme` → `preferences.theme`
+-   `POST /preferences/locale` → `preferences.locale`
+
+#### Database Schema
+
+**Migration**: Adds `frontend_preferences` JSON column to `users` table
+
+**Model Cast**: `User` model casts `frontend_preferences` as `array`
+
+#### Testing
+
+All functionality is covered by comprehensive Pest tests:
+
+-   **Service Tests**: Guest/authenticated behavior, caching, validation, refresh
+-   **Middleware Tests**: Locale/timezone application, defaults
+-   **Controller Tests**: Theme/locale update handling, validation, persistence for guests and authenticated users
+
+**Rule**: Always test preference changes to ensure they persist correctly for both guest and authenticated users.
+
 ### Creating Release Tags
 
 Use the `release:tag` command to automatically create and push release tags:
@@ -1177,6 +1306,20 @@ If you see `Auth::guard('web')->logout()` causing an error:
     -   Provides helpful feedback with Laravel Prompts
 
 ### 2025-12-16
+
+-   **Frontend Preferences System**: Implemented centralized frontend preferences service for managing user preferences (locale, theme, timezone)
+
+    -   **Service**: `App\Services\FrontendPreferences\FrontendPreferencesService` (singleton) with session-backed caching
+    -   **Storage**: Guest users store preferences in session; authenticated users persist to `users.frontend_preferences` JSON column
+    -   **Performance**: First request loads from DB into session cache; subsequent reads use session cache only
+    -   **Middleware**: `ApplyFrontendPreferences` automatically applies locale and timezone preferences on each request
+    -   **UI Components**: Language and theme switchers (`livewire:preferences.switchers`) in app/auth layouts
+    -   **Constants**: `App\Constants\FrontendPreferences` for session keys, preference keys, defaults, validation
+    -   **Database**: Added `frontend_preferences` JSON column to `users` table with array cast
+    -   **Removed**: Settings → Appearance page (theme switcher moved to header/sidebar)
+    -   **Theme Management**: Switched from client-side `localStorage` to server-side `data-theme` attribute
+    -   **Comprehensive Tests**: 23 tests covering service, middleware, and UI component behavior
+    -   **Documentation**: Added Frontend Preferences section to `AGENTS.md` and locale switching info to `docs/internationalization.md`
 
 -   **DateTime and Currency Helper Functions**: Created locale-aware helper functions for formatting dates, times, and currency
     -   Created `app/helpers/dateTime.php` with `formatDate()`, `formatTime()`, and `formatDateTime()` functions

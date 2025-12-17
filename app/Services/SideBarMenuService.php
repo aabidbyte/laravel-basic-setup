@@ -35,16 +35,16 @@ class SideBarMenuService
     public function getBottomMenus(): array
     {
         return NavigationBuilder::make()
-            ->title(__('Resources'))
+            ->title(__('ui.navigation.resources'))
             ->items(
                 NavigationItem::make()
-                    ->title(__('Repository'))
+                    ->title(__('ui.navigation.repository'))
                     ->url('https://github.com/laravel/livewire-starter-kit')
                     ->external()
                     ->icon('folder'),
 
                 NavigationItem::make()
-                    ->title(__('Documentation'))
+                    ->title(__('ui.navigation.documentation'))
                     ->url('https://laravel.com/docs/starter-kits#livewire')
                     ->external()
                     ->icon('book-open')
