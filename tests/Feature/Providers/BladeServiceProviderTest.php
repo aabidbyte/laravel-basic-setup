@@ -4,62 +4,85 @@ use App\Models\User;
 use App\Providers\BladeServiceProvider;
 use Illuminate\Support\Facades\View;
 
-test('BladeServiceProvider shares i18n when app layout view is rendered', function () {
+test('BladeServiceProvider shares layout variables when app layout view is rendered', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
 
     $provider = new BladeServiceProvider(app());
     $provider->boot();
 
-    // Render the view - if i18n is not available, it will throw an error
+    // Render the view - if variables are not available, it will throw an error
     $view = view('components.layouts.app', ['slot' => 'test'])->render();
 
-    // The view should render successfully with i18n available
+    // The view should render successfully with layout variables available
     expect($view)->toBeString();
     expect($view)->toContain('lang=');
     expect($view)->toContain('dir=');
+    expect($view)->toContain('data-theme=');
 });
 
-test('BladeServiceProvider shares i18n when auth layout view is rendered', function () {
+test('BladeServiceProvider shares layout variables when auth layout view is rendered', function () {
     $provider = new BladeServiceProvider(app());
     $provider->boot();
 
-    // Render the view - if i18n is not available, it will throw an error
+    // Render the view - if variables are not available, it will throw an error
     $view = view('components.layouts.auth', ['slot' => 'test'])->render();
 
-    // The view should render successfully with i18n available
+    // The view should render successfully with layout variables available
     expect($view)->toBeString();
     expect($view)->toContain('lang=');
     expect($view)->toContain('dir=');
+    expect($view)->toContain('data-theme=');
 });
 
-test('BladeServiceProvider shares menuService when sidebar view is rendered', function () {
+test('BladeServiceProvider shares menu data when sidebar components are rendered', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
 
     $provider = new BladeServiceProvider(app());
     $provider->boot();
 
-    // Render the sidebar view - if menuService is not available, it will throw an error
-    $view = view('components.layouts.app.sidebar', ['slot' => 'test'])->render();
+    // Render the sidebar-menu view - if menu data is not available, it will throw an error
+    $view = view('components.layouts.app.sidebar-menu')->render();
 
-    // The view should render successfully with menuService available
+    // The view should render successfully with menu data available
     expect($view)->toBeString();
+    // Should contain menu structure
+    expect($view)->toContain('sidebar-top-menus');
+    expect($view)->toContain('sidebar-bottom-menus');
 });
 
-test('BladeServiceProvider does not share menuService with app layout', function () {
+test('BladeServiceProvider shares page title when header view is rendered', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
 
     $provider = new BladeServiceProvider(app());
     $provider->boot();
 
-    // Render the app layout view
-    $view = view('components.layouts.app', ['slot' => 'test'])->render();
+    // Render the header view - if pageTitle is not available, it will use fallback
+    $view = view('components.layouts.app.header')->render();
 
-    // The view should render successfully
+    // The view should render successfully with pageTitle available
     expect($view)->toBeString();
-    // menuService should not be available in this view (it's only for sidebar)
-    // We can't easily test this without accessing the view data, but the view rendering
-    // without errors confirms the composer is working correctly
+    // Should contain page title (either from View::share or fallback to app name)
+    expect($view)->toContain('text-xl');
+});
+
+test('BladeServiceProvider shares page subtitle when provided', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    $provider = new BladeServiceProvider(app());
+    $provider->boot();
+
+    // Share a subtitle via View::share (simulating BasePageComponent behavior)
+    View::share('pageSubtitle', 'Test Subtitle');
+
+    // Render the header view
+    $view = view('components.layouts.app.header')->render();
+
+    // The view should render successfully with pageSubtitle available
+    expect($view)->toBeString();
+    // Should contain subtitle if it exists
+    expect($view)->toContain('Test Subtitle');
 });

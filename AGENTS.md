@@ -1187,6 +1187,43 @@ $this->app->singleton(\App\Services\I18nService::class);
     -   **Important**: Timezone preference is for display only. All dates/times are stored in the database using the application timezone from `config/app.php`
     -   Date/time formatting helpers (`formatDate()`, `formatTime()`, `formatDateTime()`) automatically use the user's timezone preference when displaying dates/times
 
+#### Auto-Detection on First Visit
+
+The system automatically detects browser preferences on a user's first visit (when no preferences are set):
+
+**Language Detection** (Server-side):
+
+-   Automatically detects browser language from `Accept-Language` header
+-   Parses and matches against supported locales in `config/i18n.php`
+-   Supports quality values (e.g., `fr-FR,fr;q=0.9,en;q=0.8`)
+-   Falls back to default locale if browser language is not supported
+-   Only detects on first visit (when no locale preference exists)
+
+**Theme Detection** (Client-side with server-side persistence):
+
+-   Automatically detects browser theme preference from `prefers-color-scheme` CSS media query
+-   Detected via JavaScript snippet in `resources/views/partials/head.blade.php`
+-   **Applied immediately** - Updates `data-theme` attribute on `<html>` element without page refresh
+-   Sets a cookie (`_preferred_theme`) for server-side persistence
+-   Server reads cookie on first visit to detect and save theme preference
+-   Also saves to server in background via `POST /preferences/theme` endpoint
+-   Only detects on first visit (when theme is still default/light)
+-   Does not override existing theme preferences
+
+**Detection Behavior**:
+
+-   Detection only occurs when no preferences are set (first visit)
+-   Once preferences are set (manually or via detection), they are persisted
+-   Detected preferences are saved to session (guests) or database (authenticated users)
+-   Subsequent visits use saved preferences instead of detecting again
+
+**Implementation Details**:
+
+-   Theme detection uses a cookie (`_preferred_theme`) that is set client-side and read server-side
+-   Cookie is set with 1-year expiration and `SameSite=Lax` for security
+-   Theme is applied immediately via JavaScript (no page refresh needed)
+-   Server reads cookie during `ensureLoaded()` to persist preference
+
 #### Usage
 
 **In PHP Code:**
@@ -1547,9 +1584,17 @@ If you see `Auth::guard('web')->logout()` causing an error:
     -   **Constants**: `App\Constants\FrontendPreferences` for session keys, preference keys, defaults, validation
     -   **Database**: Added `frontend_preferences` JSON column to `users` table with array cast
     -   **Removed**: Settings → Appearance page (theme switcher moved to header/sidebar)
-    -   **Theme Management**: Switched from client-side `localStorage` to server-side `data-theme` attribute
-    -   **Comprehensive Tests**: 23 tests covering service, middleware, and UI component behavior
-    -   **Documentation**: Added Frontend Preferences section to `AGENTS.md` and locale switching info to `docs/internationalization.md`
+
+-   **Theme Management**: Switched from client-side `localStorage` to server-side `data-theme` attribute
+-   **Auto-Detection**: Automatic browser language and theme detection on first visit
+    -   Language detection from `Accept-Language` header (server-side)
+    -   Theme detection from `prefers-color-scheme` media query (client-side via JavaScript)
+    -   Theme is applied immediately without page refresh
+    -   Theme preference is saved via cookie and server-side persistence
+    -   Detection only occurs when no preferences are set (first visit)
+    -   Detected preferences are automatically saved and persisted
+-   **Comprehensive Tests**: 31 tests covering service, middleware, UI components, and auto-detection behavior
+-   **Documentation**: Added Frontend Preferences section to `AGENTS.md` and locale switching info to `docs/internationalization.md`
 
 -   **DateTime and Currency Helper Functions**: Created locale-aware helper functions for formatting dates, times, and currency
     -   Created `app/helpers/dateTime.php` with `formatDate()`, `formatTime()`, and `formatDateTime()` functions

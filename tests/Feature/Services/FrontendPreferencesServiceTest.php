@@ -189,3 +189,96 @@ test('all method returns all preferences', function () {
         ->and($all['theme'])->toBe('dark')
         ->and($all['locale'])->toBe('fr_FR');
 });
+
+test('detects browser language from Accept-Language header on first visit', function () {
+    $request = request();
+    $request->headers->set('Accept-Language', 'fr-FR,fr;q=0.9,en;q=0.8');
+
+    $service = app(FrontendPreferencesService::class);
+
+    // On first visit, should detect French
+    $locale = $service->getLocale($request);
+    expect($locale)->toBe('fr_FR');
+
+    // Verify it's saved
+    $sessionPrefs = Session::get(FrontendPreferences::SESSION_KEY);
+    expect($sessionPrefs['locale'])->toBe('fr_FR');
+});
+
+test('detects browser language with language code only', function () {
+    $request = request();
+    $request->headers->set('Accept-Language', 'fr,en;q=0.9');
+
+    $service = app(FrontendPreferencesService::class);
+
+    // Should match fr_FR from supported locales
+    $locale = $service->getLocale($request);
+    expect($locale)->toBe('fr_FR');
+});
+
+test('falls back to default locale if browser language not supported', function () {
+    $request = request();
+    $request->headers->set('Accept-Language', 'de-DE,de;q=0.9');
+
+    $service = app(FrontendPreferencesService::class);
+
+    // German not supported, should use default
+    $locale = $service->getLocale($request);
+    expect($locale)->toBe(FrontendPreferences::DEFAULT_LOCALE);
+});
+
+test('does not detect browser language if preference already set', function () {
+    $service = app(FrontendPreferencesService::class);
+
+    // Set a preference first
+    $service->setLocale('fr_FR');
+
+    // Try to detect with English browser
+    $request = request();
+    $request->headers->set('Accept-Language', 'en-US,en;q=0.9');
+
+    // Should keep existing preference
+    $locale = $service->getLocale($request);
+    expect($locale)->toBe('fr_FR');
+});
+
+test('detects theme from cookie on first visit', function () {
+    $request = request();
+    $request->cookies->set('_preferred_theme', 'dark');
+
+    $service = app(FrontendPreferencesService::class);
+
+    // On first visit, should detect dark theme from cookie
+    $theme = $service->getTheme($request);
+    expect($theme)->toBe('dark');
+
+    // Verify it's saved
+    $sessionPrefs = Session::get(FrontendPreferences::SESSION_KEY);
+    expect($sessionPrefs['theme'])->toBe('dark');
+});
+
+test('ignores invalid theme from cookie', function () {
+    $request = request();
+    $request->cookies->set('_preferred_theme', 'invalid_theme');
+
+    $service = app(FrontendPreferencesService::class);
+
+    // Should use default theme if cookie value is invalid
+    $theme = $service->getTheme($request);
+    expect($theme)->toBe(FrontendPreferences::DEFAULT_THEME);
+});
+
+test('does not detect theme from cookie if preference already set', function () {
+    $service = app(FrontendPreferencesService::class);
+
+    // Set a preference first
+    $service->setTheme('light');
+
+    // Try to detect with dark theme cookie
+    $request = request();
+    $request->cookies->set('_preferred_theme', 'dark');
+
+    // Should keep existing preference
+    $theme = $service->getTheme($request);
+    expect($theme)->toBe('light');
+});

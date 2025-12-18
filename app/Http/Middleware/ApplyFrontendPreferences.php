@@ -22,8 +22,8 @@ class ApplyFrontendPreferences
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Apply locale
-        $locale = $this->preferences->getLocale();
+        // Apply locale (pass request for browser detection on first visit)
+        $locale = $this->preferences->getLocale($request);
         app()->setLocale($locale);
 
         // Note: Timezone preference is for display only (used in date/time formatting helpers)
