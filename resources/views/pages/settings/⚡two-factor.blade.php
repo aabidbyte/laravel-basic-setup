@@ -186,7 +186,8 @@ new class extends BasePageComponent {
                 <div class="card bg-base-200">
                     <div class="card-body">
                         <div class="flex items-center gap-3">
-                            <span class="badge badge-success badge-lg">{{ __('ui.settings.two_factor.enabled') }}</span>
+                            <x-ui.badge color="success"
+                                size="lg">{{ __('ui.settings.two_factor.enabled') }}</x-ui.badge>
                         </div>
 
                         <p class="text-base-content/70">
@@ -206,7 +207,8 @@ new class extends BasePageComponent {
                 <div class="card bg-base-200">
                     <div class="card-body">
                         <div class="flex items-center gap-3">
-                            <span class="badge badge-error badge-lg">{{ __('ui.settings.two_factor.disabled') }}</span>
+                            <x-ui.badge color="error"
+                                size="lg">{{ __('ui.settings.two_factor.disabled') }}</x-ui.badge>
                         </div>
 
                         <p class="text-base-content/70">

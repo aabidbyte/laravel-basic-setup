@@ -29,7 +29,7 @@ class PreferencesController extends Controller
 
         $this->preferences->setTheme($theme);
 
-        return redirect()->back()->with('success', __('messages.preferences.theme_updated'));
+        return redirect()->back();
     }
 
     /**

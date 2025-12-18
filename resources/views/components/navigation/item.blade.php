@@ -12,7 +12,7 @@
             @endif
             <span>{{ $item['title'] ?? '' }}</span>
             @if ($item['hasBadge'] ?? false)
-                <span class="badge badge-sm">{{ $item['badge'] ?? '' }}</span>
+                <x-ui.badge size="sm">{{ $item['badge'] ?? '' }}</x-ui.badge>
             @endif
         </summary>
         <div>
@@ -30,7 +30,7 @@
             @endif
             {{ $item['title'] ?? '' }}
             @if ($item['hasBadge'] ?? false)
-                <span class="badge badge-sm">{{ $item['badge'] ?? '' }}</span>
+                <x-ui.badge size="sm">{{ $item['badge'] ?? '' }}</x-ui.badge>
             @endif
         </a>
     @else
@@ -41,7 +41,7 @@
             @endif
             {{ $item['title'] ?? '' }}
             @if ($item['hasBadge'] ?? false)
-                <span class="badge badge-sm">{{ $item['badge'] ?? '' }}</span>
+                <x-ui.badge size="sm">{{ $item['badge'] ?? '' }}</x-ui.badge>
             @endif
         </a>
     @endif

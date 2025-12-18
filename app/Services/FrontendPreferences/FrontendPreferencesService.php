@@ -6,21 +6,15 @@ namespace App\Services\FrontendPreferences;
 
 use App\Constants\FrontendPreferences;
 use App\Models\User;
-use App\Services\FrontendPreferences\Contracts\PreferencesStore;
 use App\Services\FrontendPreferences\Stores\SessionPreferencesStore;
 use App\Services\FrontendPreferences\Stores\UserJsonPreferencesStore;
 use App\Services\I18nService;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Session\Store as SessionStore;
 
 class FrontendPreferencesService
 {
-    private ?PreferencesStore $persistentStore = null;
-
-    private ?PreferencesStore $cacheStore = null;
-
-    private bool $loaded = false;
+    private ?SessionPreferencesStore $sessionStore = null;
 
     public function __construct(
         private readonly SessionStore $session,
@@ -28,148 +22,177 @@ class FrontendPreferencesService
     ) {}
 
     /**
-     * Get the persistent store (user DB or session for guests).
+     * Get the session store (single source of truth for reads).
      */
-    private function getPersistentStore(): PreferencesStore
+    private function getSessionStore(): SessionPreferencesStore
     {
-        if ($this->persistentStore !== null) {
-            return $this->persistentStore;
+        if ($this->sessionStore === null) {
+            $this->sessionStore = new SessionPreferencesStore($this->session);
         }
 
+        return $this->sessionStore;
+    }
+
+    /**
+     * Sync preferences from user database to session if needed.
+     * This ensures session is always the single source of truth.
+     */
+    private function syncFromDatabaseIfNeeded(?Request $request = null): void
+    {
         $user = auth()->user();
 
-        if ($user instanceof Authenticatable) {
-            $this->persistentStore = new UserJsonPreferencesStore($user);
-        } else {
-            $this->persistentStore = new SessionPreferencesStore($this->session);
+        // Only sync if user is authenticated
+        if (! $user instanceof User) {
+            return;
         }
 
-        return $this->persistentStore;
-    }
+        $sessionStore = $this->getSessionStore();
+        $sessionPrefs = $sessionStore->all();
 
-    /**
-     * Get the cache store (always session).
-     */
-    private function getCacheStore(): PreferencesStore
-    {
-        if ($this->cacheStore === null) {
-            $this->cacheStore = new SessionPreferencesStore($this->session);
-        }
+        // If session is empty, load from database
+        if (empty($sessionPrefs)) {
+            $userStore = new UserJsonPreferencesStore($user);
+            $userPrefs = $userStore->all();
 
-        return $this->cacheStore;
-    }
-
-    /**
-     * Ensure preferences are loaded into cache.
-     * On first visit, automatically detects browser language and theme preferences.
-     */
-    private function ensureLoaded(?Request $request = null): void
-    {
-        $cache = $this->getCacheStore();
-
-        // If cache is empty or we haven't loaded yet, load from persistent store
-        if (empty($cache->all()) || ! $this->loaded) {
-            $persistent = $this->getPersistentStore();
-
-            // Always load from persistent store and merge with defaults
-            // This ensures we have the latest data from DB (for authenticated users) or session (for guests)
-            $persistentPrefs = $persistent->all();
-            $defaults = FrontendPreferences::getDefaults();
-            $merged = array_merge($defaults, $persistentPrefs);
-
-            // On first visit (no preferences set), detect browser preferences
-            if (empty($persistentPrefs) && $request !== null) {
-                $detectedPrefs = $this->detectBrowserPreferences($request);
-                $merged = array_merge($merged, $detectedPrefs);
-
-                // Save detected preferences to persistent store
-                if (! empty($detectedPrefs)) {
-                    $persistent->setMany($detectedPrefs);
+            if (! empty($userPrefs)) {
+                // Sync from DB to session
+                $sessionStore->setMany($userPrefs);
+            } else {
+                // No user preferences, try browser detection on first visit
+                if ($request !== null) {
+                    $detectedPrefs = $this->detectBrowserPreferences($request);
+                    if (! empty($detectedPrefs)) {
+                        // Save detected preferences to both DB and session
+                        $userStore->setMany($detectedPrefs);
+                        $sessionStore->setMany($detectedPrefs);
+                    }
                 }
             }
-
-            $cache->setMany($merged);
-
-            $this->loaded = true;
         }
     }
 
     /**
      * Get a preference value.
+     * Session is the single source of truth for reads.
      */
     public function get(string $key, mixed $default = null, ?Request $request = null): mixed
     {
-        $this->ensureLoaded($request);
+        // Sync from database if needed (first load for authenticated users)
+        $this->syncFromDatabaseIfNeeded($request);
 
-        return $this->getCacheStore()->get($key, $default);
+        $sessionStore = $this->getSessionStore();
+        $sessionPrefs = $sessionStore->all();
+        $defaults = FrontendPreferences::getDefaults();
+
+        // For guests, try browser detection on first visit
+        if (empty($sessionPrefs) && auth()->guest() && $request !== null) {
+            $detectedPrefs = $this->detectBrowserPreferences($request);
+            if (! empty($detectedPrefs)) {
+                $sessionStore->setMany($detectedPrefs);
+                $sessionPrefs = $sessionStore->all();
+            }
+        }
+
+        $merged = array_merge($defaults, $sessionPrefs);
+
+        return $merged[$key] ?? $default;
     }
 
     /**
      * Set a preference value.
+     * For authenticated users: update DB first, then session.
+     * For guests: update session only.
      */
     public function set(string $key, mixed $value): void
     {
-        $this->ensureLoaded();
+        $user = auth()->user();
 
-        // Update persistent store
-        $this->getPersistentStore()->set($key, $value);
+        // If authenticated, update DB first, then session
+        if ($user instanceof User) {
+            $userStore = new UserJsonPreferencesStore($user);
+            $userStore->set($key, $value);
+        }
 
-        // Update cache store
-        $this->getCacheStore()->set($key, $value);
-
-        // Reset loaded flag to ensure fresh data is loaded on next request
-        // This is important for singleton instances that persist across requests
-        $this->loaded = false;
+        // Always update session (single source of truth)
+        $this->getSessionStore()->set($key, $value);
     }
 
     /**
      * Set multiple preferences at once.
+     * For authenticated users: update DB first, then session.
+     * For guests: update session only.
      *
      * @param  array<string, mixed>  $preferences
      */
     public function setMany(array $preferences): void
     {
-        $this->ensureLoaded();
+        $user = auth()->user();
 
-        // Update persistent store
-        $this->getPersistentStore()->setMany($preferences);
+        // If authenticated, update DB first, then session
+        if ($user instanceof User) {
+            $userStore = new UserJsonPreferencesStore($user);
+            $userStore->setMany($preferences);
+        }
 
-        // Update cache store
-        $this->getCacheStore()->setMany($preferences);
-
-        // Reset loaded flag to ensure fresh data is loaded on next request
-        // This is important for singleton instances that persist across requests
-        $this->loaded = false;
+        // Always update session (single source of truth)
+        $this->getSessionStore()->setMany($preferences);
     }
 
     /**
      * Get all preferences.
+     * Session is the single source of truth for reads.
      *
      * @return array<string, mixed>
      */
-    public function all(): array
+    public function all(?Request $request = null): array
     {
-        $this->ensureLoaded();
+        // Sync from database if needed (first load for authenticated users)
+        $this->syncFromDatabaseIfNeeded($request);
 
-        return $this->getCacheStore()->all();
+        $sessionStore = $this->getSessionStore();
+        $sessionPrefs = $sessionStore->all();
+        $defaults = FrontendPreferences::getDefaults();
+
+        // For guests, try browser detection on first visit
+        if (empty($sessionPrefs) && auth()->guest() && $request !== null) {
+            $detectedPrefs = $this->detectBrowserPreferences($request);
+            if (! empty($detectedPrefs)) {
+                $sessionStore->setMany($detectedPrefs);
+                $sessionPrefs = $sessionStore->all();
+            }
+        }
+
+        return array_merge($defaults, $sessionPrefs);
     }
 
     /**
-     * Refresh preferences from persistent store (clears cache and reloads).
+     * Refresh preferences from database to session.
+     * This reloads user preferences from DB and syncs to session.
      */
     public function refresh(): void
     {
-        $this->getCacheStore()->clear();
-
-        // Refresh authenticated user if present
         $user = auth()->user();
-        if ($user instanceof User) {
-            $user->refresh();
-        }
 
-        $this->persistentStore = null; // Reset to get fresh user instance
-        $this->loaded = false;
-        $this->ensureLoaded();
+        if ($user instanceof User) {
+            $this->syncUserPreferencesToSession($user);
+        }
+    }
+
+    /**
+     * Sync user preferences from database to session.
+     * This is called on login to ensure preferences are loaded from DB and synced to session.
+     */
+    public function syncUserPreferencesToSession(User $user): void
+    {
+        // Refresh user model to get latest data
+        $user->refresh();
+
+        // Load from DB and sync to session
+        $userStore = new UserJsonPreferencesStore($user);
+        $userPrefs = $userStore->all();
+
+        // Sync to session (single source of truth)
+        $this->getSessionStore()->setMany($userPrefs);
     }
 
     /**
@@ -203,6 +226,7 @@ class FrontendPreferencesService
 
     /**
      * Set the theme preference.
+     * Valid values: "light" or "dark".
      */
     public function setTheme(string $theme): void
     {
@@ -250,7 +274,7 @@ class FrontendPreferencesService
     }
 
     /**
-     * Detect browser preferences from request headers and cookies.
+     * Detect browser preferences from request headers.
      * Only detects preferences that are not already set.
      *
      * @return array<string, mixed>
@@ -265,11 +289,7 @@ class FrontendPreferencesService
             $detected[FrontendPreferences::KEY_LOCALE] = $detectedLocale;
         }
 
-        // Detect theme from cookie (set by client-side JavaScript on first visit)
-        $detectedTheme = $request->cookie('_preferred_theme');
-        if ($detectedTheme !== null && FrontendPreferences::isValidTheme($detectedTheme)) {
-            $detected[FrontendPreferences::KEY_THEME] = $detectedTheme;
-        }
+        // Theme preference defaults to "light" - no automatic detection
 
         return $detected;
     }

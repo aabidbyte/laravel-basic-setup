@@ -4,8 +4,11 @@ namespace App\Providers;
 
 use App\Auth\PasswordBrokerManager;
 use App\Http\Middleware\TeamsPermission;
+use App\Listeners\SyncUserPreferencesOnLogin;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Foundation\Http\Kernel;
 use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -39,5 +42,8 @@ class AppServiceProvider extends ServiceProvider
             TeamsPermission::class,
             SubstituteBindings::class,
         );
+
+        // Register event listeners
+        Event::listen(Login::class, SyncUserPreferencesOnLogin::class);
     }
 }

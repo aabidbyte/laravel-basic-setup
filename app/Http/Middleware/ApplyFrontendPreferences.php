@@ -28,6 +28,7 @@ class ApplyFrontendPreferences
 
         // Note: Timezone preference is for display only (used in date/time formatting helpers)
         // Database storage always uses the application timezone from config/app.php
+        // Note: Theme preference uses "system" by default, which lets DaisyUI respect OS preference
 
         return $next($request);
     }

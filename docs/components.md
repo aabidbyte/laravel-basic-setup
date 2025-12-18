@@ -9,6 +9,8 @@ This document provides comprehensive documentation for all reusable UI component
 -   [Input](#input)
 -   [Form](#form)
 -   [Icon](#icon)
+-   [Dropdown](#dropdown)
+-   [Badge](#badge)
 -   [Component Usage Guidelines](#component-usage-guidelines)
 
 ---
@@ -542,6 +544,290 @@ A dynamic icon component that provides secure, flexible icon rendering using Bla
 
 ---
 
+## Dropdown
+
+**Location:** `resources/views/components/ui/dropdown.blade.php`
+
+**Component Name:** `<x-ui.dropdown>`
+
+### Description
+
+A centralized, flexible dropdown component that provides consistent dropdown functionality across the application. Uses CSS focus pattern by default for better accessibility and keyboard navigation. Supports multiple placement options, menu styling, hover behavior, and custom content.
+
+### Props
+
+| Prop           | Type           | Default | Description                                                                    |
+| -------------- | -------------- | ------- | ------------------------------------------------------------------------------ |
+| `placement`    | `string`       | `'end'` | Dropdown placement: `start`, `center`, `end`, `top`, `bottom`, `left`, `right` |
+| `hover`        | `bool`         | `false` | Enable hover to open dropdown (adds `dropdown-hover` class)                    |
+| `contentClass` | `string`       | `''`    | Additional CSS classes for dropdown content                                    |
+| `menu`         | `bool`         | `false` | Enable menu styling (adds `menu` class to dropdown content)                    |
+| `menuSize`     | `string`       | `'md'`  | Menu size: `xs`, `sm`, `md`, `lg`, `xl` (only applies when `menu="true"`)      |
+| `id`           | `string\|null` | `null`  | Optional ID for accessibility (auto-generated if not provided)                 |
+
+### Slots
+
+-   **`trigger` slot (required):** The element that triggers the dropdown (button, div, avatar, etc.)
+-   **Default slot:** The dropdown content (menu items, custom content, etc.)
+
+### Usage Examples
+
+#### Basic Dropdown with Custom Content
+
+```blade
+<x-ui.dropdown>
+    <x-slot:trigger>
+        <button class="btn">Click me</button>
+    </x-slot:trigger>
+
+    <div class="p-4">
+        Custom content here
+    </div>
+</x-ui.dropdown>
+```
+
+#### Menu Dropdown
+
+```blade
+<x-ui.dropdown placement="end" menu menuSize="sm">
+    <x-slot:trigger>
+        <div class="btn btn-ghost">Menu</div>
+    </x-slot:trigger>
+
+    <li><a>Item 1</a></li>
+    <li><a>Item 2</a></li>
+    <li><a>Item 3</a></li>
+</x-ui.dropdown>
+```
+
+#### Dropdown with Custom Styling
+
+```blade
+<x-ui.dropdown placement="end" menu
+    contentClass="bg-base-100 rounded-box z-[1] w-48 p-2 shadow-lg border border-base-300">
+    <x-slot:trigger>
+        <button class="btn btn-ghost btn-sm">
+            <x-ui.icon name="globe-alt" />
+        </button>
+    </x-slot:trigger>
+
+    <li>
+        <form method="POST" action="{{ route('preferences.locale') }}">
+            @csrf
+            <input type="hidden" name="locale" value="en_US">
+            <button type="submit" class="btn btn-ghost btn-sm justify-start w-full">
+                English
+            </button>
+        </form>
+    </li>
+</x-ui.dropdown>
+```
+
+#### Hover Dropdown
+
+```blade
+<x-ui.dropdown hover>
+    <x-slot:trigger>
+        <button class="btn">Hover me</button>
+    </x-slot:trigger>
+
+    <div>Content appears on hover</div>
+</x-ui.dropdown>
+```
+
+#### Dropdown with Different Placements
+
+```blade
+{{-- Dropdown on the left --}}
+<x-ui.dropdown placement="start" menu>
+    <x-slot:trigger>
+        <button class="btn">Left</button>
+    </x-slot:trigger>
+    <li><a>Item</a></li>
+</x-ui.dropdown>
+
+{{-- Dropdown on the top --}}
+<x-ui.dropdown placement="top" menu>
+    <x-slot:trigger>
+        <button class="btn">Top</button>
+    </x-slot:trigger>
+    <li><a>Item</a></li>
+</x-ui.dropdown>
+```
+
+#### Dropdown with Avatar Trigger
+
+```blade
+<x-ui.dropdown placement="end" menu menuSize="sm">
+    <x-slot:trigger>
+        <div class="btn btn-ghost btn-circle avatar">
+            <div class="w-10 rounded-full bg-base-300 text-base-content">
+                <span class="text-xs">{{ auth()->user()->initials() }}</span>
+            </div>
+        </div>
+    </x-slot:trigger>
+
+    <div class="menu-title">
+        <span>{{ auth()->user()->name }}</span>
+    </div>
+    <li><a>Profile</a></li>
+    <li><a>Settings</a></li>
+</x-ui.dropdown>
+```
+
+### Implementation Details
+
+-   Uses CSS focus pattern by default (better accessibility than Alpine.js pattern)
+-   Follows DaisyUI dropdown patterns and classes
+-   Supports all DaisyUI placement options
+-   Compatible with menu items and custom content
+-   Includes proper ARIA attributes for accessibility
+-   Supports keyboard navigation (Tab, Enter, Escape)
+-   Auto-generates unique IDs if not provided
+
+### Current Usage in Project
+
+1. **Locale Switcher** (`resources/views/components/preferences/locale-switcher.blade.php`)
+
+    - Uses menu styling with custom content classes
+    - Contains form submissions for locale changes
+    - Uses icon in trigger button
+
+2. **User Menu** (`resources/views/components/layouts/app/header.blade.php`)
+    - Uses avatar as trigger
+    - Contains navigation items and logout form
+    - Uses menu styling with small size
+
+### Migration Notes
+
+-   All existing dropdowns have been migrated to use this component
+-   Previous Alpine.js-based dropdowns (like locale-switcher) have been migrated to CSS focus pattern
+-   The component is fully compatible with DaisyUI's dropdown classes and behavior
+
+---
+
+## Badge
+
+**Location:** `resources/views/components/ui/badge.blade.php`
+
+**Component Name:** `<x-ui.badge>`
+
+### Description
+
+A centralized, flexible badge component that provides consistent badge functionality across the application. Supports all DaisyUI badge styles, colors, and sizes. Badges are used to inform users about the status of specific data, display counts, or provide visual indicators.
+
+### Props
+
+| Prop    | Type           | Default | Description                                                                                                              |
+| ------- | -------------- | ------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `style` | `string\|null` | `null`  | Badge style: `outline`, `dash`, `soft`, `ghost` (default: solid badge)                                                   |
+| `color` | `string\|null` | `null`  | Badge color: `neutral`, `primary`, `secondary`, `accent`, `info`, `success`, `warning`, `error` (default: theme default) |
+| `size`  | `string`       | `'md'`  | Badge size: `xs`, `sm`, `md`, `lg`, `xl`                                                                                 |
+| `class` | `string`       | `''`    | Additional CSS classes for the badge                                                                                     |
+
+### Usage Examples
+
+#### Basic Badge
+
+```blade
+<x-ui.badge>Default Badge</x-ui.badge>
+```
+
+#### Colored Badges
+
+```blade
+<x-ui.badge color="success">Success</x-ui.badge>
+<x-ui.badge color="error">Error</x-ui.badge>
+<x-ui.badge color="warning">Warning</x-ui.badge>
+<x-ui.badge color="info">Info</x-ui.badge>
+<x-ui.badge color="primary">Primary</x-ui.badge>
+<x-ui.badge color="secondary">Secondary</x-ui.badge>
+<x-ui.badge color="accent">Accent</x-ui.badge>
+<x-ui.badge color="neutral">Neutral</x-ui.badge>
+```
+
+#### Sized Badges
+
+```blade
+<x-ui.badge size="xs">Extra Small</x-ui.badge>
+<x-ui.badge size="sm">Small</x-ui.badge>
+<x-ui.badge size="md">Medium</x-ui.badge>
+<x-ui.badge size="lg">Large</x-ui.badge>
+<x-ui.badge size="xl">Extra Large</x-ui.badge>
+```
+
+#### Styled Badges
+
+```blade
+<x-ui.badge style="outline" color="primary">Outline</x-ui.badge>
+<x-ui.badge style="dash" color="success">Dash</x-ui.badge>
+<x-ui.badge style="soft" color="warning">Soft</x-ui.badge>
+<x-ui.badge style="ghost" color="error">Ghost</x-ui.badge>
+```
+
+#### Combined Props
+
+```blade
+<x-ui.badge color="success" size="lg">Enabled</x-ui.badge>
+<x-ui.badge color="error" size="lg">Disabled</x-ui.badge>
+<x-ui.badge color="primary" size="sm" style="outline">Small Outline</x-ui.badge>
+```
+
+#### Empty Badge (Dot Indicator)
+
+```blade
+<x-ui.badge color="error" size="sm"></x-ui.badge>
+```
+
+#### Badge in Button
+
+```blade
+<button class="btn">
+    Notifications
+    <x-ui.badge color="error" size="sm">3</x-ui.badge>
+</button>
+```
+
+#### Badge in Navigation
+
+```blade
+<a href="/notifications" class="menu-item">
+    Notifications
+    <x-ui.badge size="sm">5</x-ui.badge>
+</a>
+```
+
+### Implementation Details
+
+-   Uses DaisyUI badge classes consistently
+-   Supports all DaisyUI badge variants (styles, colors, sizes)
+-   Can be used inside text, buttons, or standalone
+-   Supports empty badges for dot indicators
+-   Flexible prop-based API for easy customization
+-   Maintains backward compatibility with DaisyUI classes
+
+### Current Usage in Project
+
+1. **Two-Factor Settings Page** (`resources/views/pages/settings/⚡two-factor.blade.php`)
+
+    - Uses `color="success" size="lg"` for enabled status
+    - Uses `color="error" size="lg"` for disabled status
+    - Status indicators with color coding
+
+2. **Navigation Items** (`resources/views/components/navigation/item.blade.php`)
+    - Uses `size="sm"` for navigation item badges
+    - Used in multiple places (summary, external links, internal links)
+    - Small size badges for counts/notifications
+
+### Migration Notes
+
+-   All existing badges have been migrated to use this component
+-   Previous inline badge classes (e.g., `badge badge-success badge-lg`) have been replaced with component props
+-   The component is fully compatible with DaisyUI's badge classes and behavior
+-   Badge content is passed via the default slot
+
+---
+
 ## Component Usage Guidelines
 
 ### When to Use Centralized Components
@@ -599,6 +885,9 @@ When migrating existing custom implementations to centralized components:
 -   **Input** (`input.blade.php`) - Form inputs with labels and error handling
 -   **Form** (`form.blade.php`) - Form wrapper with automatic CSRF and method spoofing
 -   **Icon** (`icon.blade.php`) - Dynamic icon component with multiple icon pack support and security validation
+-   **Dropdown** (`dropdown.blade.php`) - Flexible dropdown component with CSS focus pattern, multiple placements, and menu support
+-   **Dropdown Item** (`dropdown-item.blade.php`) - Helper component for dropdown menu items
+-   **Badge** (`badge.blade.php`) - Flexible badge component with support for all DaisyUI styles, colors, and sizes
 -   **Icon Placeholder** (`icon-placeholder.blade.php`) - Placeholder for icons
 -   **Placeholder** (`placeholder.blade.php`) - Generic placeholder component
 
@@ -611,6 +900,28 @@ When migrating existing custom implementations to centralized components:
 ---
 
 ## Changelog
+
+### 2025-01-XX
+
+-   **Badge Component:** Created centralized badge component for consistent badge functionality
+    -   **New Component**: Created `<x-ui.badge>` component with support for all DaisyUI badge variants
+    -   **Style Support**: Supports outline, dash, soft, and ghost styles
+    -   **Color Support**: Supports all DaisyUI colors (neutral, primary, secondary, accent, info, success, warning, error)
+    -   **Size Support**: Supports all DaisyUI sizes (xs, sm, md, lg, xl)
+    -   **Migration**: Migrated two-factor settings page and navigation items to use new badge component
+    -   **Flexibility**: Supports empty badges for dot indicators and custom classes
+    -   **Documentation**: Added comprehensive documentation with usage examples
+
+### 2025-01-XX
+
+-   **Dropdown Component:** Created centralized dropdown component for consistent dropdown functionality
+    -   **New Component**: Created `<x-ui.dropdown>` component with CSS focus pattern for better accessibility
+    -   **Placement Support**: Supports all DaisyUI placements (start, center, end, top, bottom, left, right)
+    -   **Menu Support**: Optional menu styling with size variants (xs, sm, md, lg, xl)
+    -   **Hover Support**: Optional hover-to-open behavior
+    -   **Migration**: Migrated locale-switcher and user menu to use new dropdown component
+    -   **Accessibility**: Built-in ARIA attributes and keyboard navigation support
+    -   **Documentation**: Added comprehensive documentation with usage examples
 
 ### 2025-01-XX
 

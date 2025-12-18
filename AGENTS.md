@@ -322,6 +322,7 @@ it('tests something', function () {
 
 -   **Primary Pattern**: Livewire 4 single-file components (built-in, no Volt needed)
 -   **UI Library**: Standard HTML/Tailwind CSS components
+-   **Component Documentation**: **ALWAYS update `docs/components.md` when adding new UI components** - This ensures all components are documented with props, usage examples, and implementation details
 -   **Component Locations**:
     -   **Full-page components**: `resources/views/pages/` (use `pages::` namespace in routes)
     -   **Nested/reusable Livewire components**: `resources/views/components/` (use component name directly, e.g., `livewire:settings.delete-user-form`)
@@ -759,6 +760,88 @@ The application includes a dynamic icon component located at `resources/views/co
 
 **Service Dependency:** Uses `App\Services\IconPackMapper` (injected via `@inject` directive)
 
+#### Dropdown Component (`<x-ui.dropdown>`)
+
+The application includes a centralized, flexible dropdown component located at `resources/views/components/ui/dropdown.blade.php` that provides consistent dropdown functionality across the application.
+
+**Features:**
+
+-   **Multiple Placement Options**: Supports all DaisyUI placements (start, center, end, top, bottom, left, right)
+-   **CSS Focus Pattern**: Uses CSS focus pattern by default for better accessibility and keyboard navigation
+-   **Menu Support**: Optional menu styling with size variants (xs, sm, md, lg, xl)
+-   **Hover Support**: Optional hover-to-open behavior
+-   **Flexible Content**: Supports both menu items and custom content
+-   **Accessibility**: Built-in ARIA attributes and keyboard navigation support
+
+**Props:**
+
+-   `placement` (default: `'end'`): Dropdown placement - `start`, `center`, `end`, `top`, `bottom`, `left`, `right`
+-   `hover` (default: `false`): Enable hover to open dropdown
+-   `contentClass` (default: `''`): Additional CSS classes for dropdown content
+-   `menu` (default: `false`): Enable menu styling (adds `menu` class)
+-   `menuSize` (default: `'md'`): Menu size - `xs`, `sm`, `md`, `lg`, `xl`
+-   `id` (default: `null`): Optional ID for accessibility (auto-generated if not provided)
+
+**Usage:**
+
+```blade
+{{-- Basic dropdown with custom content --}}
+<x-ui.dropdown>
+    <x-slot:trigger>
+        <button class="btn">Click me</button>
+    </x-slot:trigger>
+
+    <div class="p-4">
+        Custom content here
+    </div>
+</x-ui.dropdown>
+
+{{-- Menu dropdown --}}
+<x-ui.dropdown placement="end" menu menuSize="sm">
+    <x-slot:trigger>
+        <div class="btn btn-ghost">Menu</div>
+    </x-slot:trigger>
+
+    <li><a>Item 1</a></li>
+    <li><a>Item 2</a></li>
+</x-ui.dropdown>
+
+{{-- Dropdown with custom styling --}}
+<x-ui.dropdown placement="end" menu contentClass="bg-base-100 rounded-box z-[1] w-48 p-2 shadow-lg border border-base-300">
+    <x-slot:trigger>
+        <button class="btn btn-ghost btn-sm">
+            <x-ui.icon name="globe-alt" />
+        </button>
+    </x-slot:trigger>
+
+    <li>
+        <form method="POST" action="{{ route('preferences.locale') }}">
+            @csrf
+            <input type="hidden" name="locale" value="en_US">
+            <button type="submit" class="btn btn-ghost btn-sm justify-start w-full">English</button>
+        </form>
+    </li>
+</x-ui.dropdown>
+
+{{-- Hover dropdown --}}
+<x-ui.dropdown hover>
+    <x-slot:trigger>
+        <button class="btn">Hover me</button>
+    </x-slot:trigger>
+
+    <div>Content appears on hover</div>
+</x-ui.dropdown>
+```
+
+**Component Location:** `resources/views/components/ui/dropdown.blade.php`
+
+**Migration Notes:**
+
+-   All existing dropdowns have been migrated to use this component
+-   The component uses CSS focus pattern by default (better accessibility than Alpine.js pattern)
+-   Previous Alpine.js-based dropdowns (like locale-switcher) have been migrated to CSS focus pattern
+-   The component is fully compatible with DaisyUI's dropdown classes and behavior
+
 ## Development Workflow
 
 ### Setup
@@ -1142,9 +1225,8 @@ $this->app->singleton(\App\Services\FrontendPreferences\FrontendPreferencesServi
 
 **Why Singleton Registration is Required:**
 
--   **Internal State**: Service maintains cached state (`$persistentStore`, `$cacheStore`, `$loaded`)
--   **State Preservation**: Without singleton, each `app()` call creates a new instance, losing cached state
--   **Performance**: Avoids repeated instantiation and ensures cache stores persist across calls
+-   **State Preservation**: Service maintains `$sessionStore` instance for performance
+-   **Performance**: Avoids repeated instantiation and ensures store instance persists across calls
 -   **Consistency**: Same instance everywhere ensures consistent behavior
 
 **I18nService Registration**: **RECOMMENDED** - Should be registered as singleton in `AppServiceProvider`:
@@ -1166,10 +1248,53 @@ $this->app->singleton(\App\Services\I18nService::class);
 
 **Storage Strategy**:
 
+-   **Session as Single Source of Truth**: Session is always the single source of truth for reads. All preference reads come from session after initial sync.
 -   **Guest users**: Preferences stored in session only
--   **Authenticated users**: Preferences stored in `users.frontend_preferences` JSON column + cached in session
--   **Performance**: First request loads from DB into session cache; subsequent reads use session cache only
--   **Updates**: When preferences change, both DB (if authenticated) and session cache are updated
+-   **Authenticated users**:
+    -   Preferences stored in `users.frontend_preferences` JSON column (persistent storage)
+    -   On first read: Preferences are loaded from database and synced to session
+    -   Subsequent reads: All reads come from session (single source of truth)
+    -   On update: Database is updated first, then session is updated
+-   **Performance**: Fast reads from session (single source of truth) with automatic DB sync for authenticated users
+-   **Update Flow**:
+    -   **Authenticated users**: Update database first, then update session
+    -   **Guest users**: Update session only
+
+#### Architecture Details
+
+**Session as Single Source of Truth**:
+
+The service uses a **session-first architecture** where session is always the single source of truth for reads:
+
+1. **Loading Flow**:
+
+    - **Authenticated users (on login)**:
+        - Preferences are automatically synced from database to session via `Login` event listener
+        - This ensures preferences are immediately available in session after login
+    - **Authenticated users (first read, if not synced on login)**:
+        - Check if session is empty
+        - If empty, load preferences from database
+        - Sync database preferences to session
+        - Return from session
+    - **Authenticated users (subsequent reads)**:
+        - Read directly from session (single source of truth)
+    - **Guest users**:
+        - Read directly from session
+        - If empty and request provided, detect browser preferences and save to session
+
+2. **Update Flow**:
+
+    - **Authenticated users**:
+        - Update database first (persistent storage)
+        - Then update session (single source of truth for reads)
+    - **Guest users**:
+        - Update session only
+
+3. **Benefits**:
+    - **Single source of truth**: All reads come from session, simplifying logic
+    - **Performance**: Fast reads from session (no database queries on every read)
+    - **Persistence**: Authenticated user preferences persist in database
+    - **Consistency**: Database and session stay in sync for authenticated users
 
 **Stores** (SOLID design):
 
@@ -1182,47 +1307,50 @@ $this->app->singleton(\App\Services\I18nService::class);
 #### Available Preferences
 
 -   **`locale`**: User's preferred language (validated via `I18nService`)
--   **`theme`**: UI theme (`light` or `dark`, validated)
+-   **`theme`**: UI theme preference (`light` or `dark` - validated)
+    -   Default is `"light"` for first-time visitors
+    -   The `data-theme` attribute is always set on the `<html>` element with the user's preference
 -   **`timezone`**: User's timezone for display purposes only (validated PHP timezone identifier)
     -   **Important**: Timezone preference is for display only. All dates/times are stored in the database using the application timezone from `config/app.php`
     -   Date/time formatting helpers (`formatDate()`, `formatTime()`, `formatDateTime()`) automatically use the user's timezone preference when displaying dates/times
 
 #### Auto-Detection on First Visit
 
-The system automatically detects browser preferences on a user's first visit (when no preferences are set):
+The system automatically detects browser preferences on a user's first visit (when no preferences are set) using **server-side request headers only**:
 
 **Language Detection** (Server-side):
 
 -   Automatically detects browser language from `Accept-Language` header
+-   Uses `$request->header('Accept-Language')` to read the header
 -   Parses and matches against supported locales in `config/i18n.php`
 -   Supports quality values (e.g., `fr-FR,fr;q=0.9,en;q=0.8`)
 -   Falls back to default locale if browser language is not supported
 -   Only detects on first visit (when no locale preference exists)
 
-**Theme Detection** (Client-side with server-side persistence):
+**Theme Preference**:
 
--   Automatically detects browser theme preference from `prefers-color-scheme` CSS media query
--   Detected via JavaScript snippet in `resources/views/partials/head.blade.php`
--   **Applied immediately** - Updates `data-theme` attribute on `<html>` element without page refresh
--   Sets a cookie (`_preferred_theme`) for server-side persistence
--   Server reads cookie on first visit to detect and save theme preference
--   Also saves to server in background via `POST /preferences/theme` endpoint
--   Only detects on first visit (when theme is still default/light)
--   Does not override existing theme preferences
+-   **No automatic theme detection** - Theme preference is not detected on first visit
+-   Default theme preference is `"light"` for first-time visitors
+-   Users can manually set theme preference via theme switcher (light or dark)
+-   Theme preference is stored in session (guests) or database (authenticated users)
+-   The `data-theme` attribute is always set on the `<html>` element with the user's preference
 
 **Detection Behavior**:
 
--   Detection only occurs when no preferences are set (first visit)
+-   Language detection only occurs when no preferences are set (first visit)
+-   All detection is done server-side using request headers
 -   Once preferences are set (manually or via detection), they are persisted
--   Detected preferences are saved to session (guests) or database (authenticated users)
--   Subsequent visits use saved preferences instead of detecting again
+-   **For guests**: Detected preferences are saved to session
+-   **For authenticated users**: Detected preferences are saved to both database and session
+-   Subsequent visits use saved preferences from session (single source of truth) instead of detecting again
 
 **Implementation Details**:
 
--   Theme detection uses a cookie (`_preferred_theme`) that is set client-side and read server-side
--   Cookie is set with 1-year expiration and `SameSite=Lax` for security
--   Theme is applied immediately via JavaScript (no page refresh needed)
--   Server reads cookie during `ensureLoaded()` to persist preference
+-   **No JavaScript required** - All detection is server-side
+-   **No cookies used** - All preferences stored in session (guests) or database (authenticated users)
+-   Language detection uses `Accept-Language` header (standard HTTP header)
+-   Theme uses `"system"` by default - DaisyUI handles OS preference detection via CSS
+-   System theme is defined in `resources/css/theme.css` with CSS media query support for `prefers-color-scheme`
 
 #### Usage
 
@@ -1247,7 +1375,8 @@ $preferences->setTimezone('America/New_York');
 $value = $preferences->get('custom_key', 'default');
 $preferences->set('custom_key', 'value');
 
-// Refresh from persistent store
+// Refresh from database to session (for authenticated users)
+// This reloads user preferences from DB and syncs to session
 $preferences->refresh();
 ```
 
@@ -1259,6 +1388,16 @@ The `FrontendPreferencesService` is automatically shared with layout templates v
 {{-- $preferences is automatically available in layout templates --}}
 <html data-theme="{{ $preferences->getTheme() }}">
 ```
+
+#### Login Event Listener
+
+**`App\Listeners\SyncUserPreferencesOnLogin`** listens to the `Illuminate\Auth\Events\Login` event:
+
+-   Automatically syncs user preferences from database to session immediately after login
+-   Ensures preferences are available in session right away, without waiting for first read
+-   Uses `FrontendPreferencesService::syncUserPreferencesToSession()` method
+-   Registered in `AppServiceProvider::boot()` method
+-   Uses dependency injection to receive `FrontendPreferencesService` instance
 
 #### Middleware
 
@@ -1396,9 +1535,35 @@ If you see `Auth::guard('web')->logout()` causing an error:
 10. **Fix Intelephense errors** - Always update `IntelephenseHelper.php` when encountering undefined method errors
 11. **PSR-4 compliance required** - ALL classes must follow PSR-4 autoloading standards. Test support classes must be in `tests/Support/` with proper namespaces, never defined directly in test files
 12. **Use constants, avoid duplication** - Always use constants instead of hardcoded strings when possible, and always avoid duplication for easy maintenance
-13. **Update this file** when adding new patterns, conventions, or features
+13. **Component documentation required** - **ALWAYS update `docs/components.md` when adding new UI components** - Include props, usage examples, implementation details, and add to component index
+14. **Update this file** when adding new patterns, conventions, or features
 
 ## Changelog
+
+### 2025-01-XX
+
+-   **Frontend Preferences System Refactoring**: Refactored `FrontendPreferencesService` to use session as single source of truth
+    -   **Session-First Architecture**: Session is now always the single source of truth for all preference reads
+    -   **Loading Flow**:
+        -   Authenticated users: On first read, preferences are loaded from database and synced to session. Subsequent reads come from session.
+        -   Guest users: All reads come from session
+    -   **Update Flow**:
+        -   Authenticated users: Database is updated first, then session is updated
+        -   Guest users: Session is updated only
+    -   **Benefits**:
+        -   Single source of truth simplifies logic
+        -   Fast reads from session (no database queries on every read)
+        -   Preferences persist in database for authenticated users
+        -   Database and session stay in sync for authenticated users
+    -   **Implementation**:
+        -   Removed `$persistentStore` property, replaced with `$sessionStore`
+        -   Added `syncFromDatabaseIfNeeded()` method to sync DB preferences to session on first read
+        -   Added `syncUserPreferencesToSession()` method to sync preferences for a specific user
+        -   Updated `set()` and `setMany()` to update DB first for authenticated users, then session
+        -   All reads now come from session after initial sync
+    -   **Login Event Listener**: Created `SyncUserPreferencesOnLogin` listener class using `php artisan make:listener` to sync preferences from DB to session immediately on login
+    -   **Tests**: All 21 FrontendPreferencesService tests pass (including login sync test), all 8 PreferencesController tests pass
+    -   **Documentation**: Updated `AGENTS.md` with new architecture details, loading/update flows, and login event listener
 
 ### 2025-01-XX
 
@@ -1586,11 +1751,11 @@ If you see `Auth::guard('web')->logout()` causing an error:
     -   **Removed**: Settings → Appearance page (theme switcher moved to header/sidebar)
 
 -   **Theme Management**: Switched from client-side `localStorage` to server-side `data-theme` attribute
--   **Auto-Detection**: Automatic browser language and theme detection on first visit
-    -   Language detection from `Accept-Language` header (server-side)
-    -   Theme detection from `prefers-color-scheme` media query (client-side via JavaScript)
-    -   Theme is applied immediately without page refresh
-    -   Theme preference is saved via cookie and server-side persistence
+-   **Auto-Detection**: Automatic browser language detection on first visit (server-side only, no JavaScript)
+    -   Language detection from `Accept-Language` header using `$request->header('Accept-Language')`
+    -   **No theme detection** - Default theme preference is `"light"` for first-time visitors
+    -   **No JavaScript required** - All detection is server-side using request headers
+    -   **No cookies used** - All preferences stored in session (guests) or database (authenticated users)
     -   Detection only occurs when no preferences are set (first visit)
     -   Detected preferences are automatically saved and persisted
 -   **Comprehensive Tests**: 31 tests covering service, middleware, UI components, and auto-detection behavior

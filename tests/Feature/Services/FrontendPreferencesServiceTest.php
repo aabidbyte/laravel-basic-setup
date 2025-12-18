@@ -5,7 +5,9 @@ declare(strict_types=1);
 use App\Constants\FrontendPreferences;
 use App\Models\User;
 use App\Services\FrontendPreferences\FrontendPreferencesService;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Session;
 
 uses(RefreshDatabase::class);
@@ -40,7 +42,7 @@ test('guest can set and get preferences in session', function () {
         ->and($sessionPrefs['timezone'])->toBe('Europe/Paris');
 });
 
-test('authenticated user loads preferences from database', function () {
+test('authenticated user loads preferences from database and syncs to session', function () {
     $user = User::factory()->create([
         'frontend_preferences' => [
             'theme' => 'dark',
@@ -53,12 +55,19 @@ test('authenticated user loads preferences from database', function () {
 
     $service = app(FrontendPreferencesService::class);
 
+    // First call should sync from DB to session
     expect($service->getTheme())->toBe('dark')
         ->and($service->getLocale())->toBe('fr_FR')
         ->and($service->getTimezone())->toBe('Europe/Paris');
+
+    // Verify preferences are synced to session
+    $sessionPrefs = Session::get(FrontendPreferences::SESSION_KEY);
+    expect($sessionPrefs['theme'])->toBe('dark')
+        ->and($sessionPrefs['locale'])->toBe('fr_FR')
+        ->and($sessionPrefs['timezone'])->toBe('Europe/Paris');
 });
 
-test('authenticated user persists preferences to database', function () {
+test('authenticated user persists preferences to database first, then session', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user);
@@ -69,14 +78,20 @@ test('authenticated user persists preferences to database', function () {
     $service->setLocale('fr_FR');
     $service->setTimezone('Europe/Paris');
 
+    // Verify stored in database
     $user->refresh();
-
     expect($user->frontend_preferences['theme'])->toBe('dark')
         ->and($user->frontend_preferences['locale'])->toBe('fr_FR')
         ->and($user->frontend_preferences['timezone'])->toBe('Europe/Paris');
+
+    // Verify also stored in session (single source of truth)
+    $sessionPrefs = Session::get(FrontendPreferences::SESSION_KEY);
+    expect($sessionPrefs['theme'])->toBe('dark')
+        ->and($sessionPrefs['locale'])->toBe('fr_FR')
+        ->and($sessionPrefs['timezone'])->toBe('Europe/Paris');
 });
 
-test('authenticated user preferences are cached in session', function () {
+test('authenticated user preferences sync from database to session on first read', function () {
     $user = User::factory()->create([
         'frontend_preferences' => [
             'theme' => 'dark',
@@ -87,17 +102,25 @@ test('authenticated user preferences are cached in session', function () {
 
     $service = app(FrontendPreferencesService::class);
 
-    // First call loads from DB and caches
-    $service->getTheme();
+    // First call should sync from DB to session
+    expect($service->getTheme())->toBe('dark');
+
+    // Verify synced to session
+    $sessionPrefs = Session::get(FrontendPreferences::SESSION_KEY);
+    expect($sessionPrefs['theme'])->toBe('dark');
 
     // Clear session to simulate new request
     Session::forget(FrontendPreferences::SESSION_KEY);
 
-    // Should still work because it reloads from DB
+    // Should reload from DB and sync to session again
     expect($service->getTheme())->toBe('dark');
+
+    // Verify synced to session again
+    $sessionPrefs = Session::get(FrontendPreferences::SESSION_KEY);
+    expect($sessionPrefs['theme'])->toBe('dark');
 });
 
-test('refresh reloads preferences from persistent store', function () {
+test('refresh reloads preferences from database and syncs to session', function () {
     $user = User::factory()->create([
         'frontend_preferences' => [
             'theme' => 'light',
@@ -108,7 +131,7 @@ test('refresh reloads preferences from persistent store', function () {
 
     $service = app(FrontendPreferencesService::class);
 
-    // Load initial preferences
+    // Load initial preferences (syncs from DB to session)
     expect($service->getTheme())->toBe('light');
 
     // Update in database directly using fresh query
@@ -118,13 +141,17 @@ test('refresh reloads preferences from persistent store', function () {
         ]),
     ]);
 
-    // Should still return cached value
+    // Should still return session value (single source of truth)
     expect($service->getTheme())->toBe('light');
 
-    // Refresh should reload from DB
+    // Refresh should reload from DB and sync to session
     $service->refresh();
 
     expect($service->getTheme())->toBe('dark');
+
+    // Verify synced to session
+    $sessionPrefs = Session::get(FrontendPreferences::SESSION_KEY);
+    expect($sessionPrefs['theme'])->toBe('dark');
 });
 
 test('setTheme validates theme value', function () {
@@ -242,43 +269,98 @@ test('does not detect browser language if preference already set', function () {
     expect($locale)->toBe('fr_FR');
 });
 
-test('detects theme from cookie on first visit', function () {
-    $request = request();
-    $request->cookies->set('_preferred_theme', 'dark');
+test('default theme is light', function () {
+    $service = app(FrontendPreferencesService::class);
+
+    // Default theme should be "light"
+    $theme = $service->getTheme();
+    expect($theme)->toBe('light');
+});
+
+test('can set theme to light or dark', function () {
+    $service = app(FrontendPreferencesService::class);
+
+    $service->setTheme('light');
+    expect($service->getTheme())->toBe('light');
+
+    $service->setTheme('dark');
+    expect($service->getTheme())->toBe('dark');
+});
+
+test('session is single source of truth for reads', function () {
+    $user = User::factory()->create([
+        'frontend_preferences' => [
+            'theme' => 'light',
+        ],
+    ]);
+
+    $this->actingAs($user);
 
     $service = app(FrontendPreferencesService::class);
 
-    // On first visit, should detect dark theme from cookie
-    $theme = $service->getTheme($request);
-    expect($theme)->toBe('dark');
+    // First read syncs from DB to session
+    expect($service->getTheme())->toBe('light');
 
-    // Verify it's saved
+    // Manually update session (simulating session-only change)
+    Session::put(FrontendPreferences::SESSION_KEY, [
+        'theme' => 'dark',
+    ]);
+
+    // Should read from session (single source of truth)
+    expect($service->getTheme())->toBe('dark');
+
+    // Even though DB still has 'light', session value is used
+    $user->refresh();
+    expect($user->frontend_preferences['theme'])->toBe('light');
+});
+
+test('authenticated user updates go to database first, then session', function () {
+    $user = User::factory()->create([
+        'frontend_preferences' => [
+            'theme' => 'light',
+        ],
+    ]);
+
+    $this->actingAs($user);
+
+    $service = app(FrontendPreferencesService::class);
+
+    // Update preference
+    $service->setTheme('dark');
+
+    // Verify DB updated first
+    $user->refresh();
+    expect($user->frontend_preferences['theme'])->toBe('dark');
+
+    // Verify session also updated (single source of truth)
     $sessionPrefs = Session::get(FrontendPreferences::SESSION_KEY);
     expect($sessionPrefs['theme'])->toBe('dark');
 });
 
-test('ignores invalid theme from cookie', function () {
-    $request = request();
-    $request->cookies->set('_preferred_theme', 'invalid_theme');
+test('preferences are synced from database to session on login', function () {
+    $user = User::factory()->create([
+        'frontend_preferences' => [
+            'theme' => 'dark',
+            'locale' => 'fr_FR',
+            'timezone' => 'Europe/Paris',
+        ],
+    ]);
 
+    // Clear session to simulate fresh login
+    Session::forget(FrontendPreferences::SESSION_KEY);
+
+    // Simulate login by firing the Login event
+    Event::dispatch(new Login('web', $user, false));
+
+    // Verify preferences are synced to session
+    $sessionPrefs = Session::get(FrontendPreferences::SESSION_KEY);
+    expect($sessionPrefs['theme'])->toBe('dark')
+        ->and($sessionPrefs['locale'])->toBe('fr_FR')
+        ->and($sessionPrefs['timezone'])->toBe('Europe/Paris');
+
+    // Verify service reads from session (single source of truth)
     $service = app(FrontendPreferencesService::class);
-
-    // Should use default theme if cookie value is invalid
-    $theme = $service->getTheme($request);
-    expect($theme)->toBe(FrontendPreferences::DEFAULT_THEME);
-});
-
-test('does not detect theme from cookie if preference already set', function () {
-    $service = app(FrontendPreferencesService::class);
-
-    // Set a preference first
-    $service->setTheme('light');
-
-    // Try to detect with dark theme cookie
-    $request = request();
-    $request->cookies->set('_preferred_theme', 'dark');
-
-    // Should keep existing preference
-    $theme = $service->getTheme($request);
-    expect($theme)->toBe('light');
+    expect($service->getTheme())->toBe('dark')
+        ->and($service->getLocale())->toBe('fr_FR')
+        ->and($service->getTimezone())->toBe('Europe/Paris');
 });
