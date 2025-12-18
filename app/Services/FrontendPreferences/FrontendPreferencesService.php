@@ -11,6 +11,7 @@ use App\Services\FrontendPreferences\Stores\UserJsonPreferencesStore;
 use App\Services\I18nService;
 use Illuminate\Http\Request;
 use Illuminate\Session\Store as SessionStore;
+use Illuminate\Support\Facades\Auth;
 
 class FrontendPreferencesService
 {
@@ -39,7 +40,7 @@ class FrontendPreferencesService
      */
     private function syncFromDatabaseIfNeeded(?Request $request = null): void
     {
-        $user = auth()->user();
+        $user = Auth::user();
 
         // Only sync if user is authenticated
         if (! $user instanceof User) {
@@ -85,7 +86,7 @@ class FrontendPreferencesService
         $defaults = FrontendPreferences::getDefaults();
 
         // For guests, try browser detection on first visit
-        if (empty($sessionPrefs) && auth()->guest() && $request !== null) {
+        if (empty($sessionPrefs) && Auth::guest() && $request !== null) {
             $detectedPrefs = $this->detectBrowserPreferences($request);
             if (! empty($detectedPrefs)) {
                 $sessionStore->setMany($detectedPrefs);
@@ -105,7 +106,7 @@ class FrontendPreferencesService
      */
     public function set(string $key, mixed $value): void
     {
-        $user = auth()->user();
+        $user = Auth::user();
 
         // If authenticated, update DB first, then session
         if ($user instanceof User) {
@@ -126,7 +127,7 @@ class FrontendPreferencesService
      */
     public function setMany(array $preferences): void
     {
-        $user = auth()->user();
+        $user = Auth::user();
 
         // If authenticated, update DB first, then session
         if ($user instanceof User) {
@@ -154,7 +155,7 @@ class FrontendPreferencesService
         $defaults = FrontendPreferences::getDefaults();
 
         // For guests, try browser detection on first visit
-        if (empty($sessionPrefs) && auth()->guest() && $request !== null) {
+        if (empty($sessionPrefs) && Auth::guest() && $request !== null) {
             $detectedPrefs = $this->detectBrowserPreferences($request);
             if (! empty($detectedPrefs)) {
                 $sessionStore->setMany($detectedPrefs);
@@ -171,7 +172,7 @@ class FrontendPreferencesService
      */
     public function refresh(): void
     {
-        $user = auth()->user();
+        $user = Auth::user();
 
         if ($user instanceof User) {
             $this->syncUserPreferencesToSession($user);

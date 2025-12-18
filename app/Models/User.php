@@ -60,4 +60,13 @@ class User extends BaseUserModel
             ->map(fn ($word) => Str::substr($word, 0, 1))
             ->implode('');
     }
+
+    /**
+     * Get the teams that the user belongs to.
+     */
+    public function teams(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Team::class, 'team_user')
+            ->withTimestamps();
+    }
 }

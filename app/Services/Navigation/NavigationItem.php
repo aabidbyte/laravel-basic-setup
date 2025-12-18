@@ -272,7 +272,19 @@ class NavigationItem implements Arrayable
      */
     public function hasBadge(): bool
     {
-        return $this->getBadge() !== null;
+        $badge = $this->getBadge();
+
+        // Don't show badge if it's null or 0
+        if ($badge === null) {
+            return false;
+        }
+
+        // For numeric badges, don't show if the value is 0
+        if (is_numeric($badge) && (int) $badge === 0) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -324,6 +336,8 @@ class NavigationItem implements Arrayable
         $badge = $this->getBadge();
         $url = $this->getUrl();
 
+        $hasBadge = $this->hasBadge();
+
         $data = [
             'title' => $this->title ?? null,
             'url' => $url,
@@ -332,8 +346,8 @@ class NavigationItem implements Arrayable
             'isActive' => $this->isActive(),
             'hasItems' => count($visibleItems) > 0,
             'items' => array_map(fn (NavigationItem $item) => $item->toArray(), $visibleItems),
-            'hasBadge' => $badge !== null,
-            'badge' => $badge,
+            'hasBadge' => $hasBadge,
+            'badge' => $hasBadge ? $badge : null,
             'attributes' => $this->attributes,
             'hasUrl' => $url !== null,
         ];

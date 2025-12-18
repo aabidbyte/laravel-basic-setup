@@ -1,9 +1,11 @@
 <?php
 
+use App\Services\Notifications\NotificationBuilder;
 use Laravel\Fortify\Actions\ConfirmTwoFactorAuthentication;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
+use Illuminate\Support\Facades\Auth;
 
 new class extends Component {
     #[Locked]
@@ -33,7 +35,9 @@ new class extends Component {
     {
         $this->validate();
 
-        $confirmTwoFactorAuthentication(auth()->user(), $this->code);
+        $confirmTwoFactorAuthentication(Auth::user(), $this->code);
+
+        NotificationBuilder::make()->title(__('ui.settings.two_factor.enabled_success'))->success()->send();
 
         $this->dispatch('two-factor-confirmed');
 
@@ -89,12 +93,6 @@ new class extends Component {
             </div>
         </div>
     @else
-        @error('setupData')
-            <div class="alert alert-error mb-4">
-                <span>{{ $message }}</span>
-            </div>
-        @enderror
-
         <div class="flex justify-center mb-4">
             <div class="relative w-64 overflow-hidden border border-base-300 rounded-lg aspect-square bg-base-200">
             @empty($qrCodeSvg)

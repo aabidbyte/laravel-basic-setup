@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\ApplyFrontendPreferences::class,
             \App\Http\Middleware\TeamsPermission::class,
+            \App\Http\Middleware\ConvertStatusToNotification::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Constants\FrontendPreferences;
+use App\Http\Requests\UpdateLocaleRequest;
+use App\Http\Requests\UpdateThemeRequest;
 use App\Services\FrontendPreferences\FrontendPreferencesService;
 use App\Services\I18nService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 
 class PreferencesController extends Controller
 {
@@ -20,12 +21,10 @@ class PreferencesController extends Controller
     /**
      * Update the theme preference.
      */
-    public function updateTheme(Request $request): RedirectResponse
+    public function updateTheme(UpdateThemeRequest $request): RedirectResponse
     {
-        $theme = $request->input('theme');
-        if (! FrontendPreferences::isValidTheme($theme)) {
-            return redirect()->back()->withErrors(['theme' => __('messages.preferences.invalid_theme')]);
-        }
+        /** @var string $theme */
+        $theme = $request->validated(FrontendPreferences::KEY_THEME);
 
         $this->preferences->setTheme($theme);
 
@@ -35,13 +34,10 @@ class PreferencesController extends Controller
     /**
      * Update the locale preference.
      */
-    public function updateLocale(Request $request): RedirectResponse
+    public function updateLocale(UpdateLocaleRequest $request): RedirectResponse
     {
-        $locale = $request->input('locale');
-
-        if (! $this->i18nService->isLocaleSupported($locale)) {
-            return redirect()->back()->withErrors(['locale' => __('messages.preferences.invalid_locale')]);
-        }
+        /** @var string $locale */
+        $locale = $request->validated(FrontendPreferences::KEY_LOCALE);
 
         $this->preferences->setLocale($locale);
 

@@ -20,7 +20,7 @@ test('middleware applies locale preference', function () {
 
     $this->actingAs($user);
 
-    $response = $this->get('/dashboard');
+    $response = $this->get(route('dashboard', absolute: false));
 
     $response->assertSuccessful();
     expect(App::getLocale())->toBe('fr_FR');
@@ -37,7 +37,7 @@ test('middleware does not change system timezone', function () {
 
     $originalTimezone = date_default_timezone_get();
 
-    $response = $this->get('/dashboard');
+    $response = $this->get(route('dashboard', absolute: false));
 
     $response->assertSuccessful();
     // Timezone preference is for display only, not applied globally
@@ -50,7 +50,7 @@ test('middleware uses default locale when no preference set', function () {
 
     $this->actingAs($user);
 
-    $response = $this->get('/dashboard');
+    $response = $this->get(route('dashboard', absolute: false));
 
     $response->assertSuccessful();
     expect(App::getLocale())->toBe(FrontendPreferences::DEFAULT_LOCALE);
@@ -63,7 +63,7 @@ test('middleware preserves system timezone', function () {
 
     $originalTimezone = date_default_timezone_get();
 
-    $response = $this->get('/dashboard');
+    $response = $this->get(route('dashboard', absolute: false));
 
     $response->assertSuccessful();
     // System timezone remains unchanged (from config/app.php)

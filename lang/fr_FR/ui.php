@@ -5,6 +5,7 @@ return [
     'navigation' => [
         'platform' => 'Plateforme',
         'dashboard' => 'Tableau de bord',
+        'notifications' => 'Notifications',
         'resources' => 'Ressources',
         'repository' => 'Dépôt',
         'documentation' => 'Documentation',
@@ -61,6 +62,7 @@ return [
             'submit' => 'Envoyer le lien de réinitialisation',
             'back_to_login' => 'Ou, retourner à la',
             'log_in' => 'connexion',
+            'success' => 'Nous avons envoyé votre lien de réinitialisation de mot de passe par e-mail.',
         ],
         'reset_password' => [
             'title' => 'Réinitialiser le mot de passe',
@@ -71,6 +73,7 @@ return [
             'confirm_password_label' => 'Confirmer le mot de passe',
             'confirm_password_placeholder' => 'Confirmer le mot de passe',
             'submit' => 'Réinitialiser le mot de passe',
+            'success' => 'Votre mot de passe a été réinitialisé.',
         ],
         'verify_email' => [
             'title' => 'Vérifiez votre e-mail',
@@ -127,6 +130,8 @@ return [
             'description' => 'Gérez vos paramètres d\'authentification à deux facteurs',
             'enabled' => 'Activée',
             'enabled_description' => 'Avec l\'authentification à deux facteurs activée, vous serez invité à saisir un code PIN sécurisé et aléatoire lors de la connexion, que vous pouvez récupérer depuis l\'application compatible TOTP sur votre téléphone.',
+            'enabled_success' => 'L\'authentification à deux facteurs a été activée.',
+            'disabled_success' => 'L\'authentification à deux facteurs a été désactivée.',
             'disable_button' => 'Désactiver l\'A2F',
             'disabled' => 'Désactivée',
             'disabled_description' => 'Lorsque vous activez l\'authentification à deux facteurs, vous serez invité à saisir un code PIN sécurisé lors de la connexion. Ce code PIN peut être récupéré depuis une application compatible TOTP sur votre téléphone.',
@@ -147,6 +152,8 @@ return [
                 'view_button' => 'Voir les codes de récupération',
                 'hide_button' => 'Masquer les codes de récupération',
                 'regenerate_button' => 'Régénérer les codes',
+                'regenerated' => 'Les codes de récupération ont été régénérés.',
+                'load_error' => 'Impossible de charger les codes de récupération. Veuillez réessayer.',
                 'warning' => 'Chaque code de récupération peut être utilisé une seule fois pour accéder à votre compte et sera supprimé après utilisation. Si vous en avez besoin de plus, cliquez sur Régénérer les codes ci-dessus.',
             ],
         ],
@@ -163,6 +170,7 @@ return [
             'modal_title' => 'Êtes-vous sûr de vouloir supprimer votre compte ?',
             'modal_description' => 'Une fois votre compte supprimé, toutes ses ressources et données seront définitivement supprimées. Veuillez entrer votre mot de passe pour confirmer que vous souhaitez supprimer définitivement votre compte.',
             'password_label' => 'Mot de passe',
+            'success' => 'Votre compte a été supprimé.',
         ],
     ],
 
@@ -177,11 +185,24 @@ return [
     // Page Titles
     'pages' => [
         'dashboard' => 'Tableau de bord',
+        'notifications' => 'Notifications',
         'settings' => [
             'profile' => 'Paramètres du profil',
             'password' => 'Paramètres du mot de passe',
             'two_factor' => 'Authentification à deux facteurs',
         ],
+    ],
+
+    // Notifications
+    'notifications' => [
+        'dropdown' => [
+            'title' => 'Notifications',
+        ],
+        'mark_all_read' => 'Tout marquer comme lu',
+        'view' => 'Voir',
+        'view_all' => 'Voir toutes les notifications',
+        'unread' => 'Non lu',
+        'empty' => 'Vous n\'avez aucune notification.',
     ],
 
     // Common UI Elements

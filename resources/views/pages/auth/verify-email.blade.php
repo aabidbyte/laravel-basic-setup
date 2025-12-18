@@ -6,13 +6,7 @@
             </span>
         </div>
 
-        @if (session('status') == 'verification-link-sent')
-            <div class="alert alert-success">
-                <span>
-                    {{ __('ui.auth.verify_email.resend_success') }}
-                </span>
-            </div>
-        @endif
+        {{-- Status messages are now handled by ConvertStatusToNotification middleware --}}
 
         <div class="flex flex-col items-center justify-between space-y-3">
             <form method="POST" action="{{ route('verification.send') }}">

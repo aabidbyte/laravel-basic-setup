@@ -5,6 +5,7 @@ return [
     'navigation' => [
         'platform' => 'Platform',
         'dashboard' => 'Dashboard',
+        'notifications' => 'Notifications',
         'resources' => 'Resources',
         'repository' => 'Repository',
         'documentation' => 'Documentation',
@@ -61,6 +62,7 @@ return [
             'submit' => 'Email password reset link',
             'back_to_login' => 'Or, return to',
             'log_in' => 'log in',
+            'success' => 'We have emailed your password reset link.',
         ],
         'reset_password' => [
             'title' => 'Reset password',
@@ -71,6 +73,7 @@ return [
             'confirm_password_label' => 'Confirm password',
             'confirm_password_placeholder' => 'Confirm password',
             'submit' => 'Reset password',
+            'success' => 'Your password has been reset.',
         ],
         'verify_email' => [
             'title' => 'Verify your email',
@@ -127,6 +130,8 @@ return [
             'description' => 'Manage your two-factor authentication settings',
             'enabled' => 'Enabled',
             'enabled_description' => 'With two-factor authentication enabled, you will be prompted for a secure, random pin during login, which you can retrieve from the TOTP-supported application on your phone.',
+            'enabled_success' => 'Two-factor authentication has been enabled.',
+            'disabled_success' => 'Two-factor authentication has been disabled.',
             'disable_button' => 'Disable 2FA',
             'disabled' => 'Disabled',
             'disabled_description' => 'When you enable two-factor authentication, you will be prompted for a secure pin during login. This pin can be retrieved from a TOTP-supported application on your phone.',
@@ -147,6 +152,8 @@ return [
                 'view_button' => 'View Recovery Codes',
                 'hide_button' => 'Hide Recovery Codes',
                 'regenerate_button' => 'Regenerate Codes',
+                'regenerated' => 'Recovery codes have been regenerated.',
+                'load_error' => 'Unable to load recovery codes. Please try again.',
                 'warning' => 'Each recovery code can be used once to access your account and will be removed after use. If you need more, click Regenerate Codes above.',
             ],
         ],
@@ -163,6 +170,7 @@ return [
             'modal_title' => 'Are you sure you want to delete your account?',
             'modal_description' => 'Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.',
             'password_label' => 'Password',
+            'success' => 'Your account has been deleted.',
         ],
     ],
 
@@ -177,11 +185,24 @@ return [
     // Page Titles
     'pages' => [
         'dashboard' => 'Dashboard',
+        'notifications' => 'Notifications',
         'settings' => [
             'profile' => 'Profile Settings',
             'password' => 'Password Settings',
             'two_factor' => 'Two-Factor Authentication',
         ],
+    ],
+
+    // Notifications
+    'notifications' => [
+        'dropdown' => [
+            'title' => 'Notifications',
+        ],
+        'mark_all_read' => 'Mark all as read',
+        'view' => 'View',
+        'view_all' => 'View all notifications',
+        'unread' => 'Unread',
+        'empty' => 'You have no notifications.',
     ],
 
     // Common UI Elements

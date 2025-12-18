@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Actions\Logout;
+use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -16,7 +17,10 @@ new class extends Component {
             'password' => ['required', 'string', 'current_password'],
         ]);
 
-        tap(Auth::user(), $logout(...))->delete();
+        $user = Auth::user();
+        tap($user, $logout(...))->delete();
+
+        NotificationBuilder::make()->title(__('ui.settings.delete_account.success'))->info()->send();
 
         $this->redirect('/', navigate: true);
     }

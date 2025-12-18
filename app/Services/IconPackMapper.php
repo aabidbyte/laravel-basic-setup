@@ -59,8 +59,12 @@ class IconPackMapper
      * Only allows alphanumeric characters, dashes, and underscores.
      * Returns default icon name if sanitized result is empty.
      */
-    public function sanitizeIconName(string $name): string
+    public function sanitizeIconName(?string $name): string
     {
+        if (! $name) {
+            return self::DEFAULT_ICON;
+        }
+
         // Only allow alphanumeric, dash, underscore
         $sanitizedName = preg_replace('/[^a-zA-Z0-9_-]/', '', $name);
 
@@ -139,8 +143,9 @@ class IconPackMapper
      * Render icon HTML.
      * Handles all sanitization, size mapping, and rendering with fallback.
      */
-    public function renderIcon(string $name, ?string $pack = null, string $class = '', ?string $size = null): string
+    public function renderIcon(?string $name, ?string $pack = null, string $class = '', ?string $size = null): string
     {
+
         // Handle size prop for backward compatibility
         $sizeClass = $this->getSizeClass($size);
 
@@ -151,6 +156,10 @@ class IconPackMapper
         // Combine size and class, then sanitize
         $combinedClass = trim("{$sizeClass} {$class}");
         $sanitizedClass = $this->sanitizeClass($combinedClass) ?: 'w-6 h-6';
+
+        if (! $name) {
+            return svg('heroicon-o-question-mark-circle', $sanitizedClass)->toHtml();
+        }
 
         // Get the component name
         $componentName = $this->getComponentName($sanitizedPack, $sanitizedName);

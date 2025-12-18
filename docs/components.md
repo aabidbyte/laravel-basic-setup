@@ -662,13 +662,13 @@ A centralized, flexible dropdown component that provides consistent dropdown fun
     <x-slot:trigger>
         <div class="btn btn-ghost btn-circle avatar">
             <div class="w-10 rounded-full bg-base-300 text-base-content">
-                <span class="text-xs">{{ auth()->user()->initials() }}</span>
+                <span class="text-xs">{{ Auth::user()->initials() }}</span>
             </div>
         </div>
     </x-slot:trigger>
 
     <div class="menu-title">
-        <span>{{ auth()->user()->name }}</span>
+        <span>{{ Auth::user()->name }}</span>
     </div>
     <li><a>Profile</a></li>
     <li><a>Settings</a></li>

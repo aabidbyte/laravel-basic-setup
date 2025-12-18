@@ -1,4 +1,4 @@
-@props(['name', 'pack' => null, 'class' => '', 'size' => null])
+@props(['name' => null, 'pack' => null, 'class' => '', 'size' => null])
 
 @inject('mapper', \App\Services\IconPackMapper::class)
 

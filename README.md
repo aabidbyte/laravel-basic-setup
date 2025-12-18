@@ -37,6 +37,12 @@ A comprehensive Laravel 12 starter kit with Livewire, UUID-based models, authent
 
 -   **Laravel Reverb** - WebSocket server for real-time features
 -   Broadcasting support with Laravel Echo
+-   **Notification System** - Toast and persistent notifications with real-time broadcasting
+    -   Toast notifications with customizable types, positions, and animations
+    -   Persistent notifications stored in database
+    -   Multiple broadcast channels (user, team, global)
+    -   Notification center with unread tracking
+    -   See [Notification Documentation](docs/notifications.md) for usage
 
 #### Development Tools
 
@@ -555,6 +561,62 @@ $user->can('edit posts');
 -   Teams middleware must run before `SubstituteBindings` (configured in `AppServiceProvider`)
 -   When switching teams, always unset cached relations before querying
 -   See [Spatie Permission Documentation](https://spatie.be/docs/laravel-permission) for more details
+
+## 🔔 Notification System
+
+The application includes a comprehensive notification system with toast and persistent notifications.
+
+**Key Features:**
+
+-   **Toast Notifications**: Temporary UI messages with customizable types, positions, and animations
+-   **Persistent Notifications**: Stored in database and displayed in notification center
+-   **Real-time Broadcasting**: All notifications broadcast via Laravel Reverb
+-   **Multiple Channels**: User-specific, team-specific, and global channels
+-   **Notification Center**: View and manage all persistent notifications at `/notifications`
+
+**Basic Usage:**
+
+```php
+use App\Services\Notifications\NotificationBuilder;
+
+// Simple toast notification
+NotificationBuilder::make()
+    ->title('Profile updated successfully')
+    ->success()
+    ->send();
+
+// Persistent notification (stored in database)
+NotificationBuilder::make()
+    ->title('Task Assigned')
+    ->subtitle('You have been assigned a new task')
+    ->success()
+    ->persist()
+    ->send();
+
+// Custom position and channel
+NotificationBuilder::make()
+    ->title('Team Update')
+    ->toTeam($teamUuid)
+    ->position(ToastPosition::BottomRight)
+    ->send();
+```
+
+**Toast Types:**
+
+-   `success()` - Green, check-circle icon (default)
+-   `info()` - Blue, information-circle icon
+-   `warning()` - Yellow, exclamation-triangle icon
+-   `error()` - Red, x-circle icon
+-   `classic()` - Default styling, bell icon
+
+**Positions:**
+
+-   `ToastPosition::TopRight` (default)
+-   `ToastPosition::TopLeft`, `TopCenter`
+-   `ToastPosition::BottomRight`, `BottomLeft`, `BottomCenter`
+-   `ToastPosition::Center`
+
+See [Notification Documentation](docs/notifications.md) for complete usage guide and examples.
 
 ## 📝 License
 

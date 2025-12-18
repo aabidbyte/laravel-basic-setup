@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\BasePageComponent;
+use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
@@ -38,6 +39,8 @@ new class extends BasePageComponent {
 
         $this->reset('current_password', 'password', 'password_confirmation');
 
+        NotificationBuilder::make()->title(__('ui.settings.password.save_success'))->success()->send();
+
         $this->dispatch('password-updated');
     }
 }; ?>
@@ -59,9 +62,6 @@ new class extends BasePageComponent {
                     {{ __('ui.actions.save') }}
                 </x-ui.button>
 
-                <x-action-message class="me-3" on="password-updated">
-                    {{ __('ui.settings.password.save_success') }}
-                </x-action-message>
             </div>
         </x-ui.form>
     </x-settings.layout>

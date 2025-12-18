@@ -2,6 +2,7 @@
 
 use App\Livewire\BasePageComponent;
 use App\Models\User;
+use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\Rule;
@@ -45,6 +46,8 @@ new class extends BasePageComponent {
 
         $user->save();
 
+        NotificationBuilder::make()->title(__('ui.settings.profile.save_success'))->success()->send();
+
         $this->dispatch('profile-updated', name: $user->name);
     }
 
@@ -63,7 +66,7 @@ new class extends BasePageComponent {
 
         $user->sendEmailVerificationNotification();
 
-        Session::flash('status', 'verification-link-sent');
+        NotificationBuilder::make()->title(__('ui.settings.profile.verification_sent'))->info()->send();
     }
 }; ?>
 
@@ -75,7 +78,7 @@ new class extends BasePageComponent {
 
             <x-ui.input type="email" wire:model="email" name="email" :label="__('ui.settings.profile.email_label')" required autocomplete="email" />
 
-            @if (auth()->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !auth()->user()->hasVerifiedEmail())
+            @if (Auth::user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !Auth::user()->hasVerifiedEmail())
                 <div class="alert alert-info mt-4">
                     <span class="text-sm">
                         {{ __('ui.settings.profile.email_unverified') }}
@@ -85,12 +88,6 @@ new class extends BasePageComponent {
                         </button>
                     </span>
                 </div>
-
-                @if (session('status') === 'verification-link-sent')
-                    <div class="alert alert-success mt-2">
-                        <span>{{ __('ui.settings.profile.verification_sent') }}</span>
-                    </div>
-                @endif
             @endif
 
             <div class="flex items-center gap-4">
@@ -98,9 +95,6 @@ new class extends BasePageComponent {
                     {{ __('ui.actions.save') }}
                 </x-ui.button>
 
-                <x-action-message class="me-3" on="profile-updated">
-                    {{ __('ui.settings.profile.save_success') }}
-                </x-action-message>
             </div>
         </x-ui.form>
 

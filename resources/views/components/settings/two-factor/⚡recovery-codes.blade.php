@@ -1,8 +1,10 @@
 <?php
 
+use App\Services\Notifications\NotificationBuilder;
 use Laravel\Fortify\Actions\GenerateNewRecoveryCodes;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
+use Illuminate\Support\Facades\Auth;
 
 new class extends Component {
     #[Locked]
@@ -21,9 +23,11 @@ new class extends Component {
      */
     public function regenerateRecoveryCodes(GenerateNewRecoveryCodes $generateNewRecoveryCodes): void
     {
-        $generateNewRecoveryCodes(auth()->user());
+        $generateNewRecoveryCodes(Auth::user());
 
         $this->loadRecoveryCodes();
+
+        NotificationBuilder::make()->title(__('ui.settings.two_factor.recovery.regenerated'))->success()->send();
     }
 
     /**
@@ -31,13 +35,13 @@ new class extends Component {
      */
     private function loadRecoveryCodes(): void
     {
-        $user = auth()->user();
+        $user = Auth::user();
 
         if ($user->hasEnabledTwoFactorAuthentication() && $user->two_factor_recovery_codes) {
             try {
                 $this->recoveryCodes = json_decode(decrypt($user->two_factor_recovery_codes), true);
             } catch (Exception) {
-                $this->addError('recoveryCodes', 'Failed to load recovery codes');
+                NotificationBuilder::make()->title(__('ui.settings.two_factor.recovery.load_error'))->error()->send();
 
                 $this->recoveryCodes = [];
             }
@@ -79,11 +83,6 @@ new class extends Component {
 
         <div x-show="showRecoveryCodes" x-transition id="recovery-codes-section" class="mt-4"
             x-bind:aria-hidden="!showRecoveryCodes">
-            @error('recoveryCodes')
-                <div class="alert alert-error mb-4">
-                    <span>{{ $message }}</span>
-                </div>
-            @enderror
 
             @if (filled($recoveryCodes))
                 <div class="card bg-base-100">

@@ -13,4 +13,5 @@
         </main>
     </div>
     <x-layouts.app.sidebar-menu />
+    <x-notifications.toast-center />
 </div>

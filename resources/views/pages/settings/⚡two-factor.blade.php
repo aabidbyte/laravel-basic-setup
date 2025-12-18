@@ -1,17 +1,20 @@
 <?php
 
 use App\Livewire\BasePageComponent;
+use App\Services\Notifications\NotificationBuilder;
 use Laravel\Fortify\Actions\ConfirmTwoFactorAuthentication;
 use Laravel\Fortify\Actions\DisableTwoFactorAuthentication;
 use Laravel\Fortify\Actions\EnableTwoFactorAuthentication;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
 use Symfony\Component\HttpFoundation\Response;
 
-new class extends BasePageComponent {
+new class extends BasePageComponent
+{
     public ?string $pageTitle = 'ui.pages.settings.two_factor';
 
     public ?string $pageSubtitle = 'ui.settings.two_factor.description';
@@ -42,11 +45,13 @@ new class extends BasePageComponent {
     {
         abort_unless(Features::enabled(Features::twoFactorAuthentication()), Response::HTTP_FORBIDDEN);
 
-        if (Fortify::confirmsTwoFactorAuthentication() && is_null(auth()->user()->two_factor_confirmed_at)) {
-            $disableTwoFactorAuthentication(auth()->user());
+        $user = Auth::user();
+
+        if (Fortify::confirmsTwoFactorAuthentication() && is_null($user->two_factor_confirmed_at)) {
+            $disableTwoFactorAuthentication($user);
         }
 
-        $this->twoFactorEnabled = auth()->user()->hasEnabledTwoFactorAuthentication();
+        $this->twoFactorEnabled = $user->hasEnabledTwoFactorAuthentication();
         $this->requiresConfirmation = Features::optionEnabled(Features::twoFactorAuthentication(), 'confirm');
     }
 
@@ -55,10 +60,12 @@ new class extends BasePageComponent {
      */
     public function enable(EnableTwoFactorAuthentication $enableTwoFactorAuthentication): void
     {
-        $enableTwoFactorAuthentication(auth()->user());
+        $user = Auth::user();
 
-        if (!$this->requiresConfirmation) {
-            $this->twoFactorEnabled = auth()->user()->hasEnabledTwoFactorAuthentication();
+        $enableTwoFactorAuthentication($user);
+
+        if (! $this->requiresConfirmation) {
+            $this->twoFactorEnabled = $user->hasEnabledTwoFactorAuthentication();
         }
 
         $this->loadSetupData();
@@ -71,7 +78,7 @@ new class extends BasePageComponent {
      */
     private function loadSetupData(): void
     {
-        $user = auth()->user();
+        $user = Auth::user();
 
         try {
             $this->qrCodeSvg = $user?->twoFactorQrCodeSvg();
@@ -108,11 +115,13 @@ new class extends BasePageComponent {
     {
         $this->validate();
 
-        $confirmTwoFactorAuthentication(auth()->user(), $this->code);
+        $confirmTwoFactorAuthentication(Auth::user(), $this->code);
 
         $this->closeModal();
 
         $this->twoFactorEnabled = true;
+
+        NotificationBuilder::make()->title(__('ui.settings.two_factor.enabled_success'))->success()->send();
     }
 
     /**
@@ -131,9 +140,11 @@ new class extends BasePageComponent {
      */
     public function disable(DisableTwoFactorAuthentication $disableTwoFactorAuthentication): void
     {
-        $disableTwoFactorAuthentication(auth()->user());
+        $disableTwoFactorAuthentication(Auth::user());
 
         $this->twoFactorEnabled = false;
+
+        NotificationBuilder::make()->title(__('ui.settings.two_factor.disabled_success'))->info()->send();
     }
 
     /**
@@ -145,8 +156,8 @@ new class extends BasePageComponent {
 
         $this->resetErrorBag();
 
-        if (!$this->requiresConfirmation) {
-            $this->twoFactorEnabled = auth()->user()->hasEnabledTwoFactorAuthentication();
+        if (! $this->requiresConfirmation) {
+            $this->twoFactorEnabled = Auth::user()->hasEnabledTwoFactorAuthentication();
         }
     }
 

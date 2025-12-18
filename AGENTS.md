@@ -183,6 +183,7 @@ These helpers are automatically loaded via Composer autoload and should be used 
     -   Use appropriate type hints for method parameters
     -   **Always use function guards and early returns** - Check for invalid conditions first and return early to reduce nesting and improve readability
 -   **PHPDoc**: Prefer PHPDoc blocks over inline comments
+-   **Auth**: **Never use the `auth()` helper**. Always use the `Illuminate\Support\Facades\Auth` facade (e.g. `Auth::check()`, `Auth::user()`, `Auth::id()`, `Auth::guard(...)`).
 -   **Helper Functions**: **Do NOT use `function_exists()` checks in helper files** - Helper files are autoloaded via Composer and will only be loaded once, so function existence checks are unnecessary
 -   **I18nService**: **Always use `I18nService` for locale-related code** - Do not directly access `config('i18n.*')` in helper functions or other code. Use `I18nService` methods to centralize all locale-related logic (`getSupportedLocales()`, `getDefaultLocale()`, `getValidLocale()`, `getLocaleMetadata()`, etc.)
 -   **View Composers**: **Use View Composers instead of `@inject` for global data** - Register View Composers in service providers to share data globally with all views. This is more efficient and cleaner than using `@inject` directives in every template.
@@ -334,12 +335,12 @@ it('tests something', function () {
 -   **BasePageComponent**: **ALL full-page Livewire components MUST extend `App\Livewire\BasePageComponent`**
     -   Provides automatic page title and subtitle management via `$pageTitle` and `$pageSubtitle` properties
     -   Automatically shares title and subtitle with layout views via `View::share()` in `boot()` method (runs automatically)
-    -   **Required**: Every component MUST define `public string $pageTitle = 'ui.pages.example';` property
+    -   **Required**: Every component MUST define `public ?string $pageTitle = 'ui.pages.example';` property
     -   **Optional**: Components can define `public string $pageSubtitle = 'ui.pages.example.description';` property for subtitle text
     -   **Translations**: Use translation keys (e.g., `'ui.pages.dashboard'`) - keys containing dots are automatically translated via `__()`
     -   **Plain Strings**: Can also use plain strings (e.g., `'Dashboard'`) if translation is not needed
     -   **Seamless**: No need to call `parent::mount()` - title and subtitle sharing happens automatically via `boot()` lifecycle hook
-    -   Example: `new class extends BasePageComponent { public string $pageTitle = 'ui.pages.dashboard'; public string $pageSubtitle = 'ui.pages.dashboard.description'; }`
+    -   Example: `new class extends BasePageComponent { public ?string $pageTitle = 'ui.pages.dashboard'; public string $pageSubtitle = 'ui.pages.dashboard.description'; }`
     -   **Rule**: Never extend `Livewire\Component` directly for full-page components - always use `BasePageComponent`
 -   **Naming**: Use descriptive names (e.g., `isRegisteredForDiscounts`, not `discount()`)
 -   **Documentation**: See `docs/livewire-4.md` for complete Livewire 4 documentation
@@ -471,8 +472,16 @@ it('tests something', function () {
     - Horizon (queue monitoring)
 
 4. **Logging**:
+
     - Daily log rotation with level-specific folders
     - Log clearing command (`php artisan logs:clear`)
+
+5. **Notifications**:
+    - Toast notifications via Laravel Reverb (always broadcast)
+    - Persistent notifications (optional, stored in database)
+    - Notification center page for viewing/managing notifications
+    - Automatic pruning of read notifications (30 days)
+    - Support for user, team, and global channels
 
 ### Planned/In Development
 
@@ -522,6 +531,8 @@ app/Services/
 
 ```php
 // In SideBarMenuService.php
+use Illuminate\Support\Facades\Auth;
+
 public function getTopMenus(): array
 {
     return [
@@ -532,7 +543,7 @@ public function getTopMenus(): array
                     ->title('Dashboard')
                     ->route('dashboard')
                     ->icon('home')
-                    ->show(auth()->user()->hasRole('admin')),
+                    ->show(Auth::user()->hasRole('admin')),
 
                 NavigationItem::make()
                     ->title('Users')
@@ -655,6 +666,186 @@ To add new navigation sections:
 3. Filter invisible items: `array_filter($items, fn($item) => $item->isVisible())`
 4. Render in Blade using `<x-navigation.group>` component
 
+## Notification Builder System
+
+The project includes a comprehensive notification system with a fluent API similar to the Navigation Builder pattern. The system supports both toast notifications (temporary UI messages) and persistent notifications (stored in the database), all broadcast via Laravel Reverb for real-time delivery.
+
+**Documentation**: See `docs/notifications.md` for complete documentation, usage examples, and best practices.
+
+### Architecture
+
+```
+app/Services/Notifications/
+├── NotificationBuilder.php        # Fluent builder for creating notifications
+├── ToastPayload.php                # DTO for toast notification data
+└── NotificationContent.php         # Content wrapper (string/html/view)
+
+app/Enums/
+├── ToastType.php                   # Toast type enum (success, info, warning, error, classic)
+├── ToastPosition.php               # Toast position enum (top-right, top-left, etc.)
+└── ToastAnimation.php              # Toast animation enum (slide, etc.)
+
+app/Events/
+└── ToastBroadcasted.php            # Broadcast event for toast notifications
+
+resources/views/
+├── components/notifications/
+│   └── toast-center.blade.php      # Alpine.js toast UI component
+└── pages/notifications/
+    └── ⚡index.blade.php            # Notification center page (Livewire 4)
+```
+
+### Key Classes
+
+**NotificationBuilder** (`app/Services/Notifications/NotificationBuilder.php`):
+
+-   Fluent builder for creating notifications
+-   **Default behavior**: Toast-only, success type, current user channel
+-   Methods: `make()`, `title()`, `subtitle()`, `content()`, `html()`, `view()`, `success()`, `info()`, `warning()`, `error()`, `classic()`, `position()`, `animation()`, `persist()`, `toUser()`, `toTeam()`, `global()`, `link()`, `send()`
+-   **Title is required**: Must call `title()` before `send()`
+-   **Content support**: String, HTML (trusted), or Blade view via `view()`
+-   **Persistence**: Call `persist()` to save to database (creates DatabaseNotification records)
+-   **Channels**: Defaults to current user, or use `toUser()`, `toTeam()`, `global()`
+
+**ToastPayload** (`app/Services/Notifications/ToastPayload.php`):
+
+-   DTO for toast notification data
+-   Contains: title, subtitle, content, type, position, animation, link
+-   Serializes to array for JSON broadcasting
+
+**ToastBroadcasted** (`app/Events/ToastBroadcasted.php`):
+
+-   Implements `ShouldBroadcastNow` for immediate broadcasting
+-   Broadcasts to private channels: `private-notifications.user.{uuid}`, `private-notifications.team.{uuid}`, `private-notifications.global`
+-   Event name: `toast.received`
+
+### Usage Examples
+
+```php
+use App\Services\Notifications\NotificationBuilder;
+use App\Enums\ToastType;
+use App\Enums\ToastPosition;
+
+// Simple toast notification (toast-only, current user)
+NotificationBuilder::make()
+    ->title('Task completed')
+    ->success()
+    ->send();
+
+// Toast with subtitle and content
+NotificationBuilder::make()
+    ->title('New message')
+    ->subtitle('From John Doe')
+    ->content('Hello, how are you?')
+    ->info()
+    ->send();
+
+// Persistent notification with link
+NotificationBuilder::make()
+    ->title('Payment received')
+    ->persist()
+    ->link('/payments/123')
+    ->toUser($user)
+    ->send();
+
+// Team notification
+NotificationBuilder::make()
+    ->title('Team update')
+    ->persist()
+    ->toTeam($team)
+    ->warning()
+    ->send();
+
+// Global notification
+NotificationBuilder::make()
+    ->title('System maintenance')
+    ->persist()
+    ->global()
+    ->error()
+    ->send();
+
+// Using Blade view for content
+NotificationBuilder::make()
+    ->title('Custom notification')
+    ->view('notifications.custom', ['data' => $data])
+    ->send();
+```
+
+### Toast UI Component
+
+**Toast Center** (`resources/views/components/notifications/toast-center.blade.php`):
+
+-   Alpine.js component that subscribes to Echo private channels
+-   Automatically included in authenticated app layout
+-   Features:
+    -   Subscribes to user, team, and global channels
+    -   Renders toasts using DaisyUI alert components
+    -   Supports all toast types with appropriate icons
+    -   Auto-dismisses after 5 seconds
+    -   Supports click-to-navigate via link
+    -   Slide animation (enters from right, exits to right)
+
+### Notification Center Page
+
+**Notification Center** (`resources/views/pages/notifications/⚡index.blade.php`):
+
+-   Livewire 4 single-file component extending `BasePageComponent`
+-   Route: `/notifications` (named: `notifications.index`)
+-   Features:
+    -   Lists all user notifications (paginated, 20 per page)
+    -   Auto-marks as read on viewport intersection (`x-intersect.once`)
+    -   Marks as read on click
+    -   "Mark all as read" button
+    -   Shows unread badge for unread notifications
+    -   Displays notification type icons, title, subtitle, content, link, and timestamp
+
+### Broadcast Channels
+
+Channels are defined in `routes/channels.php`:
+
+-   **User channel** (`private-notifications.user.{userUuid}`): Authorized for matching user UUID
+-   **Team channel** (`private-notifications.team.{teamUuid}`): Authorized for team members
+-   **Global channel** (`private-notifications.global`): Authorized for any authenticated user
+
+### Persistence Behavior
+
+When `->persist()` is called:
+
+-   **User channel**: Creates single DatabaseNotification for target user
+-   **Team channel**: Creates DatabaseNotification for each team member
+-   **Global channel**: Creates DatabaseNotification for all users (batched inserts)
+
+Notifications are stored in Laravel's standard `notifications` table with:
+
+-   `id`: UUID primary key
+-   `type`: Notification class name (string)
+-   `notifiable_type` / `notifiable_id`: Polymorphic relationship to User
+-   `data`: JSON containing title, subtitle, content, type, link
+-   `read_at`: Timestamp when marked as read (null if unread)
+
+### Pruning
+
+-   Command: `php artisan notifications:prune-read` (default: 30 days)
+-   Scheduled: Runs daily (configured in `routes/console.php`)
+-   Behavior: Deletes read notifications where `read_at < now()->subDays(30)`
+-   Unread notifications are never pruned
+
+### Teams Integration
+
+-   All users are automatically assigned to a personal team on registration
+-   Team UUID is available for team channel notifications
+-   Team ID is stored in session on login (for TeamsPermission middleware compatibility)
+
+### Rules & Best Practices
+
+-   **Always use NotificationBuilder**: Don't manually create DatabaseNotification records
+-   **Title required**: Must always call `title()` before `send()`
+-   **Toast-first**: All notifications broadcast toasts; persistence is optional
+-   **Channel selection**: Default to current user unless you need team/global
+-   **Content rendering**: Use `view()` for complex content, `html()` for trusted HTML, `content()` for plain strings
+-   **Persistence**: Only use `persist()` when notifications need to be reviewable later
+-   **Testing**: Use `Event::fake([ToastBroadcasted::class])` to test notifications without broadcasting
+
 ## Important Patterns
 
 ### Livewire 4 Single-File Component Pattern
@@ -667,7 +858,7 @@ To add new navigation sections:
 use App\Livewire\BasePageComponent;
 
 new class extends BasePageComponent {
-    public string $pageTitle = 'ui.pages.example';
+    public ?string $pageTitle = 'ui.pages.example';
 
     public string $pageSubtitle = 'ui.pages.example.description'; // Optional
 
@@ -695,7 +886,7 @@ Route::livewire('/example', 'pages::example')->name('example');
 **Important Notes**:
 
 -   **ALL full-page Livewire components MUST extend `App\Livewire\BasePageComponent`** (not `Livewire\Component`)
--   Set `public string $pageTitle = 'ui.pages.example';` property for automatic title management (use translation keys)
+-   Set `public ?string $pageTitle = 'ui.pages.example';` property for automatic title management (use translation keys)
 -   **Optional**: Set `public string $pageSubtitle = 'ui.pages.example.description';` property for subtitle text (displayed below title in header)
 -   **Translations**: Translation keys (containing dots) are automatically translated - use `'ui.pages.*'` format
 -   **Plain Strings**: Can also use plain strings if translation is not needed
@@ -930,7 +1121,7 @@ php artisan livewire:convert pages.example
 **Important**:
 
 -   **ALL full-page Livewire components MUST extend `App\Livewire\BasePageComponent`** (not `Livewire\Component`)
--   After creating a full-page component, update it to extend `BasePageComponent` and add `public string $pageTitle = 'ui.pages.example';` (use translation keys)
+-   After creating a full-page component, update it to extend `BasePageComponent` and add `public ?string $pageTitle = 'ui.pages.example';` (use translation keys)
 -   **Optional**: Add `public string $pageSubtitle = 'ui.pages.example.description';` for subtitle text (displayed below title in header)
 -   **Translations**: Use translation keys like `'ui.pages.dashboard'` - they are automatically translated
 -   **No `parent::mount()` needed** - title and subtitle sharing happens automatically via `boot()` lifecycle hook
@@ -1633,7 +1824,7 @@ If you see `Auth::guard('web')->logout()` causing an error:
     -   **SPA Navigation**: Full support for `wire:navigate` with automatic title updates via `View::share()` in component's `boot()` method
     -   **Seamless**: Uses `boot()` lifecycle hook - no need to call `parent::mount()`
     -   **Rule**: ALL full-page Livewire components MUST extend `BasePageComponent` (not `Livewire\Component`)
-    -   **Usage**: Set `public string $pageTitle = 'ui.pages.example';` property in components (use translation keys)
+    -   **Usage**: Set `public ?string $pageTitle = 'ui.pages.example';` property in components (use translation keys)
     -   **Translation Files**: Added `ui.pages.*` section to translation files (`lang/en_US/ui.php`, `lang/fr_FR/ui.php`)
     -   **Updated Components**: All existing Livewire page components now extend `BasePageComponent` and use translation keys
     -   **Documentation**: Updated `AGENTS.md` with BasePageComponent requirement, translation usage, and usage examples
