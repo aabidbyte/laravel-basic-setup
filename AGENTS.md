@@ -465,6 +465,114 @@ it('tests something', function () {
         -   ✅ `x-data="{ open: false }" x-show="open"` instead of manually toggling classes with JavaScript
         -   ✅ `x-ref="modal"` then `$refs.modal.showModal()` instead of `document.getElementById('modal').showModal()`
 
+### Asset Management (CSS/JS Structure)
+
+The application uses a modular CSS/JS structure to avoid duplication and optimize bundle sizes. Assets are organized using CSS imports (supported by Tailwind CSS v4) rather than separate Vite entry points.
+
+#### CSS File Structure
+
+**Base CSS** (`resources/css/base.css`):
+
+-   Contains all Tailwind CSS and DaisyUI configuration
+-   Includes theme setup, custom variants, and font configuration
+-   Shared foundation for all layouts
+
+**App CSS** (`resources/css/app.css`):
+
+-   Imports `base.css` + `sidebar.css`
+-   Used in authenticated app layout (with sidebar)
+-   Contains base styles + sidebar-specific styles
+
+**Auth CSS** (`resources/css/auth.css`):
+
+-   Imports only `base.css`
+-   Used in authentication layout (no sidebar)
+-   Contains only base styles (smaller bundle)
+
+**Sidebar CSS** (`resources/css/sidebar.css`):
+
+-   Contains only sidebar component styles
+-   No Tailwind imports (imported via `app.css`)
+-   Uses `@layer components` for component-specific styles
+
+#### JavaScript File Structure
+
+**App JS** (`resources/js/app.js`):
+
+-   Main application JavaScript
+-   Loaded in both app and auth layouts
+
+**Notification Center JS** (`resources/js/notification-center.js`):
+
+-   Real-time notification handling
+-   Alpine.js store and helpers for notifications
+-   Loaded only in app layout (not needed for auth pages)
+
+#### Asset Loading by Layout
+
+**App Layout** (`resources/views/partials/head.blade.php`):
+
+```blade
+@vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/notification-center.js'])
+```
+
+-   Loads: `app.css` (base + sidebar), `app.js`, `notification-center.js`
+
+**Auth Layout** (`resources/views/partials/auth/head.blade.php`):
+
+```blade
+@vite(['resources/css/auth.css', 'resources/js/app.js'])
+```
+
+-   Loads: `auth.css` (base only), `app.js`
+
+#### Vite Configuration
+
+Entry points in `vite.config.js`:
+
+-   `resources/css/app.css` - App layout styles
+-   `resources/css/auth.css` - Auth layout styles
+-   `resources/js/app.js` - Main JavaScript
+-   `resources/js/notification-center.js` - Notification handling
+
+#### Benefits
+
+-   **No CSS Duplication**: Base styles are shared via CSS imports, not duplicated
+-   **Smaller Bundle Sizes**: Auth pages don't load sidebar styles or notification JS
+-   **Maintainable**: Single source of truth for base styles in `base.css`
+-   **Optimized**: Tailwind CSS v4 automatically bundles `@import` statements
+
+#### Adding New CSS/JS Files
+
+**To add CSS that should load in both layouts:**
+
+1. Add styles to `base.css` or create a new file
+2. Import the new file in both `app.css` and `auth.css`
+
+**To add CSS that should load only in app layout:**
+
+1. Create a new CSS file (e.g., `resources/css/feature.css`)
+2. Import it in `app.css`: `@import "./feature.css";`
+3. No need to add it as a Vite entry point (imported via `app.css`)
+
+**To add CSS that should load only in auth layout:**
+
+1. Create a new CSS file (e.g., `resources/css/auth-feature.css`)
+2. Import it in `auth.css`: `@import "./auth-feature.css";`
+3. No need to add it as a Vite entry point (imported via `auth.css`)
+
+**To add JavaScript that should load in both layouts:**
+
+1. Add to `app.js` or create a new file
+2. Add as Vite entry point in `vite.config.js`
+3. Include in both head partials: `@vite([..., 'resources/js/new-file.js'])`
+
+**To add JavaScript that should load only in app layout:**
+
+1. Create a new JS file (e.g., `resources/js/feature.js`)
+2. Add as Vite entry point in `vite.config.js`
+3. Include only in app head partial: `@vite([..., 'resources/js/feature.js'])`
+
 ## Key Features
 
 ### Current Features
@@ -719,11 +827,11 @@ resources/views/
 
 -   Fluent builder for creating notifications
 -   **Default behavior**: Toast-only, success type, current user channel
--   Methods: `make()`, `title()`, `subtitle()`, `content()`, `html()`, `view()`, `success()`, `info()`, `warning()`, `error()`, `classic()`, `position()`, `animation()`, `persist()`, `toUser()`, `toTeam()`, `global()`, `link()`, `send()`
+-   Methods: `make()`, `title()`, `subtitle()`, `content()`, `html()`, `view()`, `success()`, `info()`, `warning()`, `error()`, `classic()`, `position()`, `animation()`, `persist()`, `toUser()`, `toTeam()`, `toUserTeams()`, `global()`, `link()`, `send()`
 -   **Title is required**: Must call `title()` before `send()`
 -   **Content support**: String, HTML (trusted), or Blade view via `view()`
 -   **Persistence**: Call `persist()` to save to database (creates DatabaseNotification records)
--   **Channels**: Defaults to current user, or use `toUser()`, `toTeam()`, `global()`
+-   **Channels**: Defaults to current user, or use `toUser()`, `toTeam()`, `toUserTeams()`, `global()`
 
 **ToastPayload** (`app/Services/Notifications/ToastPayload.php`):
 
@@ -774,6 +882,21 @@ NotificationBuilder::make()
     ->warning()
     ->send();
 
+// User teams notification (sends to all teams a user belongs to)
+NotificationBuilder::make()
+    ->title('Update for your teams')
+    ->persist()
+    ->toUserTeams() // Uses current authenticated user
+    ->info()
+    ->send();
+
+// User teams notification for specific user
+NotificationBuilder::make()
+    ->title('Welcome to all your teams')
+    ->toUserTeams($user)
+    ->success()
+    ->send();
+
 // Global notification
 NotificationBuilder::make()
     ->title('System maintenance')
@@ -796,6 +919,7 @@ NotificationBuilder::make()
 -   Alpine.js component that subscribes to Echo private channels
 -   Alpine store + helpers live in `resources/js/notification-center.js`
 -   Automatically included in authenticated app layout
+-   **Idempotent subscriptions**: Uses idempotent subscription logic to prevent duplicate subscriptions when components are re-initialized (e.g., during Livewire navigation)
 -   Features:
     -   Subscribes to user, team, and global channels
     -   Renders toasts using DaisyUI alert components
@@ -864,6 +988,7 @@ Channels are defined in `routes/channels.php`:
 
 -   **User channel** (`private-notifications.user.{userUuid}`): Authorized for matching user UUID
 -   **Team channel** (`private-notifications.team.{teamUuid}`): Authorized for team members
+-   **User teams channel**: When using `toUserTeams()`, broadcasts to each team channel the user belongs to (or falls back to user channel if user has no teams)
 -   **Global channel** (`private-notifications.global`): Authorized for any authenticated user
 
 ### Database Notification Refresh
@@ -879,6 +1004,7 @@ When `->persist()` is called:
 
 -   **User channel**: Creates single DatabaseNotification for target user
 -   **Team channel**: Creates DatabaseNotification for each team member
+-   **User teams channel**: Creates DatabaseNotification for each team member in each team the user belongs to (or single notification for user if no teams)
 -   **Global channel**: Creates DatabaseNotification for all users (batched inserts)
 
 Notifications are stored in Laravel's standard `notifications` table with:
@@ -1797,6 +1923,32 @@ If you see `Auth::guard('web')->logout()` causing an error:
 14. **Update this file** when adding new patterns, conventions, or features
 
 ## Changelog
+
+### 2025-01-XX
+
+-   **Notification System Improvements**:
+    -   **Fixed duplicate toast notifications**: Fixed issue where `toastCenter` component was creating duplicate subscriptions when re-initialized (e.g., during Livewire navigation). Changed from cleanup-based approach to idempotent subscription logic - component now checks if already subscribed and returns early instead of cleaning up and re-subscribing.
+    -   **Added `toUserTeams()` method**: New method in `NotificationBuilder` to send notifications to all teams a user belongs to. Broadcasts to each team channel separately, or falls back to user channel if user has no teams. Supports persistence for all team members in each team.
+    -   **Updated documentation**: Added `toUserTeams()` usage examples and updated broadcasting channels section in `docs/notifications.md` and `AGENTS.md`.
+
+### 2025-01-XX
+
+-   **Asset Management Optimization**: Refactored CSS/JS structure to avoid duplication and optimize bundle sizes
+    -   **Created Base CSS**: Created `resources/css/base.css` containing all Tailwind/DaisyUI configuration (shared foundation)
+    -   **Modular CSS Structure**:
+        -   `app.css` imports `base.css` + `sidebar.css` (for authenticated app layout)
+        -   `auth.css` imports only `base.css` (for authentication layout, smaller bundle)
+        -   `sidebar.css` contains only component styles (no Tailwind imports)
+    -   **Conditional Asset Loading**:
+        -   App layout loads: `app.css`, `app.js`, `notification-center.js`
+        -   Auth layout loads: `auth.css`, `app.js` (no sidebar styles or notification JS)
+    -   **Benefits**:
+        -   No CSS duplication (base styles shared via CSS imports)
+        -   Smaller bundle sizes (auth pages don't load unnecessary assets)
+        -   Maintainable (single source of truth for base styles)
+        -   Uses Tailwind CSS v4's automatic `@import` bundling
+    -   **Vite Configuration**: Updated entry points to `app.css`, `auth.css`, `app.js`, `notification-center.js`
+    -   **Documentation**: Added comprehensive Asset Management section to `AGENTS.md` with file structure, loading patterns, and guidelines for adding new assets
 
 ### 2025-12-19
 

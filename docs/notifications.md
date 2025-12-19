@@ -126,6 +126,17 @@ NotificationBuilder::make()
     ->send(); // Sent to current user
 ```
 
+### Specific User Channel
+
+Send notifications to a specific user:
+
+```php
+NotificationBuilder::make()
+    ->title('Direct Message')
+    ->toUser($userUuid)
+    ->send();
+```
+
 ### Team Channel
 
 Send notifications to all members of a team:
@@ -137,6 +148,26 @@ NotificationBuilder::make()
     ->send();
 ```
 
+### User Teams Channel
+
+Send notifications to all teams that a user belongs to. This broadcasts to each team channel the user is a member of. If the user has no teams, it falls back to the user's personal channel:
+
+```php
+// Send to all teams of the current authenticated user
+NotificationBuilder::make()
+    ->title('Update for Your Teams')
+    ->toUserTeams()
+    ->send();
+
+// Send to all teams of a specific user
+NotificationBuilder::make()
+    ->title('Update for Your Teams')
+    ->toUserTeams($user)
+    ->send();
+```
+
+**Note**: When using `toUserTeams()`, the notification is broadcast to each team channel separately. If persistence is enabled, the notification is persisted for each team member in each team.
+
 ### Global Channel
 
 Send notifications to all authenticated users:
@@ -144,18 +175,7 @@ Send notifications to all authenticated users:
 ```php
 NotificationBuilder::make()
     ->title('System Maintenance')
-    ->toGlobal()
-    ->send();
-```
-
-### Specific User Channel
-
-Send notifications to a specific user:
-
-```php
-NotificationBuilder::make()
-    ->title('Direct Message')
-    ->toUser($userUuid)
+    ->global()
     ->send();
 ```
 
@@ -288,6 +308,31 @@ NotificationBuilder::make()
     ->send();
 ```
 
+### User Teams Notification
+
+Send a notification to all teams a user belongs to:
+
+```php
+// Notify all teams of the current user about a project update
+NotificationBuilder::make()
+    ->title('Project Update')
+    ->subtitle('New milestone reached')
+    ->content('The project has reached a new milestone. Check it out!')
+    ->success()
+    ->persist()
+    ->toUserTeams() // Sends to all teams of current user
+    ->link(route('projects.show', $project))
+    ->send();
+
+// Notify all teams of a specific user
+NotificationBuilder::make()
+    ->title('Welcome to All Your Teams')
+    ->subtitle('You have been added to multiple teams')
+    ->info()
+    ->toUserTeams($user)
+    ->send();
+```
+
 ### Error Notification
 
 ```php
@@ -338,7 +383,7 @@ The toast center uses:
 
 -   **Alpine.js** for UI reactivity and transitions
 -   **Laravel Echo** for WebSocket subscriptions
--   **Singleton pattern** for subscription management to prevent duplicate subscriptions
+-   **Idempotent subscriptions**: The toast center uses idempotent subscription logic to prevent duplicate subscriptions when components are re-initialized (e.g., during Livewire navigation)
 -   **Server-rendered icons**: Icons are rendered server-side and included in the toast payload as HTML, avoiding client-side binding issues
 
 ### Icon Rendering Architecture
