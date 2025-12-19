@@ -199,6 +199,9 @@ return [
             'title' => 'Notifications',
         ],
         'mark_all_read' => 'Mark all as read',
+        'clear_all' => 'Clear all notifications',
+        'see_previous' => 'See previous notifications',
+        'delete' => 'Delete',
         'view' => 'View',
         'view_all' => 'View all notifications',
         'unread' => 'Unread',
@@ -208,5 +211,13 @@ return [
     // Common UI Elements
     'common' => [
         'saved' => 'Saved.',
+    ],
+
+    // Modals
+    'modals' => [
+        'confirm' => [
+            'title' => 'Confirm Action',
+            'message' => 'Are you sure you want to proceed?',
+        ],
     ],
 ];

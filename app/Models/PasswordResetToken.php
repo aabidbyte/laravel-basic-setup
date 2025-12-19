@@ -2,10 +2,23 @@
 
 namespace App\Models;
 
-use App\Models\Base\BaseModel;
+use App\Models\Concerns\HasUuid;
+use Illuminate\Database\Eloquent\Model;
 
-class PasswordResetToken extends BaseModel
+/**
+ * Password reset token model.
+ *
+ * This model does NOT use soft deletes as password reset tokens
+ * are temporary and should be hard deleted when expired or used.
+ *
+ * This model extends Model directly (not BaseModel) to avoid
+ * inheriting the SoftDeletes trait, but still includes HasUuid
+ * for UUID support.
+ */
+class PasswordResetToken extends Model
 {
+    use HasUuid;
+
     /**
      * The table associated with the model.
      *

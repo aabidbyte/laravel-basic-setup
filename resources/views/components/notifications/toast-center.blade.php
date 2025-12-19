@@ -1,12 +1,6 @@
 @auth
-    @php
-        $user = \Illuminate\Support\Facades\Auth::user();
-        $userUuid = $user->uuid ?? null;
-        $teamUuids = $user->teams()->pluck('teams.uuid')->toArray();
-    @endphp
-
     @push('endBody')
-        <div x-data="toastCenter(@js($userUuid), @js($teamUuids))" x-init="init()" aria-live="assertive"
+        <div x-data="toastCenter()" x-init="init()" aria-live="assertive"
             class="pointer-events-none fixed inset-0 flex items-end px-4 py-6 sm:items-start sm:p-6 z-[9999]">
             <div class="flex w-full flex-col items-center space-y-4 sm:items-end">
                 <template x-for="(toast, index) in toasts" :key="toast.id">
@@ -16,7 +10,7 @@
                             <div class="flex items-start">
                                 <div class="shrink-0">
                                     <div :class="getIconClasses(toast.type)">
-                                        <x-ui.icon x-bind:name="toast.iconName" class="h-6 w-6" />
+                                        <div x-html="toast.iconHtml || getIconSvg(toast.iconName)"></div>
                                     </div>
                                 </div>
                                 <div class="ml-3 w-0 flex-1 pt-0.5">

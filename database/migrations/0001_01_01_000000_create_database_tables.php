@@ -33,6 +33,7 @@ return new class extends Migration
             $table->json('frontend_preferences')->nullable();
             $table->rememberToken();
             $table->timestamps();
+            $table->softDeletes();
         });
 
         // Password reset tokens
@@ -62,6 +63,7 @@ return new class extends Migration
             $table->uuid('uuid')->unique()->index();
             $table->string('name');
             $table->timestamps();
+            $table->softDeletes();
         });
 
         // Team user pivot table
@@ -83,6 +85,7 @@ return new class extends Migration
             $table->text('data');
             $table->timestamp('read_at')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
 
         // Permission tables
@@ -101,6 +104,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('guard_name');
             $table->timestamps();
+            $table->softDeletes();
 
             $table->unique(['name', 'guard_name']);
         });
@@ -115,6 +119,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('guard_name');
             $table->timestamps();
+            $table->softDeletes();
             if ($teams || config('permission.testing')) {
                 $table->unique([$columnNames['team_foreign_key'], 'name', 'guard_name']);
             } else {

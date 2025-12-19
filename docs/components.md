@@ -5,8 +5,10 @@ This document provides comprehensive documentation for all reusable UI component
 ## Table of Contents
 
 -   [Modal](#modal)
+-   [Confirm Modal](#confirm-modal)
 -   [Button](#button)
 -   [Input](#input)
+-   [Password](#password)
 -   [Form](#form)
 -   [Icon](#icon)
 -   [Dropdown](#dropdown)
@@ -186,6 +188,153 @@ The `autoOpen` prop uses Alpine.js `x-init` to automatically open the modal when
 
 ---
 
+## Confirm Modal
+
+**Location:** `resources/views/components/ui/confirm-modal.blade.php`
+
+**Component Name:** `<x-ui.confirm-modal>`
+
+### Description
+
+A reusable confirmation modal component that provides a consistent way to handle user confirmations throughout the application. Uses Alpine.js for state management and can be triggered via Alpine.js events. Supports custom titles, messages, button labels, and callback functions for Livewire actions.
+
+### Props
+
+| Prop             | Type     | Default           | Description                                                                    |
+| ---------------- | -------- | ----------------- | ------------------------------------------------------------------------------ |
+| `id`             | `string` | `'confirm-modal'` | Unique ID for the modal (defaults to 'confirm-modal' for global usage)         |
+| `confirmVariant` | `string` | `'error'`         | Button variant for the confirm button (uses `<x-ui.button>` variants)          |
+| `cancelVariant`  | `string` | `'ghost'`         | Button variant for the cancel button (uses `<x-ui.button>` variants)           |
+| `maxWidth`       | `string` | `'md'`            | Maximum width of the modal (DaisyUI sizes: `xs`, `sm`, `md`, `lg`, `xl`, etc.) |
+| `placement`      | `string` | `'middle'`        | Modal placement: `top`, `middle`, `bottom`, `start`, `end`                     |
+
+### Usage Examples
+
+#### Basic Confirmation (Livewire)
+
+```blade
+{{-- Include the modal once in your layout --}}
+<x-ui.confirm-modal />
+
+{{-- Trigger from a button --}}
+<button @click="$dispatch('confirm-modal', {
+    title: 'Delete Item',
+    message: 'Are you sure you want to delete this item?',
+    confirmAction: () => $wire.delete(123)
+})" class="btn btn-error">
+    Delete
+</button>
+```
+
+#### Confirmation with Custom Labels
+
+```blade
+<button @click="$dispatch('confirm-modal', {
+    title: 'Clear All',
+    message: 'This will permanently delete all items.',
+    confirmLabel: 'Yes, Clear All',
+    cancelLabel: 'Cancel',
+    confirmAction: () => $wire.clearAll()
+})" class="btn btn-error">
+    Clear All
+</button>
+```
+
+#### Confirmation with Custom Message
+
+```blade
+<button @click="$dispatch('confirm-modal', {
+    title: 'Confirm Action',
+    message: 'This action cannot be undone. Are you absolutely sure?',
+    confirmAction: () => $wire.performAction()
+})" class="btn btn-warning">
+    Perform Action
+</button>
+```
+
+#### Confirmation with JavaScript Callback
+
+```blade
+<button @click="$dispatch('confirm-modal', {
+    title: 'Save Changes',
+    message: 'Do you want to save your changes?',
+    confirmAction: () => {
+        // Custom JavaScript code
+        console.log('Changes saved');
+        // Or call a function
+        saveChanges();
+    }
+})" class="btn btn-primary">
+    Save
+</button>
+```
+
+### Configuration Object
+
+When dispatching the `confirm-modal` event, you can pass a configuration object with the following properties:
+
+| Property        | Type       | Default                 | Description                                                        |
+| --------------- | ---------- | ----------------------- | ------------------------------------------------------------------ |
+| `title`         | `string`   | Translation key default | Title displayed in the modal header                                |
+| `message`       | `string`   | Translation key default | Message displayed in the modal body                                |
+| `confirmLabel`  | `string`   | Translation key default | Label for the confirm button                                       |
+| `cancelLabel`   | `string`   | Translation key default | Label for the cancel button                                        |
+| `confirmAction` | `function` | `null`                  | Callback function to execute when confirmed (required for actions) |
+
+### Implementation Details
+
+-   Uses Alpine.js for state management and event handling
+-   Listens for `confirm-modal` Alpine.js events
+-   Supports callback functions for both Livewire actions and custom JavaScript
+-   Uses the existing `<x-ui.modal>` structure with HTML `<dialog>` element
+-   Automatically closes after confirmation or cancellation
+-   Includes proper event propagation handling (`@click.stop` for nested buttons)
+-   Uses translation keys for default labels (can be overridden)
+
+### Translation Keys
+
+The component uses the following translation keys (can be overridden via config object):
+
+-   `ui.modals.confirm.title` - Default title ("Confirm Action")
+-   `ui.modals.confirm.message` - Default message ("Are you sure you want to proceed?")
+-   `ui.actions.confirm` - Confirm button label ("Confirm")
+-   `ui.actions.cancel` - Cancel button label ("Cancel")
+
+### Current Usage in Project
+
+1. **Notification Center** (`resources/views/pages/notifications/⚡index.blade.php`)
+    - Delete individual notifications
+    - Clear all notifications
+    - Uses Livewire actions via callback functions
+
+### Best Practices
+
+1. **Include Once:** Include `<x-ui.confirm-modal />` once in your app layout (already included in `app.blade.php`)
+2. **Use Callbacks:** Always provide a `confirmAction` callback function for Livewire actions
+3. **Event Propagation:** Use `@click.stop` when triggering from nested elements to prevent event bubbling
+4. **Custom Messages:** Provide clear, descriptive messages for destructive actions
+5. **Button Variants:** Use `error` variant for destructive actions, `primary` for regular confirmations
+
+### Example: Full Implementation
+
+```blade
+{{-- In your layout (already included in app.blade.php) --}}
+<x-ui.confirm-modal />
+
+{{-- In your component --}}
+<div>
+    <button @click="$dispatch('confirm-modal', {
+        title: 'Delete Notification',
+        message: 'This notification will be permanently deleted.',
+        confirmAction: () => $wire.delete('{{ $notification->id }}')
+    })" class="btn btn-sm btn-ghost btn-error">
+        <x-ui.icon name="trash" class="h-4 w-4" />
+    </button>
+</div>
+```
+
+---
+
 ## Button
 
 **Location:** `resources/views/components/ui/button.blade.php`
@@ -194,15 +343,17 @@ The `autoOpen` prop uses Alpine.js `x-init` to automatically open the modal when
 
 ### Description
 
-A centralized button component that provides consistent styling using DaisyUI button classes.
+A centralized button component that provides consistent styling using DaisyUI button classes. Supports combining style variants (solid, outline, ghost, etc.) with colors (primary, error, success, etc.) for flexible button styling.
 
 ### Props
 
-| Prop      | Type     | Default     | Description                                                                                                                    |
-| --------- | -------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `variant` | `string` | `'primary'` | Button variant: `primary`, `secondary`, `accent`, `neutral`, `ghost`, `link`, `outline`, `error`, `success`, `warning`, `info` |
-| `size`    | `string` | `'md'`      | Button size: `xs`, `sm`, `md`, `lg`, `xl`                                                                                      |
-| `type`    | `string` | `'button'`  | HTML button type: `button`, `submit`, `reset`                                                                                  |
+| Prop      | Type     | Default     | Description                                                                                      |
+| --------- | -------- | ----------- | ------------------------------------------------------------------------------------------------ |
+| `style`   | `string` | `'solid'`   | Button style: `solid`, `outline`, `ghost`, `link`, `soft`, `dash`                                |
+| `color`   | `string` | `'primary'` | Button color: `primary`, `secondary`, `accent`, `neutral`, `info`, `success`, `warning`, `error` |
+| `variant` | `string` | `null`      | **Deprecated**: Use `style` and `color` instead. Legacy prop for backward compatibility.         |
+| `size`    | `string` | `'md'`      | Button size: `xs`, `sm`, `md`, `lg`, `xl`                                                        |
+| `type`    | `string` | `null`      | HTML button type: `button`, `submit`, `reset` (defaults to `button` if not specified)            |
 
 ### Usage Examples
 
@@ -212,15 +363,38 @@ A centralized button component that provides consistent styling using DaisyUI bu
 <x-ui.button>Click Me</x-ui.button>
 ```
 
-#### Button Variants
+#### Button Styles and Colors
 
 ```blade
-<x-ui.button variant="primary">Primary</x-ui.button>
-<x-ui.button variant="secondary">Secondary</x-ui.button>
-<x-ui.button variant="error">Delete</x-ui.button>
-<x-ui.button variant="success">Save</x-ui.button>
-<x-ui.button variant="outline">Outline</x-ui.button>
-<x-ui.button variant="ghost">Ghost</x-ui.button>
+{{-- Solid buttons (default style) --}}
+<x-ui.button color="primary">Primary</x-ui.button>
+<x-ui.button color="secondary">Secondary</x-ui.button>
+<x-ui.button color="error">Delete</x-ui.button>
+<x-ui.button color="success">Save</x-ui.button>
+
+{{-- Outline buttons --}}
+<x-ui.button style="outline" color="primary">Outline Primary</x-ui.button>
+<x-ui.button style="outline" color="error">Outline Error</x-ui.button>
+
+{{-- Ghost buttons --}}
+<x-ui.button style="ghost" color="primary">Ghost Primary</x-ui.button>
+<x-ui.button style="ghost" color="error">Ghost Error</x-ui.button>
+
+{{-- Link buttons --}}
+<x-ui.button style="link" color="primary">Link Button</x-ui.button>
+```
+
+#### Combining Style and Color
+
+```blade
+{{-- Ghost button with error color (btn-ghost btn-error) --}}
+<x-ui.button style="ghost" color="error">Delete</x-ui.button>
+
+{{-- Outline button with success color (btn-outline btn-success) --}}
+<x-ui.button style="outline" color="success">Save</x-ui.button>
+
+{{-- Soft button with warning color (btn-soft btn-warning) --}}
+<x-ui.button style="soft" color="warning">Warning</x-ui.button>
 ```
 
 #### Button Sizes
@@ -236,29 +410,47 @@ A centralized button component that provides consistent styling using DaisyUI bu
 #### Submit Button
 
 ```blade
-<x-ui.button type="submit" variant="primary">Submit Form</x-ui.button>
+<x-ui.button type="submit" color="primary">Submit Form</x-ui.button>
 ```
 
 #### Button with Livewire
 
 ```blade
-<x-ui.button wire:click="save" variant="primary">Save</x-ui.button>
+<x-ui.button wire:click="save" color="primary">Save</x-ui.button>
 ```
 
 #### Button with Additional Attributes
 
 ```blade
-<x-ui.button variant="error" class="w-full" data-test="delete-button">
+<x-ui.button style="ghost" color="error" class="w-full" data-test="delete-button">
     Delete
 </x-ui.button>
 ```
 
+#### Backward Compatibility (Deprecated)
+
+The `variant` prop is still supported for backward compatibility but is deprecated. It maps to appropriate `style` and `color` combinations:
+
+```blade
+{{-- Old way (still works) --}}
+<x-ui.button variant="primary">Primary</x-ui.button>
+<x-ui.button variant="ghost">Ghost</x-ui.button>
+<x-ui.button variant="error">Error</x-ui.button>
+
+{{-- New way (recommended) --}}
+<x-ui.button color="primary">Primary</x-ui.button>
+<x-ui.button style="ghost" color="primary">Ghost</x-ui.button>
+<x-ui.button color="error">Error</x-ui.button>
+```
+
 ### Implementation Details
 
--   Maps variants to DaisyUI button classes (`btn-primary`, `btn-error`, etc.)
+-   Separates style variants (`btn-outline`, `btn-ghost`, etc.) from colors (`btn-primary`, `btn-error`, etc.)
+-   Allows combining style and color for flexible button styling (e.g., `btn-ghost btn-error`)
 -   Maps sizes to DaisyUI size classes (`btn-xs`, `btn-sm`, etc.)
 -   Merges additional attributes (like `wire:click`, `class`, `data-*`) using Laravel's attribute merging
--   Defaults to `btn-primary` if variant is not recognized
+-   Defaults to `btn-primary` (solid primary) if no style/color is specified
+-   Maintains backward compatibility with the deprecated `variant` prop
 
 ---
 
@@ -356,6 +548,121 @@ The component automatically detects errors from Laravel's `$errors` bag based on
 -   Uses DaisyUI form control and label classes
 -   Supports all HTML input types and attributes
 -   Supports `label-append` slot for additional label content
+
+---
+
+## Password
+
+**Location:** `resources/views/components/ui/password.blade.php`
+
+**Component Name:** `<x-ui.password>`
+
+### Description
+
+A specialized password input component with built-in show/hide toggle functionality. Includes an eye icon button that toggles password visibility. Uses Alpine.js for state management and follows the same patterns as the input component.
+
+### Props
+
+| Prop       | Type           | Default | Description                                                             |
+| ---------- | -------------- | ------- | ----------------------------------------------------------------------- |
+| `label`    | `string\|null` | `null`  | Optional label text displayed above the input                           |
+| `error`    | `string\|null` | `null`  | Optional error message to display (overrides automatic error detection) |
+| `required` | `bool`         | `false` | Whether to show a red asterisk (\*) indicating the field is required    |
+
+### Additional Attributes
+
+All standard HTML input attributes are supported (e.g., `name`, `id`, `placeholder`, `wire:model`, etc.). The `type` attribute is automatically set to `password` and should not be overridden.
+
+### Usage Examples
+
+#### Basic Password Input
+
+```blade
+<x-ui.password name="password" label="Password" />
+```
+
+#### Required Password Input
+
+```blade
+<x-ui.password name="password" label="Password" :required="true" />
+```
+
+#### Password Input with Livewire
+
+```blade
+<x-ui.password wire:model="password" name="password" label="Password" />
+```
+
+#### Password Input with Manual Error
+
+```blade
+<x-ui.password name="password" label="Password" error="Password is required" />
+```
+
+#### Password Input with Automatic Error Detection
+
+The component automatically detects errors from Laravel's `$errors` bag based on the input's `name` attribute:
+
+```blade
+{{-- If validation fails for 'password' field, error will be shown automatically --}}
+<x-ui.password name="password" label="Password" />
+```
+
+#### Password Input with Label Append (e.g., Forgot Password Link)
+
+```blade
+<x-ui.password name="password" label="Password">
+    <x-slot:label-append>
+        <a href="{{ route('password.request') }}" class="label-text-alt link">
+            Forgot password?
+        </a>
+    </x-slot:label-append>
+</x-ui.password>
+```
+
+#### Password Confirmation
+
+```blade
+<x-ui.password name="password" label="Password" />
+<x-ui.password name="password_confirmation" label="Confirm Password" />
+```
+
+### Slots
+
+-   **Default slot:** Not used (input is self-closing)
+-   **`label-append` slot:** Optional content to display on the right side of the label (e.g., "Forgot password?" link)
+
+### Implementation Details
+
+-   Uses Alpine.js for show/hide toggle functionality (`x-data`, `x-bind:type`, `x-show`)
+-   Automatically generates a unique ID if not provided
+-   Automatically detects validation errors from Laravel's `$errors` bag
+-   Applies `input-error` class when errors are present
+-   Uses DaisyUI form control and label classes
+-   Icon button positioned absolutely on the right side of the input
+-   Eye icon (`eye`) shown when password is hidden
+-   Eye-slash icon (`eye-slash`) shown when password is visible
+-   Icon button includes proper ARIA labels for accessibility
+-   Supports all HTML input attributes except `type` (automatically set to `password`)
+-   Supports `label-append` slot for additional label content
+-   Input has `pr-10` padding to accommodate the icon button
+
+### Accessibility
+
+-   Icon button includes `aria-label` that changes based on visibility state
+-   Icon button is keyboard accessible (tabindex="0")
+-   Uses semantic HTML structure
+-   Icons use `x-cloak` to prevent flash of unstyled content
+
+### Current Usage in Project
+
+The password component can be used anywhere a password input is needed, including:
+
+-   Login forms
+-   Registration forms
+-   Password reset forms
+-   Password update forms
+-   Any form requiring password input
 
 ---
 
@@ -532,6 +839,34 @@ A dynamic icon component that provides secure, flexible icon rendering using Bla
 </a>
 ```
 
+### Icon Search Rules
+
+When searching for an icon name, follow these steps:
+
+1. **First, fetch and parse:**
+
+    ```
+    https://raw.githubusercontent.com/iconify/icon-sets/master/collections.json
+    ```
+
+    to identify the correct `collection_id`.
+
+2. **Then, fetch and parse:**
+    ```
+    https://raw.githubusercontent.com/iconify/icon-sets/master/json/{collection_id}.json
+    ```
+    to search for the requested icon.
+
+**Rules:**
+
+-   Use ONLY the above references.
+-   Never guess icon names or collection IDs.
+-   Search ONLY inside the `icons` object keys.
+-   Matching must be case-insensitive.
+-   Prefer exact matches, then partial matches.
+-   If the icon does not exist in the reference, say it does not exist.
+-   Do NOT rely on training data or prior knowledge for icon names.
+
 ### Implementation Details
 
 -   Uses Blade Icons for icon rendering (supports multiple icon packs)
@@ -676,6 +1011,21 @@ A centralized, flexible dropdown component that provides consistent dropdown fun
 </x-ui.dropdown>
 ```
 
+### Alpine.js Integration
+
+The dropdown component supports Alpine.js `x-bind:class` for reactive class management. This allows dynamic classes to be applied based on Alpine state:
+
+```blade
+<x-ui.dropdown x-bind:class="{ 'dropdown-open': isOpen }" menu>
+    <x-slot:trigger>
+        <button @click="isOpen = true">Open</button>
+    </x-slot:trigger>
+    <li><a>Item</a></li>
+</x-ui.dropdown>
+```
+
+The component uses `$attributes->merge(['class' => $dropdownClasses])` to properly merge static classes with Alpine-bound classes.
+
 ### Implementation Details
 
 -   Uses CSS focus pattern by default (better accessibility than Alpine.js pattern)
@@ -685,6 +1035,7 @@ A centralized, flexible dropdown component that provides consistent dropdown fun
 -   Includes proper ARIA attributes for accessibility
 -   Supports keyboard navigation (Tab, Enter, Escape)
 -   Auto-generates unique IDs if not provided
+-   **Alpine.js Support**: Properly merges Alpine.js `x-bind:class` with static classes using `$attributes->merge()`
 
 ### Current Usage in Project
 
@@ -882,8 +1233,10 @@ When migrating existing custom implementations to centralized components:
 ### UI Components (`resources/views/components/ui/`)
 
 -   **Modal** (`modal.blade.php`) - Dialog modals using HTML `<dialog>` element
+-   **Confirm Modal** (`confirm-modal.blade.php`) - Reusable confirmation modal with Alpine.js event handling
 -   **Button** (`button.blade.php`) - Styled buttons with variants and sizes
 -   **Input** (`input.blade.php`) - Form inputs with labels and error handling
+-   **Password** (`password.blade.php`) - Password input with show/hide toggle functionality
 -   **Form** (`form.blade.php`) - Form wrapper with automatic CSRF and method spoofing
 -   **Icon** (`icon.blade.php`) - Dynamic icon component with multiple icon pack support and security validation
 -   **Dropdown** (`dropdown.blade.php`) - Flexible dropdown component with CSS focus pattern, multiple placements, and menu support
@@ -904,6 +1257,18 @@ When migrating existing custom implementations to centralized components:
 
 ### 2025-01-XX
 
+-   **Confirm Modal Component:** Created reusable confirmation modal component
+    -   **New Component**: Created `<x-ui.confirm-modal>` component for consistent confirmation dialogs
+    -   **Alpine.js Integration**: Uses Alpine.js events (`confirm-modal`) for triggering confirmations
+    -   **Livewire Support**: Supports Livewire actions via callback functions
+    -   **Customizable**: Supports custom titles, messages, and button labels
+    -   **Global Usage**: Included in app layout for global availability
+    -   **Translation Support**: Uses translation keys with override capability
+    -   **Migration**: Replaced browser `confirm()` dialogs in notification center with modal component
+    -   **Documentation**: Added comprehensive documentation with usage examples
+
+### 2025-01-XX
+
 -   **Badge Component:** Created centralized badge component for consistent badge functionality
     -   **New Component**: Created `<x-ui.badge>` component with support for all DaisyUI badge variants
     -   **Style Support**: Supports outline, dash, soft, and ghost styles
@@ -912,6 +1277,14 @@ When migrating existing custom implementations to centralized components:
     -   **Migration**: Migrated two-factor settings page and navigation items to use new badge component
     -   **Flexibility**: Supports empty badges for dot indicators and custom classes
     -   **Documentation**: Added comprehensive documentation with usage examples
+
+### 2025-12-19
+
+-   **Dropdown Component:** Enhanced dropdown component with Alpine.js class binding support
+    -   **Alpine.js Integration**: Added support for `x-bind:class` to enable reactive class management
+    -   **Class Merging**: Updated component to use `$attributes->merge(['class' => $dropdownClasses, 'id' => $dropdownId])` to properly merge static classes with Alpine-bound classes
+    -   **State Management**: Enables use cases like conditionally applying `dropdown-open` class based on Alpine state
+    -   **Usage Example**: Notification dropdown uses this feature to maintain open state during Livewire updates via `x-bind:class="{ 'dropdown-open': isOpen }"`
 
 ### 2025-01-XX
 
@@ -950,4 +1323,4 @@ When migrating existing custom implementations to centralized components:
 
 ---
 
-**Last Updated:** 2025-01-XX
+**Last Updated:** 2025-12-19

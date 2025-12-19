@@ -7,8 +7,7 @@
         <form method="POST" action="{{ route('password.confirm.store') }}" class="flex flex-col gap-6">
             @csrf
 
-            <x-ui.input type="password" name="password" :label="__('ui.auth.confirm_password.password_label')" required autocomplete="current-password"
-                :placeholder="__('ui.auth.confirm_password.password_placeholder')" />
+            <x-ui.password name="password" :label="__('ui.auth.confirm_password.password_label')" required autocomplete="current-password" :placeholder="__('ui.auth.confirm_password.password_placeholder')" />
 
             <x-ui.button type="submit" variant="primary" class="w-full" data-test="confirm-password-button">
                 {{ __('ui.actions.confirm') }}

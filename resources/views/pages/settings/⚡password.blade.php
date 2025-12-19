@@ -48,14 +48,13 @@ new class extends BasePageComponent {
 <section class="w-full">
     <x-settings.layout>
         <x-ui.form method="POST" wire:submit="updatePassword">
-            <x-ui.input type="password" wire:model="current_password" name="current_password" :label="__('ui.settings.password.current_password_label')" required
+            <x-ui.password wire:model="current_password" name="current_password" :label="__('ui.settings.password.current_password_label')" required
                 autocomplete="current-password" />
 
-            <x-ui.input type="password" wire:model="password" name="password" :label="__('ui.settings.password.new_password_label')" required
-                autocomplete="new-password" />
+            <x-ui.password wire:model="password" name="password" :label="__('ui.settings.password.new_password_label')" required autocomplete="new-password" />
 
-            <x-ui.input type="password" wire:model="password_confirmation" name="password_confirmation"
-                :label="__('ui.settings.password.confirm_password_label')" required autocomplete="new-password" />
+            <x-ui.password wire:model="password_confirmation" name="password_confirmation" :label="__('ui.settings.password.confirm_password_label')" required
+                autocomplete="new-password" />
 
             <div class="flex items-center gap-4">
                 <x-ui.button type="submit" variant="primary" class="w-full" data-test="update-password-button">

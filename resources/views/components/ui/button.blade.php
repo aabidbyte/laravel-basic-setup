@@ -1,22 +1,55 @@
 @props([
-    'variant' => 'primary',
+    'variant' => null, // Deprecated: use 'style' and 'color' instead
+    'style' => null, // 'solid', 'outline', 'ghost', 'link', 'soft', 'dash'
+    'color' => 'primary', // 'primary', 'secondary', 'accent', 'neutral', 'info', 'success', 'warning', 'error'
     'size' => 'md',
     'type' => null,
 ])
 
 @php
-    $variantClasses = [
+    // Backward compatibility: if variant is set, map it to style/color
+    if ($variant !== null) {
+        $variantMap = [
+            'primary' => ['style' => 'solid', 'color' => 'primary'],
+            'secondary' => ['style' => 'solid', 'color' => 'secondary'],
+            'accent' => ['style' => 'solid', 'color' => 'accent'],
+            'neutral' => ['style' => 'solid', 'color' => 'neutral'],
+            'ghost' => ['style' => 'ghost', 'color' => 'primary'],
+            'link' => ['style' => 'link', 'color' => 'primary'],
+            'outline' => ['style' => 'outline', 'color' => 'primary'],
+            'error' => ['style' => 'solid', 'color' => 'error'],
+            'success' => ['style' => 'solid', 'color' => 'success'],
+            'warning' => ['style' => 'solid', 'color' => 'warning'],
+            'info' => ['style' => 'solid', 'color' => 'info'],
+        ];
+
+        if (isset($variantMap[$variant])) {
+            $style = $style ?? $variantMap[$variant]['style'];
+            $color = $color ?? $variantMap[$variant]['color'];
+        }
+    }
+
+    // Default style to 'solid' if not set
+    $style = $style ?? 'solid';
+
+    $styleClasses = [
+        'solid' => '',
+        'outline' => 'btn-outline',
+        'ghost' => 'btn-ghost',
+        'link' => 'btn-link',
+        'soft' => 'btn-soft',
+        'dash' => 'btn-dash',
+    ];
+
+    $colorClasses = [
         'primary' => 'btn-primary',
         'secondary' => 'btn-secondary',
         'accent' => 'btn-accent',
         'neutral' => 'btn-neutral',
-        'ghost' => 'btn-ghost',
-        'link' => 'btn-link',
-        'outline' => 'btn-outline',
-        'error' => 'btn-error',
+        'info' => 'btn-info',
         'success' => 'btn-success',
         'warning' => 'btn-warning',
-        'info' => 'btn-info',
+        'error' => 'btn-error',
     ];
 
     $sizeClasses = [
@@ -27,9 +60,14 @@
         'xl' => 'btn-xl',
     ];
 
-    $classes = 'btn ' . ($variantClasses[$variant] ?? $variantClasses['primary']) . ' ' . ($sizeClasses[$size] ?? '');
+    $styleClass = $styleClasses[$style] ?? '';
+    $colorClass = $colorClasses[$color] ?? $colorClasses['primary'];
+    $sizeClass = $sizeClasses[$size] ?? '';
+
+    $classes = trim("btn {$styleClass} {$colorClass} {$sizeClass}");
 @endphp
 
-<button type="{{ $type }}" {{ $attributes->merge(['class' => $classes])->except(['variant', 'size', 'type']) }}>
+<button type="{{ $type }}"
+    {{ $attributes->merge(['class' => $classes])->except(['variant', 'style', 'color', 'size', 'type']) }}>
     {{ $slot }}
 </button>

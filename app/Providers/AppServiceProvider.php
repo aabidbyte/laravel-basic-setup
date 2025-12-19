@@ -5,8 +5,10 @@ namespace App\Providers;
 use App\Auth\PasswordBrokerManager;
 use App\Http\Middleware\TeamsPermission;
 use App\Listeners\SyncUserPreferencesOnLogin;
+use App\Observers\DatabaseNotificationObserver;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Foundation\Http\Kernel;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
@@ -45,5 +47,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Register event listeners
         Event::listen(Login::class, SyncUserPreferencesOnLogin::class);
+
+        DatabaseNotification::observe(DatabaseNotificationObserver::class);
     }
 }

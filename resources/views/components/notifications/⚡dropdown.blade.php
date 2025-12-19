@@ -4,10 +4,20 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 new class extends Component {
+    public function refreshNotifications(): void
+    {
+        $this->dispatch('$refresh');
+    }
+
     public function getNotificationsProperty(): \Illuminate\Database\Eloquent\Collection
     {
+        $user = Auth::user();
+        if (!$user) {
+            return collect();
+        }
+
         // Get all notifications and sort: unread first, then by created_at desc
-        return Auth::user()
+        return $user
             ->notifications()
             ->latest()
             ->get()
@@ -73,7 +83,18 @@ new class extends Component {
 
     public function getUnreadCountProperty(): int
     {
-        return Auth::user()->unreadNotifications->count();
+        $user = Auth::user();
+        if (!$user) {
+            return 0;
+        }
+
+        return $user->unreadNotifications->count();
+    }
+
+    public function getUnreadBadgeProperty(): string
+    {
+        $count = $this->unreadCount;
+        return $count > 99 ? '99+' : (string) $count;
     }
 
     public function markAsRead(string $notificationId): void
@@ -83,55 +104,90 @@ new class extends Component {
             $notification->markAsRead();
         }
     }
+
+    public function markVisibleAsRead(): void
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return;
+        }
+
+        $this->notifications->each(function ($notification) {
+            if ($notification->read_at) {
+                return;
+            }
+
+            $notification->markAsRead();
+        });
+    }
 }; ?>
 
-<x-ui.dropdown placement="end" menu menuSize="sm" contentClass="w-80 max-h-96 overflow-y-auto">
-    <x-slot:trigger>
-        <button class="btn btn-ghost btn-circle relative" type="button">
-            <x-ui.icon name="bell" class="h-5 w-5" />
-            @if ($this->unreadCount > 0)
-                <span class="status status-error absolute top-0 right-0"></span>
-            @endif
-        </button>
-    </x-slot:trigger>
+<div x-data="notificationDropdown($wire)" x-init="init()" x-on:notifications-changed.window="$wire.$refresh();"
+    @click.away="
+        if (wasOpened) {
+            $wire.markVisibleAsRead();
+            wasOpened = false;
+        }
+        isOpen = false;
+    "
+    wire:key="notification-dropdown-{{ Auth::id() ?? 'guest' }}">
+    <x-ui.dropdown placement="end" menu menuSize="sm" contentClass="w-80 max-h-96 overflow-y-auto"
+        x-bind:class="{ 'dropdown-open': isOpen }">
+        <x-slot:trigger>
+            <button x-ref="trigger" class="btn btn-ghost btn-circle relative" type="button"
+                @click="
+                    isOpen = true;
+                    wasOpened = true;
+                ">
+                <x-ui.icon name="bell" class="h-5 w-5" />
+                @if ($this->unreadCount > 0)
+                    <span class="badge badge-error badge-xs absolute -top-1 -right-1 w-4 h-4 justify-center "
+                        aria-label="{{ __('ui.notifications.unread') }}: {{ $this->unreadCount }}">
+                        {{ $this->unreadBadge }}
+                    </span>
+                @endif
+            </button>
+        </x-slot:trigger>
 
-    <div class="menu-title">
-        <span>{{ __('ui.notifications.dropdown.title') }}</span>
-    </div>
+        <div class="menu-title">
+            <span>{{ __('ui.notifications.dropdown.title') }}</span>
+        </div>
 
-    @forelse($this->formattedNotifications as $notification)
-        <div>
-            <a href="{{ $notification['link'] }}" class="{{ $notification['linkClass'] }}"
-                @if ($notification['hasWireNavigate']) wire:navigate @endif
-                @if (!$notification['isRead']) wire:click="markAsRead('{{ $notification['id'] }}')" @endif>
-                <div class="flex items-start gap-2">
-                    <div class="flex-shrink-0 mt-0.5">
-                        <x-ui.icon name="{{ $notification['iconName'] }}" class="{{ $notification['iconClass'] }}" />
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="truncate">{{ $notification['title'] }}</div>
-                        @if ($notification['subtitle'])
-                            <div class="text-xs opacity-70 truncate">{{ $notification['subtitle'] }}</div>
-                        @endif
-                        <div class="text-xs opacity-60 mt-1">
-                            {{ $notification['createdAt']->diffForHumans() }}
+        @forelse($this->formattedNotifications as $notification)
+            <div>
+                <a href="{{ $notification['link'] }}" class="{{ $notification['linkClass'] }}"
+                    @if ($notification['hasWireNavigate']) wire:navigate @endif
+                    @if (!$notification['isRead']) wire:click="markAsRead('{{ $notification['id'] }}')" @endif>
+                    <div class="flex items-start gap-2">
+                        <div class="flex-shrink-0 mt-0.5">
+                            <x-ui.icon name="{{ $notification['iconName'] }}"
+                                class="{{ $notification['iconClass'] }}" />
                         </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="truncate">{{ $notification['title'] }}</div>
+                            @if ($notification['subtitle'])
+                                <div class="text-xs opacity-70 truncate">{{ $notification['subtitle'] }}</div>
+                            @endif
+                            <div class="text-xs opacity-60 mt-1">
+                                {{ $notification['createdAt']->diffForHumans() }}
+                            </div>
+                        </div>
+                        @if (!$notification['isRead'])
+                            <div class="badge badge-primary badge-xs"></div>
+                        @endif
                     </div>
-                    @if (!$notification['isRead'])
-                        <div class="badge badge-primary badge-xs"></div>
-                    @endif
-                </div>
-            </a>
-        </div>
-    @empty
-        <div class="text-center py-4 text-sm opacity-60">
-            {{ __('ui.notifications.empty') }}
-        </div>
-    @endforelse
+                </a>
+            </div>
+        @empty
+            <div class="text-center py-4 text-sm opacity-60">
+                {{ __('ui.notifications.empty') }}
+            </div>
+        @endforelse
 
-    <div class="divider my-1"></div>
+        <div class="divider my-1"></div>
 
-    <x-ui.button href="{{ route('notifications.index') }}" wire:navigate class="text-center">
-        {{ __('ui.notifications.view_all') }}
-    </x-ui.button>
-</x-ui.dropdown>
+        <x-ui.button href="{{ route('notifications.index') }}" wire:navigate class="text-center">
+            {{ __('ui.notifications.view_all') }}
+        </x-ui.button>
+    </x-ui.dropdown>
+</div>

@@ -15,6 +15,7 @@
     @livewireScripts
 
     <x-notifications.toast-center />
+    <x-ui.confirm-modal />
     @stack('endBody')
 </body>
 

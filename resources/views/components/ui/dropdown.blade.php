@@ -60,10 +60,10 @@
     $dropdownId = $id ?? 'dropdown-' . uniqid();
 @endphp
 
-<div class="{{ $dropdownClasses }}" id="{{ $dropdownId }}">
+<div
+    {{ $attributes->except(['placement', 'hover', 'contentClass', 'bgClass', 'menu', 'menuSize', 'id', 'aria-label', 'aria-labelledby'])->merge(['class' => $dropdownClasses, 'id' => $dropdownId]) }}>
     @isset($trigger)
-        <div tabindex="0" role="button"
-            {{ $attributes->except(['placement', 'hover', 'contentClass', 'bgClass', 'menu', 'menuSize', 'id']) }}>
+        <div tabindex="0" role="button">
             {{ $trigger }}
         </div>
     @endisset

@@ -3,12 +3,13 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasUuid;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Permission as SpatiePermission;
 
 class Permission extends SpatiePermission
 {
-    use HasUuid;
+    use HasUuid, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.

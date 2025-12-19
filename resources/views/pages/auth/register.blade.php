@@ -12,11 +12,10 @@
             <x-ui.input type="email" name="email" :label="__('ui.auth.register.email_label')" :value="old('email')" required autocomplete="email"
                 placeholder="email@example.com" />
 
-            <x-ui.input type="password" name="password" :label="__('ui.auth.register.password_label')" required autocomplete="new-password"
-                :placeholder="__('ui.auth.register.password_placeholder')" />
+            <x-ui.password name="password" :label="__('ui.auth.register.password_label')" required autocomplete="new-password" :placeholder="__('ui.auth.register.password_placeholder')" />
 
-            <x-ui.input type="password" name="password_confirmation" :label="__('ui.auth.register.confirm_password_label')" required
-                autocomplete="new-password" :placeholder="__('ui.auth.register.confirm_password_placeholder')" />
+            <x-ui.password name="password_confirmation" :label="__('ui.auth.register.confirm_password_label')" required autocomplete="new-password"
+                :placeholder="__('ui.auth.register.confirm_password_placeholder')" />
 
             <x-ui.button type="submit" variant="primary" class="w-full" data-test="register-user-button">
                 {{ __('ui.auth.register.submit') }}

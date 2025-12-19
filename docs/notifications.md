@@ -70,6 +70,17 @@ NotificationBuilder::make()->title('Error')->error()->send();
 NotificationBuilder::make()->title('Classic')->classic()->send();
 ```
 
+### Icon Rendering
+
+Icons are **rendered server-side** using the `IconPackMapper` service and included in the toast payload as HTML. This ensures:
+
+-   **Consistent rendering**: Icons are rendered using the same service as the rest of the application
+-   **No client-side binding issues**: Avoids Alpine.js binding conflicts with Blade components
+-   **Immediate display**: Icons are ready when the toast is received, no client-side rendering needed
+-   **Fallback support**: Client-side fallback rendering is available if server-rendered HTML is not provided
+
+The icon mapping is handled automatically by `NotificationBuilder::renderIconForType()`, which uses `IconPackMapper` to render the appropriate Heroicon for each toast type.
+
 ## Toast Positions
 
 Toasts can be positioned anywhere on the screen:
@@ -184,6 +195,7 @@ The notification center displays all persistent notifications for the authentica
 -   View all notifications
 -   Mark notifications as read (automatic on interaction)
 -   Mark all notifications as read
+-   Refreshes in real-time when new notifications are broadcast
 -   Filter by read/unread status
 -   Sort by creation date (newest first)
 
@@ -197,16 +209,43 @@ The toast center component (`<x-notifications.toast-center />`) is automatically
 -   Displays toasts with appropriate animations
 -   Auto-dismisses toasts after 5 seconds
 -   Supports click interactions (if a link is provided)
+-   Uses Alpine helpers from `resources/js/notification-center.js`
 
 ### Notification Dropdown
 
 The notification dropdown in the header shows:
 
 -   Last 5 notifications (sorted by unread first)
--   Unread count indicator (red dot with ping animation)
+-   Unread count badge (shows count up to 99, displays "99+" if over 99)
 -   Quick access to notification center
+-   Automatically marks visible notifications as read when the dropdown is closed (only if it was opened)
 
-Component: `<livewire:notifications.dropdown lazy>`
+**Component:** `<livewire:notifications.dropdown lazy>`
+
+**Key Features:**
+
+-   **Badge Calculation**: Unread count badge is calculated via Livewire computed property `getUnreadBadgeProperty()` (capped at "99+")
+-   **State Management**: Uses Alpine.js reactive state (`isOpen` and `wasOpened`) to manage dropdown open/close state
+-   **Auto-Mark as Read**: Notifications are automatically marked as read when the dropdown closes (via `@click.away`), but only if the dropdown was actually opened by the user
+-   **Persistent State**: The `dropdown-open` class is managed via Alpine.js `x-bind:class` to maintain state during Livewire updates
+
+### Realtime UI Configuration (Centralized)
+
+The realtime UI (toast center, notification dropdown refresh, notification center refresh) is configured via:
+
+-   A View Composer shared value: `$notificationRealtimeConfig` (user UUID + team UUIDs)
+-   An Alpine store initialized once in the app layout: `$store.notifications.init(...)`
+-   A single Echo subscription fan-out in `resources/js/notification-center.js`
+
+### Database-Backed Refresh Events
+
+UI refreshes for the dropdown + notification center are driven by **database notification model changes**, not toast broadcasts.
+
+-   **Event**: `App\Events\DatabaseNotificationChanged` (broadcast name: `notification.changed`)
+-   **Observer**: `App\Observers\DatabaseNotificationObserver` (hooks into `Illuminate\Notifications\DatabaseNotification`)
+-   **Registration**: Observer is registered in `App\Providers\AppServiceProvider`
+
+This ensures UI stays in sync when notifications are created, updated (ex: marked read), or deleted.
 
 ## Usage Examples
 
@@ -300,14 +339,26 @@ The toast center uses:
 -   **Alpine.js** for UI reactivity and transitions
 -   **Laravel Echo** for WebSocket subscriptions
 -   **Singleton pattern** for subscription management to prevent duplicate subscriptions
+-   **Server-rendered icons**: Icons are rendered server-side and included in the toast payload as HTML, avoiding client-side binding issues
+
+### Icon Rendering Architecture
+
+Icons are rendered server-side in the `NotificationBuilder` before broadcasting:
+
+1.  **Server-side rendering**: `NotificationBuilder::renderIconForType()` uses `IconPackMapper` to render the appropriate icon HTML
+2.  **Payload inclusion**: The rendered icon HTML is included in the `ToastPayload` as the `iconHtml` property
+3.  **Client-side display**: The toast center component uses `x-html` to display the server-rendered icon HTML
+4.  **Fallback support**: If `iconHtml` is not provided, the client falls back to client-side SVG rendering
+
+This architecture ensures consistent icon rendering across the application and avoids issues with Alpine.js binding to Blade components.
 
 ### Automatic Mark as Read
 
 Persistent notifications are automatically marked as read when:
 
--   User visits the notification center
--   User clicks on a notification
--   Notification comes into viewport (Intersection Observer)
+-   **Notification Dropdown**: When the dropdown is closed (via `@click.away`), all visible notifications are marked as read, but only if the dropdown was actually opened by the user
+-   **Notification Center**: When a notification comes into viewport (Intersection Observer) or when user clicks on it
+-   **Individual Interactions**: User clicks on a notification link
 
 ## Testing
 

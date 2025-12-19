@@ -46,7 +46,7 @@ new class extends BasePageComponent {
 
         $user->save();
 
-        NotificationBuilder::make()->title(__('ui.settings.profile.save_success'))->success()->send();
+        NotificationBuilder::make()->title(__('ui.settings.profile.save_success'))->success()->persist()->send();
 
         $this->dispatch('profile-updated', name: $user->name);
     }

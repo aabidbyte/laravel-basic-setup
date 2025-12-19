@@ -323,6 +323,7 @@ it('tests something', function () {
 
 -   **Primary Pattern**: Livewire 4 single-file components (built-in, no Volt needed)
 -   **UI Library**: Standard HTML/Tailwind CSS components
+-   **Component Reusability**: **ALWAYS use existing components when possible for consistency** - Before creating a new component, check if an existing component can be used or extended. This ensures consistency across the application and reduces code duplication.
 -   **Component Documentation**: **ALWAYS update `docs/components.md` when adding new UI components** - This ensures all components are documented with props, usage examples, and implementation details
 -   **Component Locations**:
     -   **Full-page components**: `resources/views/pages/` (use `pages::` namespace in routes)
@@ -385,6 +386,18 @@ it('tests something', function () {
     -   If a UUID is manually provided, it will not be overwritten
     -   Models using base classes will use UUID as the route key name
     -   Add `uuid` to `$fillable` array if you need to manually set UUIDs (optional)
+-   **Soft Delete Requirement**: **ALL models MUST have soft deletes enabled by default**
+    -   **Default behavior**: `BaseModel` and `BaseUserModel` include the `SoftDeletes` trait automatically
+    -   **Migration requirement**: All tables MUST include `$table->softDeletes();` in their migration
+    -   **Exceptions**: The following tables/models should NOT have soft deletes:
+        -   `password_reset_tokens` - Temporary tokens that should be hard deleted when expired
+        -   `personal_access_tokens` - Access tokens (Sanctum) that should be hard deleted
+        -   Pivot tables - `team_user`, `model_has_permissions`, `model_has_roles`, `role_has_permissions`, `telescope_entries_tags`
+        -   Telescope tables - `telescope_entries`, `telescope_entries_tags`, `telescope_monitoring` (monitoring/debugging tables)
+        -   Any other temporary or system tables that don't need soft deletion
+    -   **Exception handling**: For exceptions, models should extend `Illuminate\Database\Eloquent\Model` directly (not `BaseModel`) and include only necessary traits (e.g., `HasUuid`) manually
+    -   **Example exception**: `PasswordResetToken` extends `Model` directly and includes `HasUuid` manually, avoiding the `SoftDeletes` trait from `BaseModel`
+    -   **Documentation**: All exceptions must include PHPDoc comments explaining why soft deletes are not used
 
 ### Authentication
 
@@ -776,6 +789,7 @@ NotificationBuilder::make()
 **Toast Center** (`resources/views/components/notifications/toast-center.blade.php`):
 
 -   Alpine.js component that subscribes to Echo private channels
+-   Alpine store + helpers live in `resources/js/notification-center.js`
 -   Automatically included in authenticated app layout
 -   Features:
     -   Subscribes to user, team, and global channels
@@ -785,6 +799,43 @@ NotificationBuilder::make()
     -   Supports click-to-navigate via link
     -   Slide animation (enters from right, exits to right)
 
+### Notification Dropdown Component
+
+**Notification Dropdown** (`resources/views/components/notifications/⚡dropdown.blade.php`):
+
+-   Livewire 4 single-file component (lazy-loaded)
+-   Component: `<livewire:notifications.dropdown lazy>`
+-   Features:
+    -   Shows last 5 notifications (sorted by unread first, then by creation date)
+    -   Unread count badge (shows count up to 99, displays "99+" if over 99)
+    -   Badge calculation via Livewire computed property `getUnreadBadgeProperty()`
+    -   Automatically marks visible notifications as read when dropdown closes (only if opened)
+    -   Uses Alpine.js reactive state (`isOpen`, `wasOpened`) to manage dropdown state
+    -   `dropdown-open` class managed via `x-bind:class` to maintain state during Livewire updates
+    -   Refreshes in real-time when notifications change (via Alpine notifications store fan-out)
+-   **State Management Pattern**:
+    ```blade
+    <div x-data="notificationDropdown($wire)" x-init="init()"
+        @click.away="
+            if (wasOpened) {
+                $wire.markVisibleAsRead();
+                wasOpened = false;
+            }
+            isOpen = false;
+        ">
+        <x-ui.dropdown x-bind:class="{ 'dropdown-open': isOpen }">
+            <x-slot:trigger>
+                <button @click="
+                    isOpen = true;
+                    wasOpened = true;
+                ">
+                    <!-- Badge shows {{ $this->unreadBadge }} -->
+                </button>
+            </x-slot:trigger>
+        </x-ui.dropdown>
+    </div>
+    ```
+
 ### Notification Center Page
 
 **Notification Center** (`resources/views/pages/notifications/⚡index.blade.php`):
@@ -792,12 +843,15 @@ NotificationBuilder::make()
 -   Livewire 4 single-file component extending `BasePageComponent`
 -   Route: `/notifications` (named: `notifications.index`)
 -   Features:
-    -   Lists all user notifications (paginated, 20 per page)
+    -   Lists all user notifications (shows 10 newest by default, with "Load more" button)
+    -   Uses `#[Computed]` attribute for computed properties (`notifications()`, `unreadCount()`, `totalCount()`)
     -   Auto-marks as read on viewport intersection (`x-intersect.once`)
     -   Marks as read on click
     -   "Mark all as read" button
+    -   "Clear all" button (shows total count)
     -   Shows unread badge for unread notifications
     -   Displays notification type icons, title, subtitle, content, link, and timestamp
+    -   Refreshes in real-time when new notifications are broadcast (via Alpine notifications store fan-out in `resources/js/notification-center.js`)
 
 ### Broadcast Channels
 
@@ -806,6 +860,13 @@ Channels are defined in `routes/channels.php`:
 -   **User channel** (`private-notifications.user.{userUuid}`): Authorized for matching user UUID
 -   **Team channel** (`private-notifications.team.{teamUuid}`): Authorized for team members
 -   **Global channel** (`private-notifications.global`): Authorized for any authenticated user
+
+### Database Notification Refresh
+
+For real-time UI refresh when the `notifications` table changes, the app broadcasts a dedicated event:
+
+-   `App\Events\DatabaseNotificationChanged` (broadcast name: `notification.changed`)
+-   Triggered via `App\Observers\DatabaseNotificationObserver` observing `Illuminate\Notifications\DatabaseNotification`
 
 ### Persistence Behavior
 
@@ -1732,6 +1793,17 @@ If you see `Auth::guard('web')->logout()` causing an error:
 
 ## Changelog
 
+### 2025-12-19
+
+-   **Notification Dropdown Enhancements**: Improved dropdown state management and badge calculation
+    -   **Badge Calculation**: Moved badge calculation from Blade template to Livewire computed property `getUnreadBadgeProperty()` (capped at "99+")
+    -   **State Management**: Added Alpine.js reactive state (`isOpen` and `wasOpened`) to track dropdown open/close state
+    -   **Auto-Mark as Read**: Notifications are now marked as read when the dropdown closes (via `@click.away`), but only if it was actually opened by the user
+    -   **Persistent State**: The `dropdown-open` class is managed via Alpine.js `x-bind:class` to maintain state during Livewire updates
+    -   **Badge Styling**: Updated badge to use `badge-xs` with `w-4 h-4` fixed size for smaller, cleaner appearance
+    -   **Dropdown Component Enhancement**: Updated dropdown component to properly merge Alpine.js `x-bind:class` with static classes using `$attributes->merge()`
+    -   **Notification Center**: Updated to use `#[Computed]` attribute instead of `getXxxProperty()` methods for better Livewire 4 compatibility
+
 ### 2025-01-XX
 
 -   **Frontend Preferences System Refactoring**: Refactored `FrontendPreferencesService` to use session as single source of truth
@@ -2023,6 +2095,13 @@ If you see `Auth::guard('web')->logout()` causing an error:
     -   Models using base classes use UUID as route key name
     -   Added comprehensive tests for UUID generation
     -   **Rule**: All new models must extend `App\Models\Base\BaseModel` or `App\Models\Base\BaseUserModel` instead of Eloquent base classes
+-   **Soft Delete Requirement**: Implemented soft deletes for all models by default
+    -   Added `SoftDeletes` trait to `BaseModel` and `BaseUserModel` base classes
+    -   Updated migrations to include `$table->softDeletes();` for: `users`, `teams`, `permissions`, `roles`, `notifications`
+    -   Added `SoftDeletes` trait to `Permission` and `Role` models (extend Spatie's models)
+    -   **Exceptions**: `PasswordResetToken` model extends `Model` directly (not `BaseModel`) to avoid soft deletes, as password reset tokens are temporary and should be hard deleted
+    -   **Rule**: All new models must have soft deletes enabled by default via base classes
+    -   **Rule**: All new migrations must include `$table->softDeletes();` unless the table is an exception (temporary tokens, pivot tables, monitoring tables)
 -   **Intelephense Helper**: Added rule and documentation for fixing Intelephense errors
     -   Updated `IntelephenseHelper.php` with missing Auth and Session facade methods
     -   Added `logout()`, `login()`, `attempt()` methods to `StatefulGuard` and `Auth` interfaces

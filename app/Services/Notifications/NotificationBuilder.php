@@ -11,8 +11,8 @@ use App\Events\ToastBroadcasted;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class NotificationBuilder
@@ -243,6 +243,9 @@ class NotificationBuilder
         // Determine the target channel
         $channel = $this->determineChannel();
 
+        // Render icon HTML server-side
+        $iconHtml = $this->renderIconForType($this->type);
+
         // Create toast payload
         $payload = new ToastPayload(
             title: $this->title,
@@ -252,6 +255,7 @@ class NotificationBuilder
             position: $this->position,
             animation: $this->animation,
             link: $this->link,
+            iconHtml: $iconHtml,
         );
 
         // Always broadcast the toast
@@ -261,6 +265,26 @@ class NotificationBuilder
         if ($this->persist) {
             $this->persistToDatabase($payload);
         }
+    }
+
+    /**
+     * Render icon HTML for the given toast type.
+     */
+    protected function renderIconForType(ToastType $type): string
+    {
+        $iconMapper = app(\App\Services\IconPackMapper::class);
+
+        $iconNames = [
+            ToastType::Success->value => 'check-circle',
+            ToastType::Info->value => 'information-circle',
+            ToastType::Warning->value => 'exclamation-triangle',
+            ToastType::Error->value => 'x-circle',
+            ToastType::Classic->value => 'bell',
+        ];
+
+        $iconName = $iconNames[$type->value] ?? 'bell';
+
+        return $iconMapper->renderIcon($iconName, 'heroicons', 'h-6 w-6');
     }
 
     /**
@@ -297,13 +321,13 @@ class NotificationBuilder
         $notificationData = [
             'id' => (string) Str::uuid(),
             'type' => 'App\Notifications\GeneralNotification',
-            'data' => json_encode([
+            'data' => [
                 'title' => $payload->title,
                 'subtitle' => $payload->subtitle,
                 'content' => $payload->content,
                 'type' => $payload->type->value,
                 'link' => $payload->link,
-            ]),
+            ],
             'read_at' => null,
             'created_at' => now(),
             'updated_at' => now(),
@@ -337,7 +361,7 @@ class NotificationBuilder
         $notificationData['notifiable_type'] = User::class;
         $notificationData['notifiable_id'] = $user->id;
 
-        DB::table('notifications')->insert($notificationData);
+        DatabaseNotification::query()->create($notificationData);
     }
 
     /**
@@ -356,17 +380,14 @@ class NotificationBuilder
             return;
         }
 
-        $notifications = $userIds->map(function ($userId) use ($notificationData) {
-            $notificationData['id'] = (string) Str::uuid();
-            $notificationData['notifiable_type'] = User::class;
-            $notificationData['notifiable_id'] = $userId;
+        foreach (array_chunk($userIds->all(), 100) as $chunk) {
+            foreach ($chunk as $userId) {
+                $notificationData['id'] = (string) Str::uuid();
+                $notificationData['notifiable_type'] = User::class;
+                $notificationData['notifiable_id'] = $userId;
 
-            return $notificationData;
-        })->toArray();
-
-        // Insert in chunks to avoid memory issues
-        foreach (array_chunk($notifications, 100) as $chunk) {
-            DB::table('notifications')->insert($chunk);
+                DatabaseNotification::query()->create($notificationData);
+            }
         }
     }
 
@@ -381,17 +402,14 @@ class NotificationBuilder
             return;
         }
 
-        $notifications = $userIds->map(function ($userId) use ($notificationData) {
-            $notificationData['id'] = (string) Str::uuid();
-            $notificationData['notifiable_type'] = User::class;
-            $notificationData['notifiable_id'] = $userId;
+        foreach (array_chunk($userIds->all(), 100) as $chunk) {
+            foreach ($chunk as $userId) {
+                $notificationData['id'] = (string) Str::uuid();
+                $notificationData['notifiable_type'] = User::class;
+                $notificationData['notifiable_id'] = $userId;
 
-            return $notificationData;
-        })->toArray();
-
-        // Insert in chunks to avoid memory issues
-        foreach (array_chunk($notifications, 100) as $chunk) {
-            DB::table('notifications')->insert($chunk);
+                DatabaseNotification::query()->create($notificationData);
+            }
         }
     }
 }

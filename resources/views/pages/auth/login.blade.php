@@ -10,8 +10,7 @@
             <x-ui.input type="email" name="email" :label="__('ui.auth.login.email_label')" :value="old('email')" required autofocus
                 autocomplete="email" placeholder="email@example.com" />
 
-            <x-ui.input type="password" name="password" :label="__('ui.auth.login.password_label')" required autocomplete="current-password"
-                :placeholder="__('ui.auth.login.password_placeholder')">
+            <x-ui.password name="password" :label="__('ui.auth.login.password_label')" required autocomplete="current-password" :placeholder="__('ui.auth.login.password_placeholder')">
                 @if (Route::has('password.request'))
                     <x-slot:label-append>
                         <a href="{{ route('password.request') }}" wire:navigate class="label-text-alt link">
@@ -19,7 +18,7 @@
                         </a>
                     </x-slot:label-append>
                 @endif
-            </x-ui.input>
+            </x-ui.password>
 
             <div class="form-control">
                 <label class="label cursor-pointer justify-start gap-2">

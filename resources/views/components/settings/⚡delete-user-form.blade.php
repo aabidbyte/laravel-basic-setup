@@ -32,24 +32,40 @@ new class extends Component {
         <p class="mt-1 text-sm text-base-content/70">{{ __('ui.settings.delete_account.description') }}</p>
     </div>
 
-    <x-ui.button type="button" variant="error" onclick="confirm_user_deletion_modal.showModal()"
+    <x-ui.button type="button" variant="error" onclick="document.getElementById('delete_account_modal')?.showModal()"
         data-test="delete-user-button">
         {{ __('ui.settings.delete_account.button') }}
     </x-ui.button>
 
-    <x-ui.modal id="confirm_user_deletion_modal" :title="__('ui.settings.delete_account.modal_title')" :closeBtn="true" :closeBtnLabel="__('ui.actions.cancel')">
-        <p class="text-base-content/70 mb-6">
-            {{ __('ui.settings.delete_account.modal_description') }}
-        </p>
-        <form id="delete-user-form" method="POST" wire:submit="deleteUser" class="space-y-4">
-            <x-ui.input type="password" wire:model="password" name="password" :label="__('ui.settings.delete_account.password_label')" />
-
-            <div class="flex justify-end gap-2 mt-4">
-                <x-ui.button type="submit" variant="error" form="delete-user-form"
-                    data-test="confirm-delete-user-button">
-                    {{ __('ui.settings.delete_account.button') }}
-                </x-ui.button>
+    <x-ui.confirm-modal id="delete_account_modal" :show-icon="true">
+        <div class="flex items-start gap-4">
+            <div class="flex-shrink-0">
+                <x-ui.icon name="exclamation-triangle" class="h-8 w-8 text-error" />
             </div>
-        </form>
-    </x-ui.modal>
+            <div class="flex-1">
+                <h3 class="text-lg font-bold">{{ __('ui.settings.delete_account.modal_title') }}</h3>
+                <p class="text-base-content/70 mb-6 mt-2">
+                    {{ __('ui.settings.delete_account.modal_description') }}
+                </p>
+                <form id="delete-user-form" method="POST" wire:submit="deleteUser" class="space-y-4">
+                    <x-ui.password wire:model="password" name="password" :label="__('ui.settings.delete_account.password_label')" />
+
+                    <div class="flex justify-end gap-2 mt-4">
+                        <x-ui.button type="submit" variant="error" form="delete-user-form"
+                            data-test="confirm-delete-user-button">
+                            {{ __('ui.settings.delete_account.button') }}
+                        </x-ui.button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <x-slot:actions>
+            <form method="dialog">
+                <x-ui.button type="button" variant="ghost">
+                    {{ __('ui.actions.cancel') }}
+                </x-ui.button>
+            </form>
+        </x-slot:actions>
+    </x-ui.confirm-modal>
 </section>

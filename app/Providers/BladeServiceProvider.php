@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Services\FrontendPreferences\FrontendPreferencesService;
 use App\Services\I18nService;
 use App\Services\SideBarMenuService;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
@@ -36,6 +37,7 @@ class BladeServiceProvider extends ServiceProvider
             $i18n = app(I18nService::class);
             $view->with('htmlLangAttribute', $i18n->getHtmlLangAttribute());
             $view->with('htmlDirAttribute', $i18n->getHtmlDirAttribute());
+
         });
 
         // Share I18nService and FrontendPreferencesService with layout templates and preference components
@@ -70,11 +72,21 @@ class BladeServiceProvider extends ServiceProvider
             $view->with('sideBarBottomMenus', $sideBarBottomMenus);
             $view->with('sideBarUserMenus', $sideBarUserMenus);
         });
+        View::composer(['partials.head'], function ($view) {
+
+            $user = Auth::user();
+            $notificationRealtimeConfig = [
+                'userUuid' => $user?->uuid,
+                'teamUuids' => $user ? $user->teams()->pluck('teams.uuid')->toArray() : [],
+            ];
+
+            $view->with('notificationRealtimeConfig', $notificationRealtimeConfig);
+        });
     }
 
     private function initPageTitle(): void
     {
-        View::composer(['partials.head', 'components.layouts.app.header'], function ($view) {
+        View::composer(['partials.head', 'partials.auth.head', 'components.layouts.app.header'], function ($view) {
             $pageTitle = null;
 
             // Check view data (from controller, view, or View::share())

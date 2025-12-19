@@ -18,6 +18,7 @@ class ToastPayload
         public ToastPosition $position = ToastPosition::TopRight,
         public ToastAnimation $animation = ToastAnimation::Slide,
         public ?string $link = null,
+        public ?string $iconHtml = null,
     ) {}
 
     /**
@@ -35,6 +36,7 @@ class ToastPayload
             'position' => $this->position->value,
             'animation' => $this->animation->value,
             'link' => $this->link,
+            'iconHtml' => $this->iconHtml,
         ];
     }
 }

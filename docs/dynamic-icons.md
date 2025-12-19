@@ -11,6 +11,34 @@ The following icon packages are installed:
 -   `davidhsianturi/blade-bootstrap-icons` - Bootstrap Icons
 -   `brunocfalcao/blade-feather-icons` - Feather Icons
 
+## Icon Search Rules
+
+When searching for an icon name, follow these steps:
+
+1. **First, fetch and parse:**
+
+    ```
+    https://raw.githubusercontent.com/iconify/icon-sets/master/collections.json
+    ```
+
+    to identify the correct `collection_id`.
+
+2. **Then, fetch and parse:**
+    ```
+    https://raw.githubusercontent.com/iconify/icon-sets/master/json/{collection_id}.json
+    ```
+    to search for the requested icon.
+
+**Rules:**
+
+-   Use ONLY the above references.
+-   Never guess icon names or collection IDs.
+-   Search ONLY inside the `icons` object keys.
+-   Matching must be case-insensitive.
+-   Prefer exact matches, then partial matches.
+-   If the icon does not exist in the reference, say it does not exist.
+-   Do NOT rely on training data or prior knowledge for icon names.
+
 ## Icon Pack Mapping
 
 The `IconPackMapper` service maps pack names to Blade Icons component names:

@@ -3,12 +3,13 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasUuid;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role as SpatieRole;
 
 class Role extends SpatieRole
 {
-    use HasUuid;
+    use HasUuid, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
