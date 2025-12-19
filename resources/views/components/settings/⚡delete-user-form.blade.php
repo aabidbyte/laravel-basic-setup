@@ -37,20 +37,19 @@ new class extends Component {
         {{ __('ui.settings.delete_account.button') }}
     </x-ui.button>
 
-    <x-ui.modal id="confirm_user_deletion_modal" :title="__('ui.settings.delete_account.modal_title')">
+    <x-ui.modal id="confirm_user_deletion_modal" :title="__('ui.settings.delete_account.modal_title')" :closeBtn="true" :closeBtnLabel="__('ui.actions.cancel')">
         <p class="text-base-content/70 mb-6">
             {{ __('ui.settings.delete_account.modal_description') }}
         </p>
         <form id="delete-user-form" method="POST" wire:submit="deleteUser" class="space-y-4">
             <x-ui.input type="password" wire:model="password" name="password" :label="__('ui.settings.delete_account.password_label')" />
-            <x-slot:actions>
+
+            <div class="flex justify-end gap-2 mt-4">
                 <x-ui.button type="submit" variant="error" form="delete-user-form"
                     data-test="confirm-delete-user-button">
                     {{ __('ui.settings.delete_account.button') }}
                 </x-ui.button>
-            </x-slot:actions>
+            </div>
         </form>
-
-
     </x-ui.modal>
 </section>

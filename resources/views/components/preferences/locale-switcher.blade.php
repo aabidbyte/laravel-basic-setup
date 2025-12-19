@@ -1,5 +1,5 @@
 <x-ui.dropdown placement="end" menu menuSize="sm"
-    contentClass="bg-base-100 rounded-box z-[1] w-48 p-2 shadow-lg border border-base-300">
+    contentClass="rounded-box z-[1] w-48 p-2 shadow-lg border border-base-300">
     <x-slot:trigger>
         <div class="btn btn-ghost btn-sm">
             <x-ui.icon name="{{ $localeMetadata['icon']['name'] ?? 'globe-alt' }}"

@@ -7,6 +7,7 @@
 
     // Content
     'contentClass' => '', // Additional classes for dropdown-content
+    'bgClass' => 'bg-base-100', // Background color class (default: bg-base-100)
     'menu' => false, // Use menu styling (adds 'menu' class)
     'menuSize' => 'md', // menu-xs, menu-sm, menu-md, menu-lg, menu-xl
 
@@ -41,6 +42,10 @@
 
     $contentClasses = 'dropdown-content';
 
+    if (!empty($bgClass)) {
+        $contentClasses .= ' ' . $bgClass;
+    }
+
     if ($menu) {
         $contentClasses .= ' menu';
         if (!empty($menuSizeClasses[$menuSize])) {
@@ -58,11 +63,11 @@
 <div class="{{ $dropdownClasses }}" id="{{ $dropdownId }}">
     @isset($trigger)
         <div tabindex="0" role="button"
-            {{ $attributes->except(['placement', 'hover', 'contentClass', 'menu', 'menuSize', 'id']) }}>
+            {{ $attributes->except(['placement', 'hover', 'contentClass', 'bgClass', 'menu', 'menuSize', 'id']) }}>
             {{ $trigger }}
         </div>
     @endisset
-    <div tabindex="0" class="{{ $contentClasses }}" {{ $attributes->only(['aria-label', 'aria-labelledby', 'w-fit']) }}>
+    <div tabindex="0" class="{{ $contentClasses }}" {{ $attributes->only(['aria-label', 'aria-labelledby']) }}>
         {{ $slot }}
     </div>
 </div>

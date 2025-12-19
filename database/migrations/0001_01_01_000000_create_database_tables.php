@@ -56,6 +56,35 @@ return new class extends Migration
             $table->timestamps();
         });
 
+        // Teams table
+        Schema::create('teams', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique()->index();
+            $table->string('name');
+            $table->timestamps();
+        });
+
+        // Team user pivot table
+        Schema::create('team_user', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique()->index();
+            $table->foreignId('team_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->timestamps();
+
+            $table->unique(['team_id', 'user_id']);
+        });
+
+        // Notifications table
+        Schema::create('notifications', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->string('type');
+            $table->morphs('notifiable');
+            $table->text('data');
+            $table->timestamp('read_at')->nullable();
+            $table->timestamps();
+        });
+
         // Permission tables
         $teams = config('permission.teams');
         $tableNames = config('permission.table_names');
@@ -223,6 +252,9 @@ return new class extends Migration
         Schema::dropIfExists($tableNames['permissions']);
 
         // Drop other tables
+        Schema::dropIfExists('notifications');
+        Schema::dropIfExists('team_user');
+        Schema::dropIfExists('teams');
         Schema::dropIfExists('personal_access_tokens');
         Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('users');

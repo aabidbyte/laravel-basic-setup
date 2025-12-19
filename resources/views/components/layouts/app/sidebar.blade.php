@@ -12,6 +12,15 @@
             {{ $slot }}
         </main>
     </div>
-    <x-layouts.app.sidebar-menu />
-    <x-notifications.toast-center />
+    <div class="drawer-side">
+        <label for="sidebar-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+        <aside class="flex flex-col h-full w-64 bg-base-200 overflow-y-auto">
+            <div class="p-4">
+                <a href="{{ route('dashboard') }}" class="flex items-center gap-2" wire:navigate>
+                    <x-app-logo />
+                </a>
+            </div>
+            <x-layouts.app.sidebar-menus />
+        </aside>
+    </div>
 </div>

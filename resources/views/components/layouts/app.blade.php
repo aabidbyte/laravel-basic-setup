@@ -13,6 +13,9 @@
     </x-layouts.app.sidebar>
 
     @livewireScripts
+
+    <x-notifications.toast-center />
+    @stack('endBody')
 </body>
 
 </html>

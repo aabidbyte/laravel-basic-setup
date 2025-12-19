@@ -1,7 +1,7 @@
 <?php
 
-use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 new class extends Component {
     public function getNotificationsProperty(): \Illuminate\Database\Eloquent\Collection
@@ -19,6 +19,58 @@ new class extends Component {
             ->values();
     }
 
+    public function getFormattedNotificationsProperty(): array
+    {
+        return $this->notifications
+            ->map(function ($notification) {
+                $data = $notification->data;
+                $type = $data['type'] ?? 'classic';
+                $link = $data['link'] ?? null;
+
+                return [
+                    'id' => $notification->id,
+                    'title' => $data['title'] ?? 'Notification',
+                    'subtitle' => $data['subtitle'] ?? null,
+                    'type' => $type,
+                    'link' => $link ?? route('notifications.index'),
+                    'isRead' => $notification->read_at !== null,
+                    'createdAt' => $notification->created_at,
+                    'iconName' => $this->getIconNameForType($type),
+                    'iconClass' => $this->getIconClassForType($type),
+                    'linkClass' => $this->getLinkClass($notification->read_at !== null),
+                    'hasWireNavigate' => $link !== null,
+                ];
+            })
+            ->toArray();
+    }
+
+    protected function getIconNameForType(string $type): string
+    {
+        return match ($type) {
+            'success' => 'check-circle',
+            'info' => 'information-circle',
+            'warning' => 'exclamation-triangle',
+            'error' => 'x-circle',
+            default => 'bell',
+        };
+    }
+
+    protected function getIconClassForType(string $type): string
+    {
+        return match ($type) {
+            'success' => 'h-4 w-4 text-success',
+            'info' => 'h-4 w-4 text-info',
+            'warning' => 'h-4 w-4 text-warning',
+            'error' => 'h-4 w-4 text-error',
+            default => 'h-4 w-4 text-base-content',
+        };
+    }
+
+    protected function getLinkClass(bool $isRead): string
+    {
+        return $isRead ? '' : 'font-semibold';
+    }
+
     public function getUnreadCountProperty(): int
     {
         return Auth::user()->unreadNotifications->count();
@@ -33,80 +85,53 @@ new class extends Component {
     }
 }; ?>
 
-@if (Auth::check())
-    <x-ui.dropdown placement="end" menu menuSize="sm" contentClass="w-80 max-h-96 overflow-y-auto">
-        <x-slot:trigger>
-            <button class="btn btn-ghost btn-circle relative" type="button">
-                <x-ui.icon name="bell" class="h-5 w-5" />
-                @if ($this->unreadCount > 0)
-                    <span class="status status-error absolute top-0 right-0">
-                        <span
-                            class="absolute inline-flex h-full w-full rounded-full bg-error opacity-75 animate-ping"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 bg-error"></span>
-                    </span>
-                @endif
-            </button>
-        </x-slot:trigger>
+<x-ui.dropdown placement="end" menu menuSize="sm" contentClass="w-80 max-h-96 overflow-y-auto">
+    <x-slot:trigger>
+        <button class="btn btn-ghost btn-circle relative" type="button">
+            <x-ui.icon name="bell" class="h-5 w-5" />
+            @if ($this->unreadCount > 0)
+                <span class="status status-error absolute top-0 right-0"></span>
+            @endif
+        </button>
+    </x-slot:trigger>
 
-        <div class="menu-title">
-            <span>{{ __('ui.notifications.dropdown.title') }}</span>
-        </div>
+    <div class="menu-title">
+        <span>{{ __('ui.notifications.dropdown.title') }}</span>
+    </div>
 
-        @forelse($this->notifications as $notification)
-            @php
-                $data = $notification->data;
-                $title = $data['title'] ?? 'Notification';
-                $subtitle = $data['subtitle'] ?? null;
-                $type = $data['type'] ?? 'classic';
-                $link = $data['link'] ?? null;
-                $isRead = $notification->read_at !== null;
-            @endphp
-
-            <li>
-                <a href="{{ $link ?? route('notifications.index') }}"
-                    class="{{ $isRead ? '' : 'font-semibold' }} {{ $link ? 'wire:navigate' : '' }}"
-                    @if (!$isRead) wire:click="markAsRead('{{ $notification->id }}')" @endif>
-                    <div class="flex items-start gap-2">
-                        <div class="flex-shrink-0 mt-0.5">
-                            @if ($type === 'success')
-                                <x-ui.icon name="check-circle" class="h-4 w-4 text-success" />
-                            @elseif($type === 'info')
-                                <x-ui.icon name="information-circle" class="h-4 w-4 text-info" />
-                            @elseif($type === 'warning')
-                                <x-ui.icon name="exclamation-triangle" class="h-4 w-4 text-warning" />
-                            @elseif($type === 'error')
-                                <x-ui.icon name="x-circle" class="h-4 w-4 text-error" />
-                            @else
-                                <x-ui.icon name="bell" class="h-4 w-4 text-base-content" />
-                            @endif
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="truncate">{{ $title }}</div>
-                            @if ($subtitle)
-                                <div class="text-xs opacity-70 truncate">{{ $subtitle }}</div>
-                            @endif
-                            <div class="text-xs opacity-60 mt-1">{{ $notification->created_at->diffForHumans() }}</div>
-                        </div>
-                        @if (!$isRead)
-                            <div class="badge badge-primary badge-xs"></div>
-                        @endif
+    @forelse($this->formattedNotifications as $notification)
+        <div>
+            <a href="{{ $notification['link'] }}" class="{{ $notification['linkClass'] }}"
+                @if ($notification['hasWireNavigate']) wire:navigate @endif
+                @if (!$notification['isRead']) wire:click="markAsRead('{{ $notification['id'] }}')" @endif>
+                <div class="flex items-start gap-2">
+                    <div class="flex-shrink-0 mt-0.5">
+                        <x-ui.icon name="{{ $notification['iconName'] }}" class="{{ $notification['iconClass'] }}" />
                     </div>
-                </a>
-            </li>
-        @empty
-            <li>
-                <div class="text-center py-4 text-sm opacity-60">
-                    {{ __('ui.notifications.empty') }}
+                    <div class="flex-1 min-w-0">
+                        <div class="truncate">{{ $notification['title'] }}</div>
+                        @if ($notification['subtitle'])
+                            <div class="text-xs opacity-70 truncate">{{ $notification['subtitle'] }}</div>
+                        @endif
+                        <div class="text-xs opacity-60 mt-1">
+                            {{ $notification['createdAt']->diffForHumans() }}
+                        </div>
+                    </div>
+                    @if (!$notification['isRead'])
+                        <div class="badge badge-primary badge-xs"></div>
+                    @endif
                 </div>
-            </li>
-        @endforelse
-
-        <div class="divider my-1"></div>
-
-        <li>
-            <a href="{{ route('notifications.index') }}" wire:navigate class="text-center">
-                {{ __('ui.notifications.view_all') }}
             </a>
-        </li>
-    </x-ui.dropdown>
-@endif
+        </div>
+    @empty
+        <div class="text-center py-4 text-sm opacity-60">
+            {{ __('ui.notifications.empty') }}
+        </div>
+    @endforelse
+
+    <div class="divider my-1"></div>
+
+    <x-ui.button href="{{ route('notifications.index') }}" wire:navigate class="text-center">
+        {{ __('ui.notifications.view_all') }}
+    </x-ui.button>
+</x-ui.dropdown>

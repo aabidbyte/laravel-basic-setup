@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Models\Base\BaseModel;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Team extends BaseModel
 {
+    use HasFactory;
+
     /**
      * The attributes that are mass assignable.
      *

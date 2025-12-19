@@ -556,14 +556,15 @@ A centralized, flexible dropdown component that provides consistent dropdown fun
 
 ### Props
 
-| Prop           | Type           | Default | Description                                                                    |
-| -------------- | -------------- | ------- | ------------------------------------------------------------------------------ |
-| `placement`    | `string`       | `'end'` | Dropdown placement: `start`, `center`, `end`, `top`, `bottom`, `left`, `right` |
-| `hover`        | `bool`         | `false` | Enable hover to open dropdown (adds `dropdown-hover` class)                    |
-| `contentClass` | `string`       | `''`    | Additional CSS classes for dropdown content                                    |
-| `menu`         | `bool`         | `false` | Enable menu styling (adds `menu` class to dropdown content)                    |
-| `menuSize`     | `string`       | `'md'`  | Menu size: `xs`, `sm`, `md`, `lg`, `xl` (only applies when `menu="true"`)      |
-| `id`           | `string\|null` | `null`  | Optional ID for accessibility (auto-generated if not provided)                 |
+| Prop           | Type           | Default         | Description                                                                    |
+| -------------- | -------------- | --------------- | ------------------------------------------------------------------------------ |
+| `placement`    | `string`       | `'end'`         | Dropdown placement: `start`, `center`, `end`, `top`, `bottom`, `left`, `right` |
+| `hover`        | `bool`         | `false`         | Enable hover to open dropdown (adds `dropdown-hover` class)                    |
+| `contentClass` | `string`       | `''`            | Additional CSS classes for dropdown content                                    |
+| `bgClass`      | `string`       | `'bg-base-100'` | Background color class for dropdown content (default: bg-base-100)             |
+| `menu`         | `bool`         | `false`         | Enable menu styling (adds `menu` class to dropdown content)                    |
+| `menuSize`     | `string`       | `'md'`          | Menu size: `xs`, `sm`, `md`, `lg`, `xl` (only applies when `menu="true"`)      |
+| `id`           | `string\|null` | `null`          | Optional ID for accessibility (auto-generated if not provided)                 |
 
 ### Slots
 
@@ -604,7 +605,7 @@ A centralized, flexible dropdown component that provides consistent dropdown fun
 
 ```blade
 <x-ui.dropdown placement="end" menu
-    contentClass="bg-base-100 rounded-box z-[1] w-48 p-2 shadow-lg border border-base-300">
+    contentClass="rounded-box z-[1] w-48 p-2 shadow-lg border border-base-300">
     <x-slot:trigger>
         <button class="btn btn-ghost btn-sm">
             <x-ui.icon name="globe-alt" />

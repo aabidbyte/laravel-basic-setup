@@ -578,11 +578,11 @@ The sidebar uses a unified component structure:
 
 -   **`sidebar.blade.php`** (`<x-layouts.app.sidebar>`): Main wrapper component using DaisyUI drawer with integrated navbar and content area
     -   Location: `resources/views/components/layouts/app/sidebar.blade.php`
-    -   Contains: Drawer structure, navbar with mobile toggle, main content area, and includes `<x-layouts.app.sidebar-menu />`
--   **`sidebar-menu.blade.php`** (`<x-layouts.app.sidebar-menu />`): Unified sidebar menu component (handles both desktop and mobile via CSS classes)
-    -   Location: `resources/views/components/layouts/app/sidebar-menu.blade.php`
-    -   Contains: Desktop sidebar menu with top menus, bottom menus, and logo
-    -   Uses CSS classes (`sidebar-desktop`) to handle responsive behavior
+    -   Contains: Drawer structure, navbar with mobile toggle, main content area, and includes `<x-layouts.app.sidebar-menus />`
+-   **`sidebar-menus.blade.php`** (`<x-layouts.app.sidebar-menus />`): Unified sidebar menu component
+    -   Location: `resources/views/components/layouts/app/sidebar-menus.blade.php`
+    -   Contains: Sidebar menu with top menus, bottom menus, and logo
+    -   Responsive behavior is handled by DaisyUI's drawer component (`lg:drawer-open` class)
 -   **`header.blade.php`** (`<x-layouts.app.header />`): Header component displaying page title, subtitle, and user menu
     -   Location: `resources/views/components/layouts/app/header.blade.php`
     -   Contains: Page title, optional subtitle, theme switcher, locale switcher, and user dropdown menu
@@ -606,7 +606,7 @@ The sidebar uses a unified component structure:
         </div>
         <main>{{ $slot }}</main>
     </div>
-    <x-layouts.app.sidebar-menu />
+    <x-layouts.app.sidebar-menus />
 </div>
 ```
 
@@ -969,6 +969,7 @@ The application includes a centralized, flexible dropdown component located at `
 -   `placement` (default: `'end'`): Dropdown placement - `start`, `center`, `end`, `top`, `bottom`, `left`, `right`
 -   `hover` (default: `false`): Enable hover to open dropdown
 -   `contentClass` (default: `''`): Additional CSS classes for dropdown content
+-   `bgClass` (default: `'bg-base-100'`): Background color class for dropdown content (default: bg-base-100)
 -   `menu` (default: `false`): Enable menu styling (adds `menu` class)
 -   `menuSize` (default: `'md'`): Menu size - `xs`, `sm`, `md`, `lg`, `xl`
 -   `id` (default: `null`): Optional ID for accessibility (auto-generated if not provided)
@@ -998,7 +999,7 @@ The application includes a centralized, flexible dropdown component located at `
 </x-ui.dropdown>
 
 {{-- Dropdown with custom styling --}}
-<x-ui.dropdown placement="end" menu contentClass="bg-base-100 rounded-box z-[1] w-48 p-2 shadow-lg border border-base-300">
+<x-ui.dropdown placement="end" menu contentClass="rounded-box z-[1] w-48 p-2 shadow-lg border border-base-300">
     <x-slot:trigger>
         <button class="btn btn-ghost btn-sm">
             <x-ui.icon name="globe-alt" />
@@ -1758,6 +1759,14 @@ If you see `Auth::guard('web')->logout()` causing an error:
 
 ### 2025-01-XX
 
+-   **Sidebar CSS Cleanup**: Removed unused mobile menu classes
+
+    -   **Removed Classes**: Removed `.sidebar-desktop` and `.sidebar-mobile` CSS classes from `resources/css/sidebar.css`
+    -   **Removed from Blade**: Removed `.sidebar-desktop` class from `sidebar.blade.php` component
+    -   **Responsive Behavior**: Responsive behavior is now handled entirely by DaisyUI's drawer component (`lg:drawer-open` class)
+    -   **Simplified CSS**: CSS now only includes styles for `.sidebar-top-menus`, `.sidebar-bottom-menus`, and `.sidebar-user-menus`
+    -   **Documentation**: Updated `AGENTS.md` to reflect removal of mobile menu classes
+
 -   **BladeServiceProvider Refactoring**: Improved View Composer organization and data sharing
 
     -   **Method Organization**: Split into separate methods (`initLayoutVariables()`, `initPageTitle()`, `initPageSubtitle()`) for better maintainability
@@ -1803,10 +1812,11 @@ If you see `Auth::guard('web')->logout()` causing an error:
 
 -   **Sidebar Component Refactoring**: Unified sidebar structure for better maintainability
     -   **Unified Component**: Removed separate `desktop-menu.blade.php` and `mobile-menu.blade.php` components
-    -   **Single Component**: Created unified `sidebar-menu.blade.php` component (`<x-layouts.app.sidebar-menu />`) that handles both desktop and mobile via CSS classes
+    -   **Single Component**: Created unified `sidebar-menus.blade.php` component (`<x-layouts.app.sidebar-menus />`)
+    -   **Removed Mobile Menu Classes**: Removed `.sidebar-desktop` and `.sidebar-mobile` CSS classes - responsive behavior is handled by DaisyUI's drawer component
     -   **File Structure**:
         -   `resources/views/components/layouts/app/sidebar.blade.php` - Main wrapper (`<x-layouts.app.sidebar>`)
-        -   `resources/views/components/layouts/app/sidebar-menu.blade.php` - Unified menu component (`<x-layouts.app.sidebar-menu />`)
+        -   `resources/views/components/layouts/app/sidebar-menus.blade.php` - Unified menu component (`<x-layouts.app.sidebar-menus />`)
         -   `resources/views/components/layouts/app/header.blade.php` - Header component (`<x-layouts.app.header />`)
     -   **View Composers**: Sidebar now uses View Composers (in `BladeServiceProvider`) to inject menu data automatically
     -   **No Props Needed**: Removed need to pass menu data as props - data is automatically available via View Composers
@@ -1858,7 +1868,8 @@ If you see `Auth::guard('web')->logout()` causing an error:
 -   **Sidebar Component Refactoring**: Unified sidebar structure for better maintainability
 
     -   **Unified Component**: Removed separate `desktop-menu.blade.php` and `mobile-menu.blade.php` components
-    -   **Single Component**: Created unified `sidebar-menu.blade.php` component that handles both desktop and mobile via CSS classes
+    -   **Single Component**: Created unified `sidebar-menus.blade.php` component
+    -   **Removed Mobile Menu Classes**: Removed `.sidebar-desktop` and `.sidebar-mobile` CSS classes - responsive behavior is handled by DaisyUI's drawer component
     -   **View Composers**: Sidebar now uses View Composers (in `BladeServiceProvider`) to inject menu data automatically
     -   **No Props Needed**: Removed need to pass menu data as props - data is automatically available via View Composers
     -   **Integrated Navbar**: Mobile menu toggle is now integrated directly into the navbar within `sidebar.blade.php`

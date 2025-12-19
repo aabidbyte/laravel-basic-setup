@@ -42,8 +42,8 @@ test('BladeServiceProvider shares menu data when sidebar components are rendered
     $provider = new BladeServiceProvider(app());
     $provider->boot();
 
-    // Render the sidebar-menu view - if menu data is not available, it will throw an error
-    $view = view('components.layouts.app.sidebar-menu')->render();
+    // Render the sidebar-menus view - if menu data is not available, it will throw an error
+    $view = view('components.layouts.app.sidebar-menus')->render();
 
     // The view should render successfully with menu data available
     expect($view)->toBeString();

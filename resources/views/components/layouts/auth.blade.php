@@ -2,7 +2,7 @@
 <html lang="{{ $htmlLangAttribute }}" dir="{{ $htmlDirAttribute }}" data-theme="{{ $currentTheme }}">
 
 <head>
-    @include('partials.head')
+    @include('partials.auth.head')
 
     @livewireStyles
 </head>
@@ -13,6 +13,8 @@
     </x-layouts.auth.split>
 
     @livewireScripts
+
+    @stack('endBody')
 </body>
 
 </html>
