@@ -37,6 +37,8 @@ class NotificationBuilder
 
     protected bool $global = false;
 
+    protected bool $userTeams = false;
+
     protected ?string $link = null;
 
     /**
@@ -49,6 +51,8 @@ class NotificationBuilder
 
     /**
      * Create a new notification builder instance (factory method).
+     *
+     * @return static A new notification builder instance
      */
     public static function make(): static
     {
@@ -57,6 +61,8 @@ class NotificationBuilder
 
     /**
      * Set the notification title (required).
+     *
+     * @param  string  $title  The notification title
      */
     public function title(string $title): static
     {
@@ -67,6 +73,8 @@ class NotificationBuilder
 
     /**
      * Set the notification subtitle (optional).
+     *
+     * @param  string|null  $subtitle  The notification subtitle
      */
     public function subtitle(?string $subtitle): static
     {
@@ -77,6 +85,8 @@ class NotificationBuilder
 
     /**
      * Set the notification content as a string.
+     *
+     * @param  string  $content  The notification content as plain text
      */
     public function content(string $content): static
     {
@@ -87,6 +97,8 @@ class NotificationBuilder
 
     /**
      * Set the notification content as HTML (trusted).
+     *
+     * @param  string|\Illuminate\Contracts\Support\Htmlable|\Illuminate\Support\HtmlString  $html  The notification content as HTML
      */
     public function html(string|\Illuminate\Contracts\Support\Htmlable|\Illuminate\Support\HtmlString $html): static
     {
@@ -97,6 +109,9 @@ class NotificationBuilder
 
     /**
      * Set the notification content from a Blade view.
+     *
+     * @param  string  $view  The Blade view name
+     * @param  array<string, mixed>  $data  Data to pass to the view
      */
     public function view(string $view, array $data = []): static
     {
@@ -157,6 +172,8 @@ class NotificationBuilder
 
     /**
      * Set the toast position.
+     *
+     * @param  ToastPosition  $position  The toast position on the screen
      */
     public function position(ToastPosition $position): static
     {
@@ -167,6 +184,8 @@ class NotificationBuilder
 
     /**
      * Set the toast animation.
+     *
+     * @param  ToastAnimation  $animation  The toast animation type
      */
     public function animation(ToastAnimation $animation): static
     {
@@ -187,24 +206,30 @@ class NotificationBuilder
 
     /**
      * Send to a specific user.
+     *
+     * @param  User|Authenticatable|string  $user  The user instance, authenticatable, or UUID string
      */
     public function toUser(User|Authenticatable|string $user): static
     {
         $this->userId = $user instanceof User ? $user->uuid : (is_string($user) ? $user : $user->getAuthIdentifier());
         $this->teamId = null;
         $this->global = false;
+        $this->userTeams = false;
 
         return $this;
     }
 
     /**
      * Send to a specific team.
+     *
+     * @param  Team|string  $team  The team instance or UUID string
      */
     public function toTeam(Team|string $team): static
     {
         $this->teamId = $team instanceof Team ? $team->uuid : $team;
         $this->userId = null;
         $this->global = false;
+        $this->userTeams = false;
 
         return $this;
     }
@@ -217,12 +242,40 @@ class NotificationBuilder
         $this->global = true;
         $this->userId = null;
         $this->teamId = null;
+        $this->userTeams = false;
+
+        return $this;
+    }
+
+    /**
+     * Send to all teams of a user.
+     * If no user is provided, uses the current authenticated user.
+     *
+     * @param  User|Authenticatable|string|null  $user  The user instance, authenticatable, or UUID string. If null, uses the current authenticated user.
+     *
+     * @throws \RuntimeException If no user is provided and no authenticated user is available
+     */
+    public function toUserTeams(User|Authenticatable|string|null $user = null): static
+    {
+        if ($user === null) {
+            $user = Auth::user();
+            if (! $user instanceof User) {
+                throw new \RuntimeException('Cannot send to user teams: no authenticated user available.');
+            }
+        }
+
+        $this->userId = $user instanceof User ? $user->uuid : (is_string($user) ? $user : $user->getAuthIdentifier());
+        $this->teamId = null;
+        $this->global = false;
+        $this->userTeams = true;
 
         return $this;
     }
 
     /**
      * Set an optional link URL for the notification.
+     *
+     * @param  string  $link  The URL to link to when the notification is clicked
      */
     public function link(string $link): static
     {
@@ -233,15 +286,15 @@ class NotificationBuilder
 
     /**
      * Send the notification (broadcast toast + optionally persist).
+     *
+     * @throws \InvalidArgumentException If the notification title is missing or empty
+     * @throws \RuntimeException If the notification channel cannot be determined
      */
     public function send(): void
     {
         if ($this->title === null || trim($this->title) === '') {
             throw new \InvalidArgumentException('Notification title is required.');
         }
-
-        // Determine the target channel
-        $channel = $this->determineChannel();
 
         // Render icon HTML server-side
         $iconHtml = $this->renderIconForType($this->type);
@@ -258,6 +311,16 @@ class NotificationBuilder
             iconHtml: $iconHtml,
         );
 
+        // Handle user teams (multiple teams)
+        if ($this->userTeams) {
+            $this->sendToUserTeams($payload);
+
+            return;
+        }
+
+        // Determine the target channel for single target
+        $channel = $this->determineChannel();
+
         // Always broadcast the toast
         event(new ToastBroadcasted($payload, $channel));
 
@@ -269,6 +332,9 @@ class NotificationBuilder
 
     /**
      * Render icon HTML for the given toast type.
+     *
+     * @param  ToastType  $type  The toast type
+     * @return string The rendered icon HTML
      */
     protected function renderIconForType(ToastType $type): string
     {
@@ -288,7 +354,60 @@ class NotificationBuilder
     }
 
     /**
+     * Send notification to all teams of a user.
+     *
+     * @param  ToastPayload  $payload  The toast payload to send
+     *
+     * @throws \RuntimeException If the user ID is not available or the user is not found
+     */
+    protected function sendToUserTeams(ToastPayload $payload): void
+    {
+        $targetUserId = $this->userId ?? Auth::id();
+        if (! $targetUserId) {
+            throw new \RuntimeException('Cannot send to user teams: no user ID available.');
+        }
+
+        $user = is_string($targetUserId) ? User::where('uuid', $targetUserId)->first() : User::find($targetUserId);
+        if (! $user) {
+            throw new \RuntimeException('Cannot send to user teams: user not found.');
+        }
+
+        // Get all teams for the user
+        $teams = $user->teams()->get();
+
+        if ($teams->isEmpty()) {
+            // If user has no teams, fall back to user channel
+            $channel = "private-notifications.user.{$user->uuid}";
+            event(new ToastBroadcasted($payload, $channel));
+
+            if ($this->persist) {
+                $this->persistUser($user, $this->prepareNotificationData($payload));
+            }
+
+            return;
+        }
+
+        // Prepare notification data once if persistence is enabled
+        $notificationData = $this->persist ? $this->prepareNotificationData($payload) : null;
+
+        // Broadcast to each team channel
+        foreach ($teams as $team) {
+            $channel = "private-notifications.team.{$team->uuid}";
+            event(new ToastBroadcasted($payload, $channel));
+
+            // Persist to each team if needed
+            if ($this->persist && $notificationData !== null) {
+                $this->persistTeamForUserTeams($team, $notificationData);
+            }
+        }
+    }
+
+    /**
      * Determine the broadcast channel based on current settings.
+     *
+     * @return string The broadcast channel name
+     *
+     * @throws \RuntimeException If no user context is available
      */
     protected function determineChannel(): string
     {
@@ -315,23 +434,12 @@ class NotificationBuilder
 
     /**
      * Persist notification to database.
+     *
+     * @param  ToastPayload  $payload  The toast payload to persist
      */
     protected function persistToDatabase(ToastPayload $payload): void
     {
-        $notificationData = [
-            'id' => (string) Str::uuid(),
-            'type' => 'App\Notifications\GeneralNotification',
-            'data' => [
-                'title' => $payload->title,
-                'subtitle' => $payload->subtitle,
-                'content' => $payload->content,
-                'type' => $payload->type->value,
-                'link' => $payload->link,
-            ],
-            'read_at' => null,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ];
+        $notificationData = $this->prepareNotificationData($payload);
 
         if ($this->global) {
             // For global notifications, notify all users
@@ -350,6 +458,9 @@ class NotificationBuilder
 
     /**
      * Persist notification for a specific user.
+     *
+     * @param  int|string|User  $userId  The user ID, UUID, or User instance
+     * @param  array<string, mixed>  $notificationData  The notification data array
      */
     protected function persistUser(int|string|User $userId, array $notificationData): void
     {
@@ -366,6 +477,8 @@ class NotificationBuilder
 
     /**
      * Persist notification for all team members.
+     *
+     * @param  array<string, mixed>  $notificationData  The notification data array
      */
     protected function persistTeam(array $notificationData): void
     {
@@ -374,6 +487,17 @@ class NotificationBuilder
             return;
         }
 
+        $this->persistTeamForUserTeams($team, $notificationData);
+    }
+
+    /**
+     * Persist notification for a specific team instance.
+     *
+     * @param  Team  $team  The team instance
+     * @param  array<string, mixed>  $notificationData  The notification data array
+     */
+    protected function persistTeamForUserTeams(Team $team, array $notificationData): void
+    {
         $userIds = $team->users()->pluck('users.id');
 
         if ($userIds->isEmpty()) {
@@ -392,7 +516,33 @@ class NotificationBuilder
     }
 
     /**
+     * Prepare notification data array from payload.
+     *
+     * @param  ToastPayload  $payload  The toast payload
+     * @return array<string, mixed> The prepared notification data array
+     */
+    protected function prepareNotificationData(ToastPayload $payload): array
+    {
+        return [
+            'id' => (string) Str::uuid(),
+            'type' => 'App\Notifications\GeneralNotification',
+            'data' => [
+                'title' => $payload->title,
+                'subtitle' => $payload->subtitle,
+                'content' => $payload->content,
+                'type' => $payload->type->value,
+                'link' => $payload->link,
+            ],
+            'read_at' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ];
+    }
+
+    /**
      * Persist notification for all users (global).
+     *
+     * @param  array<string, mixed>  $notificationData  The notification data array
      */
     protected function persistGlobal(array $notificationData): void
     {

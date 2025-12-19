@@ -4,10 +4,10 @@ use App\Livewire\BasePageComponent;
 use App\Models\User;
 use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\Rule;
 
-new class extends BasePageComponent {
+new class extends BasePageComponent
+{
     public ?string $pageTitle = 'ui.pages.settings.profile';
 
     public ?string $pageSubtitle = 'ui.settings.profile.description';

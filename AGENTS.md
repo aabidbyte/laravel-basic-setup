@@ -182,7 +182,12 @@ These helpers are automatically loaded via Composer autoload and should be used 
     -   Always use explicit return type declarations
     -   Use appropriate type hints for method parameters
     -   **Always use function guards and early returns** - Check for invalid conditions first and return early to reduce nesting and improve readability
--   **PHPDoc**: Prefer PHPDoc blocks over inline comments
+-   **PHPDoc**: **Always add comprehensive PHPDoc comments to all methods and functions when possible** - This enables better IDE autocomplete, type checking, and code documentation. Include:
+    -   `@param` annotations with types and descriptions for all parameters
+    -   `@return` annotations with return types
+    -   `@throws` annotations for exceptions that may be thrown
+    -   Detailed descriptions explaining what the method does
+    -   Prefer PHPDoc blocks over inline comments
 -   **Auth**: **Never use the `auth()` helper**. Always use the `Illuminate\Support\Facades\Auth` facade (e.g. `Auth::check()`, `Auth::user()`, `Auth::id()`, `Auth::guard(...)`).
 -   **Helper Functions**: **Do NOT use `function_exists()` checks in helper files** - Helper files are autoloaded via Composer and will only be loaded once, so function existence checks are unnecessary
 -   **I18nService**: **Always use `I18nService` for locale-related code** - Do not directly access `config('i18n.*')` in helper functions or other code. Use `I18nService` methods to centralize all locale-related logic (`getSupportedLocales()`, `getDefaultLocale()`, `getValidLocale()`, `getLocaleMetadata()`, etc.)

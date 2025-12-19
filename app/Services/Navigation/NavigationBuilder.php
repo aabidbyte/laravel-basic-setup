@@ -27,6 +27,8 @@ class NavigationBuilder implements Arrayable
 
     /**
      * Create a new navigation builder instance (factory method).
+     *
+     * @return static A new navigation builder instance
      */
     public static function make(): static
     {
@@ -45,6 +47,8 @@ class NavigationBuilder implements Arrayable
 
     /**
      * Add navigation items to the group.
+     *
+     * @param  NavigationItem  ...$items  The navigation items to add
      */
     public function items(NavigationItem ...$items): static
     {
@@ -55,6 +59,8 @@ class NavigationBuilder implements Arrayable
 
     /**
      * Set the icon for the navigation group.
+     *
+     * @param  string  $icon  The icon component name (e.g., 'home', 'user', 'settings')
      */
     public function icon(string $icon): static
     {
@@ -65,6 +71,8 @@ class NavigationBuilder implements Arrayable
 
     /**
      * Set conditional visibility for the navigation group.
+     *
+     * @param  bool|Closure  $show  Whether to show the group, or a closure that returns a boolean
      */
     public function show(bool|Closure $show): static
     {
@@ -75,6 +83,8 @@ class NavigationBuilder implements Arrayable
 
     /**
      * Get the title of the navigation group.
+     *
+     * @return string|null The navigation group title, or null if not set
      */
     public function getTitle(): ?string
     {
@@ -83,6 +93,8 @@ class NavigationBuilder implements Arrayable
 
     /**
      * Get the navigation items (only visible ones).
+     *
+     * @return array<int, NavigationItem> Array of visible navigation items
      */
     public function getItems(): array
     {
@@ -93,6 +105,8 @@ class NavigationBuilder implements Arrayable
 
     /**
      * Check if the navigation group has items.
+     *
+     * @return bool True if the group has visible items, false otherwise
      */
     public function hasItems(): bool
     {
@@ -101,6 +115,8 @@ class NavigationBuilder implements Arrayable
 
     /**
      * Get the icon.
+     *
+     * @return string|null The icon component name, or null if not set
      */
     public function getIcon(): ?string
     {
@@ -109,6 +125,8 @@ class NavigationBuilder implements Arrayable
 
     /**
      * Check if the navigation group should be shown.
+     *
+     * @return bool True if the group should be visible, false otherwise
      */
     public function isVisible(): bool
     {
@@ -123,6 +141,8 @@ class NavigationBuilder implements Arrayable
      * Convert the navigation builder to a ready-to-render array.
      * Automatically filters out invisible groups and groups with no visible items.
      * Returns an array of groups ready for Blade rendering.
+     *
+     * @return array<int, array<string, mixed>> Array containing the navigation group data, or empty array if not visible or has no items
      */
     public function toArray(): array
     {

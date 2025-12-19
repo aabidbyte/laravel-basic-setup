@@ -2,8 +2,10 @@
 
 namespace App\Actions\Fortify;
 
+use App\Models\Team;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
 
@@ -30,10 +32,22 @@ class CreateNewUser implements CreatesNewUsers
             'password' => $this->passwordRules(),
         ])->validate();
 
-        return User::create([
+        $user = User::create([
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => $input['password'],
         ]);
+
+        // Create a personal team for the user
+        $team = Team::create([
+            'name' => $user->name."'s Team",
+        ]);
+
+        // Attach user to team
+        $user->teams()->attach($team->id, [
+            'uuid' => (string) Str::uuid(),
+        ]);
+
+        return $user;
     }
 }

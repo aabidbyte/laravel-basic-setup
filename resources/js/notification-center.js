@@ -52,7 +52,9 @@ function createNotificationsStore() {
                 return;
             }
 
-            const handleToast = (e) => this._emit("toast.received", e);
+            const handleToast = (e) => {
+                this._emit("toast.received", e);
+            };
             const handleNotification = (e) =>
                 this._emit("notification.changed", e);
 
@@ -172,6 +174,11 @@ function toastCenter() {
 
         init() {
             if (!window.Alpine) {
+                return;
+            }
+
+            // Only subscribe if we haven't already subscribed (prevents duplicate subscriptions)
+            if (this.unsubscribe) {
                 return;
             }
 

@@ -41,6 +41,8 @@ class NavigationItem implements Arrayable
 
     /**
      * Create a new navigation item instance (factory method).
+     *
+     * @return static A new navigation item instance
      */
     public static function make(): static
     {
@@ -50,6 +52,9 @@ class NavigationItem implements Arrayable
     /**
      * Convert multiple navigation items to a ready-to-render array.
      * Handles all security filtering internally.
+     *
+     * @param  NavigationItem  ...$items  The navigation items to convert
+     * @return array<int, array<string, mixed>> Array of visible navigation items as arrays
      */
     public static function toArrayFromMany(NavigationItem ...$items): array
     {
@@ -68,6 +73,8 @@ class NavigationItem implements Arrayable
 
     /**
      * Set the title/label of the navigation item.
+     *
+     * @param  string  $title  The navigation item title/label
      */
     public function title(string $title): static
     {
@@ -78,6 +85,8 @@ class NavigationItem implements Arrayable
 
     /**
      * Set a direct URL for the navigation item.
+     *
+     * @param  string  $url  The direct URL
      */
     public function url(string $url): static
     {
@@ -88,6 +97,9 @@ class NavigationItem implements Arrayable
 
     /**
      * Set a named route for the navigation item.
+     *
+     * @param  string  $route  The named route
+     * @param  array<string, mixed>  $parameters  Route parameters
      */
     public function route(string $route, array $parameters = []): static
     {
@@ -101,6 +113,8 @@ class NavigationItem implements Arrayable
      * Set the icon for the navigation item.
      * Accepts an icon component name (e.g., 'home', 'user', 'settings').
      * Icons are rendered using the dynamic-icon-island component.
+     *
+     * @param  string  $icon  The icon component name
      */
     public function icon(string $icon): static
     {
@@ -111,6 +125,8 @@ class NavigationItem implements Arrayable
 
     /**
      * Set conditional visibility for the navigation item.
+     *
+     * @param  bool|Closure  $show  Whether to show the item, or a closure that returns a boolean
      */
     public function show(bool|Closure $show): static
     {
@@ -121,6 +137,8 @@ class NavigationItem implements Arrayable
 
     /**
      * Mark the navigation item as an external link.
+     *
+     * @param  bool  $external  Whether the link is external (default: true)
      */
     public function external(bool $external = true): static
     {
@@ -131,6 +149,8 @@ class NavigationItem implements Arrayable
 
     /**
      * Add nested sub-items to the navigation item.
+     *
+     * @param  NavigationItem  ...$items  The nested navigation items
      */
     public function items(NavigationItem ...$items): static
     {
@@ -141,6 +161,8 @@ class NavigationItem implements Arrayable
 
     /**
      * Add a badge/counter to the navigation item.
+     *
+     * @param  string|int|Closure  $badge  The badge value, or a closure that returns the badge value
      */
     public function badge(string|int|Closure $badge): static
     {
@@ -151,6 +173,8 @@ class NavigationItem implements Arrayable
 
     /**
      * Set custom active state detection.
+     *
+     * @param  bool|Closure  $active  Whether the item is active, or a closure that returns a boolean
      */
     public function active(bool|Closure $active): static
     {
@@ -161,6 +185,8 @@ class NavigationItem implements Arrayable
 
     /**
      * Set additional HTML attributes.
+     *
+     * @param  array<string, mixed>  $attributes  HTML attributes as key-value pairs
      */
     public function attributes(array $attributes): static
     {
@@ -171,6 +197,8 @@ class NavigationItem implements Arrayable
 
     /**
      * Get the title of the navigation item.
+     *
+     * @return string|null The navigation item title, or null if not set
      */
     public function getTitle(): ?string
     {
@@ -179,6 +207,8 @@ class NavigationItem implements Arrayable
 
     /**
      * Get the URL for the navigation item.
+     *
+     * @return string|null The resolved URL, or null if no URL or route is set
      */
     public function getUrl(): ?string
     {
@@ -195,6 +225,8 @@ class NavigationItem implements Arrayable
 
     /**
      * Get the route name.
+     *
+     * @return string|null The route name, or null if not set
      */
     public function getRoute(): ?string
     {
@@ -211,6 +243,8 @@ class NavigationItem implements Arrayable
 
     /**
      * Get the icon.
+     *
+     * @return string|null The icon component name, or null if not set
      */
     public function getIcon(): ?string
     {
@@ -231,6 +265,8 @@ class NavigationItem implements Arrayable
 
     /**
      * Check if the navigation item is external.
+     *
+     * @return bool True if the item is an external link, false otherwise
      */
     public function isExternal(): bool
     {
@@ -249,6 +285,8 @@ class NavigationItem implements Arrayable
 
     /**
      * Check if the navigation item has sub-items.
+     *
+     * @return bool True if the item has visible sub-items, false otherwise
      */
     public function hasItems(): bool
     {
@@ -269,6 +307,8 @@ class NavigationItem implements Arrayable
 
     /**
      * Check if the navigation item has a badge.
+     *
+     * @return bool True if the item has a badge (and it's not null or 0), false otherwise
      */
     public function hasBadge(): bool
     {
@@ -320,6 +360,8 @@ class NavigationItem implements Arrayable
 
     /**
      * Get additional HTML attributes.
+     *
+     * @return array<string, mixed> HTML attributes as key-value pairs
      */
     public function getAttributes(): array
     {
@@ -329,6 +371,8 @@ class NavigationItem implements Arrayable
     /**
      * Convert the navigation item to a ready-to-render array.
      * All logic is executed here, Blade just displays the data.
+     *
+     * @return array<string, mixed> The navigation item data as an array
      */
     public function toArray(): array
     {

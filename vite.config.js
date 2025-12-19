@@ -7,7 +7,7 @@ export default defineConfig({
         laravel({
             input: [
                 "resources/css/app.css",
-                "resources/css/theme.css",
+                "resources/css/auth.css",
                 "resources/js/app.js",
                 "resources/js/notification-center.js",
             ],
