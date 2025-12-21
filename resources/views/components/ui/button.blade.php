@@ -1,12 +1,15 @@
 @props([
     'variant' => null, // Deprecated: use 'style' and 'color' instead
     'style' => null, // 'solid', 'outline', 'ghost', 'link', 'soft', 'dash'
-    'color' => 'primary', // 'primary', 'secondary', 'accent', 'neutral', 'info', 'success', 'warning', 'error'
+    'color' => null, // 'primary', 'secondary', 'accent', 'neutral', 'info', 'success', 'warning', 'error'
     'size' => 'md',
     'type' => null,
 ])
 
 @php
+    // Store original color to check if it was explicitly provided
+    $originalColor = $color;
+
     // Backward compatibility: if variant is set, map it to style/color
     if ($variant !== null) {
         $variantMap = [
@@ -24,45 +27,51 @@
         ];
 
         if (isset($variantMap[$variant])) {
-            $style = $style ?? $variantMap[$variant]['style'];
-            $color = $color ?? $variantMap[$variant]['color'];
-        }
+            // Only override style/color if they weren't explicitly provided
+        $style = $style ?? $variantMap[$variant]['style'];
+        // If color wasn't explicitly provided, use variant's color
+        // This ensures variant="error" defaults to color="error" even if color prop has a default
+        $color = $originalColor ?? $variantMap[$variant]['color'];
     }
+}
 
-    // Default style to 'solid' if not set
-    $style = $style ?? 'solid';
+// Default style to 'solid' if not set
+$style = $style ?? 'solid';
 
-    $styleClasses = [
-        'solid' => '',
-        'outline' => 'btn-outline',
-        'ghost' => 'btn-ghost',
-        'link' => 'btn-link',
-        'soft' => 'btn-soft',
-        'dash' => 'btn-dash',
-    ];
+// Default color to 'primary' if not set (after variant mapping)
+$color = $color ?? 'primary';
 
-    $colorClasses = [
-        'primary' => 'btn-primary',
-        'secondary' => 'btn-secondary',
-        'accent' => 'btn-accent',
-        'neutral' => 'btn-neutral',
-        'info' => 'btn-info',
-        'success' => 'btn-success',
-        'warning' => 'btn-warning',
-        'error' => 'btn-error',
-    ];
+$styleClasses = [
+    'solid' => '',
+    'outline' => 'btn-outline',
+    'ghost' => 'btn-ghost',
+    'link' => 'btn-link',
+    'soft' => 'btn-soft',
+    'dash' => 'btn-dash',
+];
 
-    $sizeClasses = [
-        'xs' => 'btn-xs',
-        'sm' => 'btn-sm',
-        'md' => '',
-        'lg' => 'btn-lg',
-        'xl' => 'btn-xl',
-    ];
+$colorClasses = [
+    'primary' => 'btn-primary',
+    'secondary' => 'btn-secondary',
+    'accent' => 'btn-accent',
+    'neutral' => 'btn-neutral',
+    'info' => 'btn-info',
+    'success' => 'btn-success',
+    'warning' => 'btn-warning',
+    'error' => 'btn-error',
+];
 
-    $styleClass = $styleClasses[$style] ?? '';
-    $colorClass = $colorClasses[$color] ?? $colorClasses['primary'];
-    $sizeClass = $sizeClasses[$size] ?? '';
+$sizeClasses = [
+    'xs' => 'btn-xs',
+    'sm' => 'btn-sm',
+    'md' => '',
+    'lg' => 'btn-lg',
+    'xl' => 'btn-xl',
+];
+
+$styleClass = $styleClasses[$style] ?? '';
+$colorClass = $colorClasses[$color] ?? $colorClasses['primary'];
+$sizeClass = $sizeClasses[$size] ?? '';
 
     $classes = trim("btn {$styleClass} {$colorClass} {$sizeClass}");
 @endphp

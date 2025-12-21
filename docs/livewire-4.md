@@ -3489,6 +3489,8 @@ When using `wire:scroll` to preserve scroll in a scrollable container across `wi
 5. **Prefer lifecycle hooks**: Use `mount()`, `updatedFoo()` for initialization and reactive side effects
 6. **Validate form data**: Always validate form data in Livewire actions
 7. **Run authorization checks**: Always run authorization checks in Livewire actions
+8. **Avoid `@php` directives**: All PHP logic should be included in the Livewire component class. Use computed properties, methods, or properties instead of `@php` blocks in Blade templates. This keeps logic centralized in the component class and improves maintainability.
+9. **Avoid conditional wrapper patterns with duplicated content**: When you have conditional wrapper elements (e.g., `<a>` vs `<div>`) that wrap the same content, extract the repeated content into a separate Blade component and call it twice—once inside each wrapper. This improves readability and maintainability. Example: Instead of duplicating content inside `@if ($hasLink) <a>...</a> @else <div>...</div> @endif`, create a component like `<x-notifications.notification-item />` and use it in both branches.
 
 ## Resources
 

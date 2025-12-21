@@ -40,7 +40,7 @@
         $dropdownClasses .= ' dropdown-hover';
     }
 
-    $contentClasses = 'dropdown-content';
+    $contentClasses = 'dropdown-content rounded-lg gap-2 whitespace-nowrap';
 
     if (!empty($bgClass)) {
         $contentClasses .= ' ' . $bgClass;

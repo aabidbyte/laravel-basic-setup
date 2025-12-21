@@ -1097,6 +1097,8 @@ Route::livewire('/example', 'pages::example')->name('example');
 -   Prefer lifecycle hooks (`mount()`, `updatedFoo()`)
 -   Always validate form data in Livewire actions
 -   Always run authorization checks in Livewire actions
+-   **Avoid `@php` directives in Blade templates**: All PHP logic should be included in the Livewire component class. Use computed properties, methods, or properties instead of `@php` blocks in templates. This keeps logic centralized in the component class and improves maintainability.
+-   **Avoid conditional wrapper patterns with duplicated content**: When you have conditional wrapper elements (e.g., `<a>` vs `<div>`) that wrap the same content, extract the repeated content into a separate Blade component and call it twice—once inside each wrapper. This improves readability and maintainability. Example: Instead of duplicating content inside `@if ($hasLink) <a>...</a> @else <div>...</div> @endif`, create a component like `<x-notifications.notification-item />` and use it in both branches.
 
 ### UI Components
 

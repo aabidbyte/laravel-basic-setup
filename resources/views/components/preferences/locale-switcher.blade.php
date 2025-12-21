@@ -1,5 +1,4 @@
-<x-ui.dropdown placement="end" menu menuSize="sm"
-    contentClass="rounded-box z-[1] w-48 p-2 shadow-lg border border-base-300">
+<x-ui.dropdown placement="end" menu menuSize="sm">
     <x-slot:trigger>
         <div class="btn btn-ghost btn-sm">
             <x-ui.icon name="{{ $localeMetadata['icon']['name'] ?? 'globe-alt' }}"
@@ -9,7 +8,7 @@
     </x-slot:trigger>
 
     @foreach ($supportedLocales as $localeCode => $localeData)
-        <li>
+        <div>
             <form method="POST" action="{{ route('preferences.locale') }}">
                 @csrf
                 <input type="hidden" name="locale" value="{{ $localeCode }}">
@@ -20,6 +19,6 @@
                     <span>{{ $localeData['native_name'] ?? $localeCode }}</span>
                 </button>
             </form>
-        </li>
+        </div>
     @endforeach
 </x-ui.dropdown>

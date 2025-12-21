@@ -345,15 +345,17 @@ The component uses the following translation keys (can be overridden via config 
 
 A centralized button component that provides consistent styling using DaisyUI button classes. Supports combining style variants (solid, outline, ghost, etc.) with colors (primary, error, success, etc.) for flexible button styling.
 
+**Smart Color Defaults**: When using the deprecated `variant` prop, the component automatically sets the appropriate color. For example, `variant="error"` will default to `color="error"` unless an explicit color is provided.
+
 ### Props
 
-| Prop      | Type     | Default     | Description                                                                                      |
-| --------- | -------- | ----------- | ------------------------------------------------------------------------------------------------ |
-| `style`   | `string` | `'solid'`   | Button style: `solid`, `outline`, `ghost`, `link`, `soft`, `dash`                                |
-| `color`   | `string` | `'primary'` | Button color: `primary`, `secondary`, `accent`, `neutral`, `info`, `success`, `warning`, `error` |
-| `variant` | `string` | `null`      | **Deprecated**: Use `style` and `color` instead. Legacy prop for backward compatibility.         |
-| `size`    | `string` | `'md'`      | Button size: `xs`, `sm`, `md`, `lg`, `xl`                                                        |
-| `type`    | `string` | `null`      | HTML button type: `button`, `submit`, `reset` (defaults to `button` if not specified)            |
+| Prop      | Type     | Default   | Description                                                                                                                                                                          |
+| --------- | -------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `style`   | `string` | `'solid'` | Button style: `solid`, `outline`, `ghost`, `link`, `soft`, `dash`                                                                                                                    |
+| `color`   | `string` | `null`    | Button color: `primary`, `secondary`, `accent`, `neutral`, `info`, `success`, `warning`, `error`. Defaults to `'primary'` if not set.                                                |
+| `variant` | `string` | `null`    | **Deprecated**: Use `style` and `color` instead. Legacy prop for backward compatibility. Automatically sets appropriate color (e.g., `variant="error"` defaults to `color="error"`). |
+| `size`    | `string` | `'md'`    | Button size: `xs`, `sm`, `md`, `lg`, `xl`                                                                                                                                            |
+| `type`    | `string` | `null`    | HTML button type: `button`, `submit`, `reset` (defaults to `button` if not specified)                                                                                                |
 
 ### Usage Examples
 
@@ -429,13 +431,18 @@ A centralized button component that provides consistent styling using DaisyUI bu
 
 #### Backward Compatibility (Deprecated)
 
-The `variant` prop is still supported for backward compatibility but is deprecated. It maps to appropriate `style` and `color` combinations:
+The `variant` prop is still supported for backward compatibility but is deprecated. It maps to appropriate `style` and `color` combinations. **Important**: When using `variant`, the component automatically sets the appropriate color unless you explicitly provide one.
 
 ```blade
 {{-- Old way (still works) --}}
+{{-- variant="error" automatically defaults to color="error" --}}
+<x-ui.button variant="error">Delete</x-ui.button>
 <x-ui.button variant="primary">Primary</x-ui.button>
 <x-ui.button variant="ghost">Ghost</x-ui.button>
-<x-ui.button variant="error">Error</x-ui.button>
+<x-ui.button variant="success">Success</x-ui.button>
+
+{{-- You can still override the color if needed --}}
+<x-ui.button variant="error" color="primary">Error variant, primary color</x-ui.button>
 
 {{-- New way (recommended) --}}
 <x-ui.button color="primary">Primary</x-ui.button>
@@ -451,6 +458,7 @@ The `variant` prop is still supported for backward compatibility but is deprecat
 -   Merges additional attributes (like `wire:click`, `class`, `data-*`) using Laravel's attribute merging
 -   Defaults to `btn-primary` (solid primary) if no style/color is specified
 -   Maintains backward compatibility with the deprecated `variant` prop
+-   **Smart defaults**: When using `variant`, automatically sets the appropriate color (e.g., `variant="error"` → `color="error"`) unless an explicit color is provided
 
 ---
 

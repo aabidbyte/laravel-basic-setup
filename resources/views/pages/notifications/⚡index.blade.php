@@ -1,7 +1,7 @@
 <?php
 
-use App\Livewire\BasePageComponent;
 use App\Events\DatabaseNotificationChanged;
+use App\Livewire\BasePageComponent;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 
@@ -44,17 +44,20 @@ new class extends BasePageComponent {
             ->get()
             ->map(function ($notification) {
                 $data = $notification->data;
+                $type = $data['type'] ?? 'classic';
+                $icon = $this->getNotificationIcon($type);
 
                 return [
                     'id' => $notification->id,
                     'title' => $data['title'] ?? 'Notification',
                     'subtitle' => $data['subtitle'] ?? null,
                     'content' => $data['content'] ?? null,
-                    'type' => $data['type'] ?? 'classic',
+                    'type' => $type,
                     'link' => $data['link'] ?? null,
                     'isRead' => $notification->read_at !== null,
                     'readAt' => $notification->read_at,
                     'createdAt' => $notification->created_at,
+                    'icon' => $icon,
                 ];
             });
     }
@@ -110,6 +113,23 @@ new class extends BasePageComponent {
 
         event(new DatabaseNotificationChanged(userUuid: $user->uuid, notificationId: '*', action: 'bulkDeleted'));
     }
+
+    /**
+     * Get icon configuration for notification type.
+     *
+     * @param  string  $type  Notification type
+     * @return array{name: string, class: string}
+     */
+    public function getNotificationIcon(string $type): array
+    {
+        return match ($type) {
+            'success' => ['name' => 'check-circle', 'class' => 'h-6 w-6 text-success'],
+            'info' => ['name' => 'information-circle', 'class' => 'h-6 w-6 text-info'],
+            'warning' => ['name' => 'exclamation-triangle', 'class' => 'h-6 w-6 text-warning'],
+            'error' => ['name' => 'x-circle', 'class' => 'h-6 w-6 text-error'],
+            default => ['name' => 'bell', 'class' => 'h-6 w-6 text-base-content'],
+        };
+    }
 }; ?>
 
 <div x-data="notificationCenter($wire)" x-init="init()" x-on:notifications-changed.window="$wire.$refresh()"
@@ -150,17 +170,8 @@ new class extends BasePageComponent {
                             <div class="flex items-start gap-3">
                                 <div wire:click="markAsRead('{{ $notification['id'] }}')"
                                     class="flex-shrink-0 {{ $notification['isRead'] ? 'opacity-50' : '' }} cursor-pointer">
-                                    @if ($notification['type'] === 'success')
-                                        <x-ui.icon name="check-circle" class="h-6 w-6 text-success" />
-                                    @elseif($notification['type'] === 'info')
-                                        <x-ui.icon name="information-circle" class="h-6 w-6 text-info" />
-                                    @elseif($notification['type'] === 'warning')
-                                        <x-ui.icon name="exclamation-triangle" class="h-6 w-6 text-warning" />
-                                    @elseif($notification['type'] === 'error')
-                                        <x-ui.icon name="x-circle" class="h-6 w-6 text-error" />
-                                    @else
-                                        <x-ui.icon name="bell" class="h-6 w-6 text-base-content" />
-                                    @endif
+                                    <x-ui.icon name="{{ $notification['icon']['name'] }}"
+                                        class="{{ $notification['icon']['class'] }}" />
                                 </div>
                                 <div wire:click="markAsRead('{{ $notification['id'] }}')"
                                     class="flex-1 cursor-pointer">

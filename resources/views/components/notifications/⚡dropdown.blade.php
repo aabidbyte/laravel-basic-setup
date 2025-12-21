@@ -36,19 +36,22 @@ new class extends Component {
                 $data = $notification->data;
                 $type = $data['type'] ?? 'classic';
                 $link = $data['link'] ?? null;
+                $isRead = $notification->read_at !== null;
 
                 return [
                     'id' => $notification->id,
                     'title' => $data['title'] ?? 'Notification',
                     'subtitle' => $data['subtitle'] ?? null,
                     'type' => $type,
-                    'link' => $link ?? route('notifications.index'),
-                    'isRead' => $notification->read_at !== null,
+                    'link' => $link,
+                    'isRead' => $isRead,
                     'createdAt' => $notification->created_at,
                     'iconName' => $this->getIconNameForType($type),
                     'iconClass' => $this->getIconClassForType($type),
-                    'linkClass' => $this->getLinkClass($notification->read_at !== null),
-                    'hasWireNavigate' => $link !== null,
+                    'linkClass' => $this->getLinkClass($isRead),
+                    'hasLink' => !empty($link),
+                    'wrapperClass' => $this->getLinkClass($isRead) . (empty($link) ? ' cursor-default' : ''),
+                    'markAsReadAction' => !$isRead ? "markAsRead('{$notification->id}')" : null,
                 ];
             })
             ->toArray();
@@ -94,6 +97,7 @@ new class extends Component {
     public function getUnreadBadgeProperty(): string
     {
         $count = $this->unreadCount;
+
         return $count > 99 ? '99+' : (string) $count;
     }
 
@@ -155,28 +159,19 @@ new class extends Component {
 
         @forelse($this->formattedNotifications as $notification)
             <div>
-                <a href="{{ $notification['link'] }}" class="{{ $notification['linkClass'] }}"
-                    @if ($notification['hasWireNavigate']) wire:navigate @endif
-                    @if (!$notification['isRead']) wire:click="markAsRead('{{ $notification['id'] }}')" @endif>
-                    <div class="flex items-start gap-2">
-                        <div class="flex-shrink-0 mt-0.5">
-                            <x-ui.icon name="{{ $notification['iconName'] }}"
-                                class="{{ $notification['iconClass'] }}" />
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="truncate">{{ $notification['title'] }}</div>
-                            @if ($notification['subtitle'])
-                                <div class="text-xs opacity-70 truncate">{{ $notification['subtitle'] }}</div>
-                            @endif
-                            <div class="text-xs opacity-60 mt-1">
-                                {{ $notification['createdAt']->diffForHumans() }}
-                            </div>
-                        </div>
-                        @if (!$notification['isRead'])
-                            <div class="badge badge-primary badge-xs"></div>
-                        @endif
+                @if ($notification['hasLink'])
+                    <a href="{{ $notification['link'] }}" class="{{ $notification['wrapperClass'] }}" wire:navigate
+                        @if ($notification['markAsReadAction']) wire:click="{{ $notification['markAsReadAction'] }}" @endif>
+                        <x-notifications.notification-item :iconName="$notification['iconName']" :iconClass="$notification['iconClass']" :title="$notification['title']"
+                            :subtitle="$notification['subtitle']" :createdAt="$notification['createdAt']" :isRead="$notification['isRead']" />
+                    </a>
+                @else
+                    <div class="{{ $notification['wrapperClass'] }}"
+                        @if ($notification['markAsReadAction']) wire:click="{{ $notification['markAsReadAction'] }}" @endif>
+                        <x-notifications.notification-item :iconName="$notification['iconName']" :iconClass="$notification['iconClass']" :title="$notification['title']"
+                            :subtitle="$notification['subtitle']" :createdAt="$notification['createdAt']" :isRead="$notification['isRead']" />
                     </div>
-                </a>
+                @endif
             </div>
         @empty
             <div class="text-center py-4 text-sm opacity-60">
