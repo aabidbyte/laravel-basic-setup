@@ -7,18 +7,27 @@
         <x-ui.form method="POST" action="{{ route('login.store') }}" class="flex flex-col">
             @csrf
 
-            <x-ui.input type="email" name="email" :label="__('ui.auth.login.email_label')" :value="old('email')" required autofocus
-                autocomplete="email" placeholder="email@example.com" />
-
-            <x-ui.password name="password" :label="__('ui.auth.login.password_label')" required autocomplete="current-password" :placeholder="__('ui.auth.login.password_placeholder')">
-                @if (Route::has('password.request'))
-                    <x-slot:label-append>
-                        <a href="{{ route('password.request') }}" wire:navigate class="label-text-alt link">
-                            {{ __('ui.auth.login.forgot_password') }}
-                        </a>
-                    </x-slot:label-append>
-                @endif
-            </x-ui.password>
+            @if (isProduction())
+                {{-- Production: Show text input --}}
+                <x-ui.input type="text" name="identifier" :label="__('ui.auth.login.email_label')" :value="old('identifier')" required autofocus
+                    autocomplete="username" :placeholder="__('ui.auth.login.email_placeholder')" />
+                <x-ui.password name="password" :label="__('ui.auth.login.password_label')" required autocomplete="current-password"
+                    :placeholder="__('ui.auth.login.password_placeholder')">
+                    @if (Route::has('password.request'))
+                        <x-slot:label-append>
+                            <a href="{{ route('password.request') }}" wire:navigate class="label-text-alt link">
+                                {{ __('ui.auth.login.forgot_password') }}
+                            </a>
+                        </x-slot:label-append>
+                    @endif
+                </x-ui.password>
+            @else
+                {{-- Dev Environment: Show user select dropdown --}}
+                <x-ui.select name="identifier" :label="__('ui.auth.login.email_label')" :options="$users" :selected="old('identifier')" :placeholder="__('ui.auth.login.select_user')"
+                    :error="$errors->first('identifier')" required autofocus />
+                {{-- Dev mode: Hide password field and use default password --}}
+                <input type="hidden" name="password" value="password" />
+            @endif
 
             <div class="form-control">
                 <label class="label cursor-pointer justify-start gap-2">

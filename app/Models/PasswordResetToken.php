@@ -31,7 +31,7 @@ class PasswordResetToken extends Model
      *
      * @var string
      */
-    protected $primaryKey = 'email';
+    protected $primaryKey = 'identifier';
 
     /**
      * Indicates if the model's ID is auto-incrementing.
@@ -60,7 +60,7 @@ class PasswordResetToken extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'email',
+        'identifier',
         'token',
         'created_at',
     ];

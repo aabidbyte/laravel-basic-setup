@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Constants\Roles;
 use Illuminate\Support\Facades\Gate;
 use Laravel\Horizon\Horizon;
 use Laravel\Horizon\HorizonApplicationServiceProvider;
@@ -28,6 +29,12 @@ class HorizonServiceProvider extends HorizonApplicationServiceProvider
     protected function gate(): void
     {
         Gate::define('viewHorizon', function ($user = null) {
+            // Super Admin has automatic access via Gate::before() in AppServiceProvider
+            // Explicitly checking here for clarity and documentation
+            if ($user && $user->hasRole(Roles::SUPER_ADMIN)) {
+                return true;
+            }
+
             return in_array(optional($user)->email, [
                 //
             ]);

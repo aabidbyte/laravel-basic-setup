@@ -1,16 +1,17 @@
 <?php
 
-namespace App\Livewire\Actions;
+namespace App\Http\Controllers;
 
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 
-class Logout
+class AuthController extends Controller
 {
     /**
      * Log the current user out of the application.
      */
-    public function __invoke()
+    public function logout(): RedirectResponse
     {
         Auth::guard('web')->logout();
 

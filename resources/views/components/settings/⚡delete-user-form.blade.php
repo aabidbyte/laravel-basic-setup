@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\Actions\Logout;
+use App\Http\Controllers\AuthController;
 use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -11,14 +11,15 @@ new class extends Component {
     /**
      * Delete the currently authenticated user.
      */
-    public function deleteUser(Logout $logout): void
+    public function deleteUser(): void
     {
         $this->validate([
             'password' => ['required', 'string', 'current_password'],
         ]);
 
         $user = Auth::user();
-        tap($user, $logout(...))->delete();
+        app(AuthController::class)->logout();
+        $user->delete();
 
         NotificationBuilder::make()->title(__('ui.settings.delete_account.success'))->info()->send();
 

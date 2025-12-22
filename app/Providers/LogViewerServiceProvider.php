@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Constants\Roles;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -32,6 +33,12 @@ class LogViewerServiceProvider extends ServiceProvider
     {
         Gate::define('viewLogViewer', function ($user = null) {
             if (isDevelopment()) {
+                return true;
+            }
+
+            // Super Admin has automatic access via Gate::before() in AppServiceProvider
+            // Explicitly checking here for clarity and documentation
+            if ($user && $user->hasRole(Roles::SUPER_ADMIN)) {
                 return true;
             }
 

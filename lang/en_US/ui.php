@@ -6,6 +6,7 @@ return [
         'platform' => 'Platform',
         'dashboard' => 'Dashboard',
         'notifications' => 'Notifications',
+        'users' => 'Users',
         'resources' => 'Resources',
         'repository' => 'Repository',
         'documentation' => 'Documentation',
@@ -18,6 +19,8 @@ return [
         'logout' => 'Log Out',
         'save' => 'Save',
         'delete' => 'Delete',
+        'delete_selected' => 'Delete Selected',
+        'clear_selection' => 'Clear Selection',
         'confirm' => 'Confirm',
         'continue' => 'Continue',
         'back' => 'Back',
@@ -32,7 +35,9 @@ return [
         'login' => [
             'title' => 'Log in to your account',
             'description' => 'Enter your email and password below to log in',
-            'email_label' => 'Email address',
+            'email_label' => 'Email or Username',
+            'email_placeholder' => 'email@example.com or username',
+            'select_user' => 'Select a user',
             'password_label' => 'Password',
             'password_placeholder' => 'Password',
             'remember_me' => 'Remember me',
@@ -186,6 +191,8 @@ return [
     'pages' => [
         'dashboard' => 'Dashboard',
         'notifications' => 'Notifications',
+        'users' => 'Users',
+        'users_description' => 'Manage and view all users in the system',
         'settings' => [
             'profile' => 'Profile Settings',
             'password' => 'Password Settings',
@@ -219,6 +226,25 @@ return [
         'confirm' => [
             'title' => 'Confirm Action',
             'message' => 'Are you sure you want to proceed?',
+        ],
+    ],
+
+    // Table
+    'table' => [
+        'search_placeholder' => 'Search...',
+        'actions' => 'Actions',
+        'empty' => 'No records found.',
+        'selected_count' => ':count selected',
+        'pagination' => [
+            'showing' => 'Showing :from to :to of :total results',
+        ],
+        'users' => [
+            'name' => 'Name',
+            'email' => 'Email',
+            'verified' => 'Verified',
+            'verified_yes' => 'Yes',
+            'verified_no' => 'No',
+            'created_at' => 'Created At',
         ],
     ],
 ];

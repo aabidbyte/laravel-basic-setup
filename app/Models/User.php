@@ -19,8 +19,10 @@ class User extends BaseUserModel
      */
     protected $fillable = [
         'name',
+        'username',
         'email',
         'password',
+        'team_id',
     ];
 
     /**
@@ -68,5 +70,47 @@ class User extends BaseUserModel
     {
         return $this->belongsToMany(Team::class, 'team_user')
             ->withTimestamps();
+    }
+
+    /**
+     * Get the user's primary team.
+     */
+    public function team(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Team::class);
+    }
+
+    /**
+     * Find user by identifier (email or username).
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public static function findByIdentifier(string $identifier)
+    {
+        return static::query()
+            ->where('email', $identifier)
+            ->orWhere('username', $identifier);
+    }
+
+    /**
+     * Get the email address for password reset.
+     *
+     * This method is used by Laravel's password reset system to identify the user
+     * and send the password reset notification. Password reset notifications require
+     * an email address, so users without email cannot use the standard password
+     * reset flow.
+     *
+     * For token storage, we use 'identifier' (email or username) to support users
+     * with optional email addresses, but the notification system requires an email.
+     *
+     * @return string
+     */
+    public function getEmailForPasswordReset(): string
+    {
+        if (empty($this->email)) {
+            throw new \RuntimeException('User must have an email address to reset password via email notification.');
+        }
+
+        return $this->email;
     }
 }

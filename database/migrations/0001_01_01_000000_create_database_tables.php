@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -19,14 +20,25 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Teams table
+        Schema::create('teams', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique()->index();
+            $table->string('name');
+            $table->timestamps();
+            $table->softDeletes();
+        });
+
         // Users table
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique()->index();
             $table->string('name');
+            $table->string('username')->nullable()->unique();
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->foreignId('team_id')->nullable()->constrained()->cascadeOnDelete();
             $table->text('two_factor_secret')->nullable();
             $table->text('two_factor_recovery_codes')->nullable();
             $table->timestamp('two_factor_confirmed_at')->nullable();
@@ -34,11 +46,25 @@ return new class extends Migration
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();
+
+            $table->index('username');
+            $table->index('team_id');
+        });
+
+        // Team user pivot table
+        Schema::create('team_user', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique()->index();
+            $table->foreignId('team_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->timestamps();
+
+            $table->unique(['team_id', 'user_id']);
         });
 
         // Password reset tokens
         Schema::create('password_reset_tokens', function (Blueprint $table) {
-            $table->string('email')->primary();
+            $table->string('identifier')->primary(); // Can be email or username
             $table->uuid('uuid')->unique()->index();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
@@ -55,26 +81,6 @@ return new class extends Migration
             $table->timestamp('last_used_at')->nullable();
             $table->timestamp('expires_at')->nullable()->index();
             $table->timestamps();
-        });
-
-        // Teams table
-        Schema::create('teams', function (Blueprint $table) {
-            $table->id();
-            $table->uuid('uuid')->unique()->index();
-            $table->string('name');
-            $table->timestamps();
-            $table->softDeletes();
-        });
-
-        // Team user pivot table
-        Schema::create('team_user', function (Blueprint $table) {
-            $table->id();
-            $table->uuid('uuid')->unique()->index();
-            $table->foreignId('team_id')->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->timestamps();
-
-            $table->unique(['team_id', 'user_id']);
         });
 
         // Notifications table
@@ -231,6 +237,53 @@ return new class extends Migration
             $table->string('tag')->primary();
             $table->uuid('uuid')->unique()->index();
         });
+
+        // Create database triggers to protect user ID 1 (MySQL only)
+        if (DB::getDriverName() === 'mysql') {
+            // Trigger to prevent deletion of user ID 1
+            DB::unprepared('
+                CREATE TRIGGER prevent_user_id_1_delete
+                BEFORE DELETE ON users
+                FOR EACH ROW
+                BEGIN
+                    IF OLD.id = 1 THEN
+                        SIGNAL SQLSTATE "45000" SET MESSAGE_TEXT = "Cannot delete user ID 1 - this user is protected";
+                    END IF;
+                END
+            ');
+
+            // Trigger to prevent direct database updates to user ID 1
+            DB::unprepared('
+                CREATE TRIGGER prevent_user_id_1_update
+                BEFORE UPDATE ON users
+                FOR EACH ROW
+                BEGIN
+                    -- Check if trying to update user ID 1
+                    IF OLD.id = 1 THEN
+                        -- Allow the update only if it\'s coming from the application
+                        -- We check for a session variable that Laravel sets
+                        IF @laravel_user_id_1_self_edit IS NULL OR @laravel_user_id_1_self_edit != 1 THEN
+                            SIGNAL SQLSTATE "45000"
+                            SET MESSAGE_TEXT = "Cannot update user ID 1 - only user ID 1 can edit themselves through the application";
+                        END IF;
+                    END IF;
+                END
+            ');
+
+            // Trigger to prevent changing the ID of user ID 1
+            DB::unprepared('
+                CREATE TRIGGER prevent_user_id_1_id_change
+                BEFORE UPDATE ON users
+                FOR EACH ROW
+                BEGIN
+                    -- Prevent changing the ID of user ID 1
+                    IF OLD.id = 1 AND NEW.id != 1 THEN
+                        SIGNAL SQLSTATE "45000"
+                        SET MESSAGE_TEXT = "Cannot change the ID of user ID 1 - this user is protected";
+                    END IF;
+                END
+            ');
+        }
     }
 
     /**
@@ -238,6 +291,13 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // Drop the triggers first
+        if (DB::getDriverName() === 'mysql') {
+            DB::unprepared('DROP TRIGGER IF EXISTS prevent_user_id_1_delete');
+            DB::unprepared('DROP TRIGGER IF EXISTS prevent_user_id_1_update');
+            DB::unprepared('DROP TRIGGER IF EXISTS prevent_user_id_1_id_change');
+        }
+
         // Drop Telescope tables
         $schema = Schema::connection($this->getTelescopeConnection());
 

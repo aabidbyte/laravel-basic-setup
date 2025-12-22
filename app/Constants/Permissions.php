@@ -60,6 +60,9 @@ class Permissions
 
     public const VIEW_POST = 'view a post';
 
+    // User permissions
+    public const VIEW_USERS = 'view users';
+
     /**
      * Get all permission constants as an array.
      *
@@ -91,6 +94,7 @@ class Permissions
             self::DELETE_POST,
             self::VIEW_ALL_POSTS,
             self::VIEW_POST,
+            self::VIEW_USERS,
         ];
     }
 }

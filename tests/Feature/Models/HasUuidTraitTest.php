@@ -14,6 +14,7 @@ beforeEach(function (): void {
         $table->uuid('uuid')->unique()->index();
         $table->string('name')->nullable();
         $table->timestamps();
+        $table->softDeletes();
     });
 });
 

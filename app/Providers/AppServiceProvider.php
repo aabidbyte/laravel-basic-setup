@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Auth\PasswordBrokerManager;
+use App\Constants\Roles;
 use App\Http\Middleware\TeamsPermission;
 use App\Listeners\SyncUserPreferencesOnLogin;
 use App\Observers\DatabaseNotificationObserver;
@@ -11,6 +12,7 @@ use Illuminate\Foundation\Http\Kernel;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -49,5 +51,12 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(Login::class, SyncUserPreferencesOnLogin::class);
 
         DatabaseNotification::observe(DatabaseNotificationObserver::class);
+
+        // Implicitly grant "Super Admin" role all permissions
+        // This works in the app by using gate-related functions like auth()->user->can() and @can()
+        // Following Spatie Permissions best practices: https://spatie.be/docs/laravel-permission/v6/basic-usage/super-admin
+        Gate::before(function ($user, $ability) {
+            return $user->hasRole(Roles::SUPER_ADMIN) ? true : null;
+        });
     }
 }

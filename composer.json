@@ -51,6 +51,8 @@
         },
         "files": [
             "app/helpers/app-helpers.php",
+            "app/helpers/auth-helpers.php",
+            "app/helpers/permission-helpers.php",
             "app/helpers/dateTime.php",
             "app/helpers/currency.php"
         ]

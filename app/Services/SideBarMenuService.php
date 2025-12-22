@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Constants\Permissions;
 use App\Services\Navigation\NavigationBuilder;
 use App\Services\Navigation\NavigationItem;
+use Illuminate\Support\Facades\Auth;
 
 class SideBarMenuService
 {
@@ -22,7 +24,13 @@ class SideBarMenuService
                 NavigationItem::make()
                     ->title(__('ui.navigation.dashboard'))
                     ->route('dashboard')
-                    ->icon('home')
+                    ->icon('home'),
+
+                NavigationItem::make()
+                    ->title(__('ui.navigation.users'))
+                    ->route('users.index')
+                    ->icon('users')
+                    ->show(Auth::user()?->can(Permissions::VIEW_USERS) ?? false)
             )
             ->toArray();
     }

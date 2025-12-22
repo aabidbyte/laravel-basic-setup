@@ -13,11 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->web(append: [
-            \App\Http\Middleware\ApplyFrontendPreferences::class,
-            \App\Http\Middleware\TeamsPermission::class,
-            \App\Http\Middleware\ConvertStatusToNotification::class,
-        ]);
+        $middleware->web(append: require __DIR__.'/web-middlewares.php');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

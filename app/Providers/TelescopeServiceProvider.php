@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Constants\Roles;
 use Illuminate\Support\Facades\Gate;
 use Laravel\Telescope\IncomingEntry;
 use Laravel\Telescope\Telescope;
@@ -56,6 +57,12 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
     protected function gate(): void
     {
         Gate::define('viewTelescope', function ($user) {
+            // Super Admin has automatic access via Gate::before() in AppServiceProvider
+            // Explicitly checking here for clarity and documentation
+            if ($user->hasRole(Roles::SUPER_ADMIN)) {
+                return true;
+            }
+
             return in_array($user->email, [
                 //
             ]);

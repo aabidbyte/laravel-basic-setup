@@ -6,6 +6,7 @@ return [
         'platform' => 'Plateforme',
         'dashboard' => 'Tableau de bord',
         'notifications' => 'Notifications',
+        'users' => 'Utilisateurs',
         'resources' => 'Ressources',
         'repository' => 'Dépôt',
         'documentation' => 'Documentation',
@@ -18,6 +19,8 @@ return [
         'logout' => 'Se déconnecter',
         'save' => 'Enregistrer',
         'delete' => 'Supprimer',
+        'delete_selected' => 'Supprimer la sélection',
+        'clear_selection' => 'Effacer la sélection',
         'confirm' => 'Confirmer',
         'continue' => 'Continuer',
         'back' => 'Retour',
@@ -32,7 +35,9 @@ return [
         'login' => [
             'title' => 'Connectez-vous à votre compte',
             'description' => 'Entrez votre adresse e-mail et votre mot de passe ci-dessous pour vous connecter',
-            'email_label' => 'Adresse e-mail',
+            'email_label' => 'E-mail ou nom d\'utilisateur',
+            'email_placeholder' => 'email@exemple.com ou nom d\'utilisateur',
+            'select_user' => 'Sélectionner un utilisateur',
             'password_label' => 'Mot de passe',
             'password_placeholder' => 'Mot de passe',
             'remember_me' => 'Se souvenir de moi',
@@ -186,6 +191,8 @@ return [
     'pages' => [
         'dashboard' => 'Tableau de bord',
         'notifications' => 'Notifications',
+        'users' => 'Utilisateurs',
+        'users_description' => 'Gérer et voir tous les utilisateurs du système',
         'settings' => [
             'profile' => 'Paramètres du profil',
             'password' => 'Paramètres du mot de passe',
@@ -219,6 +226,25 @@ return [
         'confirm' => [
             'title' => 'Confirmer l\'action',
             'message' => 'Êtes-vous sûr de vouloir continuer?',
+        ],
+    ],
+
+    // Table
+    'table' => [
+        'search_placeholder' => 'Rechercher...',
+        'actions' => 'Actions',
+        'empty' => 'Aucun enregistrement trouvé.',
+        'selected_count' => ':count sélectionné(s)',
+        'pagination' => [
+            'showing' => 'Affichage de :from à :to sur :total résultats',
+        ],
+        'users' => [
+            'name' => 'Nom',
+            'email' => 'E-mail',
+            'verified' => 'Vérifié',
+            'verified_yes' => 'Oui',
+            'verified_no' => 'Non',
+            'created_at' => 'Créé le',
         ],
     ],
 ];

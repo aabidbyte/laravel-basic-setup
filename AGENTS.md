@@ -157,9 +157,11 @@ The project uses **stable, environment-aware configurations** that minimize `.en
 -   Only use `env()` for credentials and connection details
 -   Prefer stable defaults over environment variables for non-sensitive settings
 
-### Environment Helper Functions
+### Helper Functions
 
-The project includes helper functions in `app/helpers/app-helpers.php`:
+The project includes helper functions organized by domain:
+
+**Environment Helpers** (`app/helpers/app-helpers.php`):
 
 -   `appEnv(): string` - Get current environment (uses `config('app.env')` to respect config caching)
 -   `isProduction(): bool` - Check if running in production/prod
@@ -169,7 +171,16 @@ The project includes helper functions in `app/helpers/app-helpers.php`:
 -   `isTesting(): bool` - Check if running in testing environment
 -   `inEnvironment(string ...$environments): bool` - Check if environment matches any of the given environments
 
-These helpers are automatically loaded via Composer autoload and should be used instead of direct `config('app.env')` checks.
+**Authentication Helpers** (`app/helpers/auth-helpers.php`):
+
+-   `getIdentifierFromRequest(Request $request): ?string` - Extract identifier (email or username) from request, supports both 'identifier' and 'email' fields for dual authentication
+-   `setTeamSessionForUser(User $user): void` - Set team ID in session for TeamsPermission middleware after successful authentication
+
+**Permission Helpers** (`app/helpers/permission-helpers.php`):
+
+-   `clearPermissionCache(): void` - Clear Spatie Permission cache, used in seeders and after role/permission modifications to prevent stale data
+
+These helpers are automatically loaded via Composer autoload and centralize common logic to avoid duplication.
 
 ## Development Conventions
 
@@ -327,12 +338,13 @@ it('tests something', function () {
 ### Component Development
 
 -   **Primary Pattern**: Livewire 4 single-file components (built-in, no Volt needed)
+-   **SFC Requirement**: **ALL Livewire components MUST use Single File Component (SFC) format** - Never create class-based components in `app/Livewire/`. All Livewire components must be single-file components with PHP class and Blade template in the same `.blade.php` file using anonymous class syntax (`new class extends Component { }`). This is the Livewire 4 standard and ensures consistency across the application.
 -   **UI Library**: Standard HTML/Tailwind CSS components
 -   **Component Reusability**: **ALWAYS use existing components when possible for consistency** - Before creating a new component, check if an existing component can be used or extended. This ensures consistency across the application and reduces code duplication.
 -   **Component Documentation**: **ALWAYS update `docs/components.md` when adding new UI components** - This ensures all components are documented with props, usage examples, and implementation details
 -   **Component Locations**:
     -   **Full-page components**: `resources/views/pages/` (use `pages::` namespace in routes)
-    -   **Nested/reusable Livewire components**: `resources/views/components/` (use component name directly, e.g., `livewire:settings.delete-user-form`)
+    -   **Nested/reusable Livewire components**: `resources/views/components/` (use component name directly, e.g., `livewire:users.table`)
     -   **Blade components**: `resources/views/components/` (regular Blade components)
 -   **File Extensions**: Single-file components must use `.blade.php` extension (not `.php`)
 -   **Component Namespaces**: Configured in `config/livewire.php`:
@@ -410,6 +422,18 @@ it('tests something', function () {
 -   **Actions**: Customize in `app/Actions/Fortify/`
 -   **Views**: Customize in `FortifyServiceProvider`
 -   **Features**: Configure in `config/fortify.php`
+-   **Dual Authentication**: Supports both email and username login
+    -   Users can authenticate using either their email address or username
+    -   Login form uses `identifier` field which accepts both email and username
+    -   `User::findByIdentifier()` method handles lookup by email or username
+    -   **Middleware**: `App\Http\Middleware\MapLoginIdentifier` maps `identifier` to `email` for Fortify validation compatibility
+    -   **Service Provider**: `FortifyServiceProvider` configured with custom authentication pipeline
+-   **Environment-Based Login UI**:
+    -   **Production**: Standard text input for identifier (email/username)
+    -   **Development**: Dropdown select with all users for quick testing (password auto-filled)
+-   **Team Context**: On successful login, user's `team_id` is automatically set in session for `TeamsPermission` middleware (via `setTeamSessionForUser()` helper)
+-   **Rate Limiting**: Custom rate limiter supports both `identifier` and `email` fields for throttling (uses `getIdentifierFromRequest()` helper)
+-   **Code Quality**: Uses centralized authentication helpers (`app/helpers/auth-helpers.php`) to avoid code duplication and improve maintainability
 
 ### Authorization & Permissions
 
@@ -427,6 +451,7 @@ it('tests something', function () {
 -   **Team ID**: Set via `session(['team_id' => $team->id])` on login, accessed via `setPermissionsTeamId()`
 -   **Important**: User model must NOT have `role`, `roles`, `permission`, or `permissions` properties/methods/relations
 -   **Switching Teams**: Always call `$user->unsetRelation('roles')->unsetRelation('permissions')` before querying after switching teams
+-   **Super Admin Pattern**: Implemented via `Gate::before()` in `AppServiceProvider::boot()` - Users with `Roles::SUPER_ADMIN` role automatically have all permissions granted. This allows using permission-based controls (`@can()`, `$user->can()`) throughout the app without checking for Super Admin status. The pattern follows Spatie Permissions best practices. **Important**: Direct calls to `hasPermissionTo()`, `hasAnyPermission()`, etc. bypass the Gate and won't get Super Admin access - always use `can()` methods instead.
 
 ### Testing
 
@@ -1042,7 +1067,11 @@ Notifications are stored in Laravel's standard `notifications` table with:
 
 ### Livewire 4 Single-File Component Pattern
 
-**File Location**: `resources/views/pages/example.blade.php` (must use `.blade.php` extension)
+**CRITICAL RULE**: **ALL Livewire components MUST use Single File Component (SFC) format** - Never create class-based components in `app/Livewire/`. All Livewire components must be single-file components with PHP class and Blade template in the same `.blade.php` file using anonymous class syntax (`new class extends Component { }`). This is the Livewire 4 standard and ensures consistency across the application.
+
+**File Location**: `resources/views/pages/example.blade.php` (full-page) or `resources/views/components/example/⚡component.blade.php` (reusable) - must use `.blade.php` extension
+
+**Full-Page Component Example**:
 
 ```php
 <?php
@@ -1069,15 +1098,44 @@ new class extends BasePageComponent {
 </div>
 ```
 
+**Reusable Component Example** (not a full page):
+
+```php
+<?php
+
+use Livewire\Component;
+
+new class extends Component {
+    public int $count = 0;
+
+    public function increment(): void
+    {
+        $this->count++;
+    }
+};
+?>
+
+<div>
+    <h1>Count: {{ $count }}</h1>
+    <button wire:click="increment">+</button>
+</div>
+```
+
 **Route Registration**:
 
 ```php
+// Full-page component
 Route::livewire('/example', 'pages::example')->name('example');
+
+// Reusable component (embedded in Blade view)
+<livewire:users.table lazy />
 ```
 
 **Important Notes**:
 
+-   **ALL Livewire components MUST use SFC format** - Never create class-based components in `app/Livewire/`
 -   **ALL full-page Livewire components MUST extend `App\Livewire\BasePageComponent`** (not `Livewire\Component`)
+-   **Reusable components** extend `Livewire\Component` directly
 -   Set `public ?string $pageTitle = 'ui.pages.example';` property for automatic title management (use translation keys)
 -   **Optional**: Set `public string $pageSubtitle = 'ui.pages.example.description';` property for subtitle text (displayed below title in header)
 -   **Translations**: Translation keys (containing dots) are automatically translated - use `'ui.pages.*'` format
@@ -1085,7 +1143,7 @@ Route::livewire('/example', 'pages::example')->name('example');
 -   **No `parent::mount()` needed** - title and subtitle sharing happens automatically via `boot()` lifecycle hook
 -   Single-file components must use `.blade.php` extension (not `.php`)
 -   Full-page components go in `resources/views/pages/` and use `pages::` namespace
--   Nested/reusable Livewire components go in `resources/views/components/` and are referenced directly (e.g., `livewire:settings.delete-user-form`)
+-   Nested/reusable Livewire components go in `resources/views/components/` and are referenced directly (e.g., `livewire:users.table`)
 -   See `docs/livewire-4.md` for complete documentation
 
 ### Livewire Best Practices
@@ -1928,6 +1986,35 @@ If you see `Auth::guard('web')->logout()` causing an error:
 
 ### 2025-01-XX
 
+-   **Authentication Code Refactoring**: Improved code quality, removed duplication, and enhanced separation of concerns
+    -   **Created Authentication Helpers**: Added `app/helpers/auth-helpers.php` with centralized authentication helper functions
+        -   `getIdentifierFromRequest()` - Centralizes identifier extraction logic (removes duplication)
+        -   `setTeamSessionForUser()` - Centralizes team session setting logic (removes duplication)
+    -   **Created Permission Helpers**: Added `app/helpers/permission-helpers.php` with centralized permission cache clearing
+        -   `clearPermissionCache()` - Centralizes Spatie Permission cache clearing logic used across seeders
+    -   **Seeder Refactoring**: Refactored all seeders to use `clearPermissionCache()` helper instead of inline cache clearing
+        -   `RoleAndPermissionSeeder`: Separated concerns into `createPermissions()`, `createRoles()`, and `assignPermissionsToSuperAdmin()` methods
+        -   `EssentialUserSeeder`: Uses helper for cache clearing
+        -   `SampleUserSeeder`: Uses helper for cache clearing
+    -   **Removed Duplication**: Eliminated duplicate identifier-to-email mapping logic from `FortifyServiceProvider` (middleware already handles it)
+    -   **Code Organization**: Refactored `FortifyServiceProvider` to use helper functions, improving maintainability
+    -   **Updated LoginRequest**: Now uses centralized `setTeamSessionForUser()` helper instead of inline logic
+    -   **Improved PHPDoc**: Enhanced documentation throughout authentication code for better clarity
+    -   **Composer Autoload**: Added `auth-helpers.php` and `permission-helpers.php` to Composer autoload files
+    -   **Documentation**: Updated `AGENTS.md` with authentication and permission helpers documentation
+
+-   **Super Admin Gate Pattern**: Implemented Spatie Permissions recommended Super-Admin pattern using `Gate::before()`
+    -   **Implementation**: Added `Gate::before()` in `AppServiceProvider::boot()` to grant all permissions to users with `Roles::SUPER_ADMIN` role
+    -   **Location**: `app/Providers/AppServiceProvider.php` (in `boot()` method)
+    -   **Benefits**: Allows using permission-based controls (`@can()`, `$user->can()`) throughout the app without checking for Super Admin status everywhere
+    -   **Best Practice**: Follows Spatie Permissions best practices - primarily check permissions, not roles
+    -   **Gate Updates**: Enhanced existing Gate definitions in `TelescopeServiceProvider`, `HorizonServiceProvider`, and `LogViewerServiceProvider` to explicitly check for Super Admin role for clarity
+    -   **Documentation**: Updated `docs/spatie-permission.md` and `AGENTS.md` with implementation details
+    -   **Important Note**: Direct calls to `hasPermissionTo()`, `hasAnyPermission()`, etc. bypass the Gate and won't get Super Admin access - always use `can()` methods instead
+    -   **Constants**: Uses `Roles::SUPER_ADMIN` constant (no hardcoded strings)
+
+### 2025-01-XX
+
 -   **Notification System Improvements**:
     -   **Fixed duplicate toast notifications**: Fixed issue where `toastCenter` component was creating duplicate subscriptions when re-initialized (e.g., during Livewire navigation). Changed from cleanup-based approach to idempotent subscription logic - component now checks if already subscribed and returns early instead of cleaning up and re-subscribing.
     -   **Added `toUserTeams()` method**: New method in `NotificationBuilder` to send notifications to all teams a user belongs to. Broadcasts to each team channel separately, or falls back to user channel if user has no teams. Supports persistence for all team members in each team.
@@ -2220,6 +2307,20 @@ If you see `Auth::guard('web')->logout()` causing an error:
     -   Use View Composers instead of `@inject` for global data
 
 ### 2025-01-XX
+
+-   **Dual Authentication System**: Implemented email and username login support
+    -   **User Model**: Added `findByIdentifier()` method to support lookup by email or username
+    -   **Middleware**: Created `MapLoginIdentifier` middleware to map `identifier` field to `email` for Fortify validation compatibility
+    -   **Service Provider**: Refactored `FortifyServiceProvider` with separated concerns:
+        -   `configureAuthentication()` - Custom authentication logic supporting both email and username
+        -   `configureAuthenticationPipeline()` - Custom pipeline with conditional `CanonicalizeUsername` skip for usernames
+        -   `getLoginView()` - Environment-based login view (production: text input, development: user dropdown)
+        -   `getDevelopmentUsers()` - Helper to fetch users for development dropdown
+        -   `formatUserLabel()` - Helper to format user labels for dropdown display
+    -   **Rate Limiting**: Enhanced to support both `identifier` and `email` fields
+    -   **Team Context**: Automatically sets `team_id` in session on successful login
+    -   **Code Quality**: Removed all debug logs, extracted helper methods, improved separation of concerns
+    -   **Documentation**: Updated `AGENTS.md` with dual authentication details and middleware documentation
 
 -   **Livewire 4 Upgrade**: Upgraded from Livewire v3 + Volt to Livewire v4 (beta) with built-in single-file components
     -   Updated `composer.json` to require `livewire/livewire:^4.0@beta` and removed `livewire/volt`
