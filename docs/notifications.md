@@ -50,7 +50,38 @@ NotificationBuilder::make()
     ->position(ToastPosition::BottomCenter)
     ->animation(ToastAnimation::Slide)
     ->send();
+
+// Silent notification (no sound)
+NotificationBuilder::make()
+    ->title('Background Task')
+    ->enableSound(false)
+    ->send();
 ```
+
+### Available Methods
+
+The `NotificationBuilder` provides the following fluent methods:
+
+-   **`title(string $title)`**: Set the notification title (required)
+-   **`subtitle(?string $subtitle)`**: Set optional subtitle
+-   **`content(string $content)`**: Set plain text content
+-   **`html(string|\Illuminate\Contracts\Support\Htmlable $html)`**: Set HTML content (trusted)
+-   **`view(string $view, array $data = [])`**: Set content from a Blade view
+-   **`success()`**: Set toast type to success (green)
+-   **`info()`**: Set toast type to info (blue)
+-   **`warning()`**: Set toast type to warning (yellow)
+-   **`error()`**: Set toast type to error (red)
+-   **`classic()`**: Set toast type to classic (default styling)
+-   **`position(ToastPosition $position)`**: Set toast position on screen
+-   **`animation(ToastAnimation $animation)`**: Set toast animation type
+-   **`persist()`**: Enable persistence to database
+-   **`toUser(User|string $user)`**: Send to specific user
+-   **`toTeam(Team|string $team)`**: Send to specific team
+-   **`toUserTeams(User|string|null $user = null)`**: Send to all teams of a user
+-   **`global()`**: Send to all authenticated users
+-   **`link(string $link)`**: Set optional link URL
+-   **`enableSound(bool $enable = true)`**: Enable or disable sound playback (default: enabled)
+-   **`send()`**: Send the notification (broadcast + optionally persist)
 
 ## Toast Types
 
@@ -72,12 +103,12 @@ NotificationBuilder::make()->title('Classic')->classic()->send();
 
 ### Icon Rendering
 
-Icons are **rendered server-side** using the `IconPackMapper` service and included in the toast payload as HTML. This ensures:
+Icons are **rendered server-side only** using the `IconPackMapper` service and included in the toast payload as HTML. This ensures:
 
 -   **Consistent rendering**: Icons are rendered using the same service as the rest of the application
 -   **No client-side binding issues**: Avoids Alpine.js binding conflicts with Blade components
 -   **Immediate display**: Icons are ready when the toast is received, no client-side rendering needed
--   **Fallback support**: Client-side fallback rendering is available if server-rendered HTML is not provided
+-   **Server-side only**: All icons must be rendered on the server - no client-side fallback is available
 
 The icon mapping is handled automatically by `NotificationBuilder::renderIconForType()`, which uses `IconPackMapper` to render the appropriate Heroicon for each toast type.
 
@@ -101,6 +132,32 @@ NotificationBuilder::make()
     ->position(ToastPosition::BottomRight)
     ->send();
 ```
+
+## Sound Support
+
+Toast notifications support optional sound playback. Sound is **enabled by default** and can be controlled via the `enableSound()` method:
+
+```php
+// Sound enabled by default (will play)
+NotificationBuilder::make()
+    ->title('Task completed')
+    ->success()
+    ->send();
+
+// Explicitly enable sound
+NotificationBuilder::make()
+    ->title('New message')
+    ->enableSound(true)
+    ->send();
+
+// Disable sound
+NotificationBuilder::make()
+    ->title('Silent notification')
+    ->enableSound(false)
+    ->send();
+```
+
+The sound is played automatically when a toast notification is received, but only if `enableSound` is `true`. The sound URL is configured in the client-side JavaScript (`resources/js/notification-center.js`).
 
 ## Toast Animations
 
@@ -286,6 +343,17 @@ public function updateProfileInformation(): void
 }
 ```
 
+### Silent Notification (No Sound)
+
+```php
+NotificationBuilder::make()
+    ->title('Background Task Completed')
+    ->subtitle('Task finished silently')
+    ->success()
+    ->enableSound(false) // Disable sound for this notification
+    ->send();
+```
+
 ### Password Reset
 
 ```php
@@ -384,18 +452,19 @@ The toast center uses:
 -   **Alpine.js** for UI reactivity and transitions
 -   **Laravel Echo** for WebSocket subscriptions
 -   **Idempotent subscriptions**: The toast center uses idempotent subscription logic to prevent duplicate subscriptions when components are re-initialized (e.g., during Livewire navigation)
--   **Server-rendered icons**: Icons are rendered server-side and included in the toast payload as HTML, avoiding client-side binding issues
+-   **Server-rendered icons**: Icons are rendered server-side only and included in the toast payload as HTML, avoiding client-side binding issues
+-   **Sound playback**: Optional sound playback when notifications are received (enabled by default, controlled via `enableSound()`)
 
 ### Icon Rendering Architecture
 
-Icons are rendered server-side in the `NotificationBuilder` before broadcasting:
+Icons are rendered **server-side only** in the `NotificationBuilder` before broadcasting:
 
 1.  **Server-side rendering**: `NotificationBuilder::renderIconForType()` uses `IconPackMapper` to render the appropriate icon HTML
 2.  **Payload inclusion**: The rendered icon HTML is included in the `ToastPayload` as the `iconHtml` property
-3.  **Client-side display**: The toast center component uses `x-html` to display the server-rendered icon HTML
-4.  **Fallback support**: If `iconHtml` is not provided, the client falls back to client-side SVG rendering
+3.  **Client-side display**: The toast center component uses `x-html` to display the server-rendered icon HTML directly
+4.  **No fallback**: Icons must be rendered on the server - there is no client-side fallback rendering
 
-This architecture ensures consistent icon rendering across the application and avoids issues with Alpine.js binding to Blade components.
+This architecture ensures consistent icon rendering across the application and avoids issues with Alpine.js binding to Blade components. All icon rendering logic has been removed from the client-side JavaScript.
 
 ### Automatic Mark as Read
 

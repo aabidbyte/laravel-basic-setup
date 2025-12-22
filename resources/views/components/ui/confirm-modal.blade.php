@@ -20,10 +20,10 @@
         :close-btn="false">
         @if ($slot->isEmpty())
             <div x-data="{
-                title: '{{ __('ui.modals.confirm.title') }}',
-                message: '{{ __('ui.modals.confirm.message') }}',
-                confirmLabel: '{{ __('ui.actions.confirm') }}',
-                cancelLabel: '{{ __('ui.actions.cancel') }}'
+                title: @js(__('ui.modals.confirm.title')),
+                message: @js(__('ui.modals.confirm.message')),
+                confirmLabel: @js(__('ui.actions.confirm')),
+                cancelLabel: @js(__('ui.actions.cancel'))
             }"
                 @confirm-modal.window="
                 if ($event.detail) {
@@ -56,7 +56,7 @@
                     <x-ui.button type="button" :variant="$cancelVariant"
                         onclick="document.getElementById('{{ $id }}').close(); window._confirmModalAction = null;">
                         <span x-data="{
-                            cancelLabel: '{{ __('ui.actions.cancel') }}'
+                            cancelLabel: @js(__('ui.actions.cancel'))
                         }"
                             @confirm-modal.window="
                             if ($event.detail?.cancelLabel) cancelLabel = $event.detail.cancelLabel;
@@ -67,7 +67,7 @@
                 <x-ui.button type="button" :variant="$confirmVariant"
                     onclick="if (window._confirmModalAction && typeof window._confirmModalAction === 'function') window._confirmModalAction(); document.getElementById('{{ $id }}').close(); window._confirmModalAction = null;">
                     <span x-data="{
-                        confirmLabel: '{{ __('ui.actions.confirm') }}'
+                        confirmLabel: @js(__('ui.actions.confirm'))
                     }"
                         @confirm-modal.window="
                         if ($event.detail?.confirmLabel) confirmLabel = $event.detail.confirmLabel;

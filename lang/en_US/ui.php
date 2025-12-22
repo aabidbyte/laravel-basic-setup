@@ -206,6 +206,7 @@ return [
         'view_all' => 'View all notifications',
         'unread' => 'Unread',
         'empty' => 'You have no notifications.',
+        'dismiss' => 'Dismiss notification',
     ],
 
     // Common UI Elements

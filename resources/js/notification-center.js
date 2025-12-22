@@ -171,6 +171,7 @@ function toastCenter() {
     return {
         toasts: [],
         unsubscribe: null,
+        displayDuration: 5000, // Duration in milliseconds for auto-dismiss
 
         init() {
             if (!window.Alpine) {
@@ -201,7 +202,10 @@ function toastCenter() {
 
         addToast(data) {
             const type = data.type || "success";
-            const iconName = this.getIconName(type);
+            const typeClasses = this.getTypeClasses(type);
+            const position = data.position || "top-right";
+            const enableSound =
+                data.enableSound !== undefined ? data.enableSound : true;
             const toast = {
                 id: Date.now() + Math.random(),
                 timestamp: Date.now(),
@@ -209,71 +213,172 @@ function toastCenter() {
                 subtitle: data.subtitle || null,
                 content: data.content || null,
                 type: type,
-                iconName: iconName,
                 iconHtml: data.iconHtml || null, // Server-rendered icon HTML
-                position: data.position || "top-right",
+                position: position,
                 link: data.link || null,
+                typeClasses: typeClasses, // Pre-computed type classes
+                progressColor: this.getProgressColor(type), // Progress bar color
+                enableSound: enableSound,
             };
 
             this.toasts.push(toast);
 
-            // Auto-remove after 5 seconds
-            setTimeout(() => {
-                this.removeToast(toast.id);
-            }, 5000);
-        },
-
-        removeToast(id) {
-            const index = this.toasts.findIndex((t) => t.id === id);
-            if (index > -1) {
-                this.toasts.splice(index, 1);
+            // Play sound if enabled
+            if (enableSound) {
+                this.playSound();
             }
         },
 
-        handleClick(toast) {
+        playSound() {
+            try {
+                const notificationSound = new Audio(
+                    "https://res.cloudinary.com/ds8pgw1pf/video/upload/v1728571480/penguinui/component-assets/sounds/ding.mp3"
+                );
+                notificationSound.play().catch((error) => {
+                    console.error("Error playing the sound:", error);
+                });
+            } catch (error) {
+                console.error("Error creating sound:", error);
+            }
+        },
+
+        getProgressColor(type) {
+            const colorMap = {
+                success: "bg-success",
+                info: "bg-info",
+                warning: "bg-warning",
+                error: "bg-error",
+                classic: "bg-primary",
+            };
+            return colorMap[type] || colorMap.classic;
+        },
+
+        getTypeClasses(type) {
+            const typeMap = {
+                success: {
+                    border: "border-success",
+                    bgOverlay: "bg-success/10",
+                    iconBg: "bg-success/15",
+                    iconText: "text-success",
+                    titleText: "text-success",
+                    linkText:
+                        "text-success hover:text-success/80 focus:outline-success",
+                },
+                info: {
+                    border: "border-info",
+                    bgOverlay: "bg-info/10",
+                    iconBg: "bg-info/15",
+                    iconText: "text-info",
+                    titleText: "text-info",
+                    linkText: "text-info hover:text-info/80 focus:outline-info",
+                },
+                warning: {
+                    border: "border-warning",
+                    bgOverlay: "bg-warning/10",
+                    iconBg: "bg-warning/15",
+                    iconText: "text-warning",
+                    titleText: "text-warning",
+                    linkText:
+                        "text-warning hover:text-warning/80 focus:outline-warning",
+                },
+                error: {
+                    border: "border-error",
+                    bgOverlay: "bg-error/10",
+                    iconBg: "bg-error/15",
+                    iconText: "text-error",
+                    titleText: "text-error",
+                    linkText:
+                        "text-error hover:text-error/80 focus:outline-error",
+                },
+                classic: {
+                    border: "border-base-300",
+                    bgOverlay: "bg-base-200/50",
+                    iconBg: "bg-base-300/15",
+                    iconText: "text-base-content",
+                    titleText: "text-base-content",
+                    linkText:
+                        "text-primary hover:text-primary/80 focus:outline-primary",
+                },
+            };
+            return typeMap[type] || typeMap.classic;
+        },
+
+        getToastPosition(position) {
+            const positionMap = {
+                "top-right": "top-0 right-0",
+                "top-left": "top-0 left-0",
+                "top-center": "top-0 left-1/2 -translate-x-1/2",
+                "bottom-right": "bottom-0 right-0",
+                "bottom-left": "bottom-0 left-0",
+                "bottom-center": "bottom-0 left-1/2 -translate-x-1/2",
+                center: "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+            };
+            return positionMap[position] || positionMap["top-right"];
+        },
+
+        getContainerPosition() {
+            if (this.toasts.length === 0) {
+                return "top-0 right-0";
+            }
+            // Use the position of the first toast (most recent)
+            return this.getToastPosition(this.toasts[0].position);
+        },
+    };
+}
+
+function toastItem(toast, toasts, displayDuration) {
+    return {
+        isVisible: false,
+        timeout: null,
+        progress: 100,
+        progressInterval: null,
+        startTime: null,
+        elapsedTime: 0,
+        displayDuration: displayDuration || 5000,
+        removeToast() {
+            const idx = toasts.findIndex((t) => t.id === toast.id);
+            if (idx > -1) {
+                clearTimeout(this.timeout);
+                clearInterval(this.progressInterval);
+                toasts.splice(idx, 1);
+            }
+        },
+        handleClick() {
             if (toast.link) {
                 window.location.href = toast.link;
             }
         },
-
-        getIconName(type) {
-            const icons = {
-                success: "check-circle",
-                info: "information-circle",
-                warning: "exclamation-triangle",
-                error: "x-circle",
-                classic: "bell",
-            };
-            const iconName = icons[type] || "bell";
-            return iconName;
+        startProgress() {
+            const self = this;
+            self.startTime = Date.now();
+            self.elapsedTime = 0;
+            self.progress = 100;
+            self.progressInterval = setInterval(() => {
+                if (!self.isVisible) {
+                    clearInterval(self.progressInterval);
+                    return;
+                }
+                self.elapsedTime = Date.now() - self.startTime;
+                self.progress = Math.max(
+                    0,
+                    100 - (self.elapsedTime / self.displayDuration) * 100
+                );
+                if (self.progress <= 0) {
+                    clearInterval(self.progressInterval);
+                }
+            }, 16); // ~60fps
         },
-
-        getIconClasses(type) {
-            const classes = {
-                success: "text-success",
-                info: "text-info",
-                warning: "text-warning",
-                error: "text-error",
-                classic: "text-base-content",
-            };
-            return classes[type] || "text-base-content";
+        pauseProgress() {
+            if (this.progressInterval) {
+                clearInterval(this.progressInterval);
+                this.progressInterval = null;
+            }
         },
-
-        getIconSvg(iconName) {
-            // Fallback client-side icon rendering (only used if server-rendered iconHtml is not provided)
-            const iconPaths = {
-                "check-circle":
-                    '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>',
-                "information-circle":
-                    '<path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0zm-9-3.75h.008v.008H12V8.25Z"/>',
-                "exclamation-triangle":
-                    '<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/>',
-                "x-circle":
-                    '<path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>',
-                bell: '<path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"/>',
-            };
-            const path = iconPaths[iconName] || iconPaths["bell"];
-            return `<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">${path}</svg>`;
+        resumeProgress() {
+            if (this.isVisible && !this.progressInterval) {
+                this.startTime = Date.now() - this.elapsedTime;
+                this.startProgress();
+            }
         },
     };
 }
@@ -344,5 +449,6 @@ function notificationDropdown($wire) {
 
 // Make functions available globally for Alpine.js
 window.toastCenter = toastCenter;
+window.toastItem = toastItem;
 window.notificationCenter = notificationCenter;
 window.notificationDropdown = notificationDropdown;

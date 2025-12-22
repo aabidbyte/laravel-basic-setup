@@ -19,6 +19,7 @@ class ToastPayload
         public ToastAnimation $animation = ToastAnimation::Slide,
         public ?string $link = null,
         public ?string $iconHtml = null,
+        public bool $enableSound = true,
     ) {}
 
     /**
@@ -37,6 +38,7 @@ class ToastPayload
             'animation' => $this->animation->value,
             'link' => $this->link,
             'iconHtml' => $this->iconHtml,
+            'enableSound' => $this->enableSound,
         ];
     }
 }

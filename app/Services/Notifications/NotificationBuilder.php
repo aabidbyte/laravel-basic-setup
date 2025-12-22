@@ -41,6 +41,8 @@ class NotificationBuilder
 
     protected ?string $link = null;
 
+    protected bool $enableSound = false;
+
     /**
      * Create a new notification builder instance.
      */
@@ -285,6 +287,28 @@ class NotificationBuilder
     }
 
     /**
+     * Enable or disable notification sound.
+     *
+     * @param  bool  $enable  Whether to enable sound (default: true)
+     */
+    public function enableSound(bool $enable = true): static
+    {
+        $this->enableSound = $enable;
+
+        return $this;
+    }
+
+    /**
+     * Get whether notification sound is enabled.
+     *
+     * @return bool True if sound is enabled, false otherwise
+     */
+    protected function getEnableNotificationSound(): bool
+    {
+        return $this->enableSound;
+    }
+
+    /**
      * Send the notification (broadcast toast + optionally persist).
      *
      * @throws \InvalidArgumentException If the notification title is missing or empty
@@ -309,6 +333,7 @@ class NotificationBuilder
             animation: $this->animation,
             link: $this->link,
             iconHtml: $iconHtml,
+            enableSound: $this->getEnableNotificationSound(),
         );
 
         // Handle user teams (multiple teams)
