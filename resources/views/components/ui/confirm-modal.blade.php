@@ -1,28 +1,9 @@
-@props([
-    'id' => 'confirm-modal',
-    'confirmVariant' => 'error',
-    'cancelVariant' => 'ghost',
-    'maxWidth' => 'md',
-    'placement' => 'middle',
-    'showIcon' => true,
-    'openState' => null,
-    'closeOnOutsideClick' => true,
-    'closeOnEscape' => true,
-    'backdropTransition' => true,
-])
-
-@php
-    $modalStateId = $openState ?? 'confirmModalIsOpen_' . str_replace('-', '_', $id);
-    $useExternalState = $openState !== null;
-@endphp
-
 {{-- Confirm Modal: Uses external state when openState prop is provided, otherwise creates internal state --}}
 @if ($useExternalState)
     <div x-data="{
         modalId: '{{ $id }}',
         confirmAction: null,
         closeModal() {
-            // Access parent scope state (the next x-data up, not this component)
             let parentData = $el.parentElement?.closest('[x-data]')?.__x;
             if (parentData && parentData.$data && parentData.$data['{{ $openState }}'] !== undefined) {
                 parentData.$data['{{ $openState }}'] = false;
@@ -35,7 +16,6 @@
             if (action && typeof action === 'function') {
                 action();
             }
-            // Access parent scope state
             let parentData = $el.parentElement?.closest('[x-data]')?.__x;
             if (parentData && parentData.$data && parentData.$data['{{ $openState }}'] !== undefined) {
                 parentData.$data['{{ $openState }}'] = false;
@@ -50,7 +30,6 @@
                     this.confirmAction = config.confirmAction;
                     window._confirmModalAction = config.confirmAction;
                 }
-                // Access parent scope state
                 let parentData = $el.parentElement?.closest('[x-data]')?.__x;
                 if (parentData && parentData.$data && parentData.$data['{{ $openState }}'] !== undefined) {
                     parentData.$data['{{ $openState }}'] = true;
@@ -59,7 +38,7 @@
         }
     }" @confirm-modal.window="handleConfirmModal($event)">
         <x-ui.base-modal :id="$id" :open-state="$openState" :use-parent-state="true" max-width="{{ $maxWidth }}"
-            placement="{{ $placement }}" :show-close-button="false" :show-footer="true"
+            :placement="$placement" :show-close-button="false" :show-footer="true"
             :close-on-outside-click="$closeOnOutsideClick" :close-on-escape="$closeOnEscape"
             :backdrop-transition="$backdropTransition">
             @if ($slot->isEmpty())
@@ -151,7 +130,9 @@
         }
     }" @confirm-modal.window="handleConfirmModal($event)">
         <x-ui.base-modal :id="$id" :open-state="$modalStateId" :use-parent-state="true" max-width="{{ $maxWidth }}"
-            placement="{{ $placement }}" :show-close-button="false" :show-footer="true">
+            :placement="$placement" :show-close-button="false" :show-footer="true"
+            :close-on-outside-click="$closeOnOutsideClick" :close-on-escape="$closeOnEscape"
+            :backdrop-transition="$backdropTransition">
             @if ($slot->isEmpty())
                 <div x-data="{
                     title: @js(__('ui.modals.confirm.title')),

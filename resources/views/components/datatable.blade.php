@@ -1,67 +1,8 @@
 {{--
-    DataTable Component Props:
-    - Data: rows, headers, columns
-    - Actions: actionsPerRow, bulkActions, rowClick
-    - Filters & Search: filters, showSearch, searchPlaceholder
-    - Selection: selected, selectPage, selectAll, showBulk
-    - Sorting: sortBy, sortDirection
-    - Pagination: paginator
-    - Customization: emptyMessage, emptyIcon, class
-    - Modal state (from Livewire component): openRowActionModal, openRowActionUuid, openBulkActionModal
+    DataTable Component
+    All props are handled by the Datatable component class (App\View\Components\Datatable)
+    The $viewData property is automatically available from the component class
 --}}
-@props([
-    'rows' => [],
-    'headers' => [],
-    'columns' => [],
-    'actionsPerRow' => [],
-    'bulkActions' => [],
-    'rowClick' => null,
-    'filters' => [],
-    'showSearch' => true,
-    'searchPlaceholder' => null,
-    'selected' => [],
-    'selectPage' => false,
-    'selectAll' => false,
-    'showBulk' => true,
-    'sortBy' => null,
-    'sortDirection' => 'asc',
-    'paginator' => null,
-    'emptyMessage' => null,
-    'emptyIcon' => 'user-group',
-    'class' => '',
-    'openRowActionModal' => null,
-    'openRowActionUuid' => null,
-    'openBulkActionModal' => null,
-])
-
-@php
-    use App\Services\DataTable\View\DataTableViewData;
-
-    $viewData = new DataTableViewData(
-        rows: $rows,
-        headers: $headers,
-        columns: $columns,
-        actionsPerRow: $actionsPerRow,
-        bulkActions: $bulkActions,
-        filters: $filters,
-        selected: $selected,
-        rowClick: $rowClick,
-        sortBy: $sortBy,
-        sortDirection: $sortDirection,
-        showBulk: $showBulk,
-        selectPage: $selectPage,
-        selectAll: $selectAll,
-        showSearch: $showSearch,
-        searchPlaceholder: $searchPlaceholder,
-        paginator: $paginator,
-        emptyMessage: $emptyMessage,
-        emptyIcon: $emptyIcon,
-        class: $class,
-        openRowActionModal: $openRowActionModal,
-        openRowActionUuid: $openRowActionUuid,
-        openBulkActionModal: $openBulkActionModal,
-    );
-@endphp
 
 <div class="space-y-4 {{ $viewData->getClass() }}">
     {{-- Search Bar (by default) --}}
@@ -85,7 +26,7 @@
                 @endphp
 
                 @if ($componentName)
-                    <x-dynamic-component :component="$componentName" :key="$filter['key']" :wire-model="'filters'" :value="$filters[$filter['key']] ?? null"
+                    <x-dynamic-component :component="$componentName" :key="$filter['key']" :wire-model="'filters'" :value="$filterValues[$filter['key']] ?? null"
                         {{ $attributes->merge($safeAttributes) }}></x-dynamic-component>
                 @endif
             @endforeach

@@ -22,6 +22,8 @@ This document provides comprehensive documentation for all reusable UI component
 
 **Location:** `resources/views/components/ui/base-modal.blade.php`
 
+**Class:** `app/View/Components/Ui/BaseModal.php`
+
 **Component Name:** `<x-ui.base-modal>`
 
 ### Description
@@ -61,12 +63,20 @@ A comprehensive, flexible modal component built with Alpine.js following Penguin
 | ------------- | -------- | --------- | ----------------------------------------------------------------------------------------------------------- |
 | `variant`     | `string` | `'default'` | Modal variant: `'default'`, `'success'`, `'info'`, `'warning'`, `'danger'` (adds border color)            |
 | `maxWidth`    | `string` | `'md'`    | Maximum width: `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'6xl'`, `'7xl'`, or custom Tailwind class |
-| `placement`   | `string` | `'middle'` | Modal placement: `'top'`, `'middle'`, `'bottom'`, `'start'`, `'end'`                                      |
+| `placement`   | `string \| null` | `null` | Modal placement: `top-left`, `top-center`, `top-right`, `center-left`, `center`, `center-right`, `bottom-left`, `bottom-center`, `bottom-right`. If `null`, uses responsive default (bottom on small screens, center on `sm+`). |
 | `class`       | `string` | `''`      | Additional classes for modal container                                                                      |
 | `dialogClass` | `string` | `''`      | Additional classes for modal dialog box                                                                     |
 | `headerClass` | `string` | `''`      | Additional classes for header section                                                                       |
 | `bodyClass`   | `string` | `''`      | Additional classes for body section                                                                         |
 | `footerClass` | `string` | `''`      | Additional classes for footer section                                                                        |
+
+#### Backdrop (Theme-Aware)
+
+| Prop              | Type     | Default | Description                                          |
+| ----------------- | -------- | ------- | ---------------------------------------------------- |
+| `backdropOpacity` | `int`    | `60`    | Backdrop opacity (0-100) for `bg-base-300/{opacity}` |
+| `backdropBlur`    | `string` | `'md'`  | Backdrop blur: `none`, `sm`, `md`, `lg`              |
+| `backdropClass`   | `string` | `''`    | Override backdrop classes entirely (escape hatch)     |
 
 #### Behavior
 
@@ -214,7 +224,7 @@ A comprehensive, flexible modal component built with Alpine.js following Penguin
 <x-ui.base-modal
     open-state="topModalIsOpen"
     title="Top Modal"
-    placement="top"
+    placement="top-center"
 >
     <p>This modal appears at the top.</p>
 </x-ui.base-modal>
@@ -223,7 +233,7 @@ A comprehensive, flexible modal component built with Alpine.js following Penguin
 <x-ui.base-modal
     open-state="bottomModalIsOpen"
     title="Bottom Modal"
-    placement="bottom"
+    placement="bottom-center"
 >
     <p>This modal appears at the bottom (great for mobile).</p>
 </x-ui.base-modal>
@@ -414,6 +424,8 @@ All modals in the project use `<x-ui.base-modal>` directly with Alpine.js state 
 
 **Location:** `resources/views/components/ui/confirm-modal.blade.php`
 
+**Class:** `app/View/Components/Ui/ConfirmModal.php`
+
 **Component Name:** `<x-ui.confirm-modal>`
 
 ### Description
@@ -428,7 +440,11 @@ A reusable confirmation modal component that provides a consistent way to handle
 | `confirmVariant` | `string` | `'error'`         | Button variant for the confirm button (uses `<x-ui.button>` variants)          |
 | `cancelVariant`  | `string` | `'ghost'`         | Button variant for the cancel button (uses `<x-ui.button>` variants)           |
 | `maxWidth`       | `string` | `'md'`            | Maximum width of the modal (DaisyUI sizes: `xs`, `sm`, `md`, `lg`, `xl`, etc.) |
-| `placement`      | `string` | `'middle'`        | Modal placement: `top`, `middle`, `bottom`, `start`, `end`                     |
+| `placement`      | `string \| null` | `null`     | Placement passthrough to `<x-ui.base-modal>` (see Base Modal placement options) |
+| `openState`      | `string \| null` | `null`     | External Alpine state variable name to control open/close (when provided)       |
+| `closeOnOutsideClick` | `bool` | `true`    | Close when clicking the backdrop                                               |
+| `closeOnEscape`  | `bool`   | `true`            | Close on ESC                                                                    |
+| `backdropTransition` | `bool` | `true`      | Enable backdrop fade transition                                                 |
 
 ### Usage Examples
 

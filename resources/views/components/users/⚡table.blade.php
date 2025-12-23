@@ -87,6 +87,7 @@ new class extends BaseDataTableComponent
     :actions-per-row="$this->getRowActions()"
     :bulk-actions="$this->getBulkActions()"
     :filters="$this->getFilters()"
+    :filter-values="$this->filters"
     row-click="rowClicked"
     :selected="$selected"
     :select-page="$selectPage"

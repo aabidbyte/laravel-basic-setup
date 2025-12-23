@@ -1,52 +1,8 @@
-@props([
-    'viewData' => null,
-    'class' => '',
-    'rows' => [],
-    'headers' => [],
-    'columns' => [],
-    'actionsPerRow' => [],
-    'rowClick' => null,
-    'sortBy' => null,
-    'sortDirection' => 'asc',
-    'showBulk' => false,
-    'selectPage' => false,
-    'selectAll' => false,
-    'selected' => [],
-    'emptyMessage' => null,
-    'emptyIcon' => 'user-group',
-])
-
-@php
-    use App\Services\DataTable\View\DataTableViewData;
-
-    // If viewData is provided, use it; otherwise create from props (backward compatibility)
-    if (!$viewData) {
-        $viewData = new DataTableViewData(
-            rows: $rows,
-            headers: $headers,
-            columns: $columns,
-            actionsPerRow: $actionsPerRow,
-            bulkActions: [],
-            filters: [],
-            selected: $selected,
-            rowClick: $rowClick,
-            sortBy: $sortBy,
-            sortDirection: $sortDirection,
-            showBulk: $showBulk,
-            selectPage: $selectPage,
-            selectAll: $selectAll,
-            showSearch: false,
-            searchPlaceholder: null,
-            paginator: null,
-            emptyMessage: $emptyMessage,
-            emptyIcon: $emptyIcon,
-            class: $class,
-            openRowActionModal: null,
-            openRowActionUuid: null,
-            openBulkActionModal: null,
-        );
-    }
-@endphp
+{{--
+    Table Component
+    All props are handled by the Table component class (App\View\Components\Table)
+    The $viewData property is automatically available from the component class
+--}}
 
 <div class="overflow-x-auto {{ $viewData->getClass() }}">
     <table class="table">

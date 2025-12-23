@@ -2693,6 +2693,15 @@ If you see `Auth::guard('web')->logout()` causing an error:
     -   Always use `I18nService` for locale-related code
     -   Use View Composers instead of `@inject` for global data
 
+### 2025-12-23
+
+-   **Modal Components (Class-Based + Theme-Aware)**: Converted modal Blade components to class-based components and removed inline Blade `@php` logic
+    -   **Base Modal**: `App\View\Components\Ui\BaseModal` + `resources/views/components/ui/base-modal.blade.php`
+        -   Theme-aware backdrop (`bg-base-*` + `backdrop-blur-*`)
+        -   Single `placement` prop with 9-position grid (`top-left` … `bottom-right`) and responsive default (bottom on mobile, center on `sm+`)
+    -   **Confirm Modal**: `App\View\Components\Ui\ConfirmModal` + `resources/views/components/ui/confirm-modal.blade.php`
+        -   Keeps event-driven confirmation UX (`confirm-modal` event) while delegating structure to `<x-ui.base-modal>`
+
 ### 2025-01-XX
 
 -   **Dual Authentication System**: Implemented email and username login support

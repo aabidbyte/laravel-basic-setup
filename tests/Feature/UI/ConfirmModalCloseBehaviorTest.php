@@ -23,7 +23,7 @@ it('can render confirm modal with outside click closing disabled', function () {
         </div>
     BLADE);
 
-    expect($html)->not->toContain("reason: 'outside_click'");
+    expect($html)->not->toContain('x-on:click.self="confirmOpen = false"');
 });
 
 it('can render confirm modal with backdrop transition disabled', function () {
@@ -35,7 +35,7 @@ it('can render confirm modal with backdrop transition disabled', function () {
         </div>
     BLADE);
 
-    expect($html)->not->toContain('x-transition:enter="transition ease-out duration-200"');
+    expect($html)->not->toContain('x-transition:enter="transition ease-out duration-200 motion-reduce:transition-opacity"');
 });
 
 it('does not rely on daisyui modal-box class for the dialog container', function () {
