@@ -2140,25 +2140,28 @@ The component automatically:
 - Opens modals when actions have `showModal()` configured
 - Handles modal confirmations and executes closures after confirmation
 
-### View Data Architecture
+### Component Architecture
 
-The DataTable System uses a **View Data class** to separate business logic from presentation, following the separation of concerns principle. All PHP logic is extracted from Blade templates into a dedicated class, leaving templates clean and focused on HTML structure.
+The DataTable System uses **component classes** to handle all PHP logic directly. All processing methods are available in the component classes (`Datatable` and `Table`), providing a clean separation between logic and presentation while keeping everything in the component layer.
 
-**Class**: `DataTableViewData`
+**Component Classes**: `App\View\Components\Datatable` and `App\View\Components\Table`
 
-**Location**: `app/Services/DataTable/View/DataTableViewData.php`
+**Locations**: 
+- `app/View/Components/Datatable.php`
+- `app/View/Components/Table.php`
 
 #### Purpose
 
-The `DataTableViewData` class:
-- Accepts all component props via constructor
-- Initializes service registries (DataTableComponentRegistry, DataTableFilterComponentRegistry)
-- Provides computed properties and methods for all logic
-- Processes filters, rows, columns, and headers
-- Handles modal configuration and action lookup
-- Returns prepared data structures that Blade templates can use directly
+The component classes:
+- Accept all component props via constructor
+- Initialize service registries once in constructor (DataTableComponentRegistry, DataTableFilterComponentRegistry)
+- Provide public methods for all processing and computed values
+- Enable on-demand processing in Blade templates using `@php` blocks (for performance)
+- Process rows/columns only when iterating (no pre-processing)
 
 #### Key Methods
+
+**Datatable Component Methods:**
 
 **Computed Values:**
 - `getColumnsCount()` - Calculate total columns (bulk checkbox + data columns + actions)
@@ -2169,12 +2172,10 @@ The `DataTableViewData` class:
 - `hasSelected()` - Check if any rows are selected
 - `showBulkBar()` - Check if bulk actions bar should be shown
 - `hasPaginator()` - Check if paginator has pages
+- `getSearchPlaceholder()` - Get search placeholder text
 
 **Processing Methods:**
 - `processFilter(array $filter)` - Filter component resolution and safe attributes extraction
-- `processRow(array $row, int $index)` - Row UUID validation, selection state, row classes, click attributes
-- `processColumn(array $column, array $row)` - Column component resolution, viewport classes, custom render detection
-- `processHeaderColumn(array $column)` - Header column processing (hidden, responsive, sortable logic)
 
 **Modal Methods:**
 - `getModalStateId(string $actionKey, ?string $rowUuid = null, string $type = 'row')` - Generate Alpine.js modal state ID
@@ -2182,49 +2183,75 @@ The `DataTableViewData` class:
 - `getRowActionModalConfig()` - Get row action modal configuration
 - `getBulkActionModalConfig()` - Get bulk action modal configuration
 
+**Getter Methods:**
+- `getRows()`, `getHeaders()`, `getColumns()`, `getFilters()`, `getBulkActions()`, `getActionsPerRow()`, `getSelected()`, `getSortBy()`, `getSortDirection()`, `getPaginator()`, `getEmptyMessage()`, `getEmptyIcon()`, `getClass()`, `getRowClick()`
+- `isShowBulk()`, `isSelectPage()`, `isSelectAll()`, `isShowSearch()`
+
+**Table Component Methods:**
+
+**Processing Methods:**
+- `processRow(array $row, int $index)` - Row UUID validation, selection state, row classes, click attributes
+- `processColumn(array $column, array $row)` - Column component resolution, viewport classes, custom render detection
+- `processHeaderColumn(array $column)` - Header column processing (hidden, responsive, sortable logic)
+
+**Computed Values:**
+- `getColumnsCount()` - Calculate total columns
+- `hasActionsPerRow()` - Check if row actions exist
+
+**Getter Methods:**
+- `getRows()`, `getColumns()`, `getHeaders()`, `getSortBy()`, `getSortDirection()`, `getEmptyMessage()`, `getEmptyIcon()`, `getClass()`
+- `isShowBulk()`
+
 #### Benefits
 
-1. **Separation of Concerns**: Logic separated from presentation
-2. **Testability**: View data class can be unit tested independently
-3. **Reusability**: Logic can be reused across different contexts
-4. **Maintainability**: Easier to modify logic without touching Blade templates
-5. **Clean Templates**: Blade files focus only on HTML structure and data display
+1. **Performance**: On-demand processing, no unnecessary pre-processing
+2. **Clarity**: All logic in component classes, easy to find
+3. **Standardization**: One pattern, no backward compatibility confusion
+4. **Flexibility**: `@php` blocks allowed for performance-critical loops
 
 #### Usage in Components
 
-The `DataTableViewData` class is automatically instantiated in the `<x-datatable>` component and passed to child components:
+Component methods are called directly from Blade templates:
 
 ```blade
 {{-- In datatable.blade.php --}}
-@php
-    $viewData = new DataTableViewData(
-        rows: $rows,
-        headers: $headers,
-        columns: $columns,
-        // ... all props
-    );
-@endphp
-
-<x-table :view-data="$viewData"></x-table>
+<div class="space-y-4 {{ $getClass() }}">
+    @if ($hasFilters())
+        @foreach ($getFilters() as $filter)
+            @php
+                $processedFilter = $processFilter($filter);
+            @endphp
+            {{-- Use processed filter --}}
+        @endforeach
+    @endif
+    
+    <x-table
+        :rows="$rows"
+        :headers="$headers"
+        :columns="$columns"
+        {{-- ... all props --}}
+    ></x-table>
+</div>
 ```
 
-Child components (`<x-table>`, `<x-table.header>`) accept the `viewData` prop and use its methods:
+In the Table component, methods are called in `@php` blocks for performance:
 
 ```blade
 {{-- In table.blade.php --}}
-@forelse ($viewData->getRows() as $row)
+@forelse ($getRows() as $row)
     @php
-        $rowData = $viewData->processRow($row, $loop->index);
+        $rowData = $processRow($row, $loop->index);
     @endphp
     <tr {!! $rowData['rowClickAttr'] !!} {!! $rowData['rowClassAttr'] !!}>
-        {{-- Use processed row data --}}
+        @foreach ($getColumns() as $column)
+            @php
+                $columnData = $processColumn($column, $row);
+            @endphp
+            {{-- Use processed column data --}}
+        @endforeach
     </tr>
 @endforelse
 ```
-
-#### Backward Compatibility
-
-Components still accept individual props if `viewData` is not provided, maintaining backward compatibility with existing code.
 
 ### Unified Table Component
 
@@ -2234,7 +2261,7 @@ The DataTable System includes a unified `<x-datatable>` component that handles a
 
 **Location**: `resources/views/components/datatable.blade.php`
 
-**Note**: The component now uses `DataTableViewData` internally to process all data. All PHP logic has been extracted to the view data class, leaving the Blade template clean and focused on presentation.
+**Note**: The component uses its own class methods to process all data. All PHP logic is in the component class, with `@php` blocks used in Blade templates for on-demand processing when needed for performance.
 
 **Props**:
 

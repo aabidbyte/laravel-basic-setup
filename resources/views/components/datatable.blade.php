@@ -1,26 +1,26 @@
 {{--
     DataTable Component
     All props are handled by the Datatable component class (App\View\Components\Datatable)
-    The $viewData property is automatically available from the component class
+    All methods are available directly from the component class
 --}}
 
-<div class="space-y-4 {{ $viewData->getClass() }}">
+<div class="space-y-4 {{ $getClass() }}">
     {{-- Search Bar (by default) --}}
-    @if ($viewData->isShowSearch())
+    @if ($isShowSearch())
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div class="flex flex-1 gap-2">
-                <x-ui.input type="text" wire:model.live.debounce.300ms="search" :placeholder="$viewData->getSearchPlaceholder()"
+                <x-ui.input type="text" wire:model.live.debounce.300ms="search" :placeholder="$getSearchPlaceholder()"
                     class="max-w-xs"></x-ui.input>
             </div>
         </div>
     @endif
 
     {{-- Filters --}}
-    @if ($viewData->hasFilters())
+    @if ($hasFilters())
         <div class="flex flex-wrap gap-4">
-            @foreach ($viewData->getFilters() as $filter)
+            @foreach ($getFilters() as $filter)
                 @php
-                    $processedFilter = $viewData->processFilter($filter);
+                    $processedFilter = $processFilter($filter);
                     $componentName = $processedFilter['component'];
                     $safeAttributes = $processedFilter['safeAttributes'];
                 @endphp
@@ -34,9 +34,9 @@
     @endif
 
     {{-- Bulk Actions Bar --}}
-    @if ($viewData->showBulkBar())
+    @if ($showBulkBar())
         <div class="flex items-center gap-2">
-            @if ($viewData->showBulkActionsDropdown())
+            @if ($showBulkActionsDropdown())
                 <x-ui.dropdown placement="end" menu>
                     <x-slot:trigger>
                         <x-ui.button variant="outline" size="sm">
@@ -45,7 +45,7 @@
                         </x-ui.button>
                     </x-slot:trigger>
 
-                    @foreach ($viewData->getBulkActions() as $action)
+                    @foreach ($getBulkActions() as $action)
                         <li>
                             <button wire:click="runBulkAction('{{ $action['key'] }}')" type="button"
                                 class="w-full text-left">
@@ -58,7 +58,7 @@
                     @endforeach
                 </x-ui.dropdown>
             @else
-                @foreach ($viewData->getBulkActions() as $action)
+                @foreach ($getBulkActions() as $action)
                     <x-ui.button wire:click="runBulkAction('{{ $action['key'] }}')"
                         variant="{{ $action['variant'] ?? 'outline' }}" :color="$action['color'] ?? null" size="sm">
                         @isset($action['icon'])
@@ -71,18 +71,33 @@
         </div>
     @endif
     {{-- Table --}}
-    <x-table :view-data="$viewData"></x-table>
+    <x-table
+        :rows="$rows"
+        :headers="$headers"
+        :columns="$columns"
+        :actions-per-row="$actionsPerRow"
+        :row-click="$rowClick"
+        :sort-by="$sortBy"
+        :sort-direction="$sortDirection"
+        :show-bulk="$showBulk"
+        :select-page="$selectPage"
+        :select-all="$selectAll"
+        :selected="$selected"
+        :empty-message="$emptyMessage"
+        :empty-icon="$emptyIcon"
+        :class="$class"
+    ></x-table>
 
     {{-- Pagination --}}
-    @if ($viewData->hasPaginator())
+    @if ($hasPaginator())
         <div class="mt-6">
-            <x-table.pagination :paginator="$viewData->getPaginator()"></x-table.pagination>
+            <x-table.pagination :paginator="$getPaginator()"></x-table.pagination>
         </div>
     @endif
 
     {{-- Row Action Modals --}}
     @php
-        $rowModalConfig = $viewData->getRowActionModalConfig();
+        $rowModalConfig = $getRowActionModalConfig();
     @endphp
     @if ($rowModalConfig)
         <div x-data="{
@@ -115,7 +130,7 @@
 
     {{-- Bulk Action Modals --}}
     @php
-        $bulkModalConfig = $viewData->getBulkActionModalConfig();
+        $bulkModalConfig = $getBulkActionModalConfig();
     @endphp
     @if ($bulkModalConfig)
         <div x-data="{

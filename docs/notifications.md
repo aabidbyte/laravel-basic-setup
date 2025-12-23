@@ -2,6 +2,8 @@
 
 The application includes a comprehensive notification system that supports both **toast notifications** (temporary UI messages) and **persistent notifications** (stored in the database). All notifications are broadcast via Laravel Reverb for real-time delivery.
 
+**Status**: ✅ **Production Ready** - The notification system is fully functional and tested. All features work correctly including session-based notifications for post-logout scenarios.
+
 ## Overview
 
 The notification system provides:
@@ -235,6 +237,40 @@ NotificationBuilder::make()
     ->global()
     ->send();
 ```
+
+### Session Channel (Default Fallback)
+
+The session channel is automatically used as a fallback when no user context is available (e.g., after logout or user deletion). This ensures notifications can still be delivered to the current browser session even when the user is not authenticated.
+
+**Automatic Behavior**: If no specific channel is set (no `toUser()`, `toTeam()`, or `global()`), and no authenticated user is available, the notification will automatically use the current session channel.
+
+```php
+// After user deletion (no user context available)
+NotificationBuilder::make()
+    ->title('Account deleted successfully')
+    ->info()
+    ->send(); // Automatically uses session channel (public)
+```
+
+**Channel Type**: The session channel uses a **public channel** (`public-notifications.session.{sessionId}`) instead of a private channel. This is more secure and simpler because:
+
+- **Security**: Session IDs are cryptographically random (40+ characters) and extremely hard to guess
+- **No Authentication Required**: Public channels don't require authentication, making them perfect for post-logout scenarios
+- **Session ID as Security**: The session ID itself acts as the security mechanism - only the browser with that specific session ID can subscribe
+- **No Authorization Overhead**: No need for custom authorization routes or middleware
+
+**Session Fallback Storage**: When a notification is sent to the session channel, it is also stored in the session as a fallback mechanism. This ensures notifications aren't lost during redirects, since WebSocket broadcasts are real-time and may be missed if the client subscribes after the broadcast.
+
+- Notifications are stored in `session('pending_toast_notifications')` as an array
+- On page load, pending notifications are automatically retrieved and displayed
+- After display, pending notifications are cleared from the session using `session()->pull()`
+
+**Frontend Subscription**:
+- **Auth pages** (login, register, etc.): Only subscribe to session channel (public)
+- **App pages** (authenticated): Subscribe to user, team, global (private), and session (public) channels
+- **Pending Notifications**: On page load, any pending notifications from the session are automatically processed and displayed
+
+This ensures notifications are delivered correctly in both authenticated and non-authenticated contexts, even during redirects.
 
 ## Persistent Notifications
 

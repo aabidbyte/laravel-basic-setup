@@ -13,11 +13,20 @@ class AuthController extends Controller
      */
     public function logout(): RedirectResponse
     {
+        $this->performLogout();
+
+        return redirect('/');
+    }
+
+    /**
+     * Perform logout actions without redirecting.
+     * Useful when called from Livewire components that handle redirects themselves.
+     */
+    public function performLogout(): void
+    {
         Auth::guard('web')->logout();
 
         Session::invalidate();
         Session::regenerateToken();
-
-        return redirect('/');
     }
 }

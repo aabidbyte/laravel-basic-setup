@@ -5,7 +5,8 @@ use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     public string $password = '';
 
     /**
@@ -18,10 +19,18 @@ new class extends Component {
         ]);
 
         $user = Auth::user();
-        app(AuthController::class)->logout();
+
+        app(AuthController::class)->performLogout();
         $user->delete();
 
-        NotificationBuilder::make()->title(__('ui.settings.delete_account.success'))->info()->send();
+        // Send notification after logout/deletion
+        // Since no user context is available, it will default to current session
+        // This uses the current session ID dynamically (new session created after invalidation)
+        // The notification will be delivered to the browser even after user deletion
+        NotificationBuilder::make()
+            ->title(__('ui.settings.delete_account.success'))
+            ->info()
+            ->send();
 
         $this->redirect('/', navigate: true);
     }
@@ -51,18 +60,15 @@ new class extends Component {
                     </p>
                     <form id="delete-user-form" method="POST" wire:submit="deleteUser" class="space-y-4">
                         <x-ui.password wire:model="password" name="password" :label="__('ui.settings.delete_account.password_label')"></x-ui.password>
-
-                        <div class="flex justify-end gap-2 mt-4">
-                            <x-ui.button type="submit" variant="error" form="delete-user-form"
-                                data-test="confirm-delete-user-button">
-                                {{ __('ui.settings.delete_account.button') }}
-                            </x-ui.button>
-                        </div>
                     </form>
                 </div>
             </div>
 
             <x-slot:actions>
+                <x-ui.button type="submit" variant="error" form="delete-user-form"
+                    data-test="confirm-delete-user-button">
+                    {{ __('ui.settings.delete_account.button') }}
+                </x-ui.button>
                 <x-ui.button type="button" variant="ghost" @click="deleteAccountModalOpen = false">
                     {{ __('ui.actions.cancel') }}
                 </x-ui.button>

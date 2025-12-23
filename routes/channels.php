@@ -33,3 +33,8 @@ Broadcast::channel('private-notifications.team.{teamUuid}', function ($user, str
 Broadcast::channel('private-notifications.global', function ($user) {
     return $user !== null;
 });
+
+// Session channel is now a PUBLIC channel (not private)
+// Security: Session IDs are cryptographically random and hard to guess
+// The session ID itself acts as the security mechanism
+// No authorization callback needed for public channels

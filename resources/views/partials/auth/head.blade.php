@@ -11,4 +11,7 @@
 <link rel="preconnect" href="https://fonts.bunny.net">
 <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
 
-@vite(['resources/css/auth.css', 'resources/js/app.js'])
+<script type="text/javascript">
+    window.notificationRealtimeConfig = @js($notificationRealtimeConfig);
+</script>
+@vite(['resources/css/auth.css', 'resources/js/app.js', 'resources/js/notification-center.js'])

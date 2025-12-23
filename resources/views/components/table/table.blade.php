@@ -1,22 +1,30 @@
 {{--
     Table Component
     All props are handled by the Table component class (App\View\Components\Table)
-    The $viewData property is automatically available from the component class
+    All methods are available directly from the component class
 --}}
 
-<div class="overflow-x-auto {{ $viewData->getClass() }}">
+<div class="overflow-x-auto {{ $getClass() }}">
     <table class="table">
-        <x-table.header :view-data="$viewData"></x-table.header>
+        <x-table.header
+            :columns="$headers"
+            :sort-by="$sortBy"
+            :sort-direction="$sortDirection"
+            :show-bulk="$showBulk"
+            :select-page="$selectPage"
+            :select-all="$selectAll"
+            :show-actions="$hasActionsPerRow()"
+        ></x-table.header>
 
         <x-table.body>
-            @forelse ($viewData->getRows() as $row)
+            @forelse ($getRows() as $row)
                 @php
-                    $rowData = $viewData->processRow($row, $loop->index);
+                    $rowData = $processRow($row, $loop->index);
                 @endphp
                 <tr wire:key="row-{{ $rowData['uuid'] ?? $rowData['index'] }}" {!! $rowData['rowClickAttr'] !!}
                     {!! $rowData['rowClassAttr'] !!}>
                     {{-- Bulk Selection Checkbox --}}
-                    @if ($viewData->isShowBulk() && $rowData['uuid'])
+                    @if ($isShowBulk() && $rowData['uuid'])
                         <td wire:click.stop>
                             <input type="checkbox" wire:model.live="selected" value="{{ $rowData['uuid'] }}"
                                 class="checkbox checkbox-sm" />
@@ -24,9 +32,9 @@
                     @endif
 
                     {{-- Data Columns --}}
-                    @foreach ($viewData->getColumns() as $column)
+                    @foreach ($getColumns() as $column)
                         @php
-                            $columnData = $viewData->processColumn($column, $row);
+                            $columnData = $processColumn($column, $row);
                         @endphp
 
                         @if (!$columnData['hidden'])
@@ -45,7 +53,7 @@
                     @endforeach
                 </tr>
             @empty
-                <x-table.empty :columns-count="$viewData->getColumnsCount()" :message="$viewData->getEmptyMessage()" :icon="$viewData->getEmptyIcon()"></x-table.empty>
+                <x-table.empty :columns-count="$getColumnsCount()" :message="$getEmptyMessage()" :icon="$getEmptyIcon()"></x-table.empty>
             @endforelse
         </x-table.body>
     </table>

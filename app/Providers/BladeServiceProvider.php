@@ -72,12 +72,30 @@ class BladeServiceProvider extends ServiceProvider
             $view->with('sideBarBottomMenus', $sideBarBottomMenus);
             $view->with('sideBarUserMenus', $sideBarUserMenus);
         });
+        // Share notification config for app layout (authenticated users)
         View::composer(['partials.head'], function ($view) {
-
             $user = Auth::user();
+            $pendingNotifications = session()->pull('pending_toast_notifications', []);
+
             $notificationRealtimeConfig = [
                 'userUuid' => $user?->uuid,
                 'teamUuids' => $user ? $user->teams()->pluck('teams.uuid')->toArray() : [],
+                'sessionId' => session()->getId(),
+                'pendingNotifications' => $pendingNotifications,
+            ];
+
+            $view->with('notificationRealtimeConfig', $notificationRealtimeConfig);
+        });
+
+        // Share notification config for auth layout (non-authenticated users - session only)
+        View::composer(['partials.auth.head'], function ($view) {
+            $pendingNotifications = session()->pull('pending_toast_notifications', []);
+
+            $notificationRealtimeConfig = [
+                'userUuid' => null,
+                'teamUuids' => [],
+                'sessionId' => session()->getId(),
+                'pendingNotifications' => $pendingNotifications,
             ];
 
             $view->with('notificationRealtimeConfig', $notificationRealtimeConfig);

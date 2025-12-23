@@ -14,6 +14,7 @@ export function createNotificationsStore() {
         config: {
             userUuid: null,
             teamUuids: [],
+            sessionId: null,
         },
         initialized: false,
 
@@ -21,6 +22,7 @@ export function createNotificationsStore() {
         _listeners: [],
         _subscribedChannels: new Set(),
         _subscribers: new Set(),
+        _pendingNotificationsProcessed: false,
 
         /**
          * Initialize the store with configuration
@@ -28,7 +30,6 @@ export function createNotificationsStore() {
          */
         init(config) {
             if (!config) {
-                console.warn('[Notifications Store] No config provided');
                 return;
             }
 
@@ -36,6 +37,7 @@ export function createNotificationsStore() {
             this.config.teamUuids = Array.isArray(config?.teamUuids)
                 ? config?.teamUuids
                 : [];
+            this.config.sessionId = config?.sessionId || null;
             this.initialized = true;
 
             this._ensureEchoListeners();
@@ -47,8 +49,10 @@ export function createNotificationsStore() {
          * @returns {Function} Unsubscribe function
          */
         subscribe(callback) {
-            if (typeof callback !== 'function') {
-                console.error('[Notifications Store] Subscribe callback must be a function');
+            if (typeof callback !== "function") {
+                console.error(
+                    "[Notifications Store] Subscribe callback must be a function"
+                );
                 return () => {};
             }
 
@@ -67,9 +71,9 @@ export function createNotificationsStore() {
          * @param {Object} payload - Event payload
          */
         _emit(eventName, payload) {
-            if (eventName === 'notification.changed') {
+            if (eventName === "notification.changed") {
                 window.dispatchEvent(
-                    new CustomEvent('notifications-changed', {
+                    new CustomEvent("notifications-changed", {
                         detail: payload,
                         bubbles: true,
                     })
@@ -80,7 +84,16 @@ export function createNotificationsStore() {
                 try {
                     callback(eventName, payload);
                 } catch (error) {
-                    console.error('[Notifications Store] Error in subscriber callback:', error);
+                    // Component not found errors are expected during Livewire navigation
+                    // Silently ignore them - they occur when components are removed during navigation
+                    const errorMessage = error?.message || String(error || "");
+                    if (errorMessage.includes("Component not found")) {
+                        return;
+                    }
+                    console.error(
+                        "[Notifications Store] Error in subscriber callback:",
+                        error
+                    );
                 }
             });
         },
@@ -94,29 +107,40 @@ export function createNotificationsStore() {
                 return;
             }
 
-            if (typeof window.Echo === 'undefined') {
-                console.warn('[Notifications Store] Echo is not available');
+            if (typeof window.Echo === "undefined") {
                 return;
             }
 
             const handleToast = (event) => {
-                this._emit('toast.received', event);
+                this._emit("toast.received", event);
             };
 
             const handleNotification = (event) => {
-                this._emit('notification.changed', event);
+                this._emit("notification.changed", event);
             };
 
-            // Subscribe to user channel
-            if (this.config.userUuid) {
-                this._subscribeToChannel(
-                    `private-notifications.user.${this.config.userUuid}`,
-                    {
+            // In auth context (no userUuid), only subscribe to session channel
+            if (!this.config.userUuid) {
+                // Only subscribe to session channel for non-authenticated users
+                // Session channel is PUBLIC (session ID acts as security mechanism)
+                if (this.config.sessionId) {
+                    const sessionChannel = `public-notifications.session.${this.config.sessionId}`;
+                    this._subscribeToPublicChannel(sessionChannel, {
                         toast: handleToast,
-                        notification: handleNotification,
-                    }
-                );
+                    });
+                }
+                return;
             }
+
+            // For authenticated users, subscribe to all channels
+            // Subscribe to user channel
+            this._subscribeToChannel(
+                `private-notifications.user.${this.config.userUuid}`,
+                {
+                    toast: handleToast,
+                    notification: handleNotification,
+                }
+            );
 
             // Subscribe to all team channels
             if (this.config.teamUuids && this.config.teamUuids.length > 0) {
@@ -135,16 +159,24 @@ export function createNotificationsStore() {
             }
 
             // Subscribe to global channel
-            this._subscribeToChannel(
-                'private-notifications.global',
-                {
-                    toast: handleToast,
-                }
-            );
+            this._subscribeToChannel("private-notifications.global", {
+                toast: handleToast,
+            });
+
+            // Subscribe to session channel (for notifications after logout)
+            // Session channel is PUBLIC (session ID acts as security mechanism)
+            if (this.config.sessionId) {
+                this._subscribeToPublicChannel(
+                    `public-notifications.session.${this.config.sessionId}`,
+                    {
+                        toast: handleToast,
+                    }
+                );
+            }
         },
 
         /**
-         * Subscribe to a specific Echo channel
+         * Subscribe to a specific Echo private channel
          * @private
          * @param {string} channelName - Channel name
          * @param {Object} handlers - Event handlers object
@@ -160,19 +192,70 @@ export function createNotificationsStore() {
 
                 // Some broadcasters require leading dot; support both for resilience
                 if (handlers.toast) {
-                    listener.listen('.toast.received', handlers.toast);
-                    listener.listen('toast.received', handlers.toast);
+                    listener.listen(".toast.received", handlers.toast);
+                    listener.listen("toast.received", handlers.toast);
                 }
 
                 if (handlers.notification) {
-                    listener.listen('.notification.changed', handlers.notification);
-                    listener.listen('notification.changed', handlers.notification);
+                    listener.listen(
+                        ".notification.changed",
+                        handlers.notification
+                    );
+                    listener.listen(
+                        "notification.changed",
+                        handlers.notification
+                    );
                 }
 
                 this._listeners.push(listener);
                 this._subscribedChannels.add(channelName);
             } catch (error) {
-                console.error(`[Notifications Store] Error subscribing to channel ${channelName}:`, error);
+                console.error(
+                    `[Notifications Store] Error subscribing to channel ${channelName}:`,
+                    error
+                );
+            }
+        },
+
+        /**
+         * Subscribe to a specific Echo public channel
+         * @private
+         * @param {string} channelName - Channel name
+         * @param {Object} handlers - Event handlers object
+         */
+        _subscribeToPublicChannel(channelName, handlers) {
+            if (this._subscribedChannels.has(channelName)) {
+                return;
+            }
+
+            try {
+                const channel = window.Echo.channel(channelName);
+                const listener = channel;
+
+                // Some broadcasters require leading dot; support both for resilience
+                if (handlers.toast) {
+                    listener.listen(".toast.received", handlers.toast);
+                    listener.listen("toast.received", handlers.toast);
+                }
+
+                if (handlers.notification) {
+                    listener.listen(
+                        ".notification.changed",
+                        handlers.notification
+                    );
+                    listener.listen(
+                        "notification.changed",
+                        handlers.notification
+                    );
+                }
+
+                this._listeners.push(listener);
+                this._subscribedChannels.add(channelName);
+            } catch (error) {
+                console.error(
+                    `[Notifications Store] Error subscribing to channel ${channelName}:`,
+                    error
+                );
             }
         },
 
@@ -184,11 +267,17 @@ export function createNotificationsStore() {
             // Cleanup Echo listeners
             this._listeners.forEach((listener) => {
                 try {
-                    if (listener && typeof listener.stopListening === 'function') {
+                    if (
+                        listener &&
+                        typeof listener.stopListening === "function"
+                    ) {
                         listener.stopListening();
                     }
                 } catch (error) {
-                    console.error('[Notifications Store] Error cleaning up listener:', error);
+                    console.error(
+                        "[Notifications Store] Error cleaning up listener:",
+                        error
+                    );
                 }
             });
 
@@ -198,4 +287,3 @@ export function createNotificationsStore() {
         },
     };
 }
-

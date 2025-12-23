@@ -349,6 +349,12 @@ class NotificationBuilder
         // Always broadcast the toast
         event(new ToastBroadcasted($payload, $channel));
 
+        // For session channel, also store in session as fallback
+        // This ensures notifications aren't lost during redirects (WebSocket messages are real-time)
+        if (str_starts_with($channel, 'public-notifications.session.')) {
+            session()->push('pending_toast_notifications', $payload->toArray());
+        }
+
         // Optionally persist to database
         if ($this->persist) {
             $this->persistToDatabase($payload);
@@ -432,7 +438,7 @@ class NotificationBuilder
      *
      * @return string The broadcast channel name
      *
-     * @throws \RuntimeException If no user context is available
+     * @throws \RuntimeException If no session ID is available
      */
     protected function determineChannel(): string
     {
@@ -448,13 +454,22 @@ class NotificationBuilder
             return "private-notifications.user.{$this->userId}";
         }
 
-        // Default to current user
+        // Default to current user if authenticated
         $user = Auth::user();
         if ($user instanceof User) {
             return "private-notifications.user.{$user->uuid}";
         }
 
-        throw new \RuntimeException('Cannot determine notification channel: no user context available.');
+        // Fallback to current session (default when no user context is available)
+        // Always get current session ID dynamically
+        // This ensures it works even after session invalidation (new session will be created)
+        // Uses PUBLIC channel - session ID itself acts as security mechanism (cryptographically random)
+        $currentSessionId = session()->getId();
+        if (! $currentSessionId) {
+            throw new \RuntimeException('Cannot determine notification channel: no session ID available.');
+        }
+
+        return "public-notifications.session.{$currentSessionId}";
     }
 
     /**

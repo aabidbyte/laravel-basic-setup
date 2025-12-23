@@ -40,14 +40,6 @@ function initializeEcho() {
             forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? "https") === "https",
             enabledTransports: ["ws", "wss"],
         });
-
-        // Log successful initialization in development
-        if (import.meta.env.DEV) {
-            console.log("[Echo] Successfully initialized with Reverb", {
-                host: reverbHost,
-                key: reverbKey?.substring(0, 8) + "...",
-            });
-        }
     } catch (error) {
         console.error("[Echo] Failed to initialize:", error);
         // Create a mock Echo object to prevent errors in dependent code
