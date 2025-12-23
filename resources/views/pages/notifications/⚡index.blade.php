@@ -133,7 +133,7 @@ new class extends BasePageComponent {
 }; ?>
 
 <div x-data="notificationCenter($wire)" x-init="init()" x-on:notifications-changed.window="$wire.$refresh()"
-    wire:key="notification-center-{{ Auth::id() ?? 'guest' }}" class="flex flex-col gap-4">
+    wire:key="notification-center-{{ Auth::user()?->uuid ?? 'guest' }}" class="flex flex-col gap-4">
     @if ($this->totalCount > 0)
         <div class="flex justify-end gap-2">
             @if ($this->unreadCount > 0)
@@ -157,7 +157,7 @@ new class extends BasePageComponent {
             @if ($this->notifications->isEmpty())
                 <div class="card bg-base-200">
                     <div class="card-body text-center">
-                        <x-ui.icon name="bell" class="h-12 w-12 mx-auto opacity-50 mb-4" />
+                        <x-ui.icon name="bell" class="h-12 w-12 mx-auto opacity-50 mb-4"></x-ui.icon>
                         <p class="text-base-content opacity-60">{{ __('ui.notifications.empty') }}</p>
                     </div>
                 </div>
@@ -171,7 +171,7 @@ new class extends BasePageComponent {
                                 <div wire:click="markAsRead('{{ $notification['id'] }}')"
                                     class="flex-shrink-0 {{ $notification['isRead'] ? 'opacity-50' : '' }} cursor-pointer">
                                     <x-ui.icon name="{{ $notification['icon']['name'] }}"
-                                        class="{{ $notification['icon']['class'] }}" />
+                                        class="{{ $notification['icon']['class'] }}"></x-ui.icon>
                                 </div>
                                 <div wire:click="markAsRead('{{ $notification['id'] }}')"
                                     class="flex-1 cursor-pointer">
@@ -204,7 +204,7 @@ new class extends BasePageComponent {
                                 message: '{{ addslashes(__('ui.modals.confirm.message')) }}',
                                 confirmAction: () => $wire.delete('{{ $notification['id'] }}')
                             })">
-                                        <x-ui.icon name="trash" class="h-4 w-4" />
+                                        <x-ui.icon name="trash" class="h-4 w-4"></x-ui.icon>
                                     </x-ui.button>
                                 </div>
                             </div>

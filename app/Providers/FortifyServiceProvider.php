@@ -74,6 +74,11 @@ class FortifyServiceProvider extends ServiceProvider
                 return null;
             }
 
+            // Check if user is active
+            if (! $user->isActive()) {
+                return null;
+            }
+
             setTeamSessionForUser($user);
 
             return $user;

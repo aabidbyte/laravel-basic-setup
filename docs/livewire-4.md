@@ -1508,10 +1508,24 @@ $wire.$js.methodName = () => {
 
 **Entangle:**
 
+> ⚠️ **Important**: In Livewire v3/v4, **refrain from using the `@entangle` directive**. While it was recommended in Livewire v2, `$wire.$entangle()` is now preferred as it is a more robust utility and avoids certain issues when removing DOM elements.
+
+Use `$wire.$entangle()` in Alpine.js data components:
+
 ```javascript
 Alpine.data("component", () => ({
     title: $wire.$entangle("title"),
 }));
+```
+
+**In Blade templates, use `$wire.$entangle()` instead of `@entangle`:**
+
+```blade
+<!-- ❌ Avoid: @entangle directive -->
+<div x-data="{ open: @entangle('isOpen').live }">
+
+<!-- ✅ Preferred: $wire.$entangle() -->
+<div x-data="{ open: $wire.$entangle('isOpen') }">
 ```
 
 **Watch:**

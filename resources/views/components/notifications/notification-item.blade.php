@@ -2,7 +2,7 @@
 
 <div class="flex items-start gap-2">
     <div class="flex-shrink-0 mt-0.5">
-        <x-ui.icon name="{{ $iconName }}" class="{{ $iconClass }}" />
+        <x-ui.icon name="{{ $iconName }}" class="{{ $iconClass }}"></x-ui.icon>
     </div>
     <div class="flex-1 min-w-0">
         <div class="truncate">{{ $title }}</div>

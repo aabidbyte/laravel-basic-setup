@@ -74,9 +74,9 @@ new class extends BasePageComponent
     <x-settings.layout>
         <x-ui.form wire:submit="updateProfileInformation" class="w-full">
             <x-ui.input type="text" wire:model="name" name="name" :label="__('ui.settings.profile.name_label')" required autofocus
-                autocomplete="name" />
+                autocomplete="name"></x-ui.input>
 
-            <x-ui.input type="email" wire:model="email" name="email" :label="__('ui.settings.profile.email_label')" required autocomplete="email" />
+            <x-ui.input type="email" wire:model="email" name="email" :label="__('ui.settings.profile.email_label')" required autocomplete="email"></x-ui.input>
 
             @if (Auth::user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !Auth::user()->hasVerifiedEmail())
                 <div class="alert alert-info mt-4">
@@ -98,6 +98,6 @@ new class extends BasePageComponent
             </div>
         </x-ui.form>
 
-        <livewire:settings.delete-user-form wire:key="delete-user-form" />
+        <livewire:settings.delete-user-form wire:key="delete-user-form"></livewire:settings.delete-user-form>
     </x-settings.layout>
 </section>

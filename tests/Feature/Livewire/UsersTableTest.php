@@ -40,13 +40,17 @@ test('sort toggles direction', function () {
     $component = Livewire::actingAs($this->user)
         ->test('users.table');
 
-    // Component defaults to sortBy='name' and sortDirection='asc'
-    // First click on 'name' (already sorted by name) toggles to desc
+    // Component defaults to sortBy='created_at' and sortDirection='desc' (from config)
+    // First click on 'name' (different column) sets sortBy='name' and sortDirection='asc'
     $component->call('sortBy', 'name')
         ->assertSet('sortBy', 'name')
+        ->assertSet('sortDirection', 'asc');
+
+    // Second click on 'name' (same column) toggles to desc
+    $component->call('sortBy', 'name')
         ->assertSet('sortDirection', 'desc');
 
-    // Second click toggles back to asc
+    // Third click toggles back to asc
     $component->call('sortBy', 'name')
         ->assertSet('sortDirection', 'asc');
 });

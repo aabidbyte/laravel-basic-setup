@@ -8,6 +8,7 @@ use App\Http\Middleware\TeamsPermission;
 use App\Listeners\SyncUserPreferencesOnLogin;
 use App\Observers\DatabaseNotificationObserver;
 use Illuminate\Auth\Events\Login;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Http\Kernel;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Routing\Middleware\SubstituteBindings;
@@ -57,6 +58,46 @@ class AppServiceProvider extends ServiceProvider
         // Following Spatie Permissions best practices: https://spatie.be/docs/laravel-permission/v6/basic-usage/super-admin
         Gate::before(function ($user, $ability) {
             return $user->hasRole(Roles::SUPER_ADMIN) ? true : null;
+        });
+
+        // Register search macros for Eloquent Builder
+        $this->registerSearchMacros();
+    }
+
+    /**
+     * Register global search macros for Eloquent Builder
+     */
+    private function registerSearchMacros(): void
+    {
+        /**
+         * Simple search macro for single/multiple columns
+         *
+         * Usage:
+         * User::search('john', ['name', 'email'])
+         * User::search('john', 'name')
+         * Team::search('marketing', ['name', 'description'])
+         */
+        Builder::macro('search', function (string $query, array|string $columns = []) {
+            /** @var Builder $this */
+            if (empty($query) || empty($columns)) {
+                return $this;
+            }
+
+            $columns = is_array($columns) ? $columns : [$columns];
+
+            return $this->where(function (Builder $builder) use ($query, $columns) {
+                foreach ($columns as $column) {
+                    // Handle relation.column syntax
+                    if (str_contains($column, '.')) {
+                        [$relation, $relationColumn] = explode('.', $column, 2);
+                        $builder->orWhereHas($relation, function (Builder $relationQuery) use ($relationColumn, $query) {
+                            $relationQuery->where($relationColumn, 'LIKE', "%{$query}%");
+                        });
+                    } else {
+                        $builder->orWhere($column, 'LIKE', "%{$query}%");
+                    }
+                }
+            });
         });
     }
 }

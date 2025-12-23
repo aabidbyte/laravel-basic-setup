@@ -1,16 +1,16 @@
 <x-layouts.auth>
     <div class="flex flex-col gap-6">
-        <x-auth-header :title="__('ui.auth.login.title')" :description="__('ui.auth.login.description')" />
+        <x-auth-header :title="__('ui.auth.login.title')" :description="__('ui.auth.login.description')"></x-auth-header>
 
-        <x-auth-session-status class="text-center" :status="session('status')" />
+        <x-auth-session-status class="text-center" :status="session('status')"></x-auth-session-status>
 
         <x-ui.form method="POST" action="{{ route('login.store') }}" class="flex flex-col">
             @csrf
 
+            {{-- Production: Show text input; Dev: Show user select dropdown --}}
             @if (isProduction())
-                {{-- Production: Show text input --}}
                 <x-ui.input type="text" name="identifier" :label="__('ui.auth.login.email_label')" :value="old('identifier')" required autofocus
-                    autocomplete="username" :placeholder="__('ui.auth.login.email_placeholder')" />
+                    autocomplete="username" :placeholder="__('ui.auth.login.email_placeholder')"></x-ui.input>
                 <x-ui.password name="password" :label="__('ui.auth.login.password_label')" required autocomplete="current-password"
                     :placeholder="__('ui.auth.login.password_placeholder')">
                     @if (Route::has('password.request'))
@@ -22,10 +22,9 @@
                     @endif
                 </x-ui.password>
             @else
-                {{-- Dev Environment: Show user select dropdown --}}
+                {{-- Dev mode: Hide password field and use default password --}}
                 <x-ui.select name="identifier" :label="__('ui.auth.login.email_label')" :options="$users" :selected="old('identifier')" :placeholder="__('ui.auth.login.select_user')"
                     :error="$errors->first('identifier')" required autofocus />
-                {{-- Dev mode: Hide password field and use default password --}}
                 <input type="hidden" name="password" value="password" />
             @endif
 

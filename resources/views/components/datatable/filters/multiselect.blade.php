@@ -1,0 +1,35 @@
+@props([
+    'key' => '',
+    'label' => '',
+    'placeholder' => '',
+    'options' => [],
+    'optionsProvider' => null,
+    'value' => null,
+    'wireModel' => 'filters',
+])
+
+@php
+    // Resolve options from provider if needed
+    if ($optionsProvider && empty($options)) {
+        $provider = app($optionsProvider);
+        if (method_exists($provider, 'getOptions')) {
+            $options = $provider->getOptions();
+        }
+    }
+    $selectedValues = is_array($value) ? $value : [];
+@endphp
+
+<div class="form-control">
+    @if ($label)
+        <label class="label">
+            <span class="label-text">{{ $label }}</span>
+        </label>
+    @endif
+    <select wire:model.live="{{ $wireModel }}.{{ $key }}" multiple class="select select-bordered select-sm w-full max-w-xs">
+        <option value="" disabled>{{ $placeholder }}</option>
+        @foreach ($options as $option)
+            <option value="{{ $option['value'] ?? $option }}">{{ $option['label'] ?? $option }}</option>
+        @endforeach
+    </select>
+</div>
+

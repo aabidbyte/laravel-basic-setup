@@ -15,11 +15,11 @@
             },
         }">
             <div x-show="!showRecoveryInput">
-                <x-auth-header :title="__('ui.auth.two_factor.title')" :description="__('ui.auth.two_factor.description')" />
+                <x-auth-header :title="__('ui.auth.two_factor.title')" :description="__('ui.auth.two_factor.description')"></x-auth-header>
             </div>
 
             <div x-show="showRecoveryInput">
-                <x-auth-header :title="__('ui.auth.two_factor.recovery_title')" :description="__('ui.auth.two_factor.recovery_description')" />
+                <x-auth-header :title="__('ui.auth.two_factor.recovery_title')" :description="__('ui.auth.two_factor.recovery_description')"></x-auth-header>
             </div>
 
             <form method="POST" action="{{ route('two-factor.login.store') }}">
@@ -46,7 +46,7 @@
                     <div x-show="showRecoveryInput">
                         <x-ui.input type="text" name="recovery_code" x-ref="recovery_code"
                             x-bind:required="showRecoveryInput" autocomplete="one-time-code" x-model="recovery_code"
-                            :label="__('ui.auth.two_factor.recovery_code_label')" />
+                            :label="__('ui.auth.two_factor.recovery_code_label')"></x-ui.input>
                     </div>
 
                     <x-ui.button type="submit" variant="primary" class="w-full">

@@ -39,6 +39,8 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->foreignId('team_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->boolean('is_active')->default(true);
+            $table->timestamp('last_login_at')->nullable();
             $table->text('two_factor_secret')->nullable();
             $table->text('two_factor_recovery_codes')->nullable();
             $table->timestamp('two_factor_confirmed_at')->nullable();
@@ -49,6 +51,7 @@ return new class extends Migration
 
             $table->index('username');
             $table->index('team_id');
+            $table->index('is_active');
         });
 
         // Team user pivot table

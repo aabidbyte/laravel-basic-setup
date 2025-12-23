@@ -31,10 +31,6 @@ new class extends BasePageComponent
     #[Locked]
     public string $manualSetupKey = '';
 
-    public bool $showModal = false;
-
-    public bool $showVerificationStep = false;
-
     #[Validate('required|string|size:6', onUpdate: false)]
     public string $code = '';
 
@@ -70,7 +66,7 @@ new class extends BasePageComponent
 
         $this->loadSetupData();
 
-        $this->showModal = true;
+        $this->dispatch('open-two-factor-setup-modal');
     }
 
     /**
@@ -96,11 +92,9 @@ new class extends BasePageComponent
     public function showVerificationIfNecessary(): void
     {
         if ($this->requiresConfirmation) {
-            $this->showVerificationStep = true;
-
             $this->resetErrorBag();
 
-            $this->dispatch('$refresh');
+            $this->dispatch('show-verification-step');
 
             return;
         }
@@ -130,9 +124,11 @@ new class extends BasePageComponent
     #[On('reset-verification')]
     public function resetVerification(): void
     {
-        $this->reset('code', 'showVerificationStep');
+        $this->reset('code');
 
         $this->resetErrorBag();
+
+        $this->dispatch('hide-verification-step');
     }
 
     /**
@@ -152,9 +148,11 @@ new class extends BasePageComponent
      */
     public function closeModal(): void
     {
-        $this->reset('code', 'manualSetupKey', 'qrCodeSvg', 'showModal', 'showVerificationStep');
+        $this->reset('code', 'manualSetupKey', 'qrCodeSvg');
 
         $this->resetErrorBag();
+
+        $this->dispatch('close-two-factor-setup-modal');
 
         if (! $this->requiresConfirmation) {
             $this->twoFactorEnabled = Auth::user()->hasEnabledTwoFactorAuthentication();
@@ -174,17 +172,21 @@ new class extends BasePageComponent
             ];
         }
 
-        if ($this->showVerificationStep) {
-            return [
-                'title' => __('ui.settings.two_factor.setup.title_verify'),
-                'description' => __('ui.settings.two_factor.setup.description_verify'),
-                'buttonText' => __('ui.actions.continue'),
-            ];
-        }
-
         return [
             'title' => __('ui.settings.two_factor.setup.title_setup'),
             'description' => __('ui.settings.two_factor.setup.description_setup'),
+            'buttonText' => __('ui.actions.continue'),
+        ];
+    }
+
+    /**
+     * Get the verification step modal configuration.
+     */
+    public function getVerificationModalConfigProperty(): array
+    {
+        return [
+            'title' => __('ui.settings.two_factor.setup.title_verify'),
+            'description' => __('ui.settings.two_factor.setup.description_verify'),
             'buttonText' => __('ui.actions.continue'),
         ];
     }
@@ -205,7 +207,7 @@ new class extends BasePageComponent
                             {{ __('ui.settings.two_factor.enabled_description') }}
                         </p>
 
-                        <livewire:settings.two-factor.recovery-codes :$requiresConfirmation />
+                        <livewire:settings.two-factor.recovery-codes :$requiresConfirmation></livewire:settings.two-factor.recovery-codes>
 
                         <div class="card-actions">
                             <x-ui.button type="button" wire:click="disable" variant="error">
@@ -237,10 +239,22 @@ new class extends BasePageComponent
         </div>
     </x-settings.layout>
 
-    @if ($showModal)
-        <div wire:key="setup-modal-{{ md5(serialize($this->modalConfig)) }}">
-            <livewire:settings.two-factor.setup-modal :modal-config="$this->modalConfig" :show-verification-step="$showVerificationStep" :qr-code-svg="$qrCodeSvg"
-                :manual-setup-key="$manualSetupKey" lazy />
-        </div>
-    @endif
+    <div x-data="{
+        showModal: false,
+        init() {
+            $wire.on('open-two-factor-setup-modal', () => {
+                this.showModal = true;
+            });
+
+            $wire.on('close-two-factor-setup-modal', () => {
+                this.showModal = false;
+            });
+        }
+    }" x-show="showModal" style="display: none;">
+        <livewire:settings.two-factor.setup-modal 
+            :modal-config="$this->modalConfig" 
+            :qr-code-svg="$qrCodeSvg"
+            :manual-setup-key="$manualSetupKey" 
+            lazy />
+    </div>
 </section>

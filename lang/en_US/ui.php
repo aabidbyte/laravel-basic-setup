@@ -28,6 +28,8 @@ return [
         'cancel' => 'Cancel',
         'edit' => 'Edit',
         'view' => 'View',
+        'activate_selected' => 'Activate Selected',
+        'deactivate_selected' => 'Deactivate Selected',
     ],
 
     // Auth Pages
@@ -234,7 +236,17 @@ return [
         'search_placeholder' => 'Search...',
         'actions' => 'Actions',
         'empty' => 'No records found.',
+        'empty_message' => 'No records found.',
         'selected_count' => ':count selected',
+        'select_all' => 'Select All',
+        'select_page' => 'Select Page',
+        'bulk_actions' => 'Bulk Actions',
+        'yes' => 'Yes',
+        'no' => 'No',
+        'filters' => [
+            'from' => 'From',
+            'to' => 'To',
+        ],
         'pagination' => [
             'showing' => 'Showing :from to :to of :total results',
         ],
@@ -245,6 +257,17 @@ return [
             'verified_yes' => 'Yes',
             'verified_no' => 'No',
             'created_at' => 'Created At',
+            'status' => 'Status',
+            'status_active' => 'Active',
+            'status_inactive' => 'Inactive',
+            'filters' => [
+                'role' => 'Role',
+                'all_roles' => 'All Roles',
+                'status' => 'Status',
+                'all_status' => 'All Statuses',
+                'verified' => 'Verified',
+                'created_at' => 'Created At',
+            ],
         ],
     ],
 ];

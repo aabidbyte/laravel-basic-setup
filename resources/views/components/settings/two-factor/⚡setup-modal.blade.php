@@ -9,9 +9,6 @@ use Illuminate\Support\Facades\Auth;
 
 new class extends Component {
     #[Locked]
-    public bool $showVerificationStep = false;
-
-    #[Locked]
     public string $qrCodeSvg = '';
 
     #[Locked]
@@ -23,10 +20,9 @@ new class extends Component {
     #[Validate('required|string|size:6', onUpdate: false)]
     public string $code = '';
 
-    public function mount(array $modalConfig = [], bool $showVerificationStep = false, string $qrCodeSvg = '', string $manualSetupKey = ''): void
+    public function mount(array $modalConfig = [], string $qrCodeSvg = '', string $manualSetupKey = ''): void
     {
         $this->modalConfig = $modalConfig;
-        $this->showVerificationStep = $showVerificationStep;
         $this->qrCodeSvg = $qrCodeSvg;
         $this->manualSetupKey = $manualSetupKey;
     }
@@ -53,8 +49,41 @@ new class extends Component {
     }
 }; ?>
 
-<x-ui.modal id="two-factor-setup" :title="$modalConfig['title'] ?? ''" max-width="md" :auto-open="true" x-data="{ modalId: 'two-factor-setup' }"
-    @close-modal.window="if ($event.detail === modalId) { const modal = document.getElementById(modalId); if (modal && modal.open) { modal.close(); } $wire.$parent.closeModal(); }">
+@php
+    $modalStateId = 'twoFactorSetupModalOpen';
+@endphp
+
+<div x-data="{ 
+    {{ $modalStateId }}: true,
+    showVerificationStep: false,
+    modalId: 'two-factor-setup',
+    modalConfig: @js($modalConfig),
+    verificationModalConfig: @js([
+        'title' => __('ui.settings.two_factor.setup.title_verify'),
+        'description' => __('ui.settings.two_factor.setup.description_verify'),
+        'buttonText' => __('ui.actions.continue'),
+    ]),
+    closeModal() { 
+        {{ $modalStateId }} = false;
+        $wire.$parent.closeModal(); 
+    },
+    init() {
+        $wire.on('show-verification-step', () => {
+            this.showVerificationStep = true;
+            this.modalConfig = this.verificationModalConfig;
+        });
+        $wire.on('hide-verification-step', () => {
+            this.showVerificationStep = false;
+            this.modalConfig = @js($modalConfig);
+        });
+    }
+}" @close-modal.window="if ($event.detail === modalId) { closeModal(); }">
+    <x-ui.base-modal 
+        id="two-factor-setup" 
+        :title="modalConfig.title || ''" 
+        max-width="md" 
+        :auto-open="true"
+        :open-state="$modalStateId">
     <div class="flex flex-col items-center space-y-4 mb-6">
         <div class="avatar placeholder">
             <div class="w-24 rounded-full bg-base-200">
@@ -66,7 +95,7 @@ new class extends Component {
         </div>
     </div>
 
-    @if ($showVerificationStep)
+    <div x-show="showVerificationStep" style="display: none;">
         <div class="space-y-4">
             <div class="form-control">
                 <label class="label">
@@ -92,7 +121,9 @@ new class extends Component {
                 </x-ui.button>
             </div>
         </div>
-    @else
+    </div>
+
+    <div x-show="!showVerificationStep" style="display: none;">
         <div class="flex justify-center mb-4">
             <div class="relative w-64 overflow-hidden border border-base-300 rounded-lg aspect-square bg-base-200">
             @empty($qrCodeSvg)
@@ -107,35 +138,36 @@ new class extends Component {
                 </div>
             @endempty
         </div>
+
+        <div class="divider">{{ __('ui.settings.two_factor.setup.manual_code_label') }}</div>
+
+        <div class="join w-full">
+            <input type="text" readonly value="{{ $manualSetupKey }}"
+                class="input input-bordered join-item flex-1" />
+            <x-ui.button type="button" variant="ghost" x-data="{ copied: false }"
+                @click="
+                            navigator.clipboard.writeText('{{ $manualSetupKey }}');
+                            copied = true;
+                            setTimeout(() => copied = false, 1500);
+                        "
+                class="join-item">
+                <svg x-show="!copied" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                <svg x-show="copied" class="h-5 w-5 text-success" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </x-ui.button>
+        </div>
+    </div>
     </div>
 
-    <div class="divider">{{ __('ui.settings.two_factor.setup.manual_code_label') }}</div>
-
-    <div class="join w-full">
-        <input type="text" readonly value="{{ $manualSetupKey }}"
-            class="input input-bordered join-item flex-1" />
-        <x-ui.button type="button" variant="ghost" x-data="{ copied: false }"
-            @click="
-                        navigator.clipboard.writeText('{{ $manualSetupKey }}');
-                        copied = true;
-                        setTimeout(() => copied = false, 1500);
-                    "
-            class="join-item">
-            <svg x-show="!copied" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-            </svg>
-            <svg x-show="copied" class="h-5 w-5 text-success" fill="none" stroke="currentColor"
-                viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            </svg>
-        </x-ui.button>
-    </div>
-@endif
-
-<x-slot:actions>
-    <x-ui.button type="button" variant="primary" wire:click="$parent.showVerificationIfNecessary">
-        {{ $modalConfig['buttonText'] ?? __('ui.actions.continue') }}
-    </x-ui.button>
-</x-slot:actions>
-</x-ui.modal>
+        <x-slot:footer-actions>
+            <x-ui.button type="button" variant="primary" wire:click="$parent.showVerificationIfNecessary">
+                <span x-text="modalConfig.buttonText || @js(__('ui.actions.continue'))"></span>
+            </x-ui.button>
+        </x-slot:footer-actions>
+    </x-ui.base-modal>
+</div>

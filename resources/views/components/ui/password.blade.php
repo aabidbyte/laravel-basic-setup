@@ -29,10 +29,10 @@
             class="absolute right-2 top-1/2 -translate-y-1/2 btn btn-ghost btn-sm btn-circle p-0 h-8 w-8 min-h-0 z-10"
             :aria-label="showPassword ? 'Hide password' : 'Show password'" tabindex="0">
             <span x-show="!showPassword" x-cloak>
-                <x-ui.icon name="eye" class="h-5 w-5" />
+                <x-ui.icon name="eye" class="h-5 w-5"></x-ui.icon>
             </span>
             <span x-show="showPassword" x-cloak>
-                <x-ui.icon name="eye-slash" class="h-5 w-5" />
+                <x-ui.icon name="eye-slash" class="h-5 w-5"></x-ui.icon>
             </span>
         </button>
     </div>

@@ -1,14 +1,14 @@
+{{--
+    Badge Component Props:
+    - style: 'outline', 'dash', 'soft', 'ghost'
+    - color: 'neutral', 'primary', 'secondary', 'accent', 'info', 'success', 'warning', 'error'
+    - size: 'xs', 'sm', 'md', 'lg', 'xl'
+    - class: Additional classes
+--}}
 @props([
-    // Style
-    'style' => null, // outline, dash, soft, ghost
-
-    // Color
-    'color' => null, // neutral, primary, secondary, accent, info, success, warning, error
-
-    // Size
-    'size' => 'md', // xs, sm, md, lg, xl
-
-    // Additional classes
+    'style' => null,
+    'color' => null,
+    'size' => 'md',
     'class' => '',
 ])
 

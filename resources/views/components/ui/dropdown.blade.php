@@ -1,18 +1,21 @@
+{{--
+    Dropdown Component Props:
+    - placement: 'start', 'center', 'end', 'top', 'bottom', 'left', 'right'
+    - hover: Enable hover to open dropdown
+    - contentClass: Additional classes for dropdown-content
+    - bgClass: Background color class (default: bg-base-100)
+    - menu: Use menu styling (adds 'menu' class)
+    - menuSize: 'xs', 'sm', 'md', 'lg', 'xl'
+    - id: Optional ID for accessibility
+--}}
 @props([
-    // Placement
-    'placement' => 'center', // start, center, end, top, bottom, left, right
-
-    // Behavior
-    'hover' => false, // Enable hover to open
-
-    // Content
-    'contentClass' => '', // Additional classes for dropdown-content
-    'bgClass' => 'bg-base-100', // Background color class (default: bg-base-100)
-    'menu' => false, // Use menu styling (adds 'menu' class)
-    'menuSize' => 'md', // menu-xs, menu-sm, menu-md, menu-lg, menu-xl
-
-    // Accessibility
-    'id' => null, // Optional ID for accessibility
+    'placement' => 'center',
+    'hover' => false,
+    'contentClass' => '',
+    'bgClass' => 'bg-base-100',
+    'menu' => false,
+    'menuSize' => 'md',
+    'id' => null,
 ])
 
 @php

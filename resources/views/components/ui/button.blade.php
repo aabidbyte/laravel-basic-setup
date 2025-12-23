@@ -1,7 +1,15 @@
+{{--
+    Button Component Props:
+    - variant: Deprecated - use 'style' and 'color' instead
+    - style: 'solid', 'outline', 'ghost', 'link', 'soft', 'dash'
+    - color: 'primary', 'secondary', 'accent', 'neutral', 'info', 'success', 'warning', 'error'
+    - size: 'xs', 'sm', 'md', 'lg', 'xl'
+    - type: HTML button type attribute
+--}}
 @props([
-    'variant' => null, // Deprecated: use 'style' and 'color' instead
-    'style' => null, // 'solid', 'outline', 'ghost', 'link', 'soft', 'dash'
-    'color' => null, // 'primary', 'secondary', 'accent', 'neutral', 'info', 'success', 'warning', 'error'
+    'variant' => null,
+    'style' => null,
+    'color' => null,
     'size' => 'md',
     'type' => null,
 ])
@@ -73,10 +81,9 @@ $styleClass = $styleClasses[$style] ?? '';
 $colorClass = $colorClasses[$color] ?? $colorClasses['primary'];
 $sizeClass = $sizeClasses[$size] ?? '';
 
-    $classes = trim("btn {$styleClass} {$colorClass} {$sizeClass}");
 @endphp
 
 <button type="{{ $type }}"
-    {{ $attributes->merge(['class' => $classes])->except(['variant', 'style', 'color', 'size', 'type']) }}>
+    {{ $attributes->merge(['class' => trim("btn {$styleClass} {$colorClass} {$sizeClass}")])->except(['variant', 'style', 'color', 'size', 'type']) }}>
     {{ $slot }}
 </button>

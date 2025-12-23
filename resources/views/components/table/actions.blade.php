@@ -17,7 +17,7 @@
                 })"
             >
                 @if (isset($action['icon']))
-                    <x-ui.icon name="{{ $action['icon'] }}" class="h-4 w-4" />
+                    <x-ui.icon name="{{ $action['icon'] }}" class="h-4 w-4"></x-ui.icon>
                 @endif
             </x-ui.button>
         @else
@@ -28,7 +28,7 @@
                 wire:click.stop="handleRowAction('{{ $action['key'] }}', '{{ $itemUuid }}')"
             >
                 @if (isset($action['icon']))
-                    <x-ui.icon name="{{ $action['icon'] }}" class="h-4 w-4" />
+                    <x-ui.icon name="{{ $action['icon'] }}" class="h-4 w-4"></x-ui.icon>
                 @endif
             </x-ui.button>
         @endif

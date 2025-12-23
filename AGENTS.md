@@ -184,6 +184,13 @@ These helpers are automatically loaded via Composer autoload and centralize comm
 
 ## Development Conventions
 
+### Reading Documentation Files
+
+-   **Large Markdown Files**: When reading documentation files (e.g., `AGENTS.md`, `docs/*.md`) that are too large to read at once, split the reading into sections using the `offset` and `limit` parameters
+-   **Efficient Reading**: Use `grep` to find specific sections first, then read those sections using offset/limit for focused reading
+-   **Documentation Structure**: Documentation files are organized with clear headings - use these headings to navigate and read relevant sections
+-   **Example**: Instead of reading all 2584 lines of `AGENTS.md`, use `grep` to find the section you need, then read that specific section with appropriate offset/limit
+
 ### Code Style
 
 -   **Formatter**: Laravel Pint (run `vendor/bin/pint` before committing)
@@ -342,6 +349,19 @@ it('tests something', function () {
 -   **UI Library**: Standard HTML/Tailwind CSS components
 -   **Component Reusability**: **ALWAYS use existing components when possible for consistency** - Before creating a new component, check if an existing component can be used or extended. This ensures consistency across the application and reduces code duplication.
 -   **Component Documentation**: **ALWAYS update `docs/components.md` when adding new UI components** - This ensures all components are documented with props, usage examples, and implementation details
+-   **Component Tag Format**: **ALL Blade and Livewire component tags MUST use opening and closing tags, never self-closing tags** - Always write `<x-component></x-component>` or `<livewire:component></livewire:component>` instead of `<x-component />` or `<livewire:component />`, even if the component has no content. **Exception**: Standard HTML self-closing tags (void elements) like `<img />`, `<br />`, `<hr />`, `<input />`, `<meta />`, `<link />`, `<area />`, `<base />`, `<col />`, `<embed />`, `<source />`, `<track />`, `<wbr />` should remain self-closing as per HTML5 specification.
+-   **Component Props Comments**: **NO comments shall be inside `@props` directive** - All comments for component props MUST be placed at the top of the file, isolated in a Blade comment block (`{{-- --}}`). This keeps the `@props` directive clean and makes component documentation more readable. Example:
+    ```blade
+    {{--
+        Component Props:
+        - prop1: Description of prop1
+        - prop2: Description of prop2
+    --}}
+    @props([
+        'prop1' => 'default',
+        'prop2' => null,
+    ])
+    ```
 -   **Component Locations**:
     -   **Full-page components**: `resources/views/pages/` (use `pages::` namespace in routes)
     -   **Nested/reusable Livewire components**: `resources/views/components/` (use component name directly, e.g., `livewire:users.table`)
@@ -386,12 +406,30 @@ it('tests something', function () {
 -   **N+1 Prevention**: Use eager loading (`with()`, `load()`)
 -   **Query Builder**: Use `Model::query()` instead of `DB::`
 -   **Casts**: Use `casts()` method on models (Laravel 12 convention)
+-   **Model ID Exposure**: **NEVER communicate model IDs (integer primary keys) to the frontend unless explicitly told to do so**
+    -   **Always use UUIDs** when exposing model identifiers in frontend views, API responses, JavaScript, or any client-facing code
+    -   **Prefer UUIDs even for internal uses**: Use UUIDs in `wire:key` attributes and other internal tracking (e.g., `wire:key="item-{{ Auth::user()?->uuid ?? 'guest' }}"` instead of `wire:key="item-{{ Auth::id() }}"`)
+    -   **Exceptions** (acceptable uses of integer IDs):
+        -   Server-side validation rules (e.g., `Rule::unique(User::class)->ignore($user->id)`)
+        -   Internal database queries and subqueries that are not exposed to frontend
+        -   Laravel's `DatabaseNotification` model uses UUID as primary key (`$notification->id` is actually a UUID string)
+    -   **Route Model Binding**: All models use UUID as route key name (configured in `HasUuid` trait)
+    -   **DataTable Components**: Must use `uuid` field from row data, never fall back to `id` field
+    -   **API Responses**: Always return UUIDs, never integer IDs
+    -   **JavaScript/Client Code**: Never receive or send integer model IDs
 -   **Base Model Classes**: **ALL new models MUST extend base model classes**
     -   **Regular models**: Extend `App\Models\Base\BaseModel` (includes HasUuid trait)
     -   **Authenticatable models**: Extend `App\Models\Base\BaseUserModel` (includes HasUuid, HasFactory, Notifiable)
     -   Never extend `Illuminate\Database\Eloquent\Model` or `Illuminate\Foundation\Auth\User` directly
     -   Base models automatically include UUID generation and other common functionality
     -   Base models are located in `app/Models/Base/` directory
+-   **BaseUserModel Features**: All authenticatable models extending `BaseUserModel` automatically include:
+    -   **User Status Management**: `isActive()`, `activate()`, `deactivate()` methods
+    -   **Login Tracking**: `updateLastLoginAt()` method (automatically called on login)
+    -   **Query Scopes**: `scopeActive()`, `scopeInactive()` for filtering active/inactive users
+    -   **User ID 1 Protection**: Automatic protection against deletion and unauthorized updates of user ID 1 (MySQL trigger support)
+    -   **Active Status Field**: `is_active` boolean field (default: `true` for new users)
+    -   **Last Login Tracking**: `last_login_at` timestamp field (automatically updated on login)
 -   **UUID Requirement**: **ALL tables MUST have a `uuid` column**
     -   Add `$table->uuid('uuid')->unique()->index();` to every table creation
     -   Place the UUID column after the primary key (or after the first column for tables with string primary keys)
@@ -428,6 +466,8 @@ it('tests something', function () {
     -   `User::findByIdentifier()` method handles lookup by email or username
     -   **Middleware**: `App\Http\Middleware\MapLoginIdentifier` maps `identifier` to `email` for Fortify validation compatibility
     -   **Service Provider**: `FortifyServiceProvider` configured with custom authentication pipeline
+-   **Active User Check**: Inactive users cannot log in - authentication automatically checks `isActive()` before allowing login
+-   **Login Tracking**: `last_login_at` timestamp is automatically updated on successful login via `SyncUserPreferencesOnLogin` listener
 -   **Environment-Based Login UI**:
     -   **Production**: Standard text input for identifier (email/username)
     -   **Development**: Dropdown select with all users for quick testing (password auto-filled)
@@ -473,8 +513,30 @@ it('tests something', function () {
 -   **Styling**: Tailwind CSS v4 (use `@import "tailwindcss"` not `@tailwind` directives)
 -   **Dark Mode**: Support dark mode using `dark:` classes when applicable
 -   **Spacing**: Use `gap` utilities instead of margins for flex/grid layouts
+-   **Component Comments**: **NO comments are allowed inside HTML tags or Blade directives** - All comments must be isolated at the top of the file or before the section they describe. Comments inside `@if`, `@foreach`, `@props`, HTML tags, or any directives are not allowed. Use isolated comment blocks (`{{-- --}}` or `<!-- -->`) at the top of the file or before the relevant section.
+-   **Frontend Reactivity Rule**: **CRITICAL RULE** - All frontend reactivity (UI state and behavior) MUST be implemented using Alpine.js.
+    -   **Blade is limited to structure and data injection only** - Blade directives (`@if`, `@foreach`, etc.) are for structural rendering and data injection, NOT for controlling UI behavior or reactivity.
+    -   **Livewire is limited to server-side state and actions** - Livewire handles server-side state, data fetching, and actions. It MUST NOT be used for UI-only state (modals, dropdowns, toggles, etc.).
+    -   **The agent MUST:**
+        -   Use `x-data` for all interactive UI state
+        -   Use `x-show`, `:class`, and Alpine events for visibility and styling
+        -   Inject initial data using `@js()` helper
+        -   Call Livewire actions from Alpine when needed (e.g., `$wire.methodName()`)
+    -   **The agent MUST NOT:**
+        -   Use Blade (`@if`, `@class`) to control UI behavior or reactivity
+        -   Use Livewire to toggle UI state (modals, dropdowns, etc.)
+        -   Entangle UI-only state with Livewire
+        -   Mix Blade logic inside Alpine expressions
+    -   **Violations risk Livewire 4 island hydration and MUST be rewritten.**
+-   **@entangle Directive Rule**: **CRITICAL RULE** - The agent MUST NOT use Blade's `@entangle` directive.
+    -   `@entangle` is legacy (Livewire v2) and causes DOM-removal and hydration issues in Livewire 4.
+    -   When bidirectional state sync is required, the agent MUST use `$wire.$entangle('property')` inside Alpine `x-data`.
+    -   UI-only state MUST remain Alpine-local and MUST NOT be entangled.
+    -   Any use of `@entangle` is INVALID and must be rewritten.
 -   **Alpine.js Preference**: **Always prefer Alpine.js over plain JavaScript when possible**
     -   Alpine.js is included with Livewire (no manual inclusion needed)
+    -   **Documentation**: See `docs/alpinejs.md` for complete Alpine.js documentation, directives, magics, plugins, and usage examples
+    -   **Reference the documentation**: When working with Alpine.js, always refer to `docs/alpinejs.md` for comprehensive information about directives, magics, lifecycle hooks, and best practices
     -   Use Alpine.js directives (`x-data`, `x-init`, `x-show`, `x-on:click`, `@click`, etc.) instead of `onclick`, `addEventListener`, `querySelector`, etc.
     -   Use `$el` to reference the current element in Alpine.js expressions
     -   Use `$nextTick()` for DOM updates that need to wait for the next render cycle
@@ -1155,14 +1217,80 @@ Route::livewire('/example', 'pages::example')->name('example');
 -   Prefer lifecycle hooks (`mount()`, `updatedFoo()`)
 -   Always validate form data in Livewire actions
 -   Always run authorization checks in Livewire actions
+-   **Avoid `@entangle` directive**: **See Frontend Reactivity Rule above** - The `@entangle` directive is INVALID and MUST NOT be used. Always use `$wire.$entangle()` in Alpine.js `x-data` instead. UI-only state MUST remain Alpine-local and MUST NOT be entangled.
 -   **Avoid `@php` directives in Blade templates**: All PHP logic should be included in the Livewire component class. Use computed properties, methods, or properties instead of `@php` blocks in templates. This keeps logic centralized in the component class and improves maintainability.
 -   **Avoid conditional wrapper patterns with duplicated content**: When you have conditional wrapper elements (e.g., `<a>` vs `<div>`) that wrap the same content, extract the repeated content into a separate Blade component and call it twice—once inside each wrapper. This improves readability and maintainability. Example: Instead of duplicating content inside `@if ($hasLink) <a>...</a> @else <div>...</div> @endif`, create a component like `<x-notifications.notification-item />` and use it in both branches.
+-   **Blade Control Directives in HTML Attributes**: **CRITICAL RULE** - The agent MUST NOT emit Blade control directives (`@if`, `@foreach`, `@isset`, etc.) inside HTML tags, attributes, Alpine expressions, or Livewire directives. Inside tags and SFC `<template>` blocks, ONLY the following Blade helpers are allowed: `@class`, `@style`, `@js`, and Blade attribute helpers (`@disabled`, `@checked`, etc.). All conditional rendering inside islands MUST be achieved using: `@class` / `@style`, Alpine state via `@js()`, static `wire:*` attributes, or moving control flow outside the island. Any violation risks Livewire 4 hydration failure and MUST be rewritten.
 
 ### UI Components
 
 -   Use standard HTML elements with Tailwind CSS classes
 -   Check existing components before creating custom
 -   Components are built using Tailwind CSS utility classes
+
+#### Base Modal Component (`<x-ui.base-modal>`)
+
+The application includes a comprehensive base modal component located at `resources/views/components/ui/base-modal.blade.php` that serves as the foundation for all modals in the project. Built with Alpine.js following Penguin UI patterns, it provides extensive customization options.
+
+**Features:**
+
+-   **Pure Alpine.js**: Uses Alpine.js for state management (no `<dialog>` element dependency)
+-   **Multiple Transitions**: Supports fade-in, scale-up, scale-down, slide-up, slide-down, unfold, and none
+-   **Variants**: Supports default, success, info, warning, and danger variants with border colors
+-   **Focus Trapping**: Built-in focus trapping with Alpine Focus plugin support
+-   **Accessibility**: Full ARIA support with proper labels, descriptions, and keyboard navigation
+-   **Flexible Placement**: Top, middle, bottom, start, end placement options
+-   **Customizable**: Extensive prop system for styling, behavior, and callbacks
+-   **Persistent Modals**: Support for modals that cannot be closed (useful for important notices)
+
+**Key Props:**
+
+-   `openState` (default: `'modalIsOpen'`): Alpine.js state variable name for modal open/close
+-   `variant` (default: `'default'`): Modal variant - `'default'`, `'success'`, `'info'`, `'warning'`, `'danger'`
+-   `transition` (default: `'scale-up'`): Transition type - `'fade-in'`, `'scale-up'`, `'scale-down'`, `'slide-up'`, `'slide-down'`, `'unfold'`, `'none'`
+-   **DaisyUI `modal-box`**: Do **not** use DaisyUI’s `modal-box` class inside `<x-ui.base-modal>` — it’s meant for DaisyUI’s `.modal` wrapper and can unexpectedly affect opacity/animation in our custom Alpine modal. Use the component’s built-in classes/props instead.
+-   `placement` (default: `'middle'`): Modal placement - `'top'`, `'middle'`, `'bottom'`, `'start'`, `'end'`
+-   `trapFocus` (default: `true`): Trap focus inside modal (requires Alpine Focus plugin)
+-   `persistent` (default: `false`): Prevent modal from closing
+-   `onOpen` / `onClose`: Alpine.js expressions to execute on open/close
+
+**Usage:**
+
+```blade
+{{-- Basic base modal --}}
+<div x-data="{ modalIsOpen: false }">
+    <button @click="modalIsOpen = true" class="btn">Open Modal</button>
+
+    <x-ui.base-modal
+        open-state="modalIsOpen"
+        title="Special Offer"
+        description="This is a special offer just for you!"
+    >
+        <p>Upgrade your account now to unlock premium features.</p>
+
+        <x-slot:actions>
+            <button @click="modalIsOpen = false" class="btn btn-ghost">Remind me later</button>
+            <button @click="modalIsOpen = false" class="btn btn-primary">Upgrade Now</button>
+        </x-slot:actions>
+    </x-ui.base-modal>
+</div>
+
+{{-- Modal with variant and transition --}}
+<x-ui.base-modal
+    open-state="successModalIsOpen"
+    title="Success!"
+    variant="success"
+    transition="slide-up"
+>
+    <p>Your action was completed successfully.</p>
+</x-ui.base-modal>
+```
+
+**Component Location:** `resources/views/components/ui/base-modal.blade.php`
+
+**Documentation:** See `docs/components.md` for complete documentation with all props, usage examples, and best practices.
+
+**Note:** This is the primary modal component used throughout the project. All modals should use `<x-ui.base-modal>` directly with Alpine.js state management for full control and reactivity.
 
 #### Icon Component (`<x-ui.icon>`)
 
@@ -1652,6 +1780,138 @@ The system includes first-class RTL support:
 
 **Documentation**: See `docs/internationalization.md` for complete guide, best practices, and troubleshooting.
 
+### DataTable Preferences System
+
+The application includes a comprehensive **DataTable Preferences System** that manages all DataTable preferences (search, filters, per_page, sort) following the same pattern as the Frontend Preferences System. This ensures consistency across the application and provides persistent preferences for authenticated users.
+
+**Service**: `App\Services\DataTable\DataTablePreferencesService` (singleton)
+
+**Service Registration**: **REQUIRED** - Must be registered as singleton in `DataTableServiceProvider`:
+
+```php
+// app/Providers/DataTableServiceProvider.php
+$this->app->singleton(\App\Services\DataTable\DataTablePreferencesService::class);
+```
+
+**Storage Strategy**:
+
+-   **Session as Single Source of Truth**: Session is always the single source of truth for reads. All preference reads come from session after initial sync.
+-   **Guest users**: Preferences stored in session only
+-   **Authenticated users**:
+    -   Preferences stored in `users.frontend_preferences` JSON column under keys like `datatable_preferences.users` (persistent storage)
+    -   On first read: Preferences are loaded from database and synced to session
+    -   Subsequent reads: All reads come from session (single source of truth)
+    -   On update: Database is updated first, then session is updated
+-   **Performance**: Fast reads from session (single source of truth) with automatic DB sync for authenticated users
+
+**Architecture Details**:
+
+**Stores** (SOLID design):
+
+-   `App\Services\DataTable\Contracts\DataTablePreferencesStore` - Interface
+-   `App\Services\DataTable\Stores\SessionDataTablePreferencesStore` - Session-based storage
+-   `App\Services\DataTable\Stores\UserJsonDataTablePreferencesStore` - Database JSON storage
+
+**Constants**: `App\Constants\DataTable` - Session keys, preference keys, helper methods
+
+**Available Preferences**:
+
+-   **`search`**: Global search query string
+-   **`per_page`**: Items per page (pagination)
+-   **`sort`**: Sort configuration (column and direction)
+-   **`filters`**: Applied filter values (array of filter key-value pairs)
+
+**Usage**:
+
+**In Livewire Components** (`BaseDataTableComponent`):
+
+Preferences are automatically loaded on mount and saved when changed:
+
+```php
+// Preferences are automatically loaded in mount()
+public function mount(DataTablePreferencesService $preferencesService): void
+{
+    $this->loadPreferences($preferencesService);
+    // ...
+}
+
+// Preferences are automatically saved when properties change
+public function updatedSearch(): void
+{
+    $this->savePreferences(); // Automatically called
+}
+```
+
+**In Services**:
+
+```php
+use App\Services\DataTable\DataTablePreferencesService;
+
+$preferences = app(DataTablePreferencesService::class);
+
+// Get preferences for an entity
+$search = $preferences->get('users', 'search', '');
+$perPage = $preferences->get('users', 'per_page', 15);
+
+// Set preferences
+$preferences->set('users', 'per_page', 25);
+$preferences->setMany('users', [
+    'search' => 'john',
+    'per_page' => 25,
+    'sort' => ['column' => 'name', 'direction' => 'asc'],
+]);
+
+// Get all preferences for an entity
+$allPrefs = $preferences->all('users');
+```
+
+**Login Event Listener**:
+
+**`App\Listeners\SyncUserPreferencesOnLogin`** listens to the `Illuminate\Auth\Events\Login` event:
+
+-   Automatically syncs all DataTable preferences from database to session immediately after login
+-   Finds all DataTable preference keys in user's `frontend_preferences` (keys starting with `datatable_preferences.`)
+-   Syncs each entity's preferences to session
+-   Ensures preferences are available in session right away, without waiting for first read
+
+**Storage Structure**:
+
+User's `frontend_preferences` JSON column structure:
+
+```json
+{
+    "locale": "en_US",
+    "theme": "light",
+    "datatable_preferences.users": {
+        "search": "john",
+        "per_page": 25,
+        "sort": {
+            "column": "name",
+            "direction": "asc"
+        },
+        "filters": {
+            "is_active": true,
+            "email_verified_at": true
+        }
+    },
+    "datatable_preferences.products": {
+        "per_page": 50,
+        "sort": {
+            "column": "created_at",
+            "direction": "desc"
+        }
+    }
+}
+```
+
+**Rules & Best Practices**:
+
+-   **Always use DataTablePreferencesService**: Don't manually access session or user preferences
+-   **Entity Key**: Always use the entity key (e.g., `'users'`, `'products'`) when getting/setting preferences
+-   **Automatic Loading**: Preferences are automatically loaded in `BaseDataTableComponent` - no manual loading needed
+-   **Automatic Saving**: Preferences are automatically saved when search, filters, per_page, or sort change
+-   **Testing**: Use `Event::fake([Login::class])` to test preferences without triggering login sync
+
 ### Frontend Preferences System
 
 The application includes a centralized **Frontend Preferences Service** that manages user preferences for locale, theme, timezone, and other frontend settings. The system uses a session-backed caching strategy for fast reads and persists preferences to the database for authenticated users.
@@ -1986,7 +2246,134 @@ If you see `Auth::guard('web')->logout()` causing an error:
 
 ### 2025-01-XX
 
+-   **JavaScript & Alpine.js Codebase Enhancements**: Comprehensive refactoring of JavaScript codebase for better Alpine.js usage
+    -   **Code Organization**: Refactored notification system into modular structure:
+        -   `resources/js/alpine/stores/notifications-store.js` - Centralized Alpine.store() for notifications
+        -   `resources/js/alpine/data/toast-center.js` - Toast components using Alpine.data() pattern
+        -   `resources/js/alpine/data/notification-center.js` - Notification center components
+        -   `resources/js/notification-center.js` - Main entry point with proper registration
+    -   **Alpine.data() Pattern**: Migrated from global functions to proper `Alpine.data()` registration for better reusability and lifecycle management
+    -   **Enhanced Error Handling**: Added comprehensive try-catch blocks, graceful degradation, and console warnings/errors for debugging
+    -   **Security Improvements**: Added input sanitization functions to prevent XSS attacks through toast content
+    -   **Performance Optimizations**: Implemented proper cleanup methods, idempotent subscriptions, and efficient progress updates (60fps intervals)
+    -   **Blade Template Improvements**: Replaced plain JavaScript (`onclick`, `document.getElementById`) with Alpine.js directives (`@click`, `$el`, `$refs`)
+        -   Updated `confirm-modal.blade.php` to use Alpine.js instead of plain JS
+        -   Updated `delete-user-form.blade.php` to use `@click` instead of `onclick`
+        -   Updated `setup-modal.blade.php` to use Alpine.js for modal operations
+        -   Updated `toast-center.blade.php` to use `x-data="toastCenter"` (Alpine.data pattern)
+    -   **Enhanced Echo Configuration**: Improved error handling, graceful degradation, and development-mode logging
+    -   **Documentation**: Created comprehensive documentation:
+        -   `docs/alpinejs.md` - Complete Alpine.js reference with all directives, magics, and best practices
+        -   `docs/javascript-alpine-improvements.md` - Detailed improvement documentation
+        -   Updated `docs/livewire-4.md` with `@entangle` directive avoidance note
+        -   Updated `docs/components.md` with Alpine.js integration guidelines
+    -   **@entangle Directive Rule**: Added important note about avoiding `@entangle` Blade directive in Livewire v3/v4
+        -   Rule: Always use `$wire.$entangle()` instead of `@entangle` directive
+        -   Updated `docs/livewire-4.md` with detailed explanation and examples
+        -   Added rule to `AGENTS.md` Livewire Best Practices section
+        -   Existing codebase already uses `$wire.$entangle()` correctly (verified)
+    -   **Documentation Reading Rule**: Added rule about reading large markdown files in sections:
+        -   Use `grep` to find specific sections first
+        -   Then read those sections using offset/limit for focused reading
+        -   Use headings to navigate and read relevant sections efficiently
+
+## Changelog
+
+### 2025-12-22
+
+-   **User Status and Login Tracking**: Implemented user active status and login tracking functionality
+    -   **Database Fields**: Added `is_active` (boolean, default: `true`) and `last_login_at` (timestamp, nullable) to `users` table
+    -   **BaseUserModel Enhancements**: Moved user status and login tracking methods to `BaseUserModel` for reuse across all authenticatable models
+        -   `isActive()` - Check if user is active
+        -   `activate()` - Activate the user
+        -   `deactivate()` - Deactivate the user
+        -   `updateLastLoginAt()` - Update last login timestamp (base implementation)
+        -   `scopeActive()` - Query scope for active users
+        -   `scopeInactive()` - Query scope for inactive users
+    -   **User ID 1 Protection**: Moved boot method to `BaseUserModel` with automatic protection for user ID 1
+        -   Prevents deletion of user ID 1
+        -   Handles MySQL trigger for user ID 1 updates (requires `@laravel_user_id_1_self_edit` session variable)
+        -   Only user ID 1 can edit themselves when authenticated
+        -   System updates (like `last_login_at`) automatically bypass protection
+    -   **Authentication Integration**:
+        -   Inactive users cannot log in - `FortifyServiceProvider` checks `isActive()` before allowing authentication
+        -   `last_login_at` is automatically updated on successful login via `SyncUserPreferencesOnLogin` listener
+    -   **User Factory**: Added `is_active => true` to default factory state and `inactive()` state method
+    -   **User Registration**: New users are created with `is_active => true` by default
+    -   **DataTable Integration**:
+        -   Added `is_active` filter and sortable field to `UsersDataTableConfig`
+        -   Added bulk actions for activate/deactivate users
+        -   Updated `UserDataTableTransformer` to include `is_active` and `last_login_at` in transformed data
+    -   **Documentation**: Updated `AGENTS.md` with user status management and login tracking details
+
+### 2025-01-XX
+
+-   **DataTable View Data Architecture**: Extracted all PHP logic from Blade components into a dedicated `DataTableViewData` class
+    -   **Class**: `App\Services\DataTable\View\DataTableViewData` - Centralized view data preparation class
+    -   **Purpose**: Separates business logic from presentation, following separation of concerns principle
+    -   **Features**:
+        -   Accepts all component props via constructor
+        -   Initializes service registries (DataTableComponentRegistry, DataTableFilterComponentRegistry)
+        -   Provides computed properties and methods for all logic
+        -   Processes filters, rows, columns, and headers
+        -   Handles modal configuration and action lookup
+        -   Returns prepared data structures that Blade templates can use directly
+    -   **Key Methods**:
+        -   Computed values: `getColumnsCount()`, `hasActionsPerRow()`, `getBulkActionsCount()`, `showBulkActionsDropdown()`, `hasFilters()`, `hasSelected()`, `showBulkBar()`, `hasPaginator()`
+        -   Processing: `processFilter()`, `processRow()`, `processColumn()`, `processHeaderColumn()`
+        -   Modals: `getModalStateId()`, `findActionByKey()`, `getRowActionModalConfig()`, `getBulkActionModalConfig()`
+    -   **Updated Components**:
+        -   `resources/views/components/datatable.blade.php` - Removed all complex `@php` blocks, uses `DataTableViewData` for all logic
+        -   `resources/views/components/table/table.blade.php` - Removed all complex `@php` blocks, uses prepared row/column data from the class
+        -   `resources/views/components/table/header.blade.php` - Removed all `@php` blocks, uses prepared column data from the class
+    -   **Benefits**:
+        -   Separation of concerns: Logic separated from presentation
+        -   Testability: View data class can be unit tested independently
+        -   Reusability: Logic can be reused across different contexts
+        -   Maintainability: Easier to modify logic without touching Blade templates
+        -   Clean templates: Blade files focus only on HTML structure and data display
+    -   **Backward Compatibility**: Components still accept individual props if `viewData` is not provided
+    -   **Documentation**: Updated `docs/components.md` with DataTable View Data Architecture section
+
+### 2025-01-XX
+
+-   **DataTable Preferences System**: Implemented comprehensive preferences system for DataTable components following the FrontendPreferences pattern
+    -   **Service**: `App\Services\DataTable\DataTablePreferencesService` (singleton) with session-backed caching
+    -   **Storage Strategy**:
+        -   **Guests**: Preferences stored in session only
+        -   **Authenticated users**: Preferences stored in `users.frontend_preferences` JSON column under keys like `datatable_preferences.users`, synced to session
+        -   **Session as Single Source of Truth**: Session is always the single source of truth for reads (with automatic DB sync for authenticated users)
+    -   **Preferences Stored**: All DataTable preferences (search, filters, per_page, sort) are automatically saved and loaded
+    -   **Architecture**:
+        -   `DataTablePreferencesService`: Main service (same pattern as `FrontendPreferencesService`)
+        -   `SessionDataTablePreferencesStore`: Session-based storage
+        -   `UserJsonDataTablePreferencesStore`: User JSON column storage
+        -   `DataTablePreferencesStore` interface: Contract for storage implementations
+    -   **Constants**: `App\Constants\DataTable` for session keys, preference keys, and helper methods
+    -   **Integration**:
+        -   `BaseDataTableComponent` automatically loads preferences on mount
+        -   Preferences are automatically saved when search, filters, per_page, or sort change
+        -   `SessionService` uses `DataTablePreferencesService` to store all preferences
+        -   Login listener (`SyncUserPreferencesOnLogin`) syncs all DataTable preferences from DB to session on login
+    -   **Storage Structure**: Preferences stored in user's `frontend_preferences` JSON column:
+        ```json
+        {
+            "locale": "en_US",
+            "theme": "light",
+            "datatable_preferences.users": {
+                "search": "john",
+                "per_page": 25,
+                "sort": { "column": "name", "direction": "asc" },
+                "filters": { "is_active": true, "email_verified_at": true }
+            }
+        }
+        ```
+    -   **Documentation**: Updated `docs/components.md` and `AGENTS.md` with DataTable preferences system details
+
+### 2025-01-XX
+
 -   **Authentication Code Refactoring**: Improved code quality, removed duplication, and enhanced separation of concerns
+
     -   **Created Authentication Helpers**: Added `app/helpers/auth-helpers.php` with centralized authentication helper functions
         -   `getIdentifierFromRequest()` - Centralizes identifier extraction logic (removes duplication)
         -   `setTeamSessionForUser()` - Centralizes team session setting logic (removes duplication)
@@ -2309,6 +2696,7 @@ If you see `Auth::guard('web')->logout()` causing an error:
 ### 2025-01-XX
 
 -   **Dual Authentication System**: Implemented email and username login support
+
     -   **User Model**: Added `findByIdentifier()` method to support lookup by email or username
     -   **Middleware**: Created `MapLoginIdentifier` middleware to map `identifier` field to `email` for Fortify validation compatibility
     -   **Service Provider**: Refactored `FortifyServiceProvider` with separated concerns:

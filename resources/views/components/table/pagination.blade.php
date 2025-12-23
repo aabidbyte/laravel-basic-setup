@@ -19,11 +19,11 @@
         <div class="join">
             @if ($paginator->onFirstPage())
                 <button class="btn btn-sm btn-disabled join-item" disabled>
-                    <x-ui.icon name="chevron-left" class="h-4 w-4" />
+                    <x-ui.icon name="chevron-left" class="h-4 w-4"></x-ui.icon>
                 </button>
             @else
                 <button wire:click="previousPage" class="btn btn-sm join-item">
-                    <x-ui.icon name="chevron-left" class="h-4 w-4" />
+                    <x-ui.icon name="chevron-left" class="h-4 w-4"></x-ui.icon>
                 </button>
             @endif
 
@@ -62,11 +62,11 @@
 
             @if ($paginator->hasMorePages())
                 <button wire:click="nextPage" class="btn btn-sm join-item">
-                    <x-ui.icon name="chevron-right" class="h-4 w-4" />
+                    <x-ui.icon name="chevron-right" class="h-4 w-4"></x-ui.icon>
                 </button>
             @else
                 <button class="btn btn-sm btn-disabled join-item" disabled>
-                    <x-ui.icon name="chevron-right" class="h-4 w-4" />
+                    <x-ui.icon name="chevron-right" class="h-4 w-4"></x-ui.icon>
                 </button>
             @endif
         </div>

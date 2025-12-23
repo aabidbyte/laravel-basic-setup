@@ -36,6 +36,7 @@ class CreateNewUser implements CreatesNewUsers
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => $input['password'],
+            'is_active' => true, // New users are active by default
         ]);
 
         // Create a personal team for the user

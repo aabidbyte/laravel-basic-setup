@@ -4,6 +4,7 @@ This document provides comprehensive documentation for all reusable UI component
 
 ## Table of Contents
 
+-   [Base Modal](#base-modal)
 -   [Modal](#modal)
 -   [Confirm Modal](#confirm-modal)
 -   [Button](#button)
@@ -17,174 +18,395 @@ This document provides comprehensive documentation for all reusable UI component
 
 ---
 
-## Modal
+## Base Modal
 
-**Location:** `resources/views/components/ui/modal.blade.php`
+**Location:** `resources/views/components/ui/base-modal.blade.php`
 
-**Component Name:** `<x-ui.modal>`
+**Component Name:** `<x-ui.base-modal>`
 
 ### Description
 
-A centralized modal component built on the HTML `<dialog>` element following DaisyUI patterns. Supports automatic opening, custom widths, placement options, and close behaviors.
+A comprehensive, flexible modal component built with Alpine.js following Penguin UI patterns. This is the foundation for all modals in the project, providing extensive customization options including transitions, variants, focus trapping, and accessibility features. The base modal uses pure Alpine.js for state management and does not rely on the HTML `<dialog>` element, making it more flexible for complex use cases.
+
+**Note:** This is the primary modal component used throughout the project. All modals should use `<x-ui.base-modal>` directly with Alpine.js state management.
 
 ### Props
 
-| Prop                  | Type           | Default      | Description                                                                                                                                                          |
-| --------------------- | -------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `id`                  | `string`       | **Required** | Unique ID for the modal (used for `showModal()` and `close()` methods)                                                                                               |
-| `title`               | `string\|null` | `null`       | Optional title displayed at the top of the modal                                                                                                                     |
-| `closeOnOutsideClick` | `bool`         | `true`       | Whether clicking outside the modal closes it                                                                                                                         |
-| `showCloseButton`     | `bool`         | `false`      | Whether to show a close button (✕) at the top-right corner                                                                                                           |
-| `closeBtn`            | `bool`         | `true`       | Whether to show a cancel/close button in the actions area                                                                                                            |
-| `closeBtnLabel`       | `string`       | `'Cancel'`   | Label text for the cancel/close button                                                                                                                               |
-| `maxWidth`            | `string\|null` | `null`       | Maximum width: DaisyUI sizes (`xs`, `sm`, `md`, `lg`, `xl`, `2xl`, `3xl`, `4xl`, `5xl`, `6xl`, `7xl`), fraction classes (`11/12`, `3/4`), or custom Tailwind classes |
-| `placement`           | `string\|null` | `null`       | Placement: `modal-top`, `modal-middle`, `modal-bottom`, `modal-start`, `modal-end`, or responsive like `modal-bottom sm:modal-middle`                                |
-| `class`               | `string`       | `''`         | Additional CSS classes for the modal-box                                                                                                                             |
-| `autoOpen`            | `bool`         | `false`      | Automatically open the modal when rendered (uses Alpine.js `x-init`)                                                                                                 |
+#### Modal Identification
+
+| Prop      | Type     | Default | Description                                                      |
+| --------- | -------- | ------- | ---------------------------------------------------------------- |
+| `id`      | `string` | `null`  | Unique ID for the modal (auto-generated if not provided)        |
+| `modalId` | `string` | `null`  | Alternative prop name for modal ID                               |
+
+#### State Management
+
+| Prop        | Type     | Default         | Description                                                      |
+| ----------- | -------- | --------------- | ---------------------------------------------------------------- |
+| `open`      | `bool`   | `false`         | Initial open state                                               |
+| `openState` | `string` | `'modalIsOpen'` | Name of the Alpine.js state variable for modal open/close state |
+
+#### Content
+
+| Prop            | Type     | Default | Description                                                      |
+| --------------- | -------- | ------- | ---------------------------------------------------------------- |
+| `title`         | `string` | `null`  | Modal title displayed in header                                  |
+| `titleId`       | `string` | `null`  | ARIA labelledby ID (auto-generated if not provided)             |
+| `description`   | `string` | `null`  | Modal description (displayed below title)                       |
+| `descriptionId` | `string` | `null`  | ARIA describedby ID (auto-generated if not provided)            |
+
+#### Visual Appearance
+
+| Prop          | Type     | Default   | Description                                                                                                 |
+| ------------- | -------- | --------- | ----------------------------------------------------------------------------------------------------------- |
+| `variant`     | `string` | `'default'` | Modal variant: `'default'`, `'success'`, `'info'`, `'warning'`, `'danger'` (adds border color)            |
+| `maxWidth`    | `string` | `'md'`    | Maximum width: `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'6xl'`, `'7xl'`, or custom Tailwind class |
+| `placement`   | `string` | `'middle'` | Modal placement: `'top'`, `'middle'`, `'bottom'`, `'start'`, `'end'`                                      |
+| `class`       | `string` | `''`      | Additional classes for modal container                                                                      |
+| `dialogClass` | `string` | `''`      | Additional classes for modal dialog box                                                                     |
+| `headerClass` | `string` | `''`      | Additional classes for header section                                                                       |
+| `bodyClass`   | `string` | `''`      | Additional classes for body section                                                                         |
+| `footerClass` | `string` | `''`      | Additional classes for footer section                                                                        |
+
+#### Behavior
+
+| Prop                | Type | Default | Description                                                      |
+| ------------------- | ---- | ------- | ---------------------------------------------------------------- |
+| `closeOnOutsideClick` | `bool` | `true`  | Close modal when clicking backdrop                              |
+| `closeOnEscape`     | `bool` | `true`  | Close modal on ESC key press                                    |
+| `trapFocus`         | `bool` | `true`  | Trap focus inside modal (requires Alpine Focus plugin)          |
+| `preventScroll`     | `bool` | `true`  | Prevent body scroll when modal is open                          |
+| `autoOpen`          | `bool` | `false` | Automatically open modal when rendered                          |
+
+#### Transitions
+
+| Prop                 | Type     | Default     | Description                                                                                                 |
+| -------------------- | -------- | ----------- | ----------------------------------------------------------------------------------------------------------- |
+| `transition`         | `string` | `'scale-up'` | Transition type: `'fade-in'`, `'scale-up'`, `'scale-down'`, `'slide-up'`, `'slide-down'`, `'unfold'`, `'none'` |
+| `transitionDuration` | `int`    | `200`       | Transition duration in milliseconds                                                                        |
+| `transitionDelay`    | `int`    | `100`       | Transition delay in milliseconds                                                                           |
+| `backdropTransition` | `bool`   | `true`      | Enable backdrop fade transition                                                                             |
+
+#### Close Button
+
+| Prop                | Type     | Default         | Description                                    |
+| ------------------- | -------- | --------------- | ---------------------------------------------- |
+| `showCloseButton`   | `bool`   | `true`          | Show close button (✕) in header                |
+| `closeButtonLabel`  | `string` | `'Close modal'` | ARIA label for close button                    |
+| `closeButtonClass`  | `string` | `''`            | Additional classes for close button            |
+
+#### Footer Actions
+
+| Prop         | Type | Default | Description                                    |
+| ------------ | ---- | ------- | ---------------------------------------------- |
+| `showFooter` | `bool` | `true` | Show footer section                            |
+
+#### Accessibility
+
+| Prop        | Type  | Default      | Description                      |
+| ----------- | ----- | ------------ | -------------------------------- |
+| `role`      | `string` | `'dialog'` | ARIA role                        |
+| `ariaModal` | `bool`   | `true`       | Set `aria-modal="true"` attribute |
+
+#### Advanced
+
+| Prop         | Type     | Default | Description                                                      |
+| ------------ | -------- | ------- | ---------------------------------------------------------------- |
+| `onOpen`     | `string` | `null`  | Alpine.js expression to execute when modal opens                 |
+| `onClose`    | `string` | `null`  | Alpine.js expression to execute when modal closes                |
+| `persistent` | `bool`   | `false` | Prevent modal from closing (useful for important modals)        |
 
 ### Slots
 
--   **Default slot:** Main content of the modal
--   **`actions` slot:** Optional slot for action buttons (typically wrapped in `modal-action` div)
+-   **Default slot:** Main content of the modal (body)
+-   **`actions` slot:** Footer actions (buttons, links, etc.)
+-   **`footerActions` slot:** Alternative slot name for footer actions
 
 ### Usage Examples
 
-#### Basic Modal
+#### Basic Base Modal
 
 ```blade
-<button class="btn" onclick="my_modal.showModal()">Open Modal</button>
-
-<x-ui.modal id="my_modal" title="Hello!">
-    <p>Press ESC key or click outside to close</p>
-</x-ui.modal>
+<div x-data="{ modalIsOpen: false }">
+    <button @click="modalIsOpen = true" class="btn">Open Modal</button>
+    
+    <x-ui.base-modal
+        open-state="modalIsOpen"
+        title="Special Offer"
+        description="This is a special offer just for you!"
+    >
+        <p>Upgrade your account now to unlock premium features.</p>
+        
+        <x-slot:actions>
+            <button @click="modalIsOpen = false" class="btn btn-ghost">Remind me later</button>
+            <button @click="modalIsOpen = false" class="btn btn-primary">Upgrade Now</button>
+        </x-slot:actions>
+    </x-ui.base-modal>
+</div>
 ```
 
-#### Modal with Actions
+#### Modal with Different Variants
 
 ```blade
-<x-ui.modal id="confirm_modal" title="Confirm Action">
-    <p>Are you sure you want to proceed?</p>
+{{-- Success Modal --}}
+<x-ui.base-modal
+    open-state="successModalIsOpen"
+    title="Success!"
+    variant="success"
+>
+    <p>Your action was completed successfully.</p>
+</x-ui.base-modal>
 
+{{-- Warning Modal --}}
+<x-ui.base-modal
+    open-state="warningModalIsOpen"
+    title="Warning"
+    variant="warning"
+>
+    <p>Please review your changes before proceeding.</p>
+</x-ui.base-modal>
+
+{{-- Danger Modal --}}
+<x-ui.base-modal
+    open-state="dangerModalIsOpen"
+    title="Danger"
+    variant="danger"
+>
+    <p>This action cannot be undone.</p>
+</x-ui.base-modal>
+```
+
+#### Modal with Different Transitions
+
+```blade
+{{-- Fade In --}}
+<x-ui.base-modal
+    open-state="fadeModalIsOpen"
+    title="Fade In"
+    transition="fade-in"
+>
+    <p>This modal fades in smoothly.</p>
+</x-ui.base-modal>
+
+{{-- Slide Up --}}
+<x-ui.base-modal
+    open-state="slideModalIsOpen"
+    title="Slide Up"
+    transition="slide-up"
+>
+    <p>This modal slides up from the bottom.</p>
+</x-ui.base-modal>
+
+{{-- Unfold --}}
+<x-ui.base-modal
+    open-state="unfoldModalIsOpen"
+    title="Unfold"
+    transition="unfold"
+>
+    <p>This modal unfolds from the top.</p>
+</x-ui.base-modal>
+```
+
+#### Modal with Custom Placement
+
+```blade
+{{-- Top Placement --}}
+<x-ui.base-modal
+    open-state="topModalIsOpen"
+    title="Top Modal"
+    placement="top"
+>
+    <p>This modal appears at the top.</p>
+</x-ui.base-modal>
+
+{{-- Bottom Placement (Mobile-friendly) --}}
+<x-ui.base-modal
+    open-state="bottomModalIsOpen"
+    title="Bottom Modal"
+    placement="bottom"
+>
+    <p>This modal appears at the bottom (great for mobile).</p>
+</x-ui.base-modal>
+```
+
+#### Modal with Callbacks
+
+```blade
+<div x-data="{ 
+    modalIsOpen: false,
+    onModalOpen() {
+        console.log('Modal opened');
+        // Perform actions when modal opens
+    },
+    onModalClose() {
+        console.log('Modal closed');
+        // Perform cleanup when modal closes
+    }
+}">
+    <button @click="modalIsOpen = true" class="btn">Open Modal</button>
+    
+    <x-ui.base-modal
+        open-state="modalIsOpen"
+        title="Modal with Callbacks"
+        on-open="onModalOpen()"
+        on-close="onModalClose()"
+    >
+        <p>This modal has open and close callbacks.</p>
+    </x-ui.base-modal>
+</div>
+```
+
+#### Persistent Modal (Cannot be Closed)
+
+```blade
+<x-ui.base-modal
+    open-state="persistentModalIsOpen"
+    title="Important Notice"
+    persistent
+>
+    <p>You must complete this action before proceeding.</p>
+    
     <x-slot:actions>
-        <button class="btn btn-primary">Confirm</button>
+        <button @click="completeAction()" class="btn btn-primary">Complete Action</button>
     </x-slot:actions>
-</x-ui.modal>
+</x-ui.base-modal>
 ```
 
-**Note:** The cancel button is included by default. It appears before any custom actions in the `actions` slot.
-
-#### Modal with Close Button
+#### Modal without Close Button
 
 ```blade
-<x-ui.modal id="info_modal" title="Information" :show-close-button="true">
-    <p>Click ✕ to close</p>
-</x-ui.modal>
+<x-ui.base-modal
+    open-state="noCloseModalIsOpen"
+    title="No Close Button"
+    :show-close-button="false"
+>
+    <p>This modal cannot be closed with the X button.</p>
+</x-ui.base-modal>
 ```
 
-#### Modal with Custom Width
+#### Modal with Custom Styling
 
 ```blade
-<x-ui.modal id="large_modal" max-width="5xl" title="Large Modal">
-    <p>This modal has a custom maximum width</p>
-</x-ui.modal>
+<x-ui.base-modal
+    open-state="customModalIsOpen"
+    title="Custom Styled Modal"
+    variant="info"
+    max-width="3xl"
+    dialog-class="bg-base-200"
+    header-class="border-b border-base-300"
+    body-class="py-6"
+    footer-class="border-t border-base-300"
+>
+    <p>This modal has custom styling applied to different sections.</p>
+</x-ui.base-modal>
 ```
 
-#### Responsive Modal
+### Transition Types
 
-```blade
-<x-ui.modal id="responsive_modal" placement="modal-bottom sm:modal-middle" title="Responsive">
-    <p>Bottom on mobile, middle on larger screens</p>
-</x-ui.modal>
-```
+The component supports the following transition types:
 
-#### Auto-Open Modal (with Livewire)
+1. **`fade-in`**: Simple opacity fade
+2. **`scale-up`**: Scale from 50% to 100% (default)
+3. **`scale-down`**: Scale from 100% to 50%
+4. **`slide-up`**: Slide up from bottom
+5. **`slide-down`**: Slide down from top
+6. **`unfold`**: Unfold from top (scale-y animation)
+7. **`none`**: No transition
 
-```blade
-@if ($showModal)
-    <x-ui.modal id="auto_modal" :auto-open="true" title="Auto Opened">
-        <p>This modal opens automatically when rendered</p>
-    </x-ui.modal>
-@endif
-```
+### Keyboard Navigation
 
-#### Modal with Form (Livewire)
+The modal supports full keyboard navigation:
 
-```blade
-<x-ui.modal id="form_modal" title="Submit Form">
-    <form id="my-form" wire:submit="submit">
-        <x-ui.input wire:model="name" name="name" label="Name" />
-    </form>
+-   **Tab**: Move focus to next focusable element
+-   **Shift + Tab**: Move focus to previous focusable element
+-   **Enter/Space**: Activate focused element
+-   **ESC**: Close modal (if `closeOnEscape` is `true`)
 
-    <x-slot:actions>
-        <button type="submit" form="my-form" class="btn btn-primary">Submit</button>
-    </x-slot:actions>
-</x-ui.modal>
-```
+### Focus Trapping
 
-**Note:** The cancel button is included by default, so you don't need to add it manually.
+When `trapFocus` is `true` (default), the modal uses Alpine.js Focus plugin to trap focus inside the modal. This ensures:
 
-#### Disable Default Cancel Button
+-   Focus stays within the modal
+-   Tab navigation cycles through modal elements only
+-   Background content is not accessible via keyboard
 
-```blade
-<x-ui.modal id="no_cancel_modal" title="No Cancel" :close-btn="false">
-    <p>This modal doesn't have a cancel button</p>
+**Note:** Focus trapping requires the Alpine.js Focus plugin. If you don't have it installed, set `trapFocus` to `false`.
 
-    <x-slot:actions>
-        <button class="btn btn-primary">OK</button>
-    </x-slot:actions>
-</x-ui.modal>
-```
+### Accessibility Features
 
-#### Custom Cancel Button Label
-
-```blade
-<x-ui.modal id="custom_label_modal" title="Custom Label" close-btn-label="Close">
-    <p>This modal has a custom cancel button label</p>
-</x-ui.modal>
-```
-
-### Opening and Closing Modals
-
-#### JavaScript Methods
-
-```javascript
-// Open modal
-document.getElementById("my_modal").showModal();
-
-// Close modal
-document.getElementById("my_modal").close();
-```
-
-#### HTML Button (Recommended)
-
-```blade
-<button class="btn" onclick="my_modal.showModal()">Open Modal</button>
-```
-
-#### Alpine.js (for auto-open)
-
-The `autoOpen` prop uses Alpine.js `x-init` to automatically open the modal when it's rendered. This is useful for Livewire components that conditionally render modals.
+-   **ARIA attributes**: Automatically sets `role="dialog"`, `aria-modal="true"`, `aria-labelledby`, and `aria-describedby`
+-   **Focus management**: Traps focus inside modal when open
+-   **Keyboard support**: Full keyboard navigation and ESC key support
+-   **Screen reader support**: Proper ARIA labels and descriptions
 
 ### Implementation Details
 
--   Uses native HTML `<dialog>` element for accessibility and ESC key support
--   Follows DaisyUI modal patterns and classes
--   Supports all DaisyUI modal modifiers and placements
--   Compatible with Livewire forms and actions
--   Uses Alpine.js for automatic opening when `autoOpen="true"`
+-   Uses pure Alpine.js for state management (no `<dialog>` element)
+-   Follows Penguin UI modal patterns and best practices
+-   Supports all transition types from Penguin UI documentation
+-   Fully accessible with ARIA attributes and keyboard navigation
+-   Compatible with Livewire components
+-   Uses `x-cloak` to prevent flash of unstyled content
+
+### Usage Pattern
+
+All modals in the project use `<x-ui.base-modal>` directly with Alpine.js state management. The component uses Alpine.js `x-data` and `x-show` directives for state management, making it fully reactive and compatible with Livewire components.
+
+#### Basic Modal with Alpine.js State
+
+```blade
+<div x-data="{ modalIsOpen: false }">
+    <button @click="modalIsOpen = true" class="btn">Open Modal</button>
+    
+    <x-ui.base-modal id="my-modal" open-state="modalIsOpen" title="Hello!">
+        <p>Press ESC key or click outside to close</p>
+    </x-ui.base-modal>
+</div>
+```
+
+#### Modal with External State Control
+
+```blade
+<div x-data="{ deleteAccountModalOpen: false }">
+    <button @click="deleteAccountModalOpen = true" class="btn">Delete Account</button>
+    
+    <x-ui.base-modal id="delete-modal" open-state="deleteAccountModalOpen" title="Confirm Deletion">
+        <p>Are you sure you want to delete your account?</p>
+        
+        <x-slot:actions>
+            <button @click="deleteAccountModalOpen = false" class="btn btn-ghost">Cancel</button>
+            <button @click="deleteAccount()" class="btn btn-error">Delete</button>
+        </x-slot:actions>
+    </x-ui.base-modal>
+</div>
+```
+
+#### Auto-Open Modal
+
+```blade
+@if ($showModal)
+    <x-ui.base-modal id="auto-modal" :auto-open="true" title="Auto Opened">
+        <p>This modal opens automatically when rendered</p>
+    </x-ui.base-modal>
+@endif
+```
 
 ### Current Usage in Project
 
 1. **Two-Factor Setup Modal** (`resources/views/components/settings/two-factor/⚡setup-modal.blade.php`)
-
     - Uses `autoOpen="true"` to automatically open when component renders
     - Includes form for OTP verification
     - Uses `actions` slot for Continue button
 
 2. **Delete User Confirmation Modal** (`resources/views/components/settings/⚡delete-user-form.blade.php`)
-    - Opens via `onclick="confirm_user_deletion_modal.showModal()"`
+    - Uses Alpine.js state (`deleteAccountModalOpen`) to control visibility
     - Contains password confirmation form
     - Uses `actions` slot for Cancel and Delete buttons
+
+3. **Confirm Modal** (`resources/views/components/ui/confirm-modal.blade.php`)
+    - Wraps `<x-ui.base-modal>` for confirmation dialogs
+    - Supports external state control via `open-state` prop
+    - Can be triggered via Alpine.js events or direct state management
 
 ---
 
@@ -286,7 +508,7 @@ When dispatching the `confirm-modal` event, you can pass a configuration object 
 -   Uses Alpine.js for state management and event handling
 -   Listens for `confirm-modal` Alpine.js events
 -   Supports callback functions for both Livewire actions and custom JavaScript
--   Uses the existing `<x-ui.modal>` structure with HTML `<dialog>` element
+-   Uses `<x-ui.base-modal>` for the underlying modal structure
 -   Automatically closes after confirmation or cancellation
 -   Includes proper event propagation handling (`@click.stop` for nested buttons)
 -   Uses translation keys for default labels (can be overridden)
@@ -1188,6 +1410,43 @@ A centralized, flexible badge component that provides consistent badge functiona
 
 ---
 
+## Alpine.js Integration & Best Practices
+
+All components in this application use Alpine.js for interactivity. When working with components that use Alpine.js, follow these guidelines:
+
+### Alpine.js Best Practices
+
+1. **Use `Alpine.data()` Pattern**: Components should use `Alpine.data()` for reusable data objects instead of global functions.
+
+2. **Avoid `@entangle` Directive**: In Livewire v3/v4, refrain from using the `@entangle` directive. Use `$wire.$entangle()` instead:
+   ```blade
+   <!-- ❌ Avoid -->
+   <div x-data="{ open: @entangle('isOpen').live }">
+   
+   <!-- ✅ Preferred -->
+   <div x-data="{ open: $wire.$entangle('isOpen') }">
+   ```
+
+3. **Prefer Alpine.js Over Plain JavaScript**: Always use Alpine.js directives instead of plain JavaScript:
+   ```blade
+   <!-- ❌ Avoid -->
+   <button onclick="document.getElementById('id').showModal()">
+   
+   <!-- ✅ Preferred -->
+   <button @click="$el.closest('section').querySelector('#id')?.showModal()">
+   ```
+
+4. **Use `$el` and `$refs`**: Reference elements using Alpine.js utilities:
+   ```blade
+   <!-- ✅ Preferred -->
+   <button @click="$refs.modal.showModal()">
+   <div x-ref="modal">
+   ```
+
+5. **Proper Cleanup**: Always implement `destroy()` methods in Alpine components to clean up subscriptions, intervals, and event listeners.
+
+For comprehensive Alpine.js documentation, see [docs/alpinejs.md](./alpinejs.md).
+
 ## Component Usage Guidelines
 
 ### When to Use Centralized Components
@@ -1210,8 +1469,8 @@ When creating a new reusable UI component:
 
 ### Component Naming
 
--   Use kebab-case for component files: `button.blade.php`, `modal.blade.php`
--   Use dot notation for component names: `<x-ui.button>`, `<x-ui.modal>`
+-   Use kebab-case for component files: `button.blade.php`, `base-modal.blade.php`
+-   Use dot notation for component names: `<x-ui.button>`, `<x-ui.base-modal>`
 -   Use descriptive, semantic names that indicate purpose
 
 ### Best Practices
@@ -1481,6 +1740,682 @@ new class extends Component
     - Row click navigates to user details
     - Protected by `Permissions::VIEW_USERS` permission
     - Uses SFC format (Single File Component) with anonymous class syntax
+    - **Now uses the DataTable System** (see below)
+
+---
+
+## DataTable System
+
+**Location:** `app/Services/DataTable/`, `app/Livewire/DataTable/`
+
+**Component Name:** `BaseDataTableComponent` (abstract base class)
+
+### Description
+
+A comprehensive, service-based DataTable system that provides a reusable architecture for building data tables with advanced search, filtering, sorting, pagination, and statistics. The system follows a strict separation of concerns with a service layer handling all business logic and a base Livewire component providing the integration point.
+
+### Architecture
+
+The DataTable System consists of several layers:
+
+1. **Service Layer** (`app/Services/DataTable/`):
+   - `DataTableBuilder`: Orchestrates building the DataTable response
+   - `SearchService`: Applies global search using search macro
+   - `FilterService`: Applies filters based on request parameters
+   - `SortService`: Applies sorting to queries (supports relation fields)
+   - `StatsService`: Calculates statistics (optional)
+   - `SessionService`: Manages session state for filters (uses DataTablePreferencesService)
+   - `DataTablePreferencesService`: Manages DataTable preferences (filters, per_page, sort, search) with persistence
+
+2. **Configuration Layer** (`app/Services/DataTable/Configs/`):
+   - `DataTableConfigInterface`: Contract for DataTable configuration
+   - Entity-specific configs (e.g., `UsersDataTableConfig`)
+
+3. **Transformation Layer** (`app/Services/DataTable/Transformers/`):
+   - `TransformerInterface`: Contract for transforming models
+   - Entity-specific transformers (e.g., `UserDataTableTransformer`)
+
+4. **Options Provider Layer** (`app/Services/DataTable/OptionsProviders/`):
+   - `OptionsProviderInterface`: Contract for filter options
+   - Entity-specific providers (e.g., `RoleOptionsProvider`)
+
+5. **Livewire Integration** (`app/Livewire/DataTable/`):
+   - `BaseDataTableComponent`: Abstract base class for DataTable components
+   - Entity-specific components extend this base class
+
+### Key Features
+
+- **Global Search**: Search across multiple fields using the search macro
+- **Advanced Filtering**: Support for select, multiselect, boolean, relationship, date range filters
+- **Smart Sorting**: Optimized sorting with support for relation fields
+- **Statistics**: Optional entity-specific statistics
+- **Preferences Persistence**: All preferences (filters, per_page, sort, search) persisted in session and user's `frontend_preferences` JSON column (for authenticated users)
+- **Bulk Actions**: Support for bulk operations
+- **URL Synchronization**: Search, filters, and sorting sync with URL via `#[Url]` attributes
+- **Computed Properties**: Uses `#[Computed]` for efficient data loading
+- **Automatic Preference Loading**: Preferences are automatically loaded on component mount and saved when changed
+
+### Usage Example
+
+**Create a DataTable Config** (`app/Services/DataTable/Configs/UsersDataTableConfig.php`):
+
+```php
+<?php
+
+use App\Services\DataTable\Contracts\DataTableConfigInterface;
+
+class UsersDataTableConfig implements DataTableConfigInterface
+{
+    public function getSearchableFields(): array
+    {
+        return ['name', 'email', 'username'];
+    }
+
+    public function getFilterableFields(): array
+    {
+        return [
+            'role' => [
+                'type' => 'select',
+                'label' => __('ui.table.users.filters.role'),
+                'options_provider' => RoleOptionsProvider::class,
+                'relationship' => [
+                    'name' => 'roles',
+                    'column' => 'name',
+                ],
+            ],
+        ];
+    }
+
+    public function getSortableFields(): array
+    {
+        return [
+            'name' => ['label' => __('ui.table.users.name')],
+            'email' => ['label' => __('ui.table.users.email')],
+        ];
+    }
+
+    public function getDefaultSort(): ?array
+    {
+        return ['column' => 'created_at', 'direction' => 'desc'];
+    }
+
+    // ... other required methods
+}
+```
+
+**Create a Transformer** (`app/Services/DataTable/Transformers/UserDataTableTransformer.php`):
+
+```php
+<?php
+
+use App\Services\DataTable\Contracts\TransformerInterface;
+
+class UserDataTableTransformer implements TransformerInterface
+{
+    public function transform($user): array
+    {
+        return [
+            'uuid' => $user->uuid,
+            'name' => $user->name,
+            'email' => $user->email,
+            // ... other fields
+        ];
+    }
+}
+```
+
+**Create a Livewire Component** (`resources/views/components/users/⚡table.blade.php`):
+
+```php
+<?php
+
+use App\Livewire\DataTable\BaseDataTableComponent;
+use App\Models\User;
+use App\Services\DataTable\Configs\UsersDataTableConfig;
+use App\Services\DataTable\Transformers\UserDataTableTransformer;
+
+new class extends BaseDataTableComponent
+{
+    protected function getConfig(): DataTableConfigInterface
+    {
+        return app(UsersDataTableConfig::class);
+    }
+
+    protected function getBaseQuery(): Builder
+    {
+        return User::query();
+    }
+
+    protected function getTransformer(): TransformerInterface
+    {
+        return app(UserDataTableTransformer::class);
+    }
+
+    /**
+     * Get headers configuration (for table header row)
+     */
+    public function getHeaders(): array
+    {
+        return [
+            ['key' => 'name', 'label' => __('ui.table.users.name'), 'sortable' => true],
+            ['key' => 'email', 'label' => __('ui.table.users.email'), 'sortable' => true],
+        ];
+    }
+
+    /**
+     * Get columns configuration (for table body cells)
+     */
+    public function getColumns(): array
+    {
+        return [
+            ['key' => 'name', 'type' => 'text', 'bold' => true],
+            ['key' => 'email', 'type' => 'text', 'muted' => true],
+        ];
+    }
+
+    /**
+     * Get row actions configuration
+     */
+    public function getRowActions(): array
+    {
+        return [
+            ['key' => 'view', 'label' => __('ui.actions.view'), 'variant' => 'ghost', 'icon' => 'eye'],
+            ['key' => 'edit', 'label' => __('ui.actions.edit'), 'variant' => 'ghost', 'icon' => 'pencil'],
+        ];
+    }
+}; ?>
+
+<x-datatable
+    :rows="$this->rows->items()"
+    :headers="$this->getHeaders()"
+    :columns="$this->getColumns()"
+    :actions-per-row="$this->getRowActions()"
+    :bulk-actions="$this->getBulkActions()"
+    row-click="rowClicked"
+    :selected="$selected"
+    :sort-by="$sortBy ?: null"
+    :sort-direction="$sortDirection"
+    :paginator="$this->rows"
+/>
+```
+
+### DataTable DSL (Domain-Specific Language)
+
+The DataTable System includes a fluent DSL for defining table structure, similar to the Navigation and Notification builders. This DSL provides type-safe, autocomplete-friendly definitions with no hardcoded strings.
+
+**Key Principles:**
+- **No hardcoded strings**: All action keys, column types, filter types, icons, and component names must use constants/enums
+- **Typed closures**: Action `execute()` closures are fully typed for autocomplete
+- **Transformer-only values**: All cell values come from the transformer array (no model access in Blade)
+- **Component registry**: All cell and filter components are allowlisted via registries for security
+
+**Location**: `app/Services/DataTable/Dsl/`, `app/Enums/DataTableColumnType.php`, `app/Enums/DataTableFilterType.php`, `app/Constants/DataTableUi.php`
+
+#### DSL Classes
+
+- **`DataTableDefinition`**: Main builder for table definitions
+- **`HeaderItem`**: Fluent builder for table headers (with sorting, visibility, viewport-only)
+- **`ColumnItem`**: Fluent builder for table columns (with type, custom render, viewport-only)
+- **`RowActionItem`**: Fluent builder for row actions (with execute closure, modal support)
+- **`BulkActionItem`**: Fluent builder for bulk actions (with execute closure, modal support)
+- **`FilterItem`**: Fluent builder for filters (with type, options provider, relationship)
+
+#### Usage Example (Model Definition)
+
+```php
+// In User model (using HasDataTable trait)
+use App\Constants\DataTableUi;
+use App\Enums\DataTableColumnType;
+use App\Enums\DataTableFilterType;
+use App\Services\DataTable\Dsl\BulkActionItem;
+use App\Services\DataTable\Dsl\ColumnItem;
+use App\Services\DataTable\Dsl\FilterItem;
+use App\Services\DataTable\Dsl\HeaderItem;
+use App\Services\DataTable\Dsl\RowActionItem;
+
+public static function datatable(): DataTableDefinition
+{
+    return DataTableDefinition::make()
+        ->headers(
+            HeaderItem::make()
+                ->label(__('ui.table.users.name'))
+                ->sortable('name')
+                ->column(
+                    ColumnItem::make()
+                        ->name('name')
+                        ->type(DataTableColumnType::TEXT)
+                        ->props(['bold' => true])
+                ),
+            HeaderItem::make()
+                ->label(__('ui.table.users.email'))
+                ->sortable('email')
+                ->column(
+                    ColumnItem::make()
+                        ->name('email')
+                        ->type(DataTableColumnType::TEXT)
+                        ->props(['muted' => true])
+                )
+        )
+        ->actions(
+            RowActionItem::make()
+                ->key(DataTableUi::ACTION_VIEW)
+                ->label(__('ui.actions.view'))
+                ->icon(DataTableUi::ICON_EYE)
+                ->variant(DataTableUi::VARIANT_GHOST),
+            RowActionItem::make()
+                ->key(DataTableUi::ACTION_DELETE)
+                ->label(__('ui.actions.delete'))
+                ->icon(DataTableUi::ICON_TRASH)
+                ->variant(DataTableUi::VARIANT_GHOST)
+                ->color(DataTableUi::COLOR_ERROR)
+                ->showModal(DataTableUi::MODAL_TYPE_CONFIRM)
+                ->execute(function (User $user) {
+                    $user->delete();
+                })
+        )
+        ->bulkActions(
+            BulkActionItem::make()
+                ->key(DataTableUi::BULK_ACTION_DELETE)
+                ->label(__('ui.actions.delete_selected'))
+                ->icon(DataTableUi::ICON_TRASH)
+                ->variant(DataTableUi::VARIANT_GHOST)
+                ->color(DataTableUi::COLOR_ERROR)
+                ->showModal(DataTableUi::MODAL_TYPE_CONFIRM)
+                ->execute(function (Collection $users) {
+                    User::whereIn('uuid', $users->pluck('uuid'))->delete();
+                })
+        )
+        ->filters(
+            FilterItem::make()
+                ->key('role')
+                ->label(__('ui.table.users.filters.role'))
+                ->placeholder(__('ui.table.users.filters.all_roles'))
+                ->type(DataTableFilterType::SELECT)
+                ->optionsProvider(RoleOptionsProvider::class)
+                ->relationship(['name' => 'roles', 'column' => 'name'])
+        );
+}
+```
+
+#### Row Actions UX
+
+- **Always rendered as kebab dropdown**: Row actions are always shown in a 3-dots (kebab) dropdown menu in the actions column
+- **Modal support**: Actions can have `showModal()` configured to open a modal before execution
+- **Modal types**: `'blade'`, `'livewire'`, `'html'`, or `'confirm'` (uses confirm-modal component)
+- **Execute closures**: Typed closures receive the model instance and execute server-side
+
+#### Bulk Actions UX
+
+- **Buttons if ≤3**: If 3 or fewer bulk actions, they render as separate buttons
+- **Dropdown if >3**: If more than 3 bulk actions, they render in a dropdown labeled `__('ui.table.bulk_actions')`
+- **Modal support**: Same modal support as row actions
+
+#### Viewport-Only Visibility
+
+Headers and columns support `showInViewPortsOnly(['sm', 'lg'])` which means "show ONLY on these viewports":
+
+```php
+HeaderItem::make()
+    ->label('Name')
+    ->showInViewPortsOnly(['sm', 'lg'])  // Hidden by default, visible only on sm and lg
+```
+
+This generates Tailwind classes: `hidden sm:table-cell lg:table-cell`
+
+#### Component Registry System
+
+All cell and filter components are registered via allowlisted registries:
+
+- **`DataTableComponentRegistry`**: Maps `DataTableColumnType` enum → Blade component names
+- **`DataTableFilterComponentRegistry`**: Maps `DataTableFilterType` enum → Blade/Livewire component names
+
+**Security**: Only registered components can be rendered, preventing XSS via component injection.
+
+#### Column Types
+
+Available column types (via `DataTableColumnType` enum):
+- `TEXT` → `datatable.cells.text`
+- `BADGE` → `datatable.cells.badge`
+- `BOOLEAN` → `datatable.cells.boolean`
+- `DATE` → `datatable.cells.date`
+- `DATETIME` → `datatable.cells.datetime`
+- `CURRENCY` → `datatable.cells.currency`
+- `NUMBER` → `datatable.cells.number`
+- `LINK` → `datatable.cells.link`
+- `AVATAR` → `datatable.cells.avatar`
+- `SAFE_HTML` → `datatable.cells.safe-html` (sanitized via HtmlSanitizer)
+
+#### Filter Types
+
+Available filter types (via `DataTableFilterType` enum):
+- `SELECT` → `datatable.filters.select`
+- `MULTISELECT` → `datatable.filters.multiselect`
+- `BOOLEAN` → `datatable.filters.boolean`
+- `DATE_RANGE` → `datatable.filters.date-range`
+- `RELATIONSHIP` → `datatable.filters.relationship`
+
+#### Security Rules
+
+1. **Transformer-only values**: All cell values must come from the transformer array. No model access in Blade templates.
+2. **SafeHtml sanitization**: When using `DataTableColumnType::SAFE_HTML`, content is sanitized via `HtmlSanitizer` service before rendering.
+3. **Component allowlisting**: Only components registered in `DataTableComponentRegistry` or `DataTableFilterComponentRegistry` can be rendered.
+4. **No hardcoded strings**: Action keys, types, icons, and component names must use constants/enums from `DataTableUi`, `DataTableColumnType`, or `DataTableFilterType`.
+
+#### Integration with BaseDataTableComponent
+
+The `BaseDataTableComponent` automatically uses the DSL definition if `getDefinition()` returns a `DataTableDefinition`:
+
+```php
+// In your Livewire component
+protected function getDefinition(): ?DataTableDefinition
+{
+    return User::datatable();  // Uses HasDataTable trait
+}
+
+protected function getModelClass(): string
+{
+    return User::class;  // Required for action execution
+}
+```
+
+The component automatically:
+- Extracts headers, columns, actions, bulk actions, and filters from the definition
+- Executes action closures when actions are clicked
+- Opens modals when actions have `showModal()` configured
+- Handles modal confirmations and executes closures after confirmation
+
+### View Data Architecture
+
+The DataTable System uses a **View Data class** to separate business logic from presentation, following the separation of concerns principle. All PHP logic is extracted from Blade templates into a dedicated class, leaving templates clean and focused on HTML structure.
+
+**Class**: `DataTableViewData`
+
+**Location**: `app/Services/DataTable/View/DataTableViewData.php`
+
+#### Purpose
+
+The `DataTableViewData` class:
+- Accepts all component props via constructor
+- Initializes service registries (DataTableComponentRegistry, DataTableFilterComponentRegistry)
+- Provides computed properties and methods for all logic
+- Processes filters, rows, columns, and headers
+- Handles modal configuration and action lookup
+- Returns prepared data structures that Blade templates can use directly
+
+#### Key Methods
+
+**Computed Values:**
+- `getColumnsCount()` - Calculate total columns (bulk checkbox + data columns + actions)
+- `hasActionsPerRow()` - Check if row actions exist
+- `getBulkActionsCount()` - Get bulk actions count
+- `showBulkActionsDropdown()` - Check if bulk actions should be in dropdown (>3)
+- `hasFilters()` - Check if filters exist
+- `hasSelected()` - Check if any rows are selected
+- `showBulkBar()` - Check if bulk actions bar should be shown
+- `hasPaginator()` - Check if paginator has pages
+
+**Processing Methods:**
+- `processFilter(array $filter)` - Filter component resolution and safe attributes extraction
+- `processRow(array $row, int $index)` - Row UUID validation, selection state, row classes, click attributes
+- `processColumn(array $column, array $row)` - Column component resolution, viewport classes, custom render detection
+- `processHeaderColumn(array $column)` - Header column processing (hidden, responsive, sortable logic)
+
+**Modal Methods:**
+- `getModalStateId(string $actionKey, ?string $rowUuid = null, string $type = 'row')` - Generate Alpine.js modal state ID
+- `findActionByKey(string $key, string $type = 'row')` - Find action by key
+- `getRowActionModalConfig()` - Get row action modal configuration
+- `getBulkActionModalConfig()` - Get bulk action modal configuration
+
+#### Benefits
+
+1. **Separation of Concerns**: Logic separated from presentation
+2. **Testability**: View data class can be unit tested independently
+3. **Reusability**: Logic can be reused across different contexts
+4. **Maintainability**: Easier to modify logic without touching Blade templates
+5. **Clean Templates**: Blade files focus only on HTML structure and data display
+
+#### Usage in Components
+
+The `DataTableViewData` class is automatically instantiated in the `<x-datatable>` component and passed to child components:
+
+```blade
+{{-- In datatable.blade.php --}}
+@php
+    $viewData = new DataTableViewData(
+        rows: $rows,
+        headers: $headers,
+        columns: $columns,
+        // ... all props
+    );
+@endphp
+
+<x-table :view-data="$viewData"></x-table>
+```
+
+Child components (`<x-table>`, `<x-table.header>`) accept the `viewData` prop and use its methods:
+
+```blade
+{{-- In table.blade.php --}}
+@forelse ($viewData->getRows() as $row)
+    @php
+        $rowData = $viewData->processRow($row, $loop->index);
+    @endphp
+    <tr {!! $rowData['rowClickAttr'] !!} {!! $rowData['rowClassAttr'] !!}>
+        {{-- Use processed row data --}}
+    </tr>
+@endforelse
+```
+
+#### Backward Compatibility
+
+Components still accept individual props if `viewData` is not provided, maintaining backward compatibility with existing code.
+
+### Unified Table Component
+
+The DataTable System includes a unified `<x-datatable>` component that handles all rendering logic, making it easy to create consistent tables across the application.
+
+**Component**: `<x-datatable>`
+
+**Location**: `resources/views/components/datatable.blade.php`
+
+**Note**: The component now uses `DataTableViewData` internally to process all data. All PHP logic has been extracted to the view data class, leaving the Blade template clean and focused on presentation.
+
+**Props**:
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `rows` | `array` | `[]` | Array of row data (from transformer) |
+| `headers` | `array` | `[]` | Header configuration with labels, sortable flags |
+| `columns` | `array` | `[]` | Column configuration with types, render options |
+| `actionsPerRow` | `array` | `[]` | Row action buttons configuration |
+| `bulkActions` | `array` | `[]` | Bulk action buttons configuration |
+| `rowClick` | `string\|null` | `null` | Livewire method name for row click handler |
+| `filters` | `array` | `[]` | Applied filters (for future use) |
+| `showSearch` | `bool` | `true` | Show search bar (by default) |
+| `searchPlaceholder` | `string\|null` | `null` | Custom search placeholder |
+| `selected` | `array` | `[]` | Selected row UUIDs |
+| `selectPage` | `bool` | `false` | Select all on current page state |
+| `selectAll` | `bool` | `false` | Select all across pages state |
+| `showBulk` | `bool` | `true` | Show bulk selection checkbox |
+| `sortBy` | `string\|null` | `null` | Current sort column |
+| `sortDirection` | `string` | `'asc'` | Current sort direction |
+| `paginator` | `LengthAwarePaginator\|null` | `null` | Paginator instance |
+| `emptyMessage` | `string\|null` | `null` | Custom empty state message |
+| `emptyIcon` | `string` | `'user-group'` | Icon for empty state |
+
+**Column Types**:
+
+The unified component supports multiple column types for automatic rendering:
+
+- **`text`**: Plain text (default) - supports `bold` and `muted` options
+- **`badge`**: Badge component with `badgeColor` and `badgeSize` options
+- **`boolean`**: Boolean values with `trueLabel` and `falseLabel` options
+- **`date`**: Date formatting with `format` option (default: 'Y-m-d')
+- **`datetime`**: DateTime formatting with `format` option (default: 'Y-m-d H:i')
+- **`currency`**: Currency formatting using `formatCurrency()` helper with `currency` option
+- **`number`**: Number formatting with `decimals`, `decimalSeparator`, `thousandsSeparator` options
+- **`link`**: Link with `href` and optional `external` target
+- **`avatar`**: Avatar image with fallback to `defaultAvatar` or generated avatar
+
+**Column Configuration Options**:
+
+```php
+[
+    'key' => 'name',                    // Required: field key from row data
+    'type' => 'text',                   // Optional: column type (default: 'text')
+    'hidden' => false,                  // Optional: hide column
+    'responsive' => 'md',               // Optional: show only on 'md' and up (e.g., 'md', 'lg')
+    'bold' => true,                     // Optional: bold text (for text type)
+    'muted' => true,                    // Optional: muted text color (for text type)
+    'class' => 'custom-class',          // Optional: custom CSS classes
+    'render' => '<span>Custom</span>',  // Optional: custom HTML string (overrides type)
+    // Type-specific options:
+    'format' => 'Y-m-d',                // For date/datetime types
+    'badgeColor' => 'success',           // For badge type
+    'badgeSize' => 'sm',                // For badge type
+    'trueLabel' => 'Yes',               // For boolean type
+    'falseLabel' => 'No',               // For boolean type
+    'currency' => 'USD',                 // For currency type
+    'decimals' => 2,                    // For number type
+    'href' => '/users/{uuid}',          // For link type (supports {uuid} placeholder)
+    'external' => false,                // For link type
+]
+```
+
+**Header Configuration**:
+
+```php
+[
+    'key' => 'name',                    // Required: column key
+    'label' => 'Name',                  // Required: header label
+    'sortable' => true,                 // Optional: enable sorting
+    'hidden' => false,                  // Optional: hide header
+    'responsive' => 'md',               // Optional: show only on 'md' and up
+]
+```
+
+**Features**:
+
+- **Automatic Search Bar**: Search bar is shown by default (can be disabled with `:show-search="false"`)
+- **Reactive Selection**: Selected items are properly reactive using `wire:model.live` with proper `wire:key` handling
+- **Column Types**: Automatic rendering based on column type
+- **Custom Render**: Support for custom HTML via `render` option
+- **Responsive Columns**: Hide/show columns based on viewport using `responsive` option
+- **Row Click**: Optional row click handler via `rowClick` prop
+- **Bulk Actions**: Automatic bulk action bar when items are selected
+- **Pagination**: Automatic pagination display
+- **Empty State**: Customizable empty state with icon and message
+
+**Example Usage**:
+
+```blade
+<x-datatable
+    :rows="$this->rows->items()"
+    :headers="$this->getHeaders()"
+    :columns="$this->getColumns()"
+    :actions-per-row="$this->getRowActions()"
+    :bulk-actions="$this->getBulkActions()"
+    row-click="rowClicked"
+    :selected="$selected"
+    :sort-by="$sortBy ?: null"
+    :sort-direction="$sortDirection"
+    :paginator="$this->rows"
+    :show-search="true"
+/>
+```
+
+### Filter Types
+
+The DataTable System supports multiple filter types:
+
+1. **Select**: Single value selection
+2. **Multiselect**: Multiple value selection
+3. **Boolean**: True/false filter
+4. **Relationship**: Filter by related model
+5. **Has Relationship**: Filter by presence/absence of relationship
+6. **Date Range**: Filter by date range (from/to)
+
+### Preferences System
+
+The DataTable System includes a comprehensive preferences system that follows the same pattern as `FrontendPreferencesService`:
+
+**Storage:**
+- **Guests**: Preferences stored in session only
+- **Authenticated Users**: Preferences stored in `users.frontend_preferences` JSON column under keys like `datatable_preferences.users`, synced to session
+
+**Preferences Stored:**
+- `search`: Global search query
+- `per_page`: Items per page
+- `sort`: Sort column and direction
+- `filters`: Applied filter values
+
+**Architecture:**
+- `DataTablePreferencesService`: Main service (same pattern as `FrontendPreferencesService`)
+- `SessionDataTablePreferencesStore`: Session-based storage
+- `UserJsonDataTablePreferencesStore`: User JSON column storage
+- `DataTablePreferencesStore` interface: Contract for storage implementations
+
+**Behavior:**
+- Preferences are automatically loaded on component mount
+- Preferences are automatically saved when search, filters, per_page, or sort change
+- On login, all DataTable preferences are synced from database to session
+- Session is the single source of truth for reads (with automatic DB sync for authenticated users)
+
+**Example Storage Structure:**
+
+```json
+{
+  "locale": "en_US",
+  "theme": "light",
+  "datatable_preferences.users": {
+    "search": "john",
+    "per_page": 25,
+    "sort": {
+      "column": "name",
+      "direction": "asc"
+    },
+    "filters": {
+      "is_active": true,
+      "email_verified_at": true
+    }
+  }
+}
+```
+
+### Service Registration
+
+All services are registered in `DataTableServiceProvider`:
+
+```php
+$this->app->bind(DataTableBuilderInterface::class, DataTableBuilder::class);
+$this->app->singleton(DataTablePreferencesService::class);
+$this->app->singleton(SearchService::class);
+$this->app->singleton(FilterService::class);
+// ... etc
+```
+
+### Best Practices
+
+1. **Extend BaseDataTableComponent**: Always extend `BaseDataTableComponent` for new DataTable components
+2. **Use Unified Component**: Always use `<x-datatable>` component for table rendering - it handles all UI logic automatically
+3. **Separate Headers and Columns**: Define `getHeaders()` for table headers and `getColumns()` for body cells with types
+4. **Use Column Types**: Leverage built-in column types (badge, boolean, date, etc.) for consistent rendering instead of custom HTML
+5. **Use Configs**: Define entity-specific configurations in `Configs/` directory
+6. **Use Transformers**: Transform models to arrays in `Transformers/` directory
+7. **Use Options Providers**: Provide filter options in `OptionsProviders/` directory
+8. **URL Syncing**: Use `#[Url]` attributes for state that should sync with URL
+9. **Computed Properties**: Use `#[Computed]` for expensive queries
+10. **Authorization**: Override `authorizeAccess()` method in child classes
+11. **Reactive Selection**: Selected items are automatically reactive - use `wire:model.live` in the unified component
+12. **Row Click Handler**: Define `rowClicked()` method in your component and pass `row-click="rowClicked"` to the unified component
+
+### Current Usage in Project
+
+1. **Users Table** (`resources/views/components/users/⚡table.blade.php`)
+    - Extends `BaseDataTableComponent`
+    - Uses `UsersDataTableConfig` for configuration
+    - Uses `UserDataTableTransformer` for data transformation
+    - Supports search, filtering by role and verification status, sorting, and pagination
 
 ---
 
@@ -1488,7 +2423,7 @@ new class extends Component
 
 ### UI Components (`resources/views/components/ui/`)
 
--   **Modal** (`modal.blade.php`) - Dialog modals using HTML `<dialog>` element
+-   **Base Modal** (`base-modal.blade.php`) - Flexible modal component with Alpine.js state management
 -   **Confirm Modal** (`confirm-modal.blade.php`) - Reusable confirmation modal with Alpine.js event handling
 -   **Button** (`button.blade.php`) - Styled buttons with variants and sizes
 -   **Input** (`input.blade.php`) - Form inputs with labels and error handling
@@ -1590,7 +2525,7 @@ new class extends Component
 ### 2025-01-XX
 
 -   **Component Centralization:** Migrated all UI components to use centralized components
-    -   **Modal:** All modals now use `<x-ui.modal>` component
+    -   **Modal:** All modals now use `<x-ui.base-modal>` component with Alpine.js state management
     -   **Button:** All buttons now use `<x-ui.button>` component
     -   **Input:** All inputs now use `<x-ui.input>` component (with `label-append` slot support)
     -   **Form:** All forms now use `<x-ui.form>` component with automatic CSRF and method spoofing

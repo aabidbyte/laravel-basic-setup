@@ -10,7 +10,7 @@
     </div>
     @foreach ($group['items'] as $item)
         <div class="menu-item">
-            <x-navigation.item :item="$item" />
+            <x-navigation.item :item="$item"></x-navigation.item>
         </div>
     @endforeach
 @endif

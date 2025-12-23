@@ -9,9 +9,10 @@
     $isGet = $formMethod === 'GET';
     $isPost = $formMethod === 'POST';
     $needsMethodSpoofing = !$isGet && !$isPost;
+    $formAction = $action ? 'action="' . $action . '"' : '';
 @endphp
 
-<form method="{{ $isGet ? 'GET' : 'POST' }}" @if ($action) action="{{ $action }}" @endif
+<form method="{{ $isGet ? 'GET' : 'POST' }}" {!! $formAction !!}
     {{ $attributes->merge(['class' => trim('space-y-6 ' . $class)])->except(['method', 'action']) }}>
     @if ($needsMethodSpoofing)
         @method($formMethod)
