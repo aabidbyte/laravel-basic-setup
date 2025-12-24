@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Constants\Permissions;
+use App\Constants\Auth\Permissions;
 use App\Services\Navigation\NavigationBuilder;
 use App\Services\Navigation\NavigationItem;
 use Illuminate\Support\Facades\Auth;

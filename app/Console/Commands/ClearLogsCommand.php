@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Constants\LogChannels;
+use App\Constants\Logging\LogChannels;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 

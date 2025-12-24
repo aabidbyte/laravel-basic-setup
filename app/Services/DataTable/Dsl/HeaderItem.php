@@ -40,6 +40,14 @@ class HeaderItem
     }
 
     /**
+     * Alias for label() for better readability
+     */
+    public function title(string $title): self
+    {
+        return $this->label($title);
+    }
+
+    /**
      * Mark the header as sortable
      */
     public function sortable(?string $sortKey = null): self

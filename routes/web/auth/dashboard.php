@@ -1,6 +1,6 @@
 <?php
 
-use App\Constants\Permissions;
+use App\Constants\Auth\Permissions;
 use Illuminate\Support\Facades\Route;
 
 // Dashboard routes

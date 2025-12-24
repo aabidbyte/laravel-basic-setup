@@ -8,7 +8,7 @@
  * Notification Center Alpine.js Data Component
  * Manages notification center page updates
  */
-export function notificationCenter($wire) {
+export function notificationCenter() {
     return {
         unsubscribe: null,
 
@@ -33,25 +33,35 @@ export function notificationCenter($wire) {
                     return;
                 }
 
-                // Refresh Livewire component if available
-                if ($wire && typeof $wire.$refresh === "function") {
-                    try {
-                        $wire.$refresh();
-                    } catch (error) {
-                        // Component may have been removed (e.g., during navigation)
-                        // Silently handle this - it's expected behavior
-                        const errorMessage =
-                            error?.message || String(error || "");
-                        if (errorMessage.includes("Component not found")) {
-                            return;
-                        }
-                        console.error(
-                            "[Notification Center] Error refreshing component:",
-                            error
-                        );
-                    }
-                }
+                // Use reactive $wire - it's automatically updated by Livewire
+                // After navigation, if component exists, $wire will be available
+                this.refreshIfAvailable();
             });
+        },
+
+        /**
+         * Safely refresh the Livewire component if it exists
+         * Uses reactive $wire which is automatically updated by Livewire
+         */
+        refreshIfAvailable() {
+            // $wire is reactive - Livewire handles the lifecycle
+            // After navigation, if component exists, $wire is automatically available
+            // If component was removed, $wire is null/undefined
+            if (!$wire || typeof $wire.$refresh !== "function") {
+                return;
+            }
+
+            // Additional validation: check if component still exists in Livewire registry
+            if (window.Livewire && $wire.__instance?.id) {
+                const component = window.Livewire.find($wire.__instance.id);
+                if (!component) {
+                    // Component was removed from DOM but $wire still exists
+                    return;
+                }
+            }
+
+            // Safe to refresh - component exists and is valid
+            $wire.$refresh();
         },
 
         destroy() {
@@ -67,7 +77,7 @@ export function notificationCenter($wire) {
  * Notification Dropdown Alpine.js Data Component
  * Manages notification dropdown state and updates
  */
-export function notificationDropdown($wire) {
+export function notificationDropdown() {
     return {
         unsubscribe: null,
         isOpen: false,
@@ -94,25 +104,35 @@ export function notificationDropdown($wire) {
                     return;
                 }
 
-                // Refresh Livewire component if available
-                if ($wire && typeof $wire.$refresh === "function") {
-                    try {
-                        $wire.$refresh();
-                    } catch (error) {
-                        // Component may have been removed (e.g., during navigation)
-                        // Silently handle this - it's expected behavior
-                        const errorMessage =
-                            error?.message || String(error || "");
-                        if (errorMessage.includes("Component not found")) {
-                            return;
-                        }
-                        console.error(
-                            "[Notification Dropdown] Error refreshing component:",
-                            error
-                        );
-                    }
-                }
+                // Use reactive $wire - it's automatically updated by Livewire
+                // After navigation, if component exists, $wire will be available
+                this.refreshIfAvailable();
             });
+        },
+
+        /**
+         * Safely refresh the Livewire component if it exists
+         * Uses reactive $wire which is automatically updated by Livewire
+         */
+        refreshIfAvailable() {
+            // $wire is reactive - Livewire handles the lifecycle
+            // After navigation, if component exists, $wire is automatically available
+            // If component was removed, $wire is null/undefined
+            if (!$wire || typeof $wire.$refresh !== "function") {
+                return;
+            }
+
+            // Additional validation: check if component still exists in Livewire registry
+            if (window.Livewire && $wire.__instance?.id) {
+                const component = window.Livewire.find($wire.__instance.id);
+                if (!component) {
+                    // Component was removed from DOM but $wire still exists
+                    return;
+                }
+            }
+
+            // Safe to refresh - component exists and is valid
+            $wire.$refresh();
         },
 
         destroy() {

@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Constants\DataTableUi;
-use App\Enums\DataTableColumnType;
+use App\Constants\DataTable\DataTableUi;
+use App\Enums\DataTable\DataTableColumnType;
 use App\Services\DataTable\Ui\DataTableComponentRegistry;
 
 it('can get component for column type', function () {

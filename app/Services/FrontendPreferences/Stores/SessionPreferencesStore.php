@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\FrontendPreferences\Stores;
 
-use App\Constants\FrontendPreferences;
+use App\Constants\Preferences\FrontendPreferences;
 use App\Services\FrontendPreferences\Contracts\PreferencesStore;
 use Illuminate\Session\Store;
 

@@ -51,9 +51,13 @@ class HtmlSanitizer
         $html = preg_replace('/on\w+\s*=\s*[^\s>]*/i', '', $html);
 
         // Remove javascript: and data: URLs (replace with safe values) - do this BEFORE strip_tags
-        $html = preg_replace('/href\s*=\s*["\']javascript:[^"\']*["\']/i', 'href="#"', $html);
-        $html = preg_replace('/href\s*=\s*["\']data:[^"\']*["\']/i', 'href="#"', $html);
-        $html = preg_replace('/src\s*=\s*["\']data:[^"\']*["\']/i', '', $html);
+        // Use a more robust regex that handles nested quotes by matching until the closing quote of the same type
+        $html = preg_replace('/href\s*=\s*"javascript:[^"]*"/i', 'href="#"', $html);
+        $html = preg_replace('/href\s*=\s*\'javascript:[^\']*\'/i', "href='#'", $html);
+        $html = preg_replace('/href\s*=\s*"data:[^"]*"/i', 'href="#"', $html);
+        $html = preg_replace('/href\s*=\s*\'data:[^\']*\'/i', "href='#'", $html);
+        $html = preg_replace('/src\s*=\s*"data:[^"]*"/i', '', $html);
+        $html = preg_replace('/src\s*=\s*\'data:[^\']*\'/i', '', $html);
 
         // Use strip_tags with allowed tags
         $allowedTagsString = '<'.implode('><', self::ALLOWED_TAGS).'>';

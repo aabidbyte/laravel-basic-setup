@@ -2,8 +2,6 @@
     <div class="flex flex-col gap-6">
         <x-auth-header :title="__('ui.auth.reset_password.title')" :description="__('ui.auth.reset_password.description')"></x-auth-header>
 
-        <x-auth-session-status class="text-center" :status="session('status')"></x-auth-session-status>
-
         <form method="POST" action="{{ route('password.update') }}" class="flex flex-col gap-6">
             @csrf
             <input type="hidden" name="token" value="{{ request()->route('token') }}">

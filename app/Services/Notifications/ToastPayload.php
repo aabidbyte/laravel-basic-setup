@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services\Notifications;
 
-use App\Enums\ToastAnimation;
-use App\Enums\ToastPosition;
-use App\Enums\ToastType;
+use App\Enums\Toast\ToastAnimation;
+use App\Enums\Toast\ToastPosition;
+use App\Enums\Toast\ToastType;
 
 class ToastPayload
 {

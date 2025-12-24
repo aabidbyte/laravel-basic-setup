@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\DataTable\Stores;
 
-use App\Constants\DataTable as DataTableConstants;
+use App\Constants\DataTable\DataTable as DataTableConstants;
 use App\Services\DataTable\Contracts\DataTablePreferencesStore;
 use Illuminate\Session\Store;
 

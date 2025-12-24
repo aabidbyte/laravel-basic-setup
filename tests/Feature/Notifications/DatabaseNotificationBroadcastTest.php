@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Events\DatabaseNotificationChanged;
-use App\Events\ToastBroadcasted;
+use App\Events\Notifications\DatabaseNotificationChanged;
+use App\Events\Notifications\ToastBroadcasted;
 use App\Models\User;
 use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Support\Facades\Event;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Constants\FrontendPreferences;
+use App\Constants\Preferences\FrontendPreferences;
 use App\Models\User;
 use App\Services\FrontendPreferences\FrontendPreferencesService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\DataTable\Dsl;
 
-use App\Enums\DataTableFilterType;
+use App\Enums\DataTable\DataTableFilterType;
 
 /**
  * Fluent builder for DataTable filter items

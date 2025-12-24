@@ -1,7 +1,7 @@
 <?php
 
-use App\Constants\Permissions;
-use App\Constants\Roles;
+use App\Constants\Auth\Permissions;
+use App\Constants\Auth\Roles;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;

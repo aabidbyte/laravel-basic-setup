@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\PreferencesController;
+use App\Http\Controllers\Preferences\PreferencesController;
 use Illuminate\Support\Facades\Route;
 
 // Preferences routes (available to all users, including guests)

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\DataTable\Dsl;
 
-use App\Enums\DataTableColumnType;
+use App\Enums\DataTable\DataTableColumnType;
 
 /**
  * Fluent builder for DataTable column items

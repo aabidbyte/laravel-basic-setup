@@ -3,10 +3,10 @@
 namespace App\Providers;
 
 use App\Auth\PasswordBrokerManager;
-use App\Constants\Roles;
-use App\Http\Middleware\TeamsPermission;
-use App\Listeners\SyncUserPreferencesOnLogin;
-use App\Observers\DatabaseNotificationObserver;
+use App\Constants\Auth\Roles;
+use App\Http\Middleware\Teams\TeamsPermission;
+use App\Listeners\Preferences\SyncUserPreferencesOnLogin;
+use App\Observers\Notifications\DatabaseNotificationObserver;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Http\Kernel;

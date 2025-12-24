@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\View\Components;
 
-use App\Constants\DataTableUi;
+use App\Constants\DataTable\DataTableUi;
 use App\Services\DataTable\Ui\DataTableComponentRegistry;
 use App\Services\DataTable\Ui\ViewportVisibility;
 use Illuminate\Contracts\View\View;

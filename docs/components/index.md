@@ -1,0 +1,25 @@
+# UI Components Documentation
+
+This document provides comprehensive documentation for all reusable UI components in the application.
+
+## Quick Reference for AI Agents
+
+This documentation is organized into sections for easy navigation. Each section is in its own file for fast indexing.
+
+## Table of Contents
+
+- [Base Modal](base-modal.md)
+- [Confirm Modal](confirm-modal.md)
+- [Button](button.md)
+- [Input](input.md)
+- [Password](password.md)
+- [Form](form.md)
+- [Icon](icon.md)
+- [Dropdown](dropdown.md)
+- [Badge](badge.md)
+- [Alpine.js Integration & Best Practices](alpinejs-integration-and-best-practices.md)
+- [Component Usage Guidelines](component-usage-guidelines.md)
+- [Table System](table-system.md)
+- [DataTable System](datatable-system.md)
+- [Component Index](component-index.md)
+- [Changelog](changelog.md)

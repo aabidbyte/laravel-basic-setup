@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Auth\AuthController;
 use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;

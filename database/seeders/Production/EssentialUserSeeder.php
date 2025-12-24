@@ -2,7 +2,7 @@
 
 namespace Database\Seeders\Production;
 
-use App\Constants\Roles;
+use App\Constants\Auth\Roles;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Database\Seeder;

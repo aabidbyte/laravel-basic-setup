@@ -127,7 +127,7 @@ Toasts can be positioned anywhere on the screen:
 -   `ToastPosition::Center`
 
 ```php
-use App\Enums\ToastPosition;
+use App\Enums\Toast\ToastPosition;
 
 NotificationBuilder::make()
     ->title('Bottom Right Notification')
@@ -354,8 +354,8 @@ The realtime UI (toast center, notification dropdown refresh, notification cente
 
 UI refreshes for the dropdown + notification center are driven by **database notification model changes**, not toast broadcasts.
 
--   **Event**: `App\Events\DatabaseNotificationChanged` (broadcast name: `notification.changed`)
--   **Observer**: `App\Observers\DatabaseNotificationObserver` (hooks into `Illuminate\Notifications\DatabaseNotification`)
+-   **Event**: `App\Events\Notifications\DatabaseNotificationChanged` (broadcast name: `notification.changed`)
+-   **Observer**: `App\Observers\Notifications\DatabaseNotificationObserver` (hooks into `Illuminate\Notifications\DatabaseNotification`)
 -   **Registration**: Observer is registered in `App\Providers\AppServiceProvider`
 
 This ensures UI stays in sync when notifications are created, updated (ex: marked read), or deleted.
@@ -454,13 +454,15 @@ try {
 
 ## Integration with Laravel Fortify
 
-The system automatically converts Laravel Fortify status messages to toast notifications via the `ConvertStatusToNotification` middleware. This ensures all authentication-related messages (password reset, email verification, etc.) are displayed as toasts.
+The system sends toast notifications directly from custom Fortify response classes instead of using session status messages. This ensures all authentication-related messages (password reset, email verification, etc.) are displayed as toasts for both authenticated and guest users.
 
-Common status messages handled:
+Custom response classes handle:
 
--   `verification-link-sent` → Info toast
--   `password-reset` → Success toast
--   `password-reset-link-sent` → Info toast
+-   **Email Verification Link Sent** (`EmailVerificationNotificationSentResponse`) → Info toast
+-   **Password Reset** (`PasswordResetResponse`) → Success toast
+-   **Password Reset Link Sent** (`PasswordResetLinkSentResponse`) → Info toast
+
+These response classes are registered in `FortifyServiceProvider` and send notifications via the session channel, making them available to guest users as well.
 
 ## Technical Details
 

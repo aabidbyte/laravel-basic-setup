@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\DataTable\Ui;
 
-use App\Constants\DataTableUi;
-use App\Enums\DataTableColumnType;
+use App\Constants\DataTable\DataTableUi;
+use App\Enums\DataTable\DataTableColumnType;
 use InvalidArgumentException;
 
 /**

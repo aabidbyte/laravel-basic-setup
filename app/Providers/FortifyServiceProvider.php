@@ -4,6 +4,9 @@ namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
+use App\Http\Responses\Fortify\EmailVerificationNotificationSentResponse;
+use App\Http\Responses\Fortify\PasswordResetResponse;
+use App\Http\Responses\Fortify\SuccessfulPasswordResetLinkRequestResponse;
 use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -26,7 +29,22 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Bind custom response classes for Fortify
+        // Fortify will automatically resolve these from the container when needed
+        $this->app->singleton(
+            \Laravel\Fortify\Contracts\EmailVerificationNotificationSentResponse::class,
+            EmailVerificationNotificationSentResponse::class
+        );
+
+        $this->app->singleton(
+            \Laravel\Fortify\Contracts\PasswordResetResponse::class,
+            PasswordResetResponse::class
+        );
+
+        $this->app->singleton(
+            \Laravel\Fortify\Contracts\SuccessfulPasswordResetLinkRequestResponse::class,
+            SuccessfulPasswordResetLinkRequestResponse::class
+        );
     }
 
     /**
@@ -46,6 +64,9 @@ class FortifyServiceProvider extends ServiceProvider
     {
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
         Fortify::createUsersUsing(CreateNewUser::class);
+
+        // Custom response classes are registered in register() method via service container bindings
+        // Fortify will automatically resolve them when needed
 
         $this->configureAuthentication();
         $this->configureAuthenticationPipeline();

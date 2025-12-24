@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Constants\Permissions;
+use App\Constants\Auth\Permissions;
 use App\Livewire\DataTable\BaseDataTableComponent;
 use App\Models\User;
 use App\Services\DataTable\Configs\UsersDataTableConfig;

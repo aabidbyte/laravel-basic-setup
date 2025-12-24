@@ -1,6 +1,6 @@
 <?php
 
-use App\Events\DatabaseNotificationChanged;
+use App\Events\Notifications\DatabaseNotificationChanged;
 use App\Livewire\BasePageComponent;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -132,7 +132,7 @@ new class extends BasePageComponent {
     }
 }; ?>
 
-<div x-data="notificationCenter($wire)" x-init="init()" x-on:notifications-changed.window="$wire.$refresh()"
+<div x-data="notificationCenter()" x-init="init()" x-on:notifications-changed.window="$wire.$refresh()"
     wire:key="notification-center-{{ Auth::user()?->uuid ?? 'guest' }}" class="flex flex-col gap-4">
     @if ($this->totalCount > 0)
         <div class="flex justify-end gap-2">

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\DataTable\Dsl;
 
-use App\Constants\DataTableUi;
+use App\Constants\DataTable\DataTableUi;
 use Illuminate\Database\Eloquent\Collection;
 
 /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\FrontendPreferences;
 
-use App\Constants\FrontendPreferences;
+use App\Constants\Preferences\FrontendPreferences;
 use App\Models\User;
 use App\Services\FrontendPreferences\Stores\SessionPreferencesStore;
 use App\Services\FrontendPreferences\Stores\UserJsonPreferencesStore;
@@ -194,6 +194,14 @@ class FrontendPreferencesService
 
         // Sync to session (single source of truth)
         $this->getSessionStore()->setMany($userPrefs);
+    }
+
+    /**
+     * Alias for syncUserPreferencesToSession() for backward compatibility
+     */
+    public function syncUserPreferences(User $user): void
+    {
+        $this->syncUserPreferencesToSession($user);
     }
 
     /**

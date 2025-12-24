@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Enums\ToastType;
-use App\Events\ToastBroadcasted;
+use App\Enums\Toast\ToastType;
+use App\Events\Notifications\ToastBroadcasted;
 use App\Models\User;
 use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Support\Facades\Event;

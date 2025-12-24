@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Constants\Roles;
+use App\Constants\Auth\Roles;
 use Illuminate\Support\Facades\Gate;
 use Laravel\Horizon\Horizon;
 use Laravel\Horizon\HorizonApplicationServiceProvider;

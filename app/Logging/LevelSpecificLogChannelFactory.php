@@ -2,7 +2,7 @@
 
 namespace App\Logging;
 
-use App\Constants\LogLevels;
+use App\Constants\Logging\LogLevels;
 use Monolog\Handler\FilterHandler;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;

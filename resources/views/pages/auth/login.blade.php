@@ -2,8 +2,6 @@
     <div class="flex flex-col gap-6">
         <x-auth-header :title="__('ui.auth.login.title')" :description="__('ui.auth.login.description')"></x-auth-header>
 
-        <x-auth-session-status class="text-center" :status="session('status')"></x-auth-session-status>
-
         <x-ui.form method="POST" action="{{ route('login.store') }}" class="flex flex-col">
             @csrf
 

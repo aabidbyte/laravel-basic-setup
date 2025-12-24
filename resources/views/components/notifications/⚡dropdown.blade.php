@@ -126,7 +126,7 @@ new class extends Component {
     }
 }; ?>
 
-<div x-data="notificationDropdown($wire)" x-init="init()" x-on:notifications-changed.window="$wire.$refresh()"
+<div x-data="notificationDropdown()" x-init="init()" x-on:notifications-changed.window="$wire.$refresh()"
     @click.away="
         if (wasOpened) {
             $wire.markVisibleAsRead();

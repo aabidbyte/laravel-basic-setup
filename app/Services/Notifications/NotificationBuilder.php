@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services\Notifications;
 
-use App\Enums\ToastAnimation;
-use App\Enums\ToastPosition;
-use App\Enums\ToastType;
-use App\Events\ToastBroadcasted;
+use App\Enums\Toast\ToastAnimation;
+use App\Enums\Toast\ToastPosition;
+use App\Enums\Toast\ToastType;
+use App\Events\Notifications\ToastBroadcasted;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Contracts\Auth\Authenticatable;

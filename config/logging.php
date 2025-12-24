@@ -1,7 +1,7 @@
 <?php
 
-use App\Constants\LogChannels;
-use App\Constants\LogLevels;
+use App\Constants\Logging\LogChannels;
+use App\Constants\Logging\LogLevels;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;

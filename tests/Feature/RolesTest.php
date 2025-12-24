@@ -1,6 +1,6 @@
 <?php
 
-use App\Constants\Roles;
+use App\Constants\Auth\Roles;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;

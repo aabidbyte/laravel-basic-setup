@@ -2,8 +2,6 @@
     <div class="flex flex-col gap-6">
         <x-auth-header :title="__('ui.auth.confirm_password.title')" :description="__('ui.auth.confirm_password.description')"></x-auth-header>
 
-        <x-auth-session-status class="text-center" :status="session('status')"></x-auth-session-status>
-
         <form method="POST" action="{{ route('password.confirm.store') }}" class="flex flex-col gap-6">
             @csrf
 

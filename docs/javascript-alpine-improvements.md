@@ -4,7 +4,7 @@ This document outlines the improvements made to the JavaScript codebase to enhan
 
 ## Overview
 
-The JavaScript codebase has been refactored to follow Alpine.js best practices, improve separation of concerns, enhance security, and optimize performance. All improvements follow the guidelines in `docs/alpinejs.md`.
+The JavaScript codebase has been refactored to follow Alpine.js best practices, improve separation of concerns, enhance security, and optimize performance. All improvements follow the guidelines in `docs/alpinejs/index.md`.
 
 ## Key Improvements
 
@@ -297,7 +297,7 @@ After these changes, ensure:
 
 - [Alpine.js Documentation](./alpinejs.md)
 - [Alpine.js Official Docs](https://alpinejs.dev/)
-- [AGENTS.md](../AGENTS.md) - Alpine.js preferences and best practices
+- [AGENTS.md](../AGENTS.md) - Alpine.js preferences and best practices (see `docs/AGENTS/index.md` for full documentation)
 
 ---
 

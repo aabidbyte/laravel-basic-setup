@@ -3,9 +3,9 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use App\Constants\DataTableUi;
-use App\Enums\DataTableColumnType;
-use App\Enums\DataTableFilterType;
+use App\Constants\DataTable\DataTableUi;
+use App\Enums\DataTable\DataTableColumnType;
+use App\Enums\DataTable\DataTableFilterType;
 use App\Models\Base\BaseUserModel;
 use App\Models\Concerns\HasDataTable;
 use App\Services\DataTable\Dsl\BulkActionItem;
