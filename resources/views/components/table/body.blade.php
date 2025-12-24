@@ -1,4 +1,0 @@
-<tbody>
-    {{ $slot }}
-</tbody>
-

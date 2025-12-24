@@ -1,4 +1,0 @@
-<td {{ $attributes }}>
-    {{ $slot }}
-</td>
-

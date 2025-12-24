@@ -15,13 +15,22 @@ import "./echo";
  */
 import focus from "@alpinejs/focus";
 
-// Register Focus plugin when Alpine is initialized
+/**
+ * Alpine.js DataTable Component
+ *
+ * Provides frontend state management for DataTable components.
+ */
+import { dataTable } from "./alpine-components/datatable.js";
+
+// Register Focus plugin and DataTable component when Alpine is initialized
 document.addEventListener("alpine:init", () => {
     window.Alpine.plugin(focus);
+    window.Alpine.data("dataTable", dataTable);
 });
 
 // Also register immediately if Alpine is already available
 // (handles cases where this script loads after Alpine)
 if (window.Alpine) {
     window.Alpine.plugin(focus);
+    window.Alpine.data("dataTable", dataTable);
 }

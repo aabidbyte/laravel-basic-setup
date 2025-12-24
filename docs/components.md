@@ -7,8 +7,9 @@ The full documentation is now organized into sections for easier navigation and 
 ## Quick Links
 
 - **[Full Documentation](components/index.md)** - Complete components documentation with table of contents
+- **[DataTable Component](components/datatable.md)** - Comprehensive DataTable documentation
 - **[Base Modal](components/base-modal.md)** - Base modal component
-- **[DataTable System](components/datatable-system.md)** - DataTable component system
+- **[DataTable System](components/datatable-system.md)** - DataTable component system (legacy)
 - **[Component Index](components/component-index.md)** - Complete component index
 
 For the complete documentation, please see [docs/components/index.md](components/index.md).

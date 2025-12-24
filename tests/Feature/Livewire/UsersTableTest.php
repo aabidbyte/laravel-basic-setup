@@ -27,7 +27,7 @@ test('search filters results', function () {
     User::factory()->create(['name' => 'Jane Smith', 'email' => 'jane@example.com']);
 
     Livewire::actingAs($this->user)
-        ->test('users.table')
+        ->test('tables.user-table')
         ->set('search', 'John')
         ->assertSee('John Doe')
         ->assertDontSee('Jane Smith');
@@ -38,7 +38,7 @@ test('sort toggles direction', function () {
     User::factory()->create(['name' => 'Bob']);
 
     $component = Livewire::actingAs($this->user)
-        ->test('users.table');
+        ->test('tables.user-table');
 
     // Component defaults to sortBy='created_at' and sortDirection='desc' (from config)
     // First click on 'name' (different column) sets sortBy='name' and sortDirection='asc'
@@ -59,7 +59,7 @@ test('bulk select page sets selected to current page UUIDs', function () {
     $users = User::factory()->count(5)->create();
 
     $component = Livewire::actingAs($this->user)
-        ->test('users.table')
+        ->test('tables.user-table')
         ->set('perPage', 3);
 
     $component->call('toggleSelectPage')

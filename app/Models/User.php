@@ -207,7 +207,8 @@ class User extends BaseUserModel
                     ->key(DataTableUi::ACTION_EDIT)
                     ->label(__('ui.actions.edit'))
                     ->icon(DataTableUi::ICON_PENCIL)
-                    ->variant(DataTableUi::VARIANT_GHOST),
+                    ->variant(DataTableUi::VARIANT_GHOST)
+                    ->route(route('users.edit', $user->uuid)),
                 RowActionItem::make()
                     ->key(DataTableUi::ACTION_DELETE)
                     ->label(__('ui.actions.delete'))

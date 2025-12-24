@@ -229,7 +229,11 @@ it('tests something', function () {
     -   Example: `new class extends BasePageComponent { public ?string $pageTitle = 'ui.pages.dashboard'; public string $pageSubtitle = 'ui.pages.dashboard.description'; }`
     -   **Rule**: Never extend `Livewire\Component` directly for full-page components - always use `BasePageComponent`
 -   **Naming**: Use descriptive names (e.g., `isRegisteredForDiscounts`, not `discount()`)
--   **Documentation**: See `docs/livewire-4/index.md` for complete Livewire 4 documentation
+-   **DataTable Components**:
+    -   **Location**: `App\Livewire\Tables\`
+    -   **Naming**: Must suffix with `Table` (e.g., `UserTable.php`)
+    -   **Structure**: Must extend `App\Livewire\DataTableComponent` and provide configuration via methods.
+    -   **Usage**: Use `<livewire:tables.user-table />` syntax.
 
 ### Routing
 

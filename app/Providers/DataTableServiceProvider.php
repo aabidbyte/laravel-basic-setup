@@ -12,8 +12,6 @@ use App\Services\DataTable\Services\FilterService;
 use App\Services\DataTable\Services\SearchService;
 use App\Services\DataTable\Services\SessionService;
 use App\Services\DataTable\Services\SortService;
-use App\Services\DataTable\Ui\DataTableComponentRegistry;
-use App\Services\DataTable\Ui\DataTableFilterComponentRegistry;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -35,8 +33,6 @@ class DataTableServiceProvider extends ServiceProvider
         $this->app->singleton(FilterService::class);
         $this->app->singleton(SortService::class);
         $this->app->singleton(SessionService::class);
-        $this->app->singleton(DataTableComponentRegistry::class);
-        $this->app->singleton(DataTableFilterComponentRegistry::class);
 
         // Bind entity configurations
         $this->app->singleton(UsersDataTableConfig::class);

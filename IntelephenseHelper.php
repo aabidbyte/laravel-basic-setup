@@ -1575,8 +1575,6 @@ class Volt
     /**
      * Create a new Volt route.
      *
-     * @param  string  $uri
-     * @param  string  $view
      * @return \Illuminate\Routing\Route
      */
     public static function route(string $uri, string $view)
