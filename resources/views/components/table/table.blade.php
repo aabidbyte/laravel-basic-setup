@@ -51,6 +51,13 @@
                             </td>
                         @endif
                     @endforeach
+
+                    {{-- Actions Column --}}
+                    @if ($hasActionsPerRow() && $rowData['uuid'])
+                        <td wire:click.stop>
+                            <x-table.actions :actions="$actionsPerRow" :item-uuid="$rowData['uuid']"></x-table.actions>
+                        </td>
+                    @endif
                 </tr>
             @empty
                 <x-table.empty :columns-count="$getColumnsCount()" :message="$getEmptyMessage()" :icon="$getEmptyIcon()"></x-table.empty>

@@ -175,7 +175,8 @@ abstract class BaseDataTableComponent extends Component
             $config,
             $baseQuery,
             $transformer,
-            $httpRequest
+            $httpRequest,
+            $this->getDefinition()
         );
 
         // Build DataTable response using the builder
@@ -200,36 +201,6 @@ abstract class BaseDataTableComponent extends Component
     }
 
     /**
-     * Get DataTable statistics
-     */
-    #[Computed]
-    public function stats(): ?array
-    {
-        $config = $this->getConfig();
-
-        if (! $config->includeStats()) {
-            return null;
-        }
-
-        $baseQuery = $this->getBaseQuery();
-        $transformer = $this->getTransformer();
-
-        $httpRequest = $this->createRequestFromProperties();
-
-        $request = new DataTableRequest(
-            $config,
-            $baseQuery,
-            $transformer,
-            $httpRequest
-        );
-
-        $builder = app(DataTableBuilderInterface::class);
-        $response = $builder->build($request);
-
-        return $response->getStats();
-    }
-
-    /**
      * Get DataTable configuration for frontend
      */
     #[Computed]
@@ -250,7 +221,8 @@ abstract class BaseDataTableComponent extends Component
             $config,
             $baseQuery,
             $transformer,
-            $httpRequest
+            $httpRequest,
+            $this->getDefinition()
         );
 
         $builder = app(DataTableBuilderInterface::class);
@@ -536,7 +508,8 @@ abstract class BaseDataTableComponent extends Component
                 $config,
                 $baseQuery,
                 $transformer,
-                $httpRequest
+                $httpRequest,
+                $this->getDefinition()
             );
 
             $builder = app(DataTableBuilderInterface::class);

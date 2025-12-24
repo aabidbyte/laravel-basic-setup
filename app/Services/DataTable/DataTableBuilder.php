@@ -9,13 +9,12 @@ use App\Services\DataTable\Services\FilterService;
 use App\Services\DataTable\Services\SearchService;
 use App\Services\DataTable\Services\SessionService;
 use App\Services\DataTable\Services\SortService;
-use App\Services\DataTable\Services\StatsService;
 
 /**
  * Builder for DataTable responses
  *
  * Orchestrates the building of DataTable responses by applying
- * search, filters, sorting, and optionally calculating statistics.
+ * search, filters, and sorting.
  */
 class DataTableBuilder implements DataTableBuilderInterface
 {
@@ -23,7 +22,6 @@ class DataTableBuilder implements DataTableBuilderInterface
         private SearchService $searchService,
         private FilterService $filterService,
         private SortService $sortService,
-        private StatsService $statsService,
         private SessionService $sessionService
     ) {}
 
@@ -53,11 +51,6 @@ class DataTableBuilder implements DataTableBuilderInterface
         $this->buildDataResponse($response, $query, $request);
 
         // Conditional includes based on config
-        if ($config->includeStats()) {
-            $stats = $this->statsService->calculate($query, $request);
-            $response->setStats($stats);
-        }
-
         if ($config->includeConfig()) {
             $configResponse = $this->buildConfigResponse($config, $httpRequest);
             $response->setConfig($configResponse);

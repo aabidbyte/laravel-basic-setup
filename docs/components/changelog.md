@@ -2,6 +2,16 @@
 
 ### 2025-01-XX
 
+-   **Table Actions Component**: Fixed row actions dropdown not showing
+    -   **Bug Fix**: Added missing actions column rendering in table body rows
+    -   **Implementation**: Updated `<x-table.actions>` to render as dropdown menu with `ellipsis-vertical` icon
+    -   **Icon**: Uses `DataTableUi::ICON_THREE_DOTS` constant (`ellipsis-vertical`) for dropdown trigger
+    -   **Event Handling**: Added `wire:click.stop` to prevent row click events when interacting with actions
+    -   **Styling**: Delete actions styled with error color and trigger confirmation modals
+    -   **Documentation**: Updated documentation to reflect dropdown implementation details
+
+### 2025-01-XX
+
 -   **Table System**: Created comprehensive Blade-first data table system
     -   **New Components**: Created 9 table components (`<x-table>`, `<x-table.header>`, `<x-table.body>`, `<x-table.row>`, `<x-table.cell>`, `<x-table.actions>`, `<x-table.bulk>`, `<x-table.pagination>`, `<x-table.empty>`)
     -   **Architecture**: Strict separation of concerns - Livewire handles data/state, Blade handles rendering

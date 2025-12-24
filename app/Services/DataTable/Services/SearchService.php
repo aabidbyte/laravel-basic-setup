@@ -24,7 +24,18 @@ class SearchService
             return $query;
         }
 
-        $searchableFields = $request->getConfig()->getSearchableFields();
+        $searchableFields = [];
+
+        // First check if definition is available and has searchable fields
+        $definition = $request->getDefinition();
+        if ($definition !== null) {
+            $searchableFields = $definition->getSearchableFields();
+        }
+
+        // Fallback to config if definition is null or returns empty array
+        if (empty($searchableFields)) {
+            $searchableFields = $request->getConfig()->getSearchableFields();
+        }
 
         if (empty($searchableFields)) {
             return $query;

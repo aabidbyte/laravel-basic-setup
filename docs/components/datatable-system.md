@@ -6,7 +6,7 @@
 
 ### Description
 
-A comprehensive, service-based DataTable system that provides a reusable architecture for building data tables with advanced search, filtering, sorting, pagination, and statistics. The system follows a strict separation of concerns with a service layer handling all business logic and a base Livewire component providing the integration point.
+A comprehensive, service-based DataTable system that provides a reusable architecture for building data tables with advanced search, filtering, sorting, and pagination. The system follows a strict separation of concerns with a service layer handling all business logic and a base Livewire component providing the integration point.
 
 ### Architecture
 
@@ -17,7 +17,6 @@ The DataTable System consists of several layers:
    - `SearchService`: Applies global search using search macro
    - `FilterService`: Applies filters based on request parameters
    - `SortService`: Applies sorting to queries (supports relation fields)
-   - `StatsService`: Calculates statistics (optional)
    - `SessionService`: Manages session state for filters (uses DataTablePreferencesService)
    - `DataTablePreferencesService`: Manages DataTable preferences (filters, per_page, sort, search) with persistence
 
@@ -42,7 +41,6 @@ The DataTable System consists of several layers:
 - **Global Search**: Search across multiple fields using the search macro
 - **Advanced Filtering**: Support for select, multiselect, boolean, relationship, date range filters
 - **Smart Sorting**: Optimized sorting with support for relation fields
-- **Statistics**: Optional entity-specific statistics
 - **Preferences Persistence**: All preferences (filters, per_page, sort, search) persisted in session and user's `frontend_preferences` JSON column (for authenticated users)
 - **Bulk Actions**: Support for bulk operations
 - **URL Synchronization**: Search, filters, and sorting sync with URL via `#[Url]` attributes
@@ -294,9 +292,13 @@ public static function datatable(): DataTableDefinition
 #### Row Actions UX
 
 - **Always rendered as kebab dropdown**: Row actions are always shown in a 3-dots (kebab) dropdown menu in the actions column
+- **Icon**: Uses `ellipsis-vertical` icon (from `DataTableUi::ICON_THREE_DOTS` constant) as the dropdown trigger button
+- **Dropdown placement**: Actions dropdown is placed at the end (right side) of the table row
+- **Event handling**: Uses `wire:click.stop` to prevent row click events from firing when interacting with actions
 - **Modal support**: Actions can have `showModal()` configured to open a modal before execution
 - **Modal types**: `'blade'`, `'livewire'`, `'html'`, or `'confirm'` (uses confirm-modal component)
 - **Execute closures**: Typed closures receive the model instance and execute server-side
+- **Delete actions**: Delete actions are styled with error color and trigger confirmation modals
 
 #### Bulk Actions UX
 
@@ -348,12 +350,56 @@ Available filter types (via `DataTableFilterType` enum):
 - `DATE_RANGE` → `datatable.filters.date-range`
 - `RELATIONSHIP` → `datatable.filters.relationship`
 
+#### Header Column Structure
+
+The header column structure supports both DSL (from `HeaderItem`) and legacy formats. The `table.header` component automatically handles both:
+
+**DSL Structure** (from `HeaderItem::toArray()`):
+- `label`: Header label text
+- `sortable`: Boolean indicating if column is sortable
+- `sortKey`: Sort key (if different from column key)
+- `column`: Associated column data with `key` property
+- `showInViewPortsOnly`: Array of viewports where column is visible (hidden by default)
+
+**Legacy Structure**:
+- `key`: Column key for sorting
+- `label`: Header label text
+- `sortable`: Boolean indicating if column is sortable
+- `hidden`: Boolean to hide the header
+- `responsive`: Responsive breakpoint string (e.g., 'md')
+
+**Header Actions** (optional):
+- `headerActions`: Array of action configurations for buttons/components in header
+- `headerSlot`: Custom HTML content slot
+
+**Constants**: All header keys should use constants from `App\Constants\DataTable\DataTableUi`:
+- `DataTableUi::HEADER_KEY` - Column key
+- `DataTableUi::HEADER_LABEL` - Header label
+- `DataTableUi::HEADER_SORTABLE` - Sortable flag
+- `DataTableUi::HEADER_SORT_KEY` - Sort key (DSL)
+- `DataTableUi::HEADER_HIDDEN` - Hidden flag (legacy)
+- `DataTableUi::HEADER_RESPONSIVE` - Responsive breakpoint (legacy)
+- `DataTableUi::HEADER_COLUMN` - Column data (DSL)
+- `DataTableUi::HEADER_SHOW_IN_VIEWPORTS_ONLY` - Viewport visibility (DSL)
+- `DataTableUi::HEADER_ACTIONS` - Header actions array
+- `DataTableUi::HEADER_SLOT` - Custom header slot
+
+**Header Action Constants**:
+- `DataTableUi::HEADER_ACTION_COMPONENT` - Dynamic component name
+- `DataTableUi::HEADER_ACTION_BUTTON` - Button flag
+- `DataTableUi::HEADER_ACTION_WIRE_CLICK` - Livewire method to call
+- `DataTableUi::HEADER_ACTION_ICON` - Icon name
+- `DataTableUi::HEADER_ACTION_LABEL` - Button label
+- `DataTableUi::HEADER_ACTION_CLASS` - CSS classes
+- `DataTableUi::HEADER_ACTION_ATTRIBUTES` - Additional HTML attributes
+- `DataTableUi::HEADER_ACTION_SLOT` - Custom slot content
+
 #### Security Rules
 
 1. **Transformer-only values**: All cell values must come from the transformer array. No model access in Blade templates.
 2. **SafeHtml sanitization**: When using `DataTableColumnType::SAFE_HTML`, content is sanitized via `HtmlSanitizer` service before rendering.
 3. **Component allowlisting**: Only components registered in `DataTableComponentRegistry` or `DataTableFilterComponentRegistry` can be rendered.
-4. **No hardcoded strings**: Action keys, types, icons, and component names must use constants/enums from `DataTableUi`, `DataTableColumnType`, or `DataTableFilterType`.
+4. **No hardcoded strings**: Action keys, types, icons, component names, and header column keys must use constants/enums from `DataTableUi`, `DataTableColumnType`, or `DataTableFilterType`.
 
 #### Integration with BaseDataTableComponent
 
@@ -481,12 +527,27 @@ In the Table component, methods are called in `@php` blocks for performance:
         $rowData = $processRow($row, $loop->index);
     @endphp
     <tr {!! $rowData['rowClickAttr'] !!} {!! $rowData['rowClassAttr'] !!}>
+        {{-- Bulk Selection Checkbox --}}
+        @if ($isShowBulk() && $rowData['uuid'])
+            <td wire:click.stop>
+                <input type="checkbox" wire:model.live="selected" value="{{ $rowData['uuid'] }}" />
+            </td>
+        @endif
+
+        {{-- Data Columns --}}
         @foreach ($getColumns() as $column)
             @php
                 $columnData = $processColumn($column, $row);
             @endphp
             {{-- Use processed column data --}}
         @endforeach
+
+        {{-- Actions Column (automatically rendered if actionsPerRow is provided) --}}
+        @if ($hasActionsPerRow() && $rowData['uuid'])
+            <td wire:click.stop>
+                <x-table.actions :actions="$actionsPerRow" :item-uuid="$rowData['uuid']"></x-table.actions>
+            </td>
+        @endif
     </tr>
 @endforelse
 ```
@@ -565,6 +626,23 @@ The unified component supports multiple column types for automatic rendering:
 
 **Header Configuration**:
 
+The header structure supports both DSL (DataTableDefinition) and legacy formats:
+
+**DSL Format** (from `HeaderItem::toArray()`):
+```php
+[
+    'label' => 'Name',                  // Required: header label
+    'sortable' => true,                 // Optional: enable sorting
+    'sortKey' => 'name',                // Optional: sort key (if different from column key)
+    'column' => [                       // Optional: associated column data
+        'key' => 'name',                // Column key for sorting
+        // ... other column properties
+    ],
+    'showInViewPortsOnly' => ['sm', 'lg'], // Optional: show only on these viewports (hidden by default)
+]
+```
+
+**Legacy Format**:
 ```php
 [
     'key' => 'name',                    // Required: column key
@@ -574,6 +652,38 @@ The unified component supports multiple column types for automatic rendering:
     'responsive' => 'md',               // Optional: show only on 'md' and up
 ]
 ```
+
+**Header Actions** (optional):
+```php
+[
+    'headerActions' => [
+        [
+            'component' => 'ui.button',  // Optional: dynamic component name
+            'wireClick' => 'addNew()',   // Optional: Livewire method to call
+            'icon' => 'plus',            // Optional: icon name
+            'label' => 'Add',            // Optional: button label
+            'class' => 'btn btn-sm',     // Optional: CSS classes
+            'attributes' => [            // Optional: additional HTML attributes
+                'data-test' => 'add-btn',
+            ],
+            'slot' => '<span>Custom</span>', // Optional: custom slot content
+        ],
+    ],
+    'headerSlot' => '<button>Custom HTML</button>', // Optional: custom HTML content
+]
+```
+
+**Note**: All header keys should use constants from `App\Constants\DataTable\DataTableUi`:
+- `DataTableUi::HEADER_KEY` - Column key
+- `DataTableUi::HEADER_LABEL` - Header label
+- `DataTableUi::HEADER_SORTABLE` - Sortable flag
+- `DataTableUi::HEADER_SORT_KEY` - Sort key (DSL)
+- `DataTableUi::HEADER_HIDDEN` - Hidden flag (legacy)
+- `DataTableUi::HEADER_RESPONSIVE` - Responsive breakpoint (legacy)
+- `DataTableUi::HEADER_COLUMN` - Column data (DSL)
+- `DataTableUi::HEADER_SHOW_IN_VIEWPORTS_ONLY` - Viewport visibility (DSL)
+- `DataTableUi::HEADER_ACTIONS` - Header actions array
+- `DataTableUi::HEADER_SLOT` - Custom header slot
 
 **Features**:
 

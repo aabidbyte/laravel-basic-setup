@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Services\DataTable\Dsl\BulkActionItem;
+use App\Services\DataTable\Dsl\ColumnItem;
 use App\Services\DataTable\Dsl\DataTableDefinition;
 use App\Services\DataTable\Dsl\FilterItem;
 use App\Services\DataTable\Dsl\HeaderItem;
@@ -92,4 +93,73 @@ it('toArrayForView strips closures', function () {
 
     expect($action)->toHaveKey('hasExecute');
     expect($action)->not->toHaveKey('execute');
+});
+
+it('can get searchable fields from columns', function () {
+    $definition = DataTableDefinition::make()
+        ->headers(
+            HeaderItem::make()
+                ->label('Name')
+                ->column(ColumnItem::make()->name('name')->searchable()),
+            HeaderItem::make()
+                ->label('Email')
+                ->column(ColumnItem::make()->name('email')->searchable()),
+            HeaderItem::make()
+                ->label('Password')
+                ->column(ColumnItem::make()->name('password')->searchable(false))
+        );
+
+    $searchableFields = $definition->getSearchableFields();
+
+    expect($searchableFields)->toHaveCount(2);
+    expect($searchableFields)->toContain('name', 'email');
+    expect($searchableFields)->not->toContain('password');
+});
+
+it('returns empty array when no searchable columns exist', function () {
+    $definition = DataTableDefinition::make()
+        ->headers(
+            HeaderItem::make()
+                ->label('Name')
+                ->column(ColumnItem::make()->name('name')->searchable(false)),
+            HeaderItem::make()
+                ->label('Email')
+                ->column(ColumnItem::make()->name('email')->searchable(false))
+        );
+
+    $searchableFields = $definition->getSearchableFields();
+
+    expect($searchableFields)->toBeEmpty();
+});
+
+it('excludes headers without columns from searchable fields', function () {
+    $definition = DataTableDefinition::make()
+        ->headers(
+            HeaderItem::make()->label('Name'),
+            HeaderItem::make()
+                ->label('Email')
+                ->column(ColumnItem::make()->name('email')->searchable())
+        );
+
+    $searchableFields = $definition->getSearchableFields();
+
+    expect($searchableFields)->toHaveCount(1);
+    expect($searchableFields)->toContain('email');
+});
+
+it('excludes columns without names from searchable fields', function () {
+    $definition = DataTableDefinition::make()
+        ->headers(
+            HeaderItem::make()
+                ->label('Email')
+                ->column(ColumnItem::make()->searchable()),
+            HeaderItem::make()
+                ->label('Name')
+                ->column(ColumnItem::make()->name('name')->searchable())
+        );
+
+    $searchableFields = $definition->getSearchableFields();
+
+    expect($searchableFields)->toHaveCount(1);
+    expect($searchableFields)->toContain('name');
 });

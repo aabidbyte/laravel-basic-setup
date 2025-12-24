@@ -84,11 +84,6 @@ class UsersDataTableConfig implements DataTableConfigInterface
         ];
     }
 
-    public function includeStats(): bool
-    {
-        return true;
-    }
-
     public function includeConfig(): bool
     {
         return true;

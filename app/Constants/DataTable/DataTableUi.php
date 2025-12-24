@@ -120,4 +120,53 @@ class DataTableUi
     public const COLOR_WARNING = 'warning';
 
     public const COLOR_INFO = 'info';
+
+    // Header column keys
+    public const HEADER_KEY = 'key';
+
+    public const HEADER_LABEL = 'label';
+
+    public const HEADER_SORTABLE = 'sortable';
+
+    public const HEADER_SORT_KEY = 'sortKey';
+
+    public const HEADER_HIDDEN = 'hidden';
+
+    public const HEADER_RESPONSIVE = 'responsive';
+
+    public const HEADER_COLUMN = 'column';
+
+    public const HEADER_SHOW_IN_VIEWPORTS_ONLY = 'showInViewPortsOnly';
+
+    public const HEADER_ACTIONS = 'headerActions';
+
+    public const HEADER_SLOT = 'headerSlot';
+
+    // Header action keys
+    public const HEADER_ACTION_COMPONENT = 'component';
+
+    public const HEADER_ACTION_BUTTON = 'button';
+
+    public const HEADER_ACTION_WIRE_CLICK = 'wireClick';
+
+    public const HEADER_ACTION_ICON = 'icon';
+
+    public const HEADER_ACTION_LABEL = 'label';
+
+    public const HEADER_ACTION_CLASS = 'class';
+
+    public const HEADER_ACTION_ATTRIBUTES = 'attributes';
+
+    public const HEADER_ACTION_SLOT = 'slot';
+
+    // Processed header column keys (returned by processHeaderColumn)
+    public const PROCESSED_HEADER_HIDDEN = 'hidden';
+
+    public const PROCESSED_HEADER_RESPONSIVE = 'responsive';
+
+    public const PROCESSED_HEADER_TH_CLASS = 'thClass';
+
+    public const PROCESSED_HEADER_COLUMN_KEY = 'columnKey';
+
+    public const PROCESSED_HEADER_SORTABLE = 'sortable';
 }

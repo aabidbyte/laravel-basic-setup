@@ -155,22 +155,22 @@ class Table extends Component
      * Process a header column and return all header-related data
      *
      * @param  array<string, mixed>  $column
-     * @return array{hidden: bool, responsive: string|null, thClass: string, columnKey: string|null, sortable: bool}
+     * @return array<string, mixed>
      */
     public function processHeaderColumn(array $column): array
     {
-        $hidden = $column['hidden'] ?? false;
-        $responsive = $column['responsive'] ?? null;
+        $hidden = $column[DataTableUi::HEADER_HIDDEN] ?? false;
+        $responsive = $column[DataTableUi::HEADER_RESPONSIVE] ?? null;
         $thClass = $responsive ? 'hidden '.$responsive.':table-cell' : '';
-        $columnKey = $column['key'] ?? null;
-        $sortable = ($column['sortable'] ?? false) && $columnKey;
+        $columnKey = $column[DataTableUi::HEADER_KEY] ?? null;
+        $sortable = ($column[DataTableUi::HEADER_SORTABLE] ?? false) && $columnKey;
 
         return [
-            'hidden' => $hidden,
-            'responsive' => $responsive,
-            'thClass' => $thClass,
-            'columnKey' => $columnKey,
-            'sortable' => $sortable,
+            DataTableUi::PROCESSED_HEADER_HIDDEN => $hidden,
+            DataTableUi::PROCESSED_HEADER_RESPONSIVE => $responsive,
+            DataTableUi::PROCESSED_HEADER_TH_CLASS => $thClass,
+            DataTableUi::PROCESSED_HEADER_COLUMN_KEY => $columnKey,
+            DataTableUi::PROCESSED_HEADER_SORTABLE => $sortable,
         ];
     }
 

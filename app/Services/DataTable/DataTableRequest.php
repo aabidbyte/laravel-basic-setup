@@ -6,6 +6,7 @@ namespace App\Services\DataTable;
 
 use App\Services\DataTable\Contracts\DataTableConfigInterface;
 use App\Services\DataTable\Contracts\TransformerInterface;
+use App\Services\DataTable\Dsl\DataTableDefinition;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
@@ -20,7 +21,8 @@ class DataTableRequest
         private DataTableConfigInterface $config,
         private Builder $baseQuery,
         private TransformerInterface $transformer,
-        private Request $request
+        private Request $request,
+        private ?DataTableDefinition $definition = null
     ) {}
 
     public function getConfig(): DataTableConfigInterface
@@ -51,5 +53,10 @@ class DataTableRequest
     public function getViewName(): ?string
     {
         return $this->config->getViewName();
+    }
+
+    public function getDefinition(): ?DataTableDefinition
+    {
+        return $this->definition;
     }
 }

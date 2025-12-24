@@ -152,6 +152,36 @@ class DataTableDefinition
     }
 
     /**
+     * Get searchable fields from columns
+     *
+     * @return array<int, string>
+     */
+    public function getSearchableFields(): array
+    {
+        $searchableFields = [];
+
+        foreach ($this->getHeaders() as $header) {
+            $column = $header->getColumn();
+
+            if ($column === null) {
+                continue;
+            }
+
+            if (! $column->isSearchable()) {
+                continue;
+            }
+
+            $name = $column->getName();
+
+            if ($name !== null) {
+                $searchableFields[] = $name;
+            }
+        }
+
+        return $searchableFields;
+    }
+
+    /**
      * Convert to array for view rendering
      *
      * @return array{headers: array<int, array<string, mixed>>, rowActions: array<int, array<string, mixed>>, bulkActions: array<int, array<string, mixed>>, filters: array<int, array<string, mixed>>}

@@ -42,11 +42,6 @@ interface DataTableConfigInterface
     public function getDefaultSort(): ?array;
 
     /**
-     * Whether to include statistics in the response
-     */
-    public function includeStats(): bool;
-
-    /**
      * Whether to include configuration in the response
      */
     public function includeConfig(): bool;

@@ -25,6 +25,8 @@ class ColumnItem
 
     private array $showInViewPortsOnly = [];
 
+    private bool $searchable = false;
+
     /**
      * Create a new ColumnItem instance
      */
@@ -113,6 +115,32 @@ class ColumnItem
     }
 
     /**
+     * Mark the column as searchable
+     */
+    public function searchable(bool $searchable = true): self
+    {
+        $this->searchable = $searchable;
+
+        return $this;
+    }
+
+    /**
+     * Check if the column is searchable
+     */
+    public function isSearchable(): bool
+    {
+        return $this->searchable;
+    }
+
+    /**
+     * Get the column name
+     */
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    /**
      * Check if the column should be visible
      */
     public function isVisible(): bool
@@ -136,6 +164,7 @@ class ColumnItem
         $data = [
             'key' => $this->name,
             'showInViewPortsOnly' => $this->showInViewPortsOnly,
+            'searchable' => $this->searchable,
         ];
 
         if ($this->type !== null) {

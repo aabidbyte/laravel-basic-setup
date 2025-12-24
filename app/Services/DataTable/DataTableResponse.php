@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 /**
  * Data Transfer Object for DataTable responses
  *
- * Stores the data, meta, stats, config, and filter state for the DataTable.
+ * Stores the data, meta, config, and filter state for the DataTable.
  * For Livewire 4, this is used to structure the response data that will be
  * consumed by Livewire components.
  */
@@ -18,8 +18,6 @@ class DataTableResponse
     private array $data = [];
 
     private array $meta = [];
-
-    private ?array $stats = null;
 
     private ?array $config = null;
 
@@ -41,13 +39,6 @@ class DataTableResponse
     public function setMeta(array $meta): self
     {
         $this->meta = $meta;
-
-        return $this;
-    }
-
-    public function setStats(array $stats): self
-    {
-        $this->stats = $stats;
 
         return $this;
     }
@@ -99,10 +90,6 @@ class DataTableResponse
             'meta' => $this->meta,
         ];
 
-        if ($this->stats !== null) {
-            $data['stats'] = $this->stats;
-        }
-
         if ($this->config !== null) {
             $data['datatable_config'] = $this->config;
         }
@@ -145,16 +132,6 @@ class DataTableResponse
     public function getMeta(): array
     {
         return $this->meta;
-    }
-
-    /**
-     * Get stats array
-     *
-     * @return array<string, mixed>|null
-     */
-    public function getStats(): ?array
-    {
-        return $this->stats;
     }
 
     /**

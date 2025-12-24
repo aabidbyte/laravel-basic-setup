@@ -52,6 +52,9 @@ class SampleUserSeeder extends Seeder
         $this->createAdminForTeam($team2, 'admin.team2@example.com', 'Team 2 Admin 1', 1);
         $this->createAdminForTeam($team2, 'admin.team2.2@example.com', 'Team 2 Admin 2', 2);
 
+        // Create 30 additional regular users
+        $this->createAdditionalUsers(30);
+
         clearPermissionCache();
 
         $this->command->info('✅ Sample user seeding completed');
@@ -149,5 +152,47 @@ class SampleUserSeeder extends Seeder
         }
 
         $this->command->info("✅ Created admin: {$admin->email} (assigned to {$team->name})");
+    }
+
+    /**
+     * Create additional regular users for development.
+     *
+     * @param  int  $count  Number of users to create
+     */
+    private function createAdditionalUsers(int $count): void
+    {
+        $this->command->info("👥 Creating {$count} additional regular users...");
+
+        // Get all available teams
+        $teams = Team::all();
+        if ($teams->isEmpty()) {
+            throw new \Exception('No teams found. Run team seeders first.');
+        }
+
+        $teamCount = $teams->count();
+
+        for ($i = 1; $i <= $count; $i++) {
+            // Distribute users across teams in a round-robin fashion
+            $team = $teams->get(($i - 1) % $teamCount);
+
+            // Set team context for role assignment
+            setPermissionsTeamId($team->id);
+
+            // Create user using factory
+            $user = User::factory()->create([
+                'team_id' => $team->id,
+            ]);
+
+            // Assign a regular member role (not admin)
+            if (! $user->hasRole(Roles::MEMBER)) {
+                $user->assignRole(Roles::MEMBER);
+            }
+
+            if ($i % 10 === 0) {
+                $this->command->info("  ✓ Created {$i}/{$count} users...");
+            }
+        }
+
+        $this->command->info("✅ Created {$count} additional regular users");
     }
 }

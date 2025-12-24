@@ -87,6 +87,14 @@ Accepts all standard HTML attributes via `$attributes`.
 | `actions`  | `array` | `[]`    | Array of action configurations                 |
 | `itemUuid` | `string` | `''`   | UUID of the item for action callbacks          |
 
+**Implementation Details:**
+- Renders as a dropdown menu with an `ellipsis-vertical` icon trigger button
+- Uses `<x-ui.dropdown>` component with `placement="end"` and `menu` styling
+- All actions are rendered as menu items (`<li>` elements) within the dropdown
+- Delete actions are styled with `text-error` class and trigger confirmation modals
+- Uses `wire:click.stop` on action buttons to prevent row click events
+- Only renders if `count($actions) > 0`
+
 #### `<x-table.bulk>`
 
 | Prop          | Type   | Default | Description                          |
@@ -218,7 +226,7 @@ new class extends Component
 -   **Sortable Columns**: Click column headers to sort (toggles direction)
 -   **Search**: Global search with debounced input
 -   **Pagination**: Full pagination support with page numbers
--   **Row Actions**: Action buttons per row (view, edit, delete, etc.)
+-   **Row Actions**: Action buttons per row rendered as a dropdown menu with ellipsis-vertical icon (view, edit, delete, etc.)
 -   **Bulk Actions**: Select multiple rows and perform bulk operations
 -   **Row Click**: Optional row click behavior (navigate, view details, etc.)
 -   **Empty State**: Automatic empty state when no results

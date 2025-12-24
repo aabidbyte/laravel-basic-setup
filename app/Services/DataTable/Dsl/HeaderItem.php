@@ -69,6 +69,14 @@ class HeaderItem
     }
 
     /**
+     * Get the associated column item
+     */
+    public function getColumn(): ?ColumnItem
+    {
+        return $this->column;
+    }
+
+    /**
      * Set visibility condition
      */
     public function show(bool|\Closure $condition): self
