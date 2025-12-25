@@ -8,22 +8,22 @@ The DataTable component provides a powerful, flexible way to display tabular dat
 - ✅ Row and bulk actions with confirmation modals
 - ✅ Pagination with per-page selector
 - ✅ Automatic relationship joins
-- ✅ Alpine.js-driven UI state
+- ✅ Alpine.js-driven UI state (filters panel, modals, hover)
 - ✅ Livewire 4 features
-- ✅ Reactive selection management
+- ✅ Server-side selection management (optimized queries)
 
 ## Architecture
 
-The DataTable system uses a self-rendering component-based approach with Alpine.js for frontend reactivity:
+The DataTable system uses a self-rendering component-based approach with Alpine.js for UI-only state management:
 
 ```
-Livewire Component (extends DataTableComponent)
+Livewire Component (extends Datatable)
     ↓ (only contains configuration)
 Shared Template (resources/views/components/datatable.blade.php)
     ↓
 DataTableQueryBuilder (auto-joins, search, filter, sort)
     ↓
-Alpine.js Component (UI state management)
+Alpine.js Component (UI-only: filters panel, modals, hover)
 ```
 
 **Key Benefits:**
@@ -32,23 +32,28 @@ Alpine.js Component (UI state management)
 - ✅ **Maintainability**: Fix bugs in one place
 - ✅ **Consistency**: All datatables look and behave the same
 - ✅ **Reusability**: Easy to add new datatables
+- ✅ **Server-Side Selection**: All selection logic handled by Livewire for better performance
+
+**Note:** This component-based architecture replaced the previous trait-based approach (`WithDataTable` trait). All DataTable components now extend the `Datatable` base class, which provides all the functionality previously in the trait. Individual datatables only contain PHP configuration - no HTML is needed in component files.
 
 ## Quick Start
 
 ### 1. Create a DataTable Component
 
-**File:** `resources/views/components/users/table.blade.php`
+**File:** `app/Livewire/Tables/UserTable.php`
 
 ```php
 <?php
 
 declare(strict_types=1);
 
-use App\Livewire\DataTableComponent;
+namespace App\Livewire\Tables;
+
+use App\Livewire\Datatable;
 use App\Services\DataTable\Builders\{Column, Filter, Action, BulkAction};
 use Illuminate\Database\Eloquent\Builder;
 
-new class extends DataTableComponent
+class UserTable extends Datatable
 {
     protected function baseQuery(): Builder
     {
@@ -69,7 +74,7 @@ new class extends DataTableComponent
                 ->searchable(),
         ];
     }
-};
+}
 ```
 
 **That's it!** No HTML needed - the shared template handles all rendering.
@@ -81,7 +86,7 @@ new class extends DataTableComponent
 ```blade
 <x-layouts.app>
     <div class="container mx-auto px-4 py-8">
-        <livewire:users.table />
+        <livewire:tables.user-table />
     </div>
 </x-layouts.app>
 ```
@@ -92,22 +97,21 @@ new class extends DataTableComponent
 |--------|----------|---------|-------------|
 | `baseQuery()` | ✅ Yes | `Builder` | Base Eloquent query |
 | `columns()` | ✅ Yes | `array<Column>` | Column definitions |
-| `filters()` | ❌ No | `array<Filter>` | Filter definitions |
+| `getFilterDefinitions()` | ❌ No | `array<Filter>` | Filter definitions |
 | `rowActions()` | ❌ No | `array<Action>` | Row-level actions |
 | `bulkActions()` | ❌ No | `array<BulkAction>` | Bulk actions |
 
 ### 4. Available Properties
 
-The `DataTableComponent` base class provides these Livewire properties:
+The `Datatable` base class provides these Livewire properties:
 
 ```php
-#[Url] public string $search = '';              // Search term
-#[Url] public string $sortBy = '';              // Sort column
-#[Url] public string $sortDirection = 'asc';    // Sort direction
-#[Url] public int $perPage = 15;                // Items per page
+public string $search = '';              // Search term
+public string $sortBy = '';              // Sort column
+public string $sortDirection = 'asc';    // Sort direction
+public int $perPage = 15;                // Items per page
 public array $filters = [];                     // Filter values
-public array $selected = [];                    // Selected UUIDs
-public bool $selectPage = false;                // Page selection state
+public array $selected = [];                     // Selected UUIDs
 ```
 
 ## Column API
@@ -181,6 +185,38 @@ Column::make(__('Status'), 'is_active')
     ->html()
 ```
 
+### Component Rendering (Badges, Buttons, etc.)
+
+Render UI components (badges, buttons, etc.) directly in columns using the `content()` and `type()` methods:
+
+```php
+use App\Constants\DataTable\DataTableUi;
+
+Column::make(__('Roles'), 'roles_for_datatable')
+    ->content(fn (User $user) => $user->roles->pluck('name')->toArray())
+    ->type(DataTableUi::BADGE, ['variant' => 'primary', 'size' => 'sm']),
+
+Column::make(__('Teams'), 'teams_for_datatable')
+    ->content(fn (User $user) => $user->teams->pluck('name')->toArray())
+    ->type(DataTableUi::BADGE, ['variant' => 'secondary', 'size' => 'sm']),
+```
+
+**How it works:**
+- `content()` accepts a closure that receives the row and returns a string or array
+- `type()` specifies the component type (e.g., `DataTableUi::BADGE`) and optional attributes
+- Arrays are automatically rendered as multiple component instances
+- Components are rendered server-side with proper props and attributes
+
+**Available component types:**
+- `DataTableUi::BADGE` - Badge component
+- `'button'` - Button component (and other UI components)
+
+**Component attributes:**
+All attributes passed to `type()` are forwarded to the component as props. For badges:
+- `variant` - Color variant (`primary`, `secondary`, `success`, `error`, etc.)
+- `size` - Size (`xs`, `sm`, `md`, `lg`, `xl`)
+- `style` - Style (`outline`, `dash`, `soft`, `ghost`)
+
 ### Custom View
 
 ```php
@@ -236,10 +272,19 @@ Filter::make('is_active', __('Status'))
     ->type('select')
     ->placeholder(__('All Statuses'))
     ->options([
-        ['value' => '1', 'label' => __('Active')],
-        ['value' => '0', 'label' => __('Inactive')],
+        '1' => __('Active'),
+        '0' => __('Inactive'),
     ])
 ```
+
+**Important Notes:**
+- Options must be provided as an **associative array** where keys are values and values are labels (`[value => label]`). This format is unified across the project and matches the `x-ui.select` component's expected format.
+- **All filters automatically include an empty/null option as the first option** to allow users to clear the filter. The empty option uses the `placeholder` text as its label (or defaults to `__('ui.table.select_option')` if no placeholder is set).
+- When the empty option is selected, the filter value becomes empty/null and is automatically excluded from active filters.
+- The filter options are passed directly to the `x-ui.select` component via the `:options` prop.
+- Active filter labels are automatically resolved from the options array using the filter value as the key (`$options[$value] ?? $value`).
+- Active filter labels are automatically resolved from the options array using the filter value as the key (`$options[$value] ?? $value`).
+- The filter options are passed directly to the `x-ui.select` component via the `:options` prop.
 
 ### Value Mapping
 
@@ -261,12 +306,12 @@ Filter::make('is_active', __('Status'))
 ```php
 Filter::make('role', __('Role'))
     ->type('select')
+    ->placeholder(__('All Roles'))
     ->relationship('roles', 'name')
-    ->optionsCallback(fn() => Role::pluck('name', 'name')->map(fn($name, $key) => [
-        'value' => $key,
-        'label' => $name,
-    ])->values()->toArray())
+    ->optionsCallback(fn() => Role::pluck('name', 'name')->toArray())
 ```
+
+**Note:** The `optionsCallback` must return an associative array (`[value => label]`), not an array of arrays. Use `pluck('column', 'key')` directly to create the associative array. The format matches the static `options()` method.
 
 ### Field Mapping
 
@@ -325,7 +370,9 @@ Action::make('delete', __('Delete'))
 
 ### With Confirmation
 
-Simple confirmation message:
+Actions with confirmation automatically show a modal before execution. Three confirmation types are supported:
+
+**1. Simple confirmation message:**
 
 ```php
 Action::make('delete', __('Delete'))
@@ -334,7 +381,7 @@ Action::make('delete', __('Delete'))
     ->execute(fn($user) => $user->delete())
 ```
 
-Advanced confirmation with closure (returns config array):
+**2. Advanced confirmation with closure (returns config array):**
 
 ```php
 Action::make('delete', __('Delete'))
@@ -348,7 +395,7 @@ Action::make('delete', __('Delete'))
     ->execute(fn($user) => $user->delete())
 ```
 
-Custom confirmation view:
+**3. Custom confirmation view:**
 
 ```php
 Action::make('delete', __('Delete'))
@@ -356,6 +403,8 @@ Action::make('delete', __('Delete'))
     ->confirmView('modals.confirm-delete', ['message' => 'Custom message'])
     ->execute(fn($user) => $user->delete())
 ```
+
+**Note:** Confirmation modals work for both row actions and bulk actions. The modal is automatically displayed when an action with `confirm()` is triggered, and the action only executes after the user confirms.
 
 ### Conditional Visibility
 
@@ -389,7 +438,9 @@ BulkAction::make('activate', __('Activate Selected'))
 
 ### With Confirmation
 
-Simple confirmation:
+Bulk actions support the same confirmation options as row actions:
+
+**Simple confirmation:**
 
 ```php
 BulkAction::make('delete', __('Delete Selected'))
@@ -399,7 +450,7 @@ BulkAction::make('delete', __('Delete Selected'))
     ->execute(fn($users) => $users->each->delete())
 ```
 
-Advanced confirmation with closure:
+**Advanced confirmation with closure:**
 
 ```php
 BulkAction::make('delete', __('Delete Selected'))
@@ -411,6 +462,16 @@ BulkAction::make('delete', __('Delete Selected'))
         'confirmText' => __('Delete All'),
         'cancelText' => __('Cancel'),
     ])
+    ->execute(fn($users) => $users->each->delete())
+```
+
+**Custom confirmation view:**
+
+```php
+BulkAction::make('delete', __('Delete Selected'))
+    ->icon('trash')
+    ->color('error')
+    ->confirmView('modals.confirm-bulk-delete', ['count' => $users->count()])
     ->execute(fn($users) => $users->each->delete())
 ```
 
@@ -445,32 +506,35 @@ Search terms are automatically highlighted in searchable columns with a yellow b
 
 A dropdown selector is automatically included in the pagination area allowing users to choose:
 - 10, 15, 25, 50, or 100 items per page
-- Selection persists in URL parameters
+- Selection persists in component state
 - Automatically resets to page 1 when changed
+- Displays current results info (showing X to Y of Z results)
 
 ### Reactive Selection
 
-Selection state is fully reactive and automatically:
+Selection state is fully managed by Livewire and automatically:
 - Clears when searching, filtering, sorting, or changing pages
-- Updates the "select all" checkbox based on current page
-- Tracks only currently visible rows
-- Syncs between Alpine.js and Livewire
+- Updates the "select all" checkbox based on current page (`isAllSelected` computed property)
+- Tracks selected UUIDs across all pages
+- Provides computed properties: `selectedCount()`, `hasSelection()`, `isAllSelected()`
+- Optimized database queries by checking current page rows first before querying
 
 ## Alpine.js Integration
+
+The DataTable component uses Alpine.js for UI-only state management (filter panel, modals, row hover). All selection logic is handled by Livewire.
 
 ### Important Conventions
 
 Following `docs/alpinejs/livewire-integration.md`:
 
 ⚠️ **DO NOT pass `$wire` as a parameter** - It's reactive and automatically available
-✅ **Use `$wire.$entangle()` for bidirectional sync** - Initialize in `init()`
 ✅ **Validate `$wire` before calling methods** - Check existence and type
 
 ### Usage
 
 ```blade
 {{-- Correct: $wire is automatically available --}}
-<div x-data="dataTable(@js(['pageUuids' => $this->rows->pluck('uuid')->toArray()]))">
+<div x-data="dataTable()">
     {{-- Your table HTML --}}
 </div>
 ```
@@ -479,50 +543,42 @@ Following `docs/alpinejs/livewire-integration.md`:
 
 ```javascript
 {
-    selected: [],        // Array of selected UUIDs (entangled with Livewire)
-    selectPage: false,   // Boolean for current page selection
     openFilters: false,  // Boolean for filter panel visibility
     activeModal: null,   // String for active modal name
     hoveredRow: null,    // String for hovered row UUID
+    pendingAction: null,  // Stores action waiting for confirmation
+    confirmationConfig: null, // Stores confirmation modal config
 }
 ```
+
+**Note:** Selection state (`selected`, `selectedCount`, `hasSelection`, `isAllSelected`) is managed entirely by Livewire and accessed via `$wire` in Alpine.
 
 ### Available Methods
 
 ```javascript
 {
-    toggleSelectPage()      // Toggle selection of all rows on current page
-    isSelected(uuid)        // Check if a row is selected
-    toggleRow(uuid)         // Toggle selection of a single row
-    clearSelection()        // Clear all selections
     toggleFilters()         // Toggle filter panel
     closeFilters()          // Close filter panel
-    openModal(name)         // Open a modal
+    openModal()             // Open confirmation modal
     closeModal()            // Close active modal
-    handleRowClick(uuid)    // Handle row click (calls $wire.rowClicked)
+    executeActionWithConfirmation(actionKey, uuid, isBulk)  // Execute action with confirmation
+    confirmAction()         // Confirm and execute pending action
+    cancelAction()          // Cancel pending action
     setHoveredRow(uuid)     // Set hovered row
-    isRowHovered(uuid)      // Check if a row is hovered
-}
-```
-
-### Computed Properties
-
-```javascript
-{
-    get selectedCount()  // Number of selected rows
-    get hasSelection()   // Boolean - any rows selected
 }
 ```
 
 ### Example HTML
 
 ```blade
-<div x-data="dataTable(@js(['pageUuids' => $this->rows->pluck('uuid')->toArray()]))">
-    {{-- Bulk actions bar (Alpine controls visibility) --}}
-    <div x-show="hasSelection" class="mb-4">
-        <span x-text="`${selectedCount} selected`"></span>
-        <button @click="clearSelection()">Clear</button>
-    </div>
+<div x-data="dataTable()">
+    {{-- Bulk actions bar (Livewire controls visibility) --}}
+    @if ($this->hasSelection)
+        <div class="mb-4">
+            <span>{{ $this->selectedCount }} selected</span>
+            <button wire:click="clearSelection()">Clear</button>
+        </div>
+    @endif
 
     {{-- Table --}}
     <table class="table">
@@ -531,8 +587,8 @@ Following `docs/alpinejs/livewire-integration.md`:
                 <th>
                     <input 
                         type="checkbox" 
-                        @click="toggleSelectPage()" 
-                        :checked="selectPage"
+                        wire:click="toggleSelectAll()"
+                        @if ($this->isAllSelected) checked @endif
                         class="checkbox"
                     >
                 </th>
@@ -543,15 +599,15 @@ Following `docs/alpinejs/livewire-integration.md`:
             @foreach($this->rows as $row)
                 <tr 
                     wire:key="row-{{ $row->uuid }}"
-                    @click="handleRowClick('{{ $row->uuid }}')"
-                    :class="{ 'bg-base-200': isSelected('{{ $row->uuid }}') }"
+                    wire:click="rowClicked('{{ $row->uuid }}')"
+                    @class(['bg-base-200' => $this->isSelected($row->uuid)])
                     class="cursor-pointer hover:bg-base-200"
                 >
                     <td @click.stop>
                         <input 
                             type="checkbox" 
-                            :checked="isSelected('{{ $row->uuid }}')" 
-                            @click="toggleRow('{{ $row->uuid }}')"
+                            wire:click.stop="toggleRow('{{ $row->uuid }}')"
+                            @if ($this->isSelected($row->uuid)) checked @endif
                             class="checkbox"
                         >
                     </td>
@@ -607,25 +663,70 @@ Handle row clicks in the component:
 ```php
 public function rowClicked(string $uuid): void
 {
-    $user = User::where('uuid', $uuid)->first();
+    $user = $this->findModelByUuid($uuid); // Optimized: checks current page first
     if ($user !== null) {
         $this->redirect(route('users.show', $user));
     }
 }
 ```
 
-### URL State Persistence
+**Note:** The `findModelByUuid()` method is available in the base `Datatable` class and automatically checks the current page rows before querying the database, minimizing queries.
 
-Search, sort, filters, and pagination are automatically synced with URL query parameters using Livewire's `#[Url]` attribute:
+### State Management
 
+Search, sort, filters, and pagination state is maintained in Livewire component state (not in URL query strings):
+
+- ✅ **Clean URLs** - Browser URL stays clean (e.g., `/users`) without query strings
+- ✅ **State Persistence** - All state maintained server-side during component lifecycle
+- ✅ **Share Functionality** - Use the share button to generate URLs with query strings for sharing
+- ✅ **Better Performance** - No URL manipulation overhead
+
+**Share URLs** are generated using `getShareUrl()` method:
 ```
-/users?search=john&sort=name&direction=asc&per_page=25
+/users?search=john&sort=name&direction=asc&per_page=25&filters[role]=admin&page=2
 ```
 
 This allows users to:
-- Bookmark filtered views
-- Share filtered URLs
-- Use browser back/forward buttons
+- Share filtered/sorted views via share button
+- Copy URLs with all current state
+- Restore exact view when visiting shared URL
+
+### Preferences Integration
+
+The DataTable component automatically integrates with the FrontendPreferences system to persist user preferences for each datatable entity. Preferences are stored per datatable (identified by the component's full class name) and include:
+
+- **Sorting** (`sortBy`, `sortDirection`) - Remembers the last sort column and direction
+- **Per Page** (`perPage`) - Remembers the selected items per page
+- **Filters** (`filters`) - Remembers all active filter values
+
+**Note:** Search term is intentionally NOT stored as a preference to allow fresh searches on each visit.
+
+**How it works:**
+1. When a datatable component mounts, it automatically loads saved preferences from the FrontendPreferences system
+2. When users change sorting, per page, or filters, preferences are automatically saved
+3. Preferences are stored in the user's database (for authenticated users) or session (for guests)
+4. Each datatable maintains separate preferences (e.g., `UserTable` and `ProductTable` have independent preferences)
+
+**Storage Structure:**
+```php
+[
+    'datatables' => [
+        'App\Livewire\Tables\UserTable' => [
+            'sortBy' => 'name',
+            'sortDirection' => 'asc',
+            'perPage' => 25,
+            'filters' => ['role' => 'admin', 'is_active' => true],
+        ],
+        // ... other datatables
+    ],
+]
+```
+
+**Automatic Behavior:**
+- Preferences load automatically on component mount
+- Preferences save automatically when state changes (sort, filters, per page)
+- No additional configuration needed - works out of the box for all datatables
+- Backward compatible - existing datatables continue to work without changes
 
 ## Testing
 
@@ -649,21 +750,21 @@ test('sort toggles direction', function () {
     $component = Livewire::actingAs($this->user)
         ->test('users.table');
 
-    $component->call('sortBy', 'name')
+    $component->call('sort', 'name')
         ->assertSet('sortBy', 'name')
         ->assertSet('sortDirection', 'asc');
 
-    $component->call('sortBy', 'name')
+    $component->call('sort', 'name')
         ->assertSet('sortDirection', 'desc');
 });
 
-test('bulk select page', function () {
+test('bulk select all', function () {
     User::factory()->count(5)->create();
 
     Livewire::actingAs($this->user)
         ->test('users.table')
-        ->call('toggleSelectPage')
-        ->assertSet('selectPage', true);
+        ->call('toggleSelectAll')
+        ->assertTrue($this->isAllSelected);
 });
 ```
 
@@ -726,6 +827,13 @@ protected function baseQuery(): Builder
 }
 ```
 
+**Query Optimization:**
+The `Datatable` base class includes optimized methods that check the current page rows before querying the database:
+- `findModelByUuid(string $uuid)` - Checks `$this->rows` first, then queries if not found
+- `findModelsByUuids(array $uuids)` - Checks current page for each UUID, only queries missing ones
+
+This dramatically reduces database queries when interacting with items visible on the current page.
+
 ## Troubleshooting
 
 ### Routes Not Defined
@@ -760,9 +868,47 @@ Run specific DataTable tests:
 php artisan test --filter=UsersTable
 ```
 
+## Translation Keys
+
+The following translation keys are used by the DataTable component. Add them to your language files:
+
+```php
+// lang/en_US/ui.php
+'actions' => [
+    'clear_all' => 'Clear All',
+    'confirm_action' => 'Are you sure you want to perform this action?',
+],
+
+'table' => [
+    'active_filters' => 'Active filters',
+    'per_page' => 'Per page',
+    'showing_results' => 'Showing :from to :to of :total results',
+],
+```
+
+## History
+
+### Component-Based Architecture (2025-01-XX)
+
+The DataTable system was refactored from a service-based architecture to a Livewire component-based system:
+
+- **Removed**: Old service layer (`DataTableBuilder`, `DataTablePreferencesService`, `SearchService`, `FilterService`, `SortService`, `SessionService`, `DataTableServiceProvider`)
+- **Removed**: Old configuration system (`DataTableConfigInterface`, `UsersDataTableConfig`, `TransformerInterface`)
+- **New Architecture**: Livewire component-based system (`App\Livewire\Datatable`) with direct state management
+- **State Management**: All state (search, sort, filters, pagination) managed directly in Livewire component properties
+- **Query Building**: Uses `DataTableQueryBuilder` for automatic relationship joins, search, filtering, and sorting
+
+### Component Class Architecture (2025-01-XX)
+
+All PHP logic was moved directly into component classes (`Datatable` and `Table`):
+
+- **Component Classes**: `App\View\Components\Datatable` and `App\View\Components\Table` - All logic in component classes
+- **On-demand processing**: Rows/columns processed only when iterating (no pre-processing)
+- **Performance**: No unnecessary pre-processing, better performance
+- **Removed**: `DataTableViewData` service class - all logic moved to component classes
+
 ## See Also
 
-- [Migration Guide](../datatable-migration-guide.md) - Migrating from legacy system
 - [Alpine.js Documentation](../alpinejs/index.md) - Alpine.js conventions
 - [Livewire 4 Documentation](../livewire-4/index.md) - Livewire 4 features
 

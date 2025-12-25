@@ -39,9 +39,9 @@ class Filter
     private string $type = 'select';
 
     /**
-     * Static options array
+     * Static options array (associative array: value => label)
      *
-     * @var array<int, array{value: string, label: string}>|null
+     * @var array<string, string>|null
      */
     private ?array $options = null;
 
@@ -123,7 +123,7 @@ class Filter
     /**
      * Set static options
      *
-     * @param  array<int, array{value: string, label: string}>  $options  Options array
+     * @param  array<string, string>  $options  Options array (value => label)
      * @return $this
      */
     public function options(array $options): self
@@ -136,7 +136,7 @@ class Filter
     /**
      * Set options callback (for dynamic options)
      *
-     * @param  Closure  $callback  Returns array of options
+     * @param  Closure  $callback  Returns associative array of options (value => label)
      * @return $this
      */
     public function optionsCallback(Closure $callback): self
@@ -250,19 +250,20 @@ class Filter
     /**
      * Get the options
      *
-     * @return array<int, array{value: string, label: string}>
+     * @return array<string, string> Associative array (value => label)
      */
     public function getOptions(): array
     {
+        $options = [];
+
         if ($this->options !== null) {
-            return $this->options;
+            $options = $this->options;
+        } elseif ($this->optionsCallback !== null) {
+            $options = ($this->optionsCallback)();
         }
 
-        if ($this->optionsCallback !== null) {
-            return ($this->optionsCallback)();
-        }
-
-        return [];
+        // Always prepend an empty option as the first option using centralized helper
+        return prepend_empty_option($options, $this->placeholder);
     }
 
     /**

@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
+use App\Constants\DataTable\DataTable as DataTableConstants;
 use App\Services\DataTable\Builders\Action;
 use App\Services\DataTable\Builders\BulkAction;
 use App\Services\DataTable\Builders\Column;
 use App\Services\DataTable\Builders\Filter;
 use App\Services\DataTable\DataTableQueryBuilder;
+use App\Services\FrontendPreferences\FrontendPreferencesService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -29,25 +30,21 @@ abstract class Datatable extends Component
     /**
      * Search term
      */
-    #[Url(as: 'search', history: true, keep: false)]
     public string $search = '';
 
     /**
      * Sort column
      */
-    #[Url(as: 'sort', history: true, keep: false)]
     public string $sortBy = '';
 
     /**
      * Sort direction
      */
-    #[Url(as: 'direction', history: true, keep: false)]
     public string $sortDirection = 'asc';
 
     /**
      * Items per page
      */
-    #[Url(as: 'per_page', history: true, keep: false)]
     public int $perPage = 15;
 
     /**
@@ -65,14 +62,188 @@ abstract class Datatable extends Component
     public array $selected = [];
 
     /**
-     * Whether current page is selected
+     * Track which parameters were loaded from query string
+     *
+     * @var array<string, bool>
      */
-    public bool $selectPage = false;
+    protected array $queryStringLoaded = [];
+
+    /**
+     * Get current page UUIDs
+     *
+     * @return array<int, string>
+     */
+    #[Computed]
+    public function currentPageUuids(): array
+    {
+        return $this->rows->pluck('uuid')->filter()->toArray();
+    }
 
     /**
      * Get the base query
      */
     abstract protected function baseQuery(): Builder;
+
+    /**
+     * Get the datatable identifier (full class name).
+     */
+    protected function getDatatableIdentifier(): string
+    {
+        return static::class;
+    }
+
+    /**
+     * Load query string parameters from request.
+     * Query string parameters take precedence over saved preferences.
+     */
+    protected function loadQueryStringParameters(): void
+    {
+        $request = request();
+
+        // Get the original request URL (check referer for Livewire update requests)
+        $referer = $request->header('Referer');
+        $currentUrl = $request->fullUrl();
+
+        // Parse query parameters - prioritize referer for Livewire update requests
+        $queryParams = [];
+
+        // If this is a Livewire update request, get query string from referer
+        if ($referer && preg_match('#/livewire-[^/]+/update#', $currentUrl)) {
+            $parsedReferer = parse_url($referer);
+            if (isset($parsedReferer['query'])) {
+                parse_str($parsedReferer['query'], $queryParams);
+            }
+        } else {
+            // For regular requests, use current request query parameters
+            $queryParams = $request->query();
+        }
+
+        // Load search term
+        if (isset($queryParams[DataTableConstants::QUERY_PARAM_SEARCH]) && $queryParams[DataTableConstants::QUERY_PARAM_SEARCH] !== null && $queryParams[DataTableConstants::QUERY_PARAM_SEARCH] !== '') {
+            $this->search = (string) $queryParams[DataTableConstants::QUERY_PARAM_SEARCH];
+            $this->queryStringLoaded[DataTableConstants::QUERY_PARAM_SEARCH] = true;
+        }
+
+        // Load sort column
+        if (isset($queryParams[DataTableConstants::QUERY_PARAM_SORT]) && $queryParams[DataTableConstants::QUERY_PARAM_SORT] !== null && $queryParams[DataTableConstants::QUERY_PARAM_SORT] !== '') {
+            $this->sortBy = (string) $queryParams[DataTableConstants::QUERY_PARAM_SORT];
+            $this->queryStringLoaded[DataTableConstants::QUERY_PARAM_SORT] = true;
+        }
+
+        // Load sort direction
+        if (isset($queryParams[DataTableConstants::QUERY_PARAM_DIRECTION]) && $queryParams[DataTableConstants::QUERY_PARAM_DIRECTION] !== null) {
+            $direction = (string) $queryParams[DataTableConstants::QUERY_PARAM_DIRECTION];
+            if (in_array($direction, ['asc', 'desc'], true)) {
+                $this->sortDirection = $direction;
+                $this->queryStringLoaded[DataTableConstants::QUERY_PARAM_DIRECTION] = true;
+            }
+        }
+
+        // Load per page
+        if (isset($queryParams[DataTableConstants::QUERY_PARAM_PER_PAGE]) && $queryParams[DataTableConstants::QUERY_PARAM_PER_PAGE] !== null) {
+            $perPage = (int) $queryParams[DataTableConstants::QUERY_PARAM_PER_PAGE];
+            if ($perPage > 0) {
+                $this->perPage = $perPage;
+                $this->queryStringLoaded[DataTableConstants::QUERY_PARAM_PER_PAGE] = true;
+            }
+        }
+
+        // Load page number
+        if (isset($queryParams[DataTableConstants::QUERY_PARAM_PAGE]) && $queryParams[DataTableConstants::QUERY_PARAM_PAGE] !== null) {
+            $page = (int) $queryParams[DataTableConstants::QUERY_PARAM_PAGE];
+            if ($page > 0) {
+                $this->setPage($page);
+                $this->queryStringLoaded[DataTableConstants::QUERY_PARAM_PAGE] = true;
+            }
+        }
+
+        // Load filters (handles filters[key]=value format)
+        // parse_str() converts filters[role]=value into nested array: ["filters" => ["role" => "value"]]
+        $filters = [];
+
+        // Check if filters exist as a nested array (from parse_str)
+        if (isset($queryParams[DataTableConstants::QUERY_PARAM_FILTERS]) && is_array($queryParams[DataTableConstants::QUERY_PARAM_FILTERS])) {
+            $filters = $queryParams[DataTableConstants::QUERY_PARAM_FILTERS];
+        } else {
+            // Fallback: check for filters[key] format in flat array
+            $filtersPrefix = DataTableConstants::QUERY_PARAM_FILTERS.'[';
+            foreach ($queryParams as $key => $value) {
+                if (str_starts_with($key, $filtersPrefix) && str_ends_with($key, ']')) {
+                    // Extract filter key from filters[key] format
+                    $filterKey = substr($key, strlen($filtersPrefix), -1); // Remove "filters[" and "]"
+                    if ($value !== null && $value !== '') {
+                        $filters[$filterKey] = $value;
+                    }
+                }
+            }
+        }
+
+        // Filter out empty values and apply
+        $filters = array_filter($filters, fn ($value) => $value !== null && $value !== '');
+
+        if (! empty($filters)) {
+            $this->filters = $filters;
+            $this->queryStringLoaded[DataTableConstants::QUERY_PARAM_FILTERS] = true;
+        }
+    }
+
+    /**
+     * Load preferences from FrontendPreferencesService.
+     * Only loads preferences if not already set by query string parameters.
+     */
+    protected function loadPreferences(): void
+    {
+        $preferencesService = app(FrontendPreferencesService::class);
+        $identifier = $this->getDatatableIdentifier();
+        $request = request();
+
+        // Load preferences only if not set by query string
+        if (! ($this->queryStringLoaded[DataTableConstants::QUERY_PARAM_SORT] ?? false)) {
+            $sortBy = $preferencesService->getDatatablePreference($identifier, 'sortBy', '', $request);
+            if (! empty($sortBy)) {
+                $this->sortBy = $sortBy;
+            }
+        }
+
+        if (! ($this->queryStringLoaded[DataTableConstants::QUERY_PARAM_DIRECTION] ?? false)) {
+            $sortDirection = $preferencesService->getDatatablePreference($identifier, 'sortDirection', 'asc', $request);
+            if (! empty($sortDirection) && in_array($sortDirection, ['asc', 'desc'], true)) {
+                $this->sortDirection = $sortDirection;
+            }
+        }
+
+        if (! ($this->queryStringLoaded[DataTableConstants::QUERY_PARAM_PER_PAGE] ?? false)) {
+            $perPage = $preferencesService->getDatatablePreference($identifier, 'perPage', 15, $request);
+            if ($perPage > 0) {
+                $this->perPage = $perPage;
+            }
+        }
+
+        if (! ($this->queryStringLoaded[DataTableConstants::QUERY_PARAM_FILTERS] ?? false)) {
+            $filters = $preferencesService->getDatatablePreference($identifier, 'filters', [], $request);
+            if (is_array($filters) && ! empty($filters)) {
+                $this->filters = $filters;
+            }
+        }
+    }
+
+    /**
+     * Save current state to FrontendPreferencesService (excludes search term).
+     */
+    protected function savePreferences(): void
+    {
+        $preferencesService = app(FrontendPreferencesService::class);
+        $identifier = $this->getDatatableIdentifier();
+
+        $preferences = [
+            'sortBy' => $this->sortBy,
+            'sortDirection' => $this->sortDirection,
+            'perPage' => $this->perPage,
+            'filters' => $this->filters,
+        ];
+
+        $preferencesService->setDatatablePreferences($identifier, $preferences);
+    }
 
     /**
      * Get column definitions
@@ -86,7 +257,7 @@ abstract class Datatable extends Component
      *
      * @return array<int, Filter>
      */
-    protected function filters(): array
+    protected function getFilterDefinitions(): array
     {
         return [];
     }
@@ -112,6 +283,40 @@ abstract class Datatable extends Component
     }
 
     /**
+     * Mount the component and load query string parameters and preferences.
+     * Query string parameters take precedence over saved preferences.
+     * If query string parameters are present, they are saved as new preferences.
+     * Child classes that override mount() should call parent::mount() first.
+     */
+    public function mount(): void
+    {
+        // Load query string parameters first (they take precedence)
+        $this->loadQueryStringParameters();
+
+        // If any query string parameters were loaded, save them as preferences
+        if (! empty($this->queryStringLoaded)) {
+            $this->savePreferences();
+            // Clean URL after processing query parameters
+            $this->cleanUrlQueryParameters();
+        } else {
+            // Only load saved preferences if no query string parameters were provided
+            $this->loadPreferences();
+        }
+    }
+
+    /**
+     * Clean URL query parameters after they are processed.
+     * This removes query parameters from the browser URL for a cleaner appearance.
+     */
+    protected function cleanUrlQueryParameters(): void
+    {
+        if (! empty($this->queryStringLoaded)) {
+            // Dispatch event to clean URL on the frontend
+            $this->dispatch('datatable-clean-url');
+        }
+    }
+
+    /**
      * Handle row click (optional)
      *
      * @param  string  $uuid  Row UUID
@@ -132,13 +337,87 @@ abstract class Datatable extends Component
         return $queryBuilder->build(
             query: $this->baseQuery(),
             columns: $this->columns(),
-            filters: $this->filters(),
+            filters: $this->getFilterDefinitions(),
             filterValues: $this->filters,
             search: $this->search,
             sortBy: $this->sortBy,
             sortDirection: $this->sortDirection,
             perPage: $this->perPage
         );
+    }
+
+    /**
+     * Get share URL with all current query parameters
+     *
+     * @param  int|null  $page  Optional page number (if not provided, uses current page from paginator)
+     */
+    public function getShareUrl(?int $page = null): string
+    {
+        // Get the actual page URL (not Livewire update URL)
+        // Try to get the referer first (original page URL), otherwise fall back to current URL
+        $referer = request()->header('Referer');
+        $currentUrl = url()->current();
+
+        // If current URL is a Livewire update URL, use referer instead
+        // Livewire update URLs look like: /livewire-{hash}/update
+        if (preg_match('#/livewire-[^/]+/update#', $currentUrl)) {
+            if ($referer) {
+                // Extract just the path from referer (without query params, we'll add our own)
+                $parsedReferer = parse_url($referer);
+                $url = ($parsedReferer['scheme'] ?? 'http').'://'
+                    .($parsedReferer['host'] ?? '')
+                    .($parsedReferer['path'] ?? '/');
+            } else {
+                // Fallback: use current URL but JavaScript will fix it
+                $url = $currentUrl;
+            }
+        } else {
+            // Not a Livewire update URL, use current URL
+            $url = $currentUrl;
+        }
+
+        // Build query parameters from all Livewire URL properties
+        $queryParams = [];
+
+        // Add search if not empty
+        if (! empty($this->search)) {
+            $queryParams[DataTableConstants::QUERY_PARAM_SEARCH] = $this->search;
+        }
+
+        // Add sort if not empty
+        if (! empty($this->sortBy)) {
+            $queryParams[DataTableConstants::QUERY_PARAM_SORT] = $this->sortBy;
+        }
+
+        // Add sort direction if not default
+        if ($this->sortDirection !== 'asc') {
+            $queryParams[DataTableConstants::QUERY_PARAM_DIRECTION] = $this->sortDirection;
+        }
+
+        // Add per page if not default
+        if ($this->perPage !== 15) {
+            $queryParams[DataTableConstants::QUERY_PARAM_PER_PAGE] = $this->perPage;
+        }
+
+        // Add filters
+        foreach ($this->filters as $key => $value) {
+            if ($value !== null && $value !== '') {
+                $queryParams[DataTableConstants::QUERY_PARAM_FILTERS."[{$key}]"] = $value;
+            }
+        }
+
+        // Add page number if not first page
+        // Use provided page, or paginator's current page, or getPage() as fallback
+        $currentPage = $page ?? ($this->rows->currentPage() ?? $this->getPage());
+        if ($currentPage > 1) {
+            $queryParams[DataTableConstants::QUERY_PARAM_PAGE] = $currentPage;
+        }
+
+        // Build query string from parameters
+        $queryString = ! empty($queryParams) ? '?'.http_build_query($queryParams) : '';
+
+        // Return URL with query string
+        return $url.$queryString;
     }
 
     /**
@@ -162,7 +441,7 @@ abstract class Datatable extends Component
      */
     public function getFilters(): array
     {
-        return collect($this->filters())
+        return collect($this->getFilterDefinitions())
             ->filter(fn (Filter $filter) => $filter->isVisible())
             ->map(fn (Filter $filter) => $filter->toArray())
             ->values()
@@ -215,7 +494,7 @@ abstract class Datatable extends Component
      */
     public function getActiveFilters(): array
     {
-        $filterDefinitions = collect($this->filters());
+        $filterDefinitions = collect($this->getFilterDefinitions());
 
         return collect($this->filters)
             ->filter(fn ($value) => $value !== null && $value !== '')
@@ -229,8 +508,8 @@ abstract class Datatable extends Component
                 // Get the label for the value
                 $valueLabel = $value;
                 if ($filter->getType() === 'select') {
-                    $option = collect($filter->getOptions())->first(fn ($opt) => $opt['value'] === $value);
-                    $valueLabel = $option['label'] ?? $value;
+                    $options = $filter->getOptions();
+                    $valueLabel = $options[$value] ?? $value;
                 }
 
                 return [
@@ -253,12 +532,19 @@ abstract class Datatable extends Component
      */
     public function renderColumn(array $columnData, mixed $row): string
     {
+
         // Find the Column instance
         $column = collect($this->columns())
             ->first(fn (Column $col) => $col->getField() === $columnData['field']);
 
         if ($column === null) {
             return '';
+        }
+
+        // Check for content callback with component type - use resolve method
+        if ($column->getContentCallback() !== null && $column->getComponentType() !== null) {
+
+            return $column->resolve($row);
         }
 
         // Check for label callback (non-DB column)
@@ -326,7 +612,7 @@ abstract class Datatable extends Component
      *
      * @param  string  $field  Field name
      */
-    public function sortBy(string $field): void
+    public function sort(string $field): void
     {
         if ($this->sortBy === $field) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
@@ -336,6 +622,7 @@ abstract class Datatable extends Component
         }
 
         $this->resetPage();
+        $this->savePreferences();
     }
 
     /**
@@ -345,6 +632,7 @@ abstract class Datatable extends Component
     {
         $this->filters = [];
         $this->resetPage();
+        $this->savePreferences();
     }
 
     /**
@@ -356,32 +644,149 @@ abstract class Datatable extends Component
     {
         unset($this->filters[$key]);
         $this->resetPage();
+        $this->savePreferences();
     }
 
     /**
      * Toggle select all rows on current page
      */
-    public function toggleSelectPage(): void
+    public function toggleSelectAll(): void
     {
-        $this->selectPage = ! $this->selectPage;
+        $currentPageUuids = $this->currentPageUuids;
 
-        if ($this->selectPage) {
-            // Select all UUIDs on current page
-            $currentPageUuids = $this->rows->pluck('uuid')->filter()->toArray();
-            $this->selected = array_values(array_unique(array_merge($this->selected, $currentPageUuids)));
-        } else {
+        if ($this->isAllSelected()) {
             // Deselect current page UUIDs
-            $currentPageUuids = $this->rows->pluck('uuid')->filter()->toArray();
-            $this->selected = array_values(array_diff($this->selected, $currentPageUuids));
+            $this->selected = $this->normalizeArray(array_diff($this->selected, $currentPageUuids));
+        } else {
+            // Select all UUIDs on current page
+            $this->selected = $this->normalizeArray(array_unique(array_merge($this->selected, $currentPageUuids)));
         }
     }
 
     /**
-     * Toggle select all rows (alias for backward compatibility)
+     * Check if a row is selected
+     *
+     * @param  string  $uuid  Row UUID
      */
-    public function toggleSelectAll(): void
+    public function isSelected(string $uuid): bool
     {
-        $this->toggleSelectPage();
+        return in_array($uuid, $this->selected, true);
+    }
+
+    /**
+     * Toggle selection of a single row
+     *
+     * @param  string  $uuid  Row UUID
+     */
+    public function toggleRow(string $uuid): void
+    {
+        if ($this->isSelected($uuid)) {
+            $this->selected = $this->normalizeArray(array_filter($this->selected, fn ($id) => $id !== $uuid));
+        } else {
+            $this->selected[] = $uuid;
+            $this->selected = $this->normalizeArray(array_unique($this->selected));
+        }
+    }
+
+    /**
+     * Normalize array to have sequential numeric keys
+     *
+     * @param  array<int, string>  $array
+     * @return array<int, string>
+     */
+    protected function normalizeArray(array $array): array
+    {
+        return array_values($array);
+    }
+
+    /**
+     * Clear all selections
+     */
+    public function clearSelection(): void
+    {
+        $this->selected = [];
+    }
+
+    /**
+     * Get count of selected rows
+     */
+    #[Computed]
+    public function selectedCount(): int
+    {
+        return count($this->selected);
+    }
+
+    /**
+     * Check if any rows are selected
+     */
+    #[Computed]
+    public function hasSelection(): bool
+    {
+        return count($this->selected) > 0;
+    }
+
+    /**
+     * Check if all rows on current page are selected
+     */
+    #[Computed]
+    public function isAllSelected(): bool
+    {
+        // Return false if no selections
+        if (empty($this->selected)) {
+            return false;
+        }
+
+        $currentPageUuids = $this->currentPageUuids;
+
+        // Return false if no rows on current page
+        if (empty($currentPageUuids)) {
+            return false;
+        }
+
+        // Check if all current page UUIDs are in selected array
+        $intersection = array_intersect($this->selected, $currentPageUuids);
+
+        return count($intersection) === count($currentPageUuids);
+    }
+
+    /**
+     * Find a row action by key
+     *
+     * @param  string  $actionKey  Action key
+     */
+    protected function findRowAction(string $actionKey): ?Action
+    {
+        return collect($this->rowActions())
+            ->first(fn (Action $a) => $a->getKey() === $actionKey);
+    }
+
+    /**
+     * Find a bulk action by key
+     *
+     * @param  string  $actionKey  Action key
+     */
+    protected function findBulkAction(string $actionKey): ?BulkAction
+    {
+        return collect($this->bulkActions())
+            ->first(fn (BulkAction $a) => $a->getKey() === $actionKey);
+    }
+
+    /**
+     * Find a model by UUID, checking current page first to avoid DB query
+     *
+     * @param  string  $uuid  Row UUID
+     * @return mixed|null
+     */
+    protected function findModelByUuid(string $uuid): mixed
+    {
+        // First, try to find in already-loaded current page rows
+        $model = $this->rows->firstWhere('uuid', $uuid);
+        if ($model !== null) {
+            return $model;
+        }
+
+        // If not found in current page, query database
+        return $this->baseQuery()->where('uuid', $uuid)->first();
     }
 
     /**
@@ -393,14 +798,13 @@ abstract class Datatable extends Component
      */
     public function getActionConfirmation(string $actionKey, string $uuid): array
     {
-        $action = collect($this->rowActions())
-            ->first(fn (Action $a) => $a->getKey() === $actionKey);
+        $action = $this->findRowAction($actionKey);
 
         if ($action === null || ! $action->requiresConfirmation()) {
             return ['required' => false];
         }
 
-        $model = $this->baseQuery()->where('uuid', $uuid)->first();
+        $model = $this->findModelByUuid($uuid);
         if ($model === null) {
             return ['required' => false];
         }
@@ -419,31 +823,54 @@ abstract class Datatable extends Component
      */
     public function executeAction(string $actionKey, string $uuid): void
     {
-        // Find the action
-        $action = collect($this->rowActions())
-            ->first(fn (Action $a) => $a->getKey() === $actionKey);
-
+        $action = $this->findRowAction($actionKey);
         if ($action === null) {
             return;
         }
 
-        // Get the model
-        $model = $this->baseQuery()->where('uuid', $uuid)->first();
-        if ($model === null) {
+        $model = $this->findModelByUuid($uuid);
+        if ($model === null || ! $action->isVisible($model)) {
             return;
         }
 
-        // Check visibility
-        if (! $action->isVisible($model)) {
-            return;
-        }
-
-        // Execute the action
         $execute = $action->getExecute();
         if ($execute !== null) {
             $execute($model);
             $this->dispatch('$refresh');
         }
+    }
+
+    /**
+     * Get models by UUIDs, checking current page first to minimize DB queries
+     *
+     * @param  array<int, string>  $uuids  Array of UUIDs
+     */
+    protected function findModelsByUuids(array $uuids): \Illuminate\Database\Eloquent\Collection
+    {
+        if (empty($uuids)) {
+            return \Illuminate\Database\Eloquent\Collection::make();
+        }
+
+        $models = \Illuminate\Database\Eloquent\Collection::make();
+        $uuidsToQuery = [];
+
+        // First, try to find in already-loaded current page rows
+        foreach ($uuids as $uuid) {
+            $model = $this->rows->firstWhere('uuid', $uuid);
+            if ($model !== null) {
+                $models->push($model);
+            } else {
+                $uuidsToQuery[] = $uuid;
+            }
+        }
+
+        // Query database only for UUIDs not found in current page
+        if (! empty($uuidsToQuery)) {
+            $queriedModels = $this->baseQuery()->whereIn('uuid', $uuidsToQuery)->get();
+            $models = $models->merge($queriedModels);
+        }
+
+        return $models;
     }
 
     /**
@@ -454,14 +881,13 @@ abstract class Datatable extends Component
      */
     public function getBulkActionConfirmation(string $actionKey): array
     {
-        $action = collect($this->bulkActions())
-            ->first(fn (BulkAction $a) => $a->getKey() === $actionKey);
+        $action = $this->findBulkAction($actionKey);
 
         if ($action === null || ! $action->requiresConfirmation()) {
             return ['required' => false];
         }
 
-        $models = $this->baseQuery()->whereIn('uuid', $this->selected)->get();
+        $models = $this->findModelsByUuids($this->selected);
 
         if ($models->isEmpty()) {
             return ['required' => false];
@@ -484,34 +910,37 @@ abstract class Datatable extends Component
             return;
         }
 
-        // Find the action
-        $action = collect($this->bulkActions())
-            ->first(fn (BulkAction $a) => $a->getKey() === $actionKey);
-
-        if ($action === null) {
+        $action = $this->findBulkAction($actionKey);
+        if ($action === null || ! $action->isVisible()) {
             return;
         }
 
-        // Check visibility
-        if (! $action->isVisible()) {
-            return;
-        }
-
-        // Get the models
-        $models = $this->baseQuery()->whereIn('uuid', $this->selected)->get();
+        $models = $this->findModelsByUuids($this->selected);
         if ($models->isEmpty()) {
             return;
         }
 
-        // Execute the action
         $execute = $action->getExecute();
         if ($execute !== null) {
             $execute($models);
             $this->dispatch('$refresh');
         }
 
-        // Clear selection
         $this->selected = [];
+    }
+
+    /**
+     * Clear selections and optionally reset page
+     *
+     * @param  bool  $resetPage  Whether to reset page to first page
+     */
+    protected function clearSelections(bool $resetPage = false): void
+    {
+        $this->selected = [];
+
+        if ($resetPage) {
+            $this->resetPage();
+        }
     }
 
     /**
@@ -519,12 +948,7 @@ abstract class Datatable extends Component
      */
     public function updatedSearch(): void
     {
-        $this->resetPage();
-        $this->selected = [];  // Clear selections when search changes
-        $this->selectPage = false;
-        $this->dispatch('datatable-updated', [
-            'pageUuids' => $this->rows->pluck('uuid')->toArray(),
-        ]);
+        $this->clearSelections(resetPage: true);
     }
 
     /**
@@ -532,12 +956,8 @@ abstract class Datatable extends Component
      */
     public function updatedFilters(): void
     {
-        $this->resetPage();
-        $this->selected = [];  // Clear selections when filters change
-        $this->selectPage = false;
-        $this->dispatch('datatable-updated', [
-            'pageUuids' => $this->rows->pluck('uuid')->toArray(),
-        ]);
+        $this->clearSelections(resetPage: true);
+        $this->savePreferences();
     }
 
     /**
@@ -545,12 +965,8 @@ abstract class Datatable extends Component
      */
     public function updatedPerPage(): void
     {
-        $this->resetPage();
-        $this->selected = [];  // Clear selections when per page changes
-        $this->selectPage = false;
-        $this->dispatch('datatable-updated', [
-            'pageUuids' => $this->rows->pluck('uuid')->toArray(),
-        ]);
+        $this->clearSelections(resetPage: true);
+        $this->savePreferences();
     }
 
     /**
@@ -558,11 +974,8 @@ abstract class Datatable extends Component
      */
     public function updatedSortBy(): void
     {
-        $this->selected = [];  // Clear selections when sort changes
-        $this->selectPage = false;
-        $this->dispatch('datatable-updated', [
-            'pageUuids' => $this->rows->pluck('uuid')->toArray(),
-        ]);
+        $this->clearSelections();
+        $this->savePreferences();
     }
 
     /**
@@ -570,21 +983,15 @@ abstract class Datatable extends Component
      */
     public function updatedSortDirection(): void
     {
-        $this->selected = [];  // Clear selections when sort direction changes
-        $this->selectPage = false;
-        $this->dispatch('datatable-updated', [
-            'pageUuids' => $this->rows->pluck('uuid')->toArray(),
-        ]);
+        $this->clearSelections();
     }
 
     /**
-     * Dispatch event after pagination updates
+     * Lifecycle: Updated page (pagination)
      */
     public function updatedPage(): void
     {
-        $this->dispatch('datatable-updated', [
-            'pageUuids' => $this->rows->pluck('uuid')->toArray(),
-        ]);
+        $this->clearSelections();
     }
 
     /**

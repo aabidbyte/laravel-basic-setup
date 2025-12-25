@@ -27,4 +27,3 @@ This documentation is organized into sections for easy navigation. Each section 
 - [Common Tasks](common-tasks.md)
 - [Intelephense Helper](intelephense-helper.md)
 - [Notes for AI Agents](notes-for-ai-agents.md)
-- [Changelog](changelog.md)

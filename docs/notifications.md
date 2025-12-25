@@ -527,3 +527,26 @@ Run tests with:
 ```bash
 php artisan test --filter=Notification
 ```
+
+## History
+
+### Session Channel Security Enhancement (2025-12-23)
+
+- **Converted session channel to public channel**: Changed from `private-notifications.session.{sessionId}` to `public-notifications.session.{sessionId}` for better security and simplicity
+- **Security**: Session IDs are cryptographically random (40+ characters) and act as the security mechanism themselves
+- **No authentication required**: Public channels don't require authentication, eliminating 403 errors on login/auth pages
+- **No authorization overhead**: Public channels don't need authorization callbacks, making implementation cleaner
+- **Error handling improvements**: Enhanced error handling for "Component not found" errors during Livewire navigation
+- **Production ready**: System is now fully functional and tested, marked as production-ready
+
+### Notification System Improvements (2025-01-XX)
+
+- **Fixed duplicate toast notifications**: Fixed issue where `toastCenter` component was creating duplicate subscriptions when re-initialized (e.g., during Livewire navigation). Changed from cleanup-based approach to idempotent subscription logic.
+- **Added `toUserTeams()` method**: New method in `NotificationBuilder` to send notifications to all teams a user belongs to. Broadcasts to each team channel separately, or falls back to user channel if user has no teams.
+
+### Notification Dropdown Enhancements (2025-12-19)
+
+- **Badge Calculation**: Moved badge calculation from Blade template to Livewire computed property `getUnreadBadgeProperty()` (capped at "99+")
+- **State Management**: Added Alpine.js reactive state (`isOpen` and `wasOpened`) to track dropdown open/close state
+- **Auto-Mark as Read**: Notifications are now marked as read when the dropdown closes (via `@click.away`), but only if it was actually opened by the user
+- **Notification Center**: Updated to use `#[Computed]` attribute instead of `getXxxProperty()` methods for better Livewire 4 compatibility

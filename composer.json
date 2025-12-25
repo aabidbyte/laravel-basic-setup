@@ -55,7 +55,8 @@
             "app/helpers/auth-helpers.php",
             "app/helpers/permission-helpers.php",
             "app/helpers/dateTime.php",
-            "app/helpers/currency.php"
+            "app/helpers/currency.php",
+            "app/helpers/form-helpers.php"
         ]
     },
     "autoload-dev": {

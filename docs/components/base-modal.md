@@ -398,5 +398,16 @@ All modals in the project use `<x-ui.base-modal>` directly with Alpine.js state 
     - Supports external state control via `open-state` prop
     - Can be triggered via Alpine.js events or direct state management
 
----
+## History
 
+### Class-Based + Theme-Aware Conversion (2025-12-23)
+
+Converted modal Blade components to class-based components and removed inline Blade `@php` logic:
+
+- **Base Modal**: `App\View\Components\Ui\BaseModal` + `resources/views/components/ui/base-modal.blade.php`
+    - Theme-aware backdrop (`bg-base-*` + `backdrop-blur-*`)
+    - Single `placement` prop with 9-position grid (`top-left` … `bottom-right`) and responsive default (bottom on mobile, center on `sm+`)
+- **Confirm Modal**: `App\View\Components\Ui\ConfirmModal` + `resources/views/components/ui/confirm-modal.blade.php`
+    - Keeps event-driven confirmation UX (`confirm-modal` event) while delegating structure to `<x-ui.base-modal>`
+
+---

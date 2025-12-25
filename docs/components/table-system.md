@@ -121,16 +121,18 @@ Accepts all standard HTML attributes via `$attributes`.
 ```php
 <?php
 
+use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Livewire\Attributes\Computed;
 
 new class extends Component
 {
     use WithPagination;
 
     public string $search = '';
+
     public string $sortBy = 'name';
+
     public string $sortDirection = 'asc';
 
     public function getColumns(): array
@@ -153,7 +155,7 @@ new class extends Component
     public function rows()
     {
         return User::query()
-            ->when($this->search, fn($q) => $q->where('name', 'like', "%{$this->search}%"))
+            ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%"))
             ->orderBy($this->sortBy, $this->sortDirection)
             ->paginate(15);
     }

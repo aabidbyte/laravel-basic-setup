@@ -96,6 +96,32 @@ class User extends BaseUserModel
     }
 
     /**
+     * Get roles for datatable display
+     *
+     * @return array<int, array<string, string>>
+     */
+    public function getRolesForDatatableAttribute(): array
+    {
+        return $this->roles->map(fn ($role) => [
+            'label' => $role->name,
+            'color' => 'primary',
+        ])->toArray();
+    }
+
+    /**
+     * Get teams for datatable display
+     *
+     * @return array<int, array<string, string>>
+     */
+    public function getTeamsForDatatableAttribute(): array
+    {
+        return $this->teams->map(fn ($team) => [
+            'label' => $team->name,
+            'color' => 'secondary',
+        ])->toArray();
+    }
+
+    /**
      * Find user by identifier (email or username).
      *
      * @return \Illuminate\Database\Eloquent\Builder
@@ -176,25 +202,18 @@ class User extends BaseUserModel
                             ->props(['muted' => true])
                     ),
                 HeaderItem::make()
-                    ->label(__('ui.table.users.verified'))
-                    ->sortable('email_verified_at')
+                    ->label(__('ui.table.users.roles'))
                     ->column(
                         ColumnItem::make()
-                            ->name('email_verified_at')
-                            ->type(DataTableColumnType::BOOLEAN)
-                            ->props([
-                                'trueLabel' => __('ui.table.users.verified_yes'),
-                                'falseLabel' => __('ui.table.users.verified_no'),
-                            ])
+                            ->name('roles_for_datatable')
+                            ->type(DataTableColumnType::BADGE)
                     ),
                 HeaderItem::make()
-                    ->label(__('ui.table.users.created_at'))
-                    ->sortable('created_at')
+                    ->label(__('ui.table.users.teams'))
                     ->column(
                         ColumnItem::make()
-                            ->name('created_at')
-                            ->type(DataTableColumnType::DATE)
-                            ->props(['format' => 'Y-m-d', 'muted' => true])
+                            ->name('teams_for_datatable')
+                            ->type(DataTableColumnType::BADGE)
                     )
             )
             ->actions(

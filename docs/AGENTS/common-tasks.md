@@ -297,136 +297,43 @@ The system includes first-class RTL support:
 
 **Documentation**: See `docs/internationalization.md` for complete guide, best practices, and troubleshooting.
 
-### DataTable Preferences System
+### DataTable Component
 
-The application includes a comprehensive **DataTable Preferences System** that manages all DataTable preferences (search, filters, per_page, sort) following the same pattern as the Frontend Preferences System. This ensures consistency across the application and provides persistent preferences for authenticated users.
+The application uses a Livewire-based DataTable component system. See `docs/components/datatable.md` for complete documentation.
 
-**Service**: `App\Services\DataTable\DataTablePreferencesService` (singleton)
+**Key Points**:
 
-**Service Registration**: **REQUIRED** - Must be registered as singleton in `DataTableServiceProvider`:
+-   All DataTable components extend `App\Livewire\Datatable`
+-   State is managed directly in Livewire component properties (search, sort, filters, pagination)
+-   Uses `DataTableQueryBuilder` for query building with automatic relationship joins
+-   No service layer needed - all logic is in the component
 
-```php
-// app/Providers/DataTableServiceProvider.php
-$this->app->singleton(\App\Services\DataTable\DataTablePreferencesService::class);
-```
+### Authentication Code Refactoring (2025-01-XX)
 
-**Storage Strategy**:
+Improved code quality, removed duplication, and enhanced separation of concerns:
 
--   **Session as Single Source of Truth**: Session is always the single source of truth for reads. All preference reads come from session after initial sync.
--   **Guest users**: Preferences stored in session only
--   **Authenticated users**:
-    -   Preferences stored in `users.frontend_preferences` JSON column under keys like `datatable_preferences.users` (persistent storage)
-    -   On first read: Preferences are loaded from database and synced to session
-    -   Subsequent reads: All reads come from session (single source of truth)
-    -   On update: Database is updated first, then session is updated
--   **Performance**: Fast reads from session (single source of truth) with automatic DB sync for authenticated users
+-   **Created Authentication Helpers**: Added `app/helpers/auth-helpers.php` with centralized authentication helper functions
+    -   `getIdentifierFromRequest()` - Centralizes identifier extraction logic (removes duplication)
+    -   `setTeamSessionForUser()` - Centralizes team session setting logic (removes duplication)
+-   **Created Permission Helpers**: Added `app/helpers/permission-helpers.php` with centralized permission cache clearing
+    -   `clearPermissionCache()` - Centralizes Spatie Permission cache clearing logic used across seeders
+-   **Seeder Refactoring**: Refactored all seeders to use `clearPermissionCache()` helper instead of inline cache clearing
+-   **Removed Duplication**: Eliminated duplicate identifier-to-email mapping logic from `FortifyServiceProvider` (middleware already handles it)
+-   **Code Organization**: Refactored `FortifyServiceProvider` to use helper functions, improving maintainability
+-   **Updated LoginRequest**: Now uses centralized `setTeamSessionForUser()` helper instead of inline logic
+-   **Composer Autoload**: Added `auth-helpers.php` and `permission-helpers.php` to Composer autoload files
 
-**Architecture Details**:
+### Super Admin Gate Pattern (2025-01-XX)
 
-**Stores** (SOLID design):
+Implemented Spatie Permissions recommended Super-Admin pattern using `Gate::before()`:
 
--   `App\Services\DataTable\Contracts\DataTablePreferencesStore` - Interface
--   `App\Services\DataTable\Stores\SessionDataTablePreferencesStore` - Session-based storage
--   `App\Services\DataTable\Stores\UserJsonDataTablePreferencesStore` - Database JSON storage
-
-**Constants**: `App\Constants\DataTable\DataTable` - Session keys, preference keys, helper methods
-
-**Available Preferences**:
-
--   **`search`**: Global search query string
--   **`per_page`**: Items per page (pagination)
--   **`sort`**: Sort configuration (column and direction)
--   **`filters`**: Applied filter values (array of filter key-value pairs)
-
-**Usage**:
-
-**In Livewire Components** (`BaseDataTableComponent`):
-
-Preferences are automatically loaded on mount and saved when changed:
-
-```php
-// Preferences are automatically loaded in mount()
-public function mount(DataTablePreferencesService $preferencesService): void
-{
-    $this->loadPreferences($preferencesService);
-    // ...
-}
-
-// Preferences are automatically saved when properties change
-public function updatedSearch(): void
-{
-    $this->savePreferences(); // Automatically called
-}
-```
-
-**In Services**:
-
-```php
-use App\Services\DataTable\DataTablePreferencesService;
-
-$preferences = app(DataTablePreferencesService::class);
-
-// Get preferences for an entity
-$search = $preferences->get('users', 'search', '');
-$perPage = $preferences->get('users', 'per_page', 15);
-
-// Set preferences
-$preferences->set('users', 'per_page', 25);
-$preferences->setMany('users', [
-    'search' => 'john',
-    'per_page' => 25,
-    'sort' => ['column' => 'name', 'direction' => 'asc'],
-]);
-
-// Get all preferences for an entity
-$allPrefs = $preferences->all('users');
-```
-
-**Login Event Listener**:
-
-**`App\Listeners\Preferences\SyncUserPreferencesOnLogin`** listens to the `Illuminate\Auth\Events\Login` event:
-
--   Automatically syncs all DataTable preferences from database to session immediately after login
--   Finds all DataTable preference keys in user's `frontend_preferences` (keys starting with `datatable_preferences.`)
--   Syncs each entity's preferences to session
--   Ensures preferences are available in session right away, without waiting for first read
-
-**Storage Structure**:
-
-User's `frontend_preferences` JSON column structure:
-
-```json
-{
-    "locale": "en_US",
-    "theme": "light",
-    "datatable_preferences.users": {
-        "search": "john",
-        "per_page": 25,
-        "sort": {
-            "column": "name",
-            "direction": "asc"
-        },
-        "filters": {
-            "is_active": true,
-            "email_verified_at": true
-        }
-    },
-    "datatable_preferences.products": {
-        "per_page": 50,
-        "sort": {
-            "column": "created_at",
-            "direction": "desc"
-        }
-    }
-}
-```
-
-**Rules & Best Practices**:
-
--   **Always use DataTablePreferencesService**: Don't manually access session or user preferences
--   **Entity Key**: Always use the entity key (e.g., `'users'`, `'products'`) when getting/setting preferences
--   **Automatic Loading**: Preferences are automatically loaded in `BaseDataTableComponent` - no manual loading needed
--   **Automatic Saving**: Preferences are automatically saved when search, filters, per_page, or sort change
+-   **Implementation**: Added `Gate::before()` in `AppServiceProvider::boot()` to grant all permissions to users with `Roles::SUPER_ADMIN` role
+-   **Location**: `app/Providers/AppServiceProvider.php` (in `boot()` method)
+-   **Benefits**: Allows using permission-based controls (`@can()`, `$user->can()`) throughout the app without checking for Super Admin status everywhere
+-   **Best Practice**: Follows Spatie Permissions best practices - primarily check permissions, not roles
+-   **Gate Updates**: Enhanced existing Gate definitions in `TelescopeServiceProvider`, `HorizonServiceProvider`, and `LogViewerServiceProvider` to explicitly check for Super Admin role for clarity
+-   **Important Note**: Direct calls to `hasPermissionTo()`, `hasAnyPermission()`, etc. bypass the Gate and won't get Super Admin access - always use `can()` methods instead
+-   **Constants**: Uses `Roles::SUPER_ADMIN` constant (no hardcoded strings)
 -   **Testing**: Use `Event::fake([Login::class])` to test preferences without triggering login sync
 
 ### Frontend Preferences System
@@ -713,4 +620,3 @@ php artisan release:tag --push --force
 -   Validates semantic versioning format
 -   Checks for uncommitted changes (warns but allows override, or use `--force` to skip)
 -   Optionally pushes to remote with `--push` flag
-

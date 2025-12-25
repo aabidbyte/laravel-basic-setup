@@ -121,6 +121,50 @@ class DataTableUi
 
     public const COLOR_INFO = 'info';
 
+    // Badge type constant
+    public const BADGE = 'badge';
+
+    /**
+     * Render a component with content
+     *
+     * @param  string  $type  Component type (e.g., 'badge', 'button')
+     * @param  string|array  $content  Content to render inside component (string or array for multiple items)
+     * @param  array<string, mixed>  $attributes  Component attributes/props
+     * @return string Component HTML
+     */
+    public static function renderComponent(string $type, string|array $content, array $attributes = []): string
+    {
+        // Handle array content - render each item as the component type and join
+        if (is_array($content)) {
+            $rendered = [];
+            foreach ($content as $item) {
+                if (is_string($item)) {
+                    $rendered[] = self::renderComponent($type, $item, $attributes);
+                } else {
+                    $rendered[] = (string) $item;
+                }
+            }
+
+            return implode(' ', $rendered);
+        }
+
+        // Handle string content
+        $viewPath = "components.ui.{$type}";
+
+        if (! view()->exists($viewPath)) {
+            return (string) $content;
+        }
+
+        // Render the view with content as 'text' prop
+        // Need to pass attributes properly for Blade components
+        $props = array_merge($attributes, ['text' => (string) $content]);
+
+        // Create attributes bag for component
+        $attributesBag = new \Illuminate\View\ComponentAttributeBag($props);
+
+        return view($viewPath, array_merge($props, ['attributes' => $attributesBag]))->render();
+    }
+
     // Header column keys
     public const HEADER_KEY = 'key';
 

@@ -283,6 +283,67 @@ class FrontendPreferencesService
     }
 
     /**
+     * Get datatable preferences for a specific datatable identifier.
+     *
+     * @param  string  $identifier  Datatable identifier (typically the full class name)
+     * @return array<string, mixed>
+     */
+    public function getDatatablePreferences(string $identifier, ?Request $request = null): array
+    {
+        $allDatatables = $this->get(FrontendPreferences::KEY_DATATABLES, [], $request);
+
+        return is_array($allDatatables) && isset($allDatatables[$identifier]) && is_array($allDatatables[$identifier])
+            ? $allDatatables[$identifier]
+            : [];
+    }
+
+    /**
+     * Set datatable preferences for a specific datatable identifier.
+     *
+     * @param  string  $identifier  Datatable identifier (typically the full class name)
+     * @param  array<string, mixed>  $preferences  Preferences to save (excludes search term)
+     */
+    public function setDatatablePreferences(string $identifier, array $preferences): void
+    {
+        $allDatatables = $this->get(FrontendPreferences::KEY_DATATABLES, []);
+
+        if (! is_array($allDatatables)) {
+            $allDatatables = [];
+        }
+
+        $allDatatables[$identifier] = $preferences;
+
+        $this->set(FrontendPreferences::KEY_DATATABLES, $allDatatables);
+    }
+
+    /**
+     * Get a specific datatable preference value.
+     *
+     * @param  string  $identifier  Datatable identifier (typically the full class name)
+     * @param  string  $key  Preference key (e.g., 'sortBy', 'perPage', 'filters')
+     */
+    public function getDatatablePreference(string $identifier, string $key, mixed $default = null, ?Request $request = null): mixed
+    {
+        $preferences = $this->getDatatablePreferences($identifier, $request);
+
+        return $preferences[$key] ?? $default;
+    }
+
+    /**
+     * Set a specific datatable preference value.
+     *
+     * @param  string  $identifier  Datatable identifier (typically the full class name)
+     * @param  string  $key  Preference key (e.g., 'sortBy', 'perPage', 'filters')
+     */
+    public function setDatatablePreference(string $identifier, string $key, mixed $value): void
+    {
+        $preferences = $this->getDatatablePreferences($identifier);
+        $preferences[$key] = $value;
+
+        $this->setDatatablePreferences($identifier, $preferences);
+    }
+
+    /**
      * Detect browser preferences from request headers.
      * Only detects preferences that are not already set.
      *

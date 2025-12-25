@@ -33,6 +33,29 @@ When creating a new reusable UI component:
 5. **Accessibility:** Ensure components are keyboard navigable and screen-reader friendly
 6. **Responsive:** Make components responsive using Tailwind's responsive utilities
 
+### Select Component Rules
+
+**CRITICAL:** All select components (`<x-ui.select>`) must follow these rules:
+
+1. **Empty Option Required:** All select components automatically include an empty/null option as the first option (enabled by default via `prependEmpty` prop). This allows users to clear/reset selections.
+
+2. **Options Format:** Options must be provided as an **associative array** (`[value => label]`), never as arrays of arrays. This format is unified across the entire project.
+
+3. **Centralized Helper:** Use the `prepend_empty_option()` helper function (located in `app/helpers/form-helpers.php`) when manually building options arrays to ensure consistency.
+
+4. **Placeholder Usage:** The `placeholder` prop is used as the label for the empty option. Always provide meaningful placeholder text for better UX.
+
+**Examples:**
+```blade
+{{-- Correct: Associative array format --}}
+<x-ui.select :options="['1' => 'Active', '0' => 'Inactive']" placeholder="All Statuses" />
+
+{{-- Incorrect: Array of arrays --}}
+<x-ui.select :options="[['value' => '1', 'label' => 'Active']]" />
+```
+
+See [Select Component Documentation](./select.md) for complete details.
+
 ### Migration from Custom Implementations
 
 When migrating existing custom implementations to centralized components:

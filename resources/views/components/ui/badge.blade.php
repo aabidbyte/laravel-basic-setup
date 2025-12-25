@@ -1,15 +1,19 @@
 {{--
     Badge Component Props:
     - style: 'outline', 'dash', 'soft', 'ghost'
-    - color: 'neutral', 'primary', 'secondary', 'accent', 'info', 'success', 'warning', 'error'
+    - variant: 'neutral', 'primary', 'secondary', 'accent', 'info', 'success', 'warning', 'error' (maps to color)
+    - color: 'neutral', 'primary', 'secondary', 'accent', 'info', 'success', 'warning', 'error' (legacy, use variant)
     - size: 'xs', 'sm', 'md', 'lg', 'xl'
     - class: Additional classes
+    - text: Text content (alternative to slot for programmatic rendering)
 --}}
 @props([
     'style' => null,
+    'variant' => null,
     'color' => null,
     'size' => 'md',
     'class' => '',
+    'text' => null,
 ])
 
 @php
@@ -45,8 +49,10 @@
         $classes .= ' ' . $styleClasses[$style];
     }
 
-    if ($color && isset($colorClasses[$color])) {
-        $classes .= ' ' . $colorClasses[$color];
+    // Use variant if provided, otherwise fall back to color (for backward compatibility)
+    $colorValue = $variant ?? $color;
+    if ($colorValue && isset($colorClasses[$colorValue])) {
+        $classes .= ' ' . $colorClasses[$colorValue];
     }
 
     if (isset($sizeClasses[$size])) {
@@ -58,8 +64,9 @@
     }
 
     $classes = trim($classes);
+    $finalClass = $classes . ' whitespace-nowrap';
 @endphp
 
-<span {{ $attributes->merge(['class' => $classes])->except(['style', 'color', 'size', 'class']) }}>
-    {{ $slot }}
+<span class="{!! $finalClass !!}" {{ $attributes->except(['style', 'variant', 'color', 'size', 'class', 'text']) }}>
+    {{ $text ?? $slot }}
 </span>

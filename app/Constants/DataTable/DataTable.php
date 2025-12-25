@@ -31,4 +31,19 @@ class DataTable
     {
         return self::SESSION_KEY.'.'.$entityKey;
     }
+
+    /**
+     * Query string parameter keys
+     */
+    public const QUERY_PARAM_SEARCH = 'search';
+
+    public const QUERY_PARAM_SORT = 'sort';
+
+    public const QUERY_PARAM_DIRECTION = 'direction';
+
+    public const QUERY_PARAM_PER_PAGE = 'per_page';
+
+    public const QUERY_PARAM_PAGE = 'page';
+
+    public const QUERY_PARAM_FILTERS = 'filters';
 }

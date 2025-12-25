@@ -79,6 +79,23 @@ class Column
     private string $class = '';
 
     /**
+     * Content closure for generating column content
+     */
+    private ?Closure $contentCallback = null;
+
+    /**
+     * Component type (e.g., 'badge', 'button', etc.)
+     */
+    private ?string $componentType = null;
+
+    /**
+     * Component attributes/props
+     *
+     * @var array<string, mixed>
+     */
+    private array $componentAttributes = [];
+
+    /**
      * Create a new Column instance
      *
      * @param  string  $label  Column label (displayed in header)
@@ -207,6 +224,36 @@ class Column
     }
 
     /**
+     * Set content callback for generating column content
+     *
+     * @param  Closure  $callback  Receives ($row, Column $column) and returns content
+     * @return $this
+     */
+    public function content(Closure $callback): self
+    {
+        $this->contentCallback = $callback;
+
+        return $this;
+    }
+
+    /**
+     * Set component type and attributes
+     *
+     * @param  string  $type  Component type (e.g., 'badge', 'button')
+     * @param  array<string, mixed>  $attributes  Component attributes/props
+     * @return $this
+     */
+    public function type(string $type, array $attributes = []): self
+    {
+        $this->componentType = $type;
+        $this->componentAttributes = $attributes;
+        // Automatically enable HTML rendering when component type is set
+        $this->html = true;
+
+        return $this;
+    }
+
+    /**
      * Get the column label
      */
     public function getLabel(): string
@@ -309,6 +356,53 @@ class Column
     }
 
     /**
+     * Get the content callback
+     */
+    public function getContentCallback(): ?Closure
+    {
+        return $this->contentCallback;
+    }
+
+    /**
+     * Get the component type
+     */
+    public function getComponentType(): ?string
+    {
+        return $this->componentType;
+    }
+
+    /**
+     * Get the component attributes
+     *
+     * @return array<string, mixed>
+     */
+    public function getComponentAttributes(): array
+    {
+        return $this->componentAttributes;
+    }
+
+    /**
+     * Resolve content to HTML when content callback and component type are set
+     *
+     * @param  mixed  $row  Row model instance
+     * @return string Resolved HTML
+     */
+    public function resolve(mixed $row): string
+    {
+        if ($this->contentCallback === null || $this->componentType === null) {
+            return '';
+        }
+
+        $content = ($this->contentCallback)($row, $this);
+
+        return \App\Constants\DataTable\DataTableUi::renderComponent(
+            $this->componentType,
+            $content,
+            $this->componentAttributes
+        );
+    }
+
+    /**
      * Parse relationship path from field name
      *
      * Returns array with:
@@ -362,6 +456,8 @@ class Column
             'hasFormat' => $this->format !== null,
             'hasView' => $this->view !== null,
             'hasLabelCallback' => $this->labelCallback !== null,
+            'hasContentCallback' => $this->contentCallback !== null,
+            'componentType' => $this->componentType,
         ];
     }
 }

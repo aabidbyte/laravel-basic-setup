@@ -468,6 +468,40 @@ The application uses View Composers to share data with Blade templates. The `Bla
 
 **Note**: Do not use `@inject` directives for services that are shared via View Composers. The provider shares specific values rather than service objects for better performance and clarity.
 
+## History
+
+### DateTime and Currency Helper Functions (2025-12-16)
+
+Created locale-aware helper functions for formatting dates, times, and currency:
+
+- Created `app/helpers/dateTime.php` with `formatDate()`, `formatTime()`, and `formatDateTime()` functions
+- Created `app/helpers/currency.php` with `formatCurrency()` function
+- Updated `config/i18n.php` to include `symbol_position`, `decimal_separator`, and `thousands_separator` for currency configuration
+- All helpers use `I18nService` internally instead of direct config access
+- Added comprehensive tests (18 tests for dateTime, 14 tests for currency)
+- Updated `composer.json` to autoload new helper files
+
+### I18nService Enhancements (2025-12-16)
+
+Enhanced `I18nService` with additional methods for centralized locale management:
+
+- Added `getSupportedLocales()`, `getDefaultLocale()`, `getFallbackLocale()`
+- Added `getLocaleMetadata(?string $locale)`, `isLocaleSupported()`, `getValidLocale()`
+- Updated service to use its own methods internally for consistency
+- Removed default fallback values - these methods now rely entirely on `config('i18n.*')` values
+- Added comprehensive tests (18 tests)
+
+### BladeServiceProvider (2025-12-16)
+
+Created dedicated service provider for Blade/view-related functionality:
+
+- Moved View Composer logic from `AppServiceProvider` to `BladeServiceProvider`
+- Shares `I18nService` with layout templates via View Composers
+- Shares `SideBarMenuService` only with sidebar template
+- Replaced all `@inject` directives with View Composers
+- Changed from sharing service objects to sharing specific values (`$htmlLangAttribute`, `$currentTheme`, etc.)
+- Added comprehensive tests (4 tests)
+
 ## Reference
 
 -   **Config file**: `config/i18n.php`

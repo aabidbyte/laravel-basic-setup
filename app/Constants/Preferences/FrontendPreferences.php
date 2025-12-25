@@ -20,6 +20,8 @@ class FrontendPreferences
 
     public const KEY_TIMEZONE = 'timezone';
 
+    public const KEY_DATATABLES = 'datatables';
+
     /**
      * Default preference values.
      */
@@ -48,6 +50,7 @@ class FrontendPreferences
             self::KEY_LOCALE => self::DEFAULT_LOCALE,
             self::KEY_THEME => self::DEFAULT_THEME,
             self::KEY_TIMEZONE => self::DEFAULT_TIMEZONE,
+            self::KEY_DATATABLES => [],
         ];
     }
 

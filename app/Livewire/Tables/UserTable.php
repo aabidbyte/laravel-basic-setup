@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Tables;
 
 use App\Constants\Auth\Permissions;
+use App\Constants\DataTable\DataTableUi;
 use App\Livewire\Datatable;
 use App\Models\Role;
 use App\Models\User;
@@ -23,6 +24,7 @@ class UserTable extends Datatable
      */
     public function mount(): void
     {
+        parent::mount();
         $this->authorize(Permissions::VIEW_USERS);
     }
 
@@ -31,7 +33,7 @@ class UserTable extends Datatable
      */
     protected function baseQuery(): Builder
     {
-        return User::query()->with('roles')->select('users.*');
+        return User::query()->with(['roles', 'teams'])->select('users.*');
     }
 
     /**
@@ -42,15 +44,24 @@ class UserTable extends Datatable
     protected function columns(): array
     {
         return [
-            Column::make(__('ui.table.users.name'), 'name')->sortable()->searchable()->format(fn ($value, $row) => "<strong>{$value}</strong>")->html(),
+            Column::make(__('ui.table.users.name'), 'name')
+                ->sortable()
+                ->searchable()
+                ->format(fn ($value, $row) => "<strong>{$value}</strong>")
+                ->html(),
 
-            Column::make(__('ui.table.users.email'), 'email')->sortable()->searchable()->class('text-base-content/70'),
+            Column::make(__('ui.table.users.email'), 'email')
+                ->sortable()
+                ->searchable()
+                ->class('text-base-content/70'),
 
-            Column::make(__('ui.table.users.verified'), 'email_verified_at')->sortable()->format(fn ($value) => $value !== null ? '<span class="badge badge-success badge-sm">'.__('ui.table.users.verified_yes').'</span>' : '<span class="badge badge-ghost badge-sm">'.__('ui.table.users.verified_no').'</span>')->html(),
+            Column::make(__('ui.table.users.roles'), 'roles_for_datatable')
+                ->content(fn (User $user) => $user->roles->pluck('name')->toArray())
+                ->type(DataTableUi::BADGE, ['variant' => 'primary', 'size' => 'sm']),
 
-            Column::make(__('ui.table.users.status'), 'is_active')->sortable()->format(fn ($value) => $value ? '<span class="badge badge-success badge-sm">'.__('ui.table.users.status_active').'</span>' : '<span class="badge badge-ghost badge-sm">'.__('ui.table.users.status_inactive').'</span>')->html(),
-
-            Column::make(__('ui.table.users.created_at'), 'created_at')->sortable()->format(fn ($value) => $value?->format('Y-m-d'))->class('text-base-content/70'),
+            Column::make(__('ui.table.users.teams'), 'teams_for_datatable')
+                ->content(fn (User $user) => $user->teams->pluck('name')->toArray())
+                ->type(DataTableUi::BADGE, ['variant' => 'secondary', 'size' => 'sm']),
         ];
     }
 
@@ -59,31 +70,31 @@ class UserTable extends Datatable
      *
      * @return array<int, Filter>
      */
-    protected function filters(): array
+    protected function getFilterDefinitions(): array
     {
         return [
-            Filter::make('role', __('ui.table.users.filters.role'))->placeholder(__('ui.table.users.filters.all_roles'))->type('select')->relationship('roles', 'name')->optionsCallback(
-                fn () => Role::pluck('name', 'name')
-                    ->map(
-                        fn ($name, $key) => [
-                            'value' => $key,
-                            'label' => $name,
-                        ],
-                    )
-                    ->values()
-                    ->toArray(),
-            ),
+            Filter::make('role', __('ui.table.users.filters.role'))
+                ->placeholder(__('ui.table.users.filters.all_roles'))
+                ->type('select')
+                ->relationship('roles', 'name')
+                ->optionsCallback(fn () => Role::pluck('name', 'name')->toArray()),
 
             Filter::make('is_active', __('ui.table.users.filters.status'))
                 ->placeholder(__('ui.table.users.filters.all_status'))
                 ->type('select')
-                ->options([['value' => '1', 'label' => __('ui.table.users.status_active')], ['value' => '0', 'label' => __('ui.table.users.status_inactive')]])
+                ->options([
+                    '1' => __('ui.table.users.status_active'),
+                    '0' => __('ui.table.users.status_inactive'),
+                ])
                 ->valueMapping(['1' => true, '0' => false]),
 
             Filter::make('email_verified_at', __('ui.table.users.filters.verified'))
                 ->placeholder(__('ui.table.users.filters.all_status'))
                 ->type('select')
-                ->options([['value' => '1', 'label' => __('ui.table.users.verified_yes')], ['value' => '0', 'label' => __('ui.table.users.verified_no')]])
+                ->options([
+                    '1' => __('ui.table.users.verified_yes'),
+                    '0' => __('ui.table.users.verified_no'),
+                ])
                 ->valueMapping(['1' => 'not_null', '0' => 'null']),
         ];
     }
@@ -99,15 +110,28 @@ class UserTable extends Datatable
 
         // Only add view action if route exists
         if (Route::has('users.show')) {
-            $actions[] = Action::make('view', __('ui.actions.view'))->icon('eye')->route(fn (User $user) => route('users.show', $user))->variant('ghost');
+            $actions[] = Action::make('view', __('ui.actions.view'))
+                ->icon('eye')
+                ->route(fn (User $user) => route('users.show', $user))
+                ->variant('ghost');
         }
 
         // Only add edit action if route exists
         if (Route::has('users.edit')) {
-            $actions[] = Action::make('edit', __('ui.actions.edit'))->icon('pencil')->route(fn (User $user) => route('users.edit', $user))->variant('ghost')->show(fn (User $user) => Auth::user()?->can('update', $user) ?? false);
+            $actions[] = Action::make('edit', __('ui.actions.edit'))
+                ->icon('pencil')
+                ->route(fn (User $user) => route('users.edit', $user))
+                ->variant('ghost')
+                ->show(fn (User $user) => Auth::user()?->can('update', $user) ?? false);
         }
 
-        $actions[] = Action::make('delete', __('ui.actions.delete'))->icon('trash')->variant('ghost')->color('error')->confirm(__('ui.actions.confirm_delete'))->execute(fn (User $user) => $user->delete())->show(fn (User $user) => Auth::user()?->can('delete', $user) ?? false);
+        $actions[] = Action::make('delete', __('ui.actions.delete'))
+            ->icon('trash')
+            ->variant('ghost')
+            ->color('error')
+            ->confirm(__('ui.actions.confirm_delete'))
+            ->execute(fn (User $user) => $user->delete())
+            ->show(fn (User $user) => Auth::user()?->can('delete', $user) ?? false);
 
         return $actions;
     }
@@ -119,7 +143,22 @@ class UserTable extends Datatable
      */
     protected function bulkActions(): array
     {
-        return [BulkAction::make('activate', __('ui.actions.activate_selected'))->icon('check')->variant('ghost')->execute(fn ($users) => $users->each->update(['is_active' => true])), BulkAction::make('deactivate', __('ui.actions.deactivate_selected'))->icon('x-mark')->variant('ghost')->execute(fn ($users) => $users->each->update(['is_active' => false])), BulkAction::make('delete', __('ui.actions.delete_selected'))->icon('trash')->variant('ghost')->color('error')->confirm(__('ui.actions.confirm_bulk_delete'))->execute(fn ($users) => $users->each->delete())];
+        return [
+            BulkAction::make('activate', __('ui.actions.activate_selected'))
+                ->icon('check')
+                ->variant('ghost')
+                ->execute(fn ($users) => $users->each->update(['is_active' => true])),
+            BulkAction::make('deactivate', __('ui.actions.deactivate_selected'))
+                ->icon('x-mark')
+                ->variant('ghost')
+                ->execute(fn ($users) => $users->each->update(['is_active' => false])),
+            BulkAction::make('delete', __('ui.actions.delete_selected'))
+                ->icon('trash')
+                ->variant('ghost')
+                ->color('error')
+                ->confirm(__('ui.actions.confirm_bulk_delete'))
+                ->execute(fn ($users) => $users->each->delete()),
+        ];
     }
 
     /**

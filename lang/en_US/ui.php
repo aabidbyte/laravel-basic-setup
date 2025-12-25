@@ -255,6 +255,8 @@ return [
         'active_filters' => 'Active filters',
         'per_page' => 'Per page',
         'showing_results' => 'Showing :from to :to of :total results',
+        'share_page' => 'Share page with filters',
+        'url_copied' => 'URL copied to clipboard!',
         'yes' => 'Yes',
         'no' => 'No',
         'pagination' => [
@@ -263,6 +265,8 @@ return [
         'users' => [
             'name' => 'Name',
             'email' => 'Email',
+            'roles' => 'Roles',
+            'teams' => 'Teams',
             'verified' => 'Verified',
             'verified_yes' => 'Yes',
             'verified_no' => 'No',

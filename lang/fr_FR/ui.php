@@ -241,6 +241,8 @@ return [
         'users' => [
             'name' => 'Nom',
             'email' => 'E-mail',
+            'roles' => 'Rôles',
+            'teams' => 'Équipes',
             'verified' => 'Vérifié',
             'verified_yes' => 'Oui',
             'verified_no' => 'Non',

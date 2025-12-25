@@ -12,6 +12,7 @@
     'color' => null,
     'size' => 'md',
     'type' => null,
+    'text' => null,
 ])
 
 @php
@@ -25,8 +26,8 @@
             'secondary' => ['style' => 'solid', 'color' => 'secondary'],
             'accent' => ['style' => 'solid', 'color' => 'accent'],
             'neutral' => ['style' => 'solid', 'color' => 'neutral'],
-            'ghost' => ['style' => 'ghost', 'color' => 'primary'],
-            'link' => ['style' => 'link', 'color' => 'primary'],
+            'ghost' => ['style' => 'ghost'],
+            'link' => ['style' => 'link'],
             'outline' => ['style' => 'outline', 'color' => 'primary'],
             'error' => ['style' => 'solid', 'color' => 'error'],
             'success' => ['style' => 'solid', 'color' => 'success'],
@@ -39,15 +40,13 @@
         $style = $style ?? $variantMap[$variant]['style'];
         // If color wasn't explicitly provided, use variant's color
         // This ensures variant="error" defaults to color="error" even if color prop has a default
-        $color = $originalColor ?? $variantMap[$variant]['color'];
+        if (isset($variantMap[$variant]['color'])) {
+            $color = $variantMap[$variant]['color'];
+        } else {
+            $color = $originalColor;
+        }
     }
 }
-
-// Default style to 'solid' if not set
-$style = $style ?? 'solid';
-
-// Default color to 'primary' if not set (after variant mapping)
-$color = $color ?? 'primary';
 
 $styleClasses = [
     'solid' => '',
@@ -77,13 +76,14 @@ $sizeClasses = [
     'xl' => 'btn-xl',
 ];
 
-$styleClass = $styleClasses[$style] ?? '';
-$colorClass = $colorClasses[$color] ?? $colorClasses['primary'];
-$sizeClass = $sizeClasses[$size] ?? '';
+$styleClass = isset($style) ? $styleClasses[$style] : '';
+$colorClass = isset($color) ? $colorClasses[$color] : '';
+$sizeClass = isset($size) ? $sizeClasses[$size] : '';
+    $btnClasses = "{$styleClass} {$colorClass} {$sizeClass}";
 
 @endphp
 
 <button type="{{ $type }}"
-    {{ $attributes->merge(['class' => trim("btn {$styleClass} {$colorClass} {$sizeClass}")])->except(['variant', 'style', 'color', 'size', 'type']) }}>
-    {{ $slot }}
+    {{ $attributes->merge(['class' => trim("btn {$btnClasses}")])->except(['variant', 'style', 'color', 'size', 'type', 'text']) }}>
+    {{ $text ?? $slot }}
 </button>

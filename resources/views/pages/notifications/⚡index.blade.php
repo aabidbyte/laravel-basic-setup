@@ -195,8 +195,7 @@ new class extends BasePageComponent {
                                 </div>
                                 <div class="flex items-center gap-2">
                                     @if (!$notification['isRead'])
-                                        <div class="badge badge-primary badge-sm">{{ __('ui.notifications.unread') }}
-                                        </div>
+                                        <x-ui.badge variant="primary" size="sm">{{ __('ui.notifications.unread') }}</x-ui.badge>
                                     @endif
                                     <x-ui.button variant="ghost" color="error" size="sm"
                                         @click.stop="$dispatch('confirm-modal', {

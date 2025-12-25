@@ -120,5 +120,23 @@ export function myComponent() {
 
 For complete Livewire 4 documentation, see [docs/livewire-4/index.md](../livewire-4/index.md).
 
+## History
+
+### Reactive `$wire` Pattern (2025-01-XX)
+
+Improved Alpine.js data components to use reactive `$wire` instead of passing it as a parameter:
+
+- **Removed `$wire` parameter**: Alpine.js data functions no longer accept `$wire` as a parameter - it's automatically available and reactive in the component context
+- **Reactive `$wire`**: `$wire` is automatically updated by Livewire when components mount/unmount, making it safe for navigation scenarios
+- **Component validation**: Added `refreshIfAvailable()` helper method that validates component existence before calling `$refresh()`
+- **Navigation-safe**: After navigation, `$wire` automatically points to the new component when `init()` runs again
+- **Removed try-catch blocks**: Replaced error handling with validation checks before calling `$refresh()`
+- **Updated components**: `notificationCenter()` and `notificationDropdown()` Alpine data components now use reactive `$wire` pattern
+- **Benefits**:
+    - No stale references after navigation
+    - Cleaner code without try-catch blocks
+    - Automatic component lifecycle handling
+    - Better error prevention through validation
+
 ---
 

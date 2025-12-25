@@ -15,14 +15,13 @@ class RoleOptionsProvider implements OptionsProviderInterface
     /**
      * Get options array for role select filter
      *
-     * @return array<int, array{value: string, label: string}>
+     * @return array<string, string> Associative array (value => label)
      */
     public function getOptions(): array
     {
-        return Role::select('name')->get()->map(function ($role) {
+        return Role::select('name')->get()->mapWithKeys(function ($role) {
             return [
-                'value' => $role->name,
-                'label' => ucwords(str_replace('_', ' ', $role->name)),
+                $role->name => ucwords(str_replace('_', ' ', $role->name)),
             ];
         })->toArray();
     }

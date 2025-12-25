@@ -177,3 +177,17 @@ To add new navigation sections:
 3. Filter invisible items: `array_filter($items, fn($item) => $item->isVisible())`
 4. Render in Blade using `<x-navigation.group>` component
 
+## History
+
+### Navigation System Refactoring (2025-01-XX)
+
+Simplified navigation system and split sidebar components:
+
+- **Removed form/button support** from `NavigationItem`: Form and button methods (`form()`, `button()`) have been removed. Use static forms in Blade templates for actions like logout.
+- **Removed class property**: The `class()` method has been removed from `NavigationItem`. Use `attributes(['class' => '...'])` instead.
+- **Attributes as array**: `NavigationItem` now returns attributes as an array (not a string) for use with `$attributes->merge()` in Blade components.
+- **Service injection**: Updated to use View Composers instead of `@inject` directive for automatic menu data injection.
+- **Semantic HTML**: Navigation components now use `<div>` elements instead of `<ul>`/`<li>` for better flexibility.
+- **Static logout form**: Logout is now handled as a static form in the sidebar components, not through `NavigationItem`.
+- **Updated tests**: Removed `NavigationItemFormTest.php` as form/button functionality no longer exists.
+

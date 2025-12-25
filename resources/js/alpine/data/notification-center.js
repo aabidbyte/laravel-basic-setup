@@ -33,35 +33,10 @@ export function notificationCenter() {
                     return;
                 }
 
-                // Use reactive $wire - it's automatically updated by Livewire
-                // After navigation, if component exists, $wire will be available
-                this.refreshIfAvailable();
+                // The refresh logic is handled by the template's event listener:
+                // x-on:notifications-changed.window="$wire.$refresh()"
+                // No need to do anything here as the event is already dispatched by the store
             });
-        },
-
-        /**
-         * Safely refresh the Livewire component if it exists
-         * Uses reactive $wire which is automatically updated by Livewire
-         */
-        refreshIfAvailable() {
-            // $wire is reactive - Livewire handles the lifecycle
-            // After navigation, if component exists, $wire is automatically available
-            // If component was removed, $wire is null/undefined
-            if (!$wire || typeof $wire.$refresh !== "function") {
-                return;
-            }
-
-            // Additional validation: check if component still exists in Livewire registry
-            if (window.Livewire && $wire.__instance?.id) {
-                const component = window.Livewire.find($wire.__instance.id);
-                if (!component) {
-                    // Component was removed from DOM but $wire still exists
-                    return;
-                }
-            }
-
-            // Safe to refresh - component exists and is valid
-            $wire.$refresh();
         },
 
         destroy() {
@@ -104,35 +79,10 @@ export function notificationDropdown() {
                     return;
                 }
 
-                // Use reactive $wire - it's automatically updated by Livewire
-                // After navigation, if component exists, $wire will be available
-                this.refreshIfAvailable();
+                // The refresh logic is handled by the template's event listener:
+                // x-on:notifications-changed.window="$wire.$refresh()"
+                // No need to do anything here as the event is already dispatched by the store
             });
-        },
-
-        /**
-         * Safely refresh the Livewire component if it exists
-         * Uses reactive $wire which is automatically updated by Livewire
-         */
-        refreshIfAvailable() {
-            // $wire is reactive - Livewire handles the lifecycle
-            // After navigation, if component exists, $wire is automatically available
-            // If component was removed, $wire is null/undefined
-            if (!$wire || typeof $wire.$refresh !== "function") {
-                return;
-            }
-
-            // Additional validation: check if component still exists in Livewire registry
-            if (window.Livewire && $wire.__instance?.id) {
-                const component = window.Livewire.find($wire.__instance.id);
-                if (!component) {
-                    // Component was removed from DOM but $wire still exists
-                    return;
-                }
-            }
-
-            // Safe to refresh - component exists and is valid
-            $wire.$refresh();
         },
 
         destroy() {

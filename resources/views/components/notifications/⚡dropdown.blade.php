@@ -145,10 +145,10 @@ new class extends Component {
                 ">
                 <x-ui.icon name="bell" class="h-5 w-5"></x-ui.icon>
                 @if ($this->unreadCount > 0)
-                    <span class="badge badge-error badge-xs absolute -top-1 -right-1 w-4 h-4 justify-center "
+                    <x-ui.badge variant="error" size="xs" class="absolute -top-1 -right-1 w-4 h-4 justify-center"
                         aria-label="{{ __('ui.notifications.unread') }}: {{ $this->unreadCount }}">
                         {{ $this->unreadBadge }}
-                    </span>
+                    </x-ui.badge>
                 @endif
             </button>
         </x-slot:trigger>
