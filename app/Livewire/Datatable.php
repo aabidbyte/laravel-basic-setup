@@ -48,6 +48,11 @@ abstract class Datatable extends Component
     public int $perPage = 15;
 
     /**
+     * Go to page input value
+     */
+    public ?int $gotoPageInput = null;
+
+    /**
      * Filter values
      *
      * @var array<string, mixed>
@@ -970,6 +975,24 @@ abstract class Datatable extends Component
     }
 
     /**
+     * Lifecycle: Updated go to page input
+     */
+    public function updatedGotoPageInput(): void
+    {
+        // Validate input value
+        if ($this->gotoPageInput !== null) {
+            $paginator = $this->rows();
+            $totalPages = $paginator->lastPage();
+
+            if ($this->gotoPageInput < 1) {
+                $this->gotoPageInput = 1;
+            } elseif ($this->gotoPageInput > $totalPages) {
+                $this->gotoPageInput = $totalPages;
+            }
+        }
+    }
+
+    /**
      * Lifecycle: Updated sort
      */
     public function updatedSortBy(): void
@@ -992,6 +1015,32 @@ abstract class Datatable extends Component
     public function updatedPage(): void
     {
         $this->clearSelections();
+    }
+
+    /**
+     * Go to specific page
+     */
+    public function gotoPage(?int $page = null, string $pageName = 'page'): void
+    {
+        $page = $page ?? $this->gotoPageInput;
+
+        if ($page === null) {
+            return;
+        }
+
+        $paginator = $this->rows();
+        $totalPages = $paginator->lastPage();
+
+        // Validate page number
+        if ($page < 1) {
+            $page = 1;
+        } elseif ($page > $totalPages) {
+            $page = $totalPages;
+        }
+
+        $this->setPage($page, $pageName);
+        $this->clearSelections();
+        $this->gotoPageInput = null; // Clear input after navigation
     }
 
     /**

@@ -5,6 +5,7 @@
     - color: 'primary', 'secondary', 'accent', 'neutral', 'info', 'success', 'warning', 'error'
     - size: 'xs', 'sm', 'md', 'lg', 'xl'
     - type: HTML button type attribute
+    - circle: boolean - makes the button circular
 --}}
 @props([
     'variant' => null,
@@ -13,6 +14,7 @@
     'size' => 'md',
     'type' => null,
     'text' => null,
+    'circle' => false,
 ])
 
 @php
@@ -79,7 +81,8 @@ $sizeClasses = [
 $styleClass = isset($style) ? $styleClasses[$style] : '';
 $colorClass = isset($color) ? $colorClasses[$color] : '';
 $sizeClass = isset($size) ? $sizeClasses[$size] : '';
-    $btnClasses = "{$styleClass} {$colorClass} {$sizeClass}";
+$circleClass = $circle ? 'btn-circle' : '';
+    $btnClasses = "{$styleClass} {$colorClass} {$sizeClass} {$circleClass}";
 
 @endphp
 

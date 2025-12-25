@@ -16,4 +16,13 @@ return [
     'previous' => '&laquo; Previous',
     'next' => 'Next &raquo;',
 
+    'showing' => 'Showing',
+    'to' => 'to',
+    'of' => 'of',
+    'results' => 'results',
+
+    'pagination_navigation' => 'Pagination Navigation',
+    'go_to_page' => 'Go to page :page',
+    'go_to_page_label' => 'Go to page',
+
 ];

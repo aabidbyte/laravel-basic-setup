@@ -6,26 +6,32 @@
 @endphp
 
 @if ($paginator->hasPages())
-    <nav role="navigation" aria-label="{{ __('Pagination Navigation') }}" class="flex items-center gap-2">
 
-        <div class="flex gap-2 items-center justify-between sm:hidden flex-1">
+    <nav role="navigation" aria-label="{{ __('pagination.pagination_navigation') }}" class="flex items-center gap-2">
+        <div class="flex items-center gap-2">
+            <x-ui.tooltip text="{{ __('ui.table.per_page') }}">
+                <x-ui.select wire:model.live="perPage" :label="null" class="select-sm" :options="['10' => '10', '15' => '15', '25' => '25', '50' => '50', '100' => '100']"
+                    :prependEmpty="false">
+                </x-ui.select>
+            </x-ui.tooltip>
+        </div>
+
+        <div class="flex gap-2 items-center justify-between sm:hidden">
 
             @if ($paginator->onFirstPage())
                 <span class="btn btn-sm btn-ghost btn-disabled">
                     {!! __('pagination.previous') !!}
                 </span>
             @else
-                <button wire:click="previousPage('{{ $paginator->getPageName() }}')" rel="prev"
-                    class="btn btn-sm btn-ghost">
+                <x-ui.button wire:click="previousPage('{{ $paginator->getPageName() }}')" style="ghost" size="sm">
                     {!! __('pagination.previous') !!}
-                </button>
+                </x-ui.button>
             @endif
 
             @if ($paginator->hasMorePages())
-                <button wire:click="nextPage('{{ $paginator->getPageName() }}')" rel="next"
-                    class="btn btn-sm btn-ghost">
+                <x-ui.button wire:click="nextPage('{{ $paginator->getPageName() }}')" style="ghost" size="sm">
                     {!! __('pagination.next') !!}
-                </button>
+                </x-ui.button>
             @else
                 <span class="btn btn-sm btn-ghost btn-disabled">
                     {!! __('pagination.next') !!}
@@ -38,17 +44,10 @@
 
             <div>
                 <p class="text-sm text-base-content/70">
-                    {!! __('Showing') !!}
-                    @if ($paginator->firstItem())
-                        <span class="font-medium">{{ $paginator->firstItem() }}</span>
-                        {!! __('to') !!}
-                        <span class="font-medium">{{ $paginator->lastItem() }}</span>
-                    @else
-                        {{ $paginator->count() }}
-                    @endif
-                    {!! __('of') !!}
+                    <span class="font-medium">{{ $paginator->lastItem() }}</span>
+                    {!! __('pagination.of') !!}
                     <span class="font-medium">{{ $paginator->total() }}</span>
-                    {!! __('results') !!}
+                    {!! __('pagination.results') !!}
                 </p>
             </div>
 
@@ -59,22 +58,14 @@
                     @if ($paginator->onFirstPage())
                         <span aria-disabled="true" aria-label="{{ __('pagination.previous') }}">
                             <span class="btn btn-sm btn-ghost btn-disabled rounded-r-none" aria-hidden="true">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd"
-                                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                                        clip-rule="evenodd" />
-                                </svg>
+                                <x-ui.icon name="chevron-left" size="sm" />
                             </span>
                         </span>
                     @else
-                        <button wire:click="previousPage('{{ $paginator->getPageName() }}')" rel="prev"
-                            class="btn btn-sm btn-ghost rounded-r-none" aria-label="{{ __('pagination.previous') }}">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                                    clip-rule="evenodd" />
-                            </svg>
-                        </button>
+                        <x-ui.button wire:click="previousPage('{{ $paginator->getPageName() }}')" style="ghost"
+                            size="sm" class="rounded-r-none" aria-label="{{ __('pagination.previous') }}">
+                            <x-ui.icon name="chevron-left" size="sm" />
+                        </x-ui.button>
                     @endif
 
                     {{-- Pagination Elements --}}
@@ -94,12 +85,12 @@
                                         <span class="btn btn-sm btn-active rounded-none">{{ $page }}</span>
                                     </span>
                                 @else
-                                    <button
+                                    <x-ui.button
                                         wire:click="gotoPage({{ $page }}, '{{ $paginator->getPageName() }}')"
-                                        class="btn btn-sm btn-ghost rounded-none"
-                                        aria-label="{{ __('Go to page :page', ['page' => $page]) }}">
+                                        style="ghost" size="sm" class="rounded-none"
+                                        aria-label="{{ __('pagination.go_to_page', ['page' => $page]) }}">
                                         {{ $page }}
-                                    </button>
+                                    </x-ui.button>
                                 @endif
                             @endforeach
                         @endif
@@ -107,31 +98,36 @@
 
                     {{-- Next Page Link --}}
                     @if ($paginator->hasMorePages())
-                        <button wire:click="nextPage('{{ $paginator->getPageName() }}')" rel="next"
-                            class="btn btn-sm btn-ghost rounded-l-none" aria-label="{{ __('pagination.next') }}">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                                    clip-rule="evenodd" />
-                            </svg>
-                        </button>
+                        <x-ui.button wire:click="nextPage('{{ $paginator->getPageName() }}')" style="ghost"
+                            size="sm" class="rounded-l-none" aria-label="{{ __('pagination.next') }}">
+                            <x-ui.icon name="chevron-right" size="sm" />
+                        </x-ui.button>
                     @else
                         <span aria-disabled="true" aria-label="{{ __('pagination.next') }}">
                             <span class="btn btn-sm btn-ghost btn-disabled rounded-l-none" aria-hidden="true">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd"
-                                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                                        clip-rule="evenodd" />
-                                </svg>
+                                <x-ui.icon name="chevron-right" size="sm" />
                             </span>
                         </span>
                     @endif
                 </span>
-
+                @if ($paginator->lastPage() > 20)
+                    <div class="flex items-center gap-2">
+                        <input type="number" wire:model.blur="gotoPageInput"
+                            wire:keydown.enter="gotoPage(gotoPageInput)"
+                            class="input input-sm input-bordered w-16 text-center" min="1"
+                            max="{{ $paginator->lastPage() }}" placeholder="1"
+                            aria-label="{{ __('pagination.go_to_page_label') }}" />
+                        <x-ui.tooltip text="{{ __('pagination.go_to_page_label') }}">
+                            <x-ui.button wire:click="gotoPage(gotoPageInput)" style="ghost" size="sm"
+                                aria-label="{{ __('pagination.go_to_page', ['page' => 'X']) }}">
+                                <x-ui.icon name="chevron-double-right" size="sm" />
+                            </x-ui.button>
+                        </x-ui.tooltip>
+                    </div>
+                @endif
                 {{-- Share Button --}}
                 <x-ui.share-button :url="$shareUrl" size="sm" style="ghost"></x-ui.share-button>
             </div>
         </div>
     </nav>
 @endif
-

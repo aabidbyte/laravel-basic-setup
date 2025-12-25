@@ -1,20 +1,14 @@
 <div>
     {{-- Alpine.js DataTable Component --}}
     {{-- NOTE: $wire is automatically available in Alpine context, do NOT pass as parameter --}}
-    <div x-data="dataTable" x-init="// Clean URL query parameters when requested by Livewire
-    $wire.on('datatable-clean-url', () => {
-        if (window.history.replaceState) {
-            const cleanUrl = window.location.origin + window.location.pathname;
-            window.history.replaceState({}, document.title, cleanUrl);
-        }
-    });">
+    <div x-data="dataTable">
         {{-- Header with Search and Filters --}}
         <div class="mb-6 flex flex-col gap-4">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 {{-- Search --}}
                 <div class="flex-1 max-w-md">
-                    <x-ui.input wire:model.live.debounce.300ms="search" type="text"
-                        placeholder="{{ __('ui.table.search_placeholder') }}" class="input-md"></x-ui.input>
+                    <x-ui.search wire:model.live.debounce.300ms="search" type="text"
+                        placeholder="{{ __('ui.table.search_placeholder') }}"></x-ui.search>
                 </div>
 
                 <div class="flex items-center gap-2">
@@ -38,16 +32,16 @@
                 <div class="flex flex-wrap gap-2 items-center">
                     <span class="text-sm text-base-content/70">{{ __('ui.table.active_filters') }}:</span>
                     @foreach ($this->getActiveFilters() as $filter)
-                        <x-ui.badge size="lg" class="gap-2">
+                        <x-ui.badge size="sm" variant="secondary" class="gap-1">
                             <span class="font-medium">{{ $filter['label'] }}:</span>
                             <span>{{ $filter['valueLabel'] }}</span>
-                            <x-ui.button wire:click="removeFilter('{{ $filter['key'] }}')" type="button" style="ghost"
-                                size="xs" class="btn-circle">
+                            <x-ui.button wire:click="removeFilter('{{ $filter['key'] }}')" type="button"
+                                variant="ghost" size="xs" circle>
                                 <x-ui.icon name="x-mark" size="xs"></x-ui.icon>
                             </x-ui.button>
                         </x-ui.badge>
                     @endforeach
-                    <x-ui.button wire:click="clearFilters" type="button" style="ghost" size="sm">
+                    <x-ui.button wire:click="clearFilters" type="button" variant="link" size="sm">
                         {{ __('ui.actions.clear_all') }}
                     </x-ui.button>
                 </div>
@@ -231,27 +225,17 @@
         </div>
 
         {{-- Pagination --}}
-        <div class="mt-6 flex flex-col sm:flex-row gap-4 items-center justify-between">
-            {{-- Per Page Selector --}}
-            <div class="flex items-center gap-2">
-                <label class="label-text">{{ __('ui.table.per_page') }}:</label>
-                <x-ui.select wire:model.live="perPage" :label="null" class="select-sm" :options="['10' => '10', '15' => '15', '25' => '25', '50' => '50', '100' => '100']"
-                    :prependEmpty="false">
-                </x-ui.select>
-            </div>
-
-            {{-- Pagination Links --}}
-            {{ $this->rows->links('components.datatable.pagination') }}
+        {{ $this->rows->links('components.datatable.pagination') }}
 
 
-        </div>
 
         {{-- Confirmation Modal --}}
         <dialog x-ref="confirmModal" x-show="activeModal === 'confirm-action-modal'" @click.self="cancelAction()"
             class="modal" :class="{ 'modal-open': activeModal === 'confirm-action-modal' }">
             <div class="modal-box" @click.stop>
                 <h3 class="font-bold text-lg mb-4"
-                    x-text="confirmationConfig?.title || '{{ __('ui.actions.confirm') }}'"></h3>
+                    x-text="confirmationConfig?.title || '{{ __('ui.actions.confirm') }}'">
+                </h3>
 
                 <template x-if="confirmationConfig?.type === 'message'">
                     <p class="py-4" x-text="confirmationConfig.message"></p>
