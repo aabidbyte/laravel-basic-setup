@@ -1,6 +1,5 @@
 @props([
     'url' => null, // URL to share (if null, uses current full URL)
-    'queryParams' => null, // Query parameters as array (optional, will be extracted from URL if not provided)
     'tooltipText' => null, // Custom tooltip text (defaults to translation)
     'size' => 'md', // Button size: xs, sm, md, lg
     'style' => 'ghost', // Button style
@@ -11,70 +10,13 @@
     $shareUrl = $url ?? request()->fullUrl();
     $tooltipText = $tooltipText ?? __('ui.table.share_page');
     $copiedText = __('ui.table.url_copied');
-
-    // Extract query parameters from URL if not provided separately
-    if ($queryParams === null && $shareUrl) {
-        $parsedUrl = parse_url($shareUrl);
-        if (isset($parsedUrl['query'])) {
-            parse_str($parsedUrl['query'], $queryParams);
-        } else {
-            $queryParams = [];
-        }
-    }
-    $queryParams = $queryParams ?? [];
 @endphp
 
 <div x-data="{
     copied: false,
-    tooltipText: '{{ $tooltipText }}',
-    copyUrl() {
-        // Get the original URL from PHP (includes correctly formatted query string)
-        const originalUrl = '{{ $shareUrl }}';
-
-        // Extract query string from original URL (PHP already built it correctly with http_build_query)
-        // This preserves bracket notation like filters[role]=value
-        let queryString = '';
-        try {
-            const urlObj = new URL(originalUrl);
-            queryString = urlObj.search; // This includes the '?' if present
-        } catch (e) {
-            // If URL parsing fails, try to extract query string manually
-            const queryIndex = originalUrl.indexOf('?');
-            if (queryIndex !== -1) {
-                queryString = originalUrl.substring(queryIndex);
-            }
-        }
-
-        // Build URL using actual page URL (not Livewire update URL)
-        const baseUrl = window.location.origin + window.location.pathname;
-
-        // Construct final URL with correct base + query string from PHP
-        const url = baseUrl + queryString;
-
-        // Check if original URL was a Livewire update URL
-        const wasLivewireUrl = originalUrl.includes('/livewire-') && originalUrl.includes('/update');
-
-        if (wasLivewireUrl) {
-            console.log('[Share Button] Fixed Livewire update URL to actual page URL');
-        }
-
-        // Debug log: URL being copied
+    tooltipText: null,
+    copyUrl(url) {
         console.log('[Share Button] Copying URL:', url);
-        console.log('[Share Button] URL Length:', url.length);
-        console.log('[Share Button] Query Parameters Object:', @js($queryParams));
-        console.log('[Share Button] Full URL Details:', {
-            finalUrl: url,
-            baseUrl: baseUrl,
-            queryString: queryString,
-            originalUrl: originalUrl,
-            wasLivewireUrl: wasLivewireUrl,
-            extractedQueryString: queryString,
-            windowLocation: {
-                origin: window.location.origin,
-                pathname: window.location.pathname,
-                search: window.location.search,
-            },
-        });
 
         // Check if Clipboard API is available (requires secure context)
         if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -130,10 +72,10 @@
             }, 2000);
         }
     }
-}" class="relative">
+}" x-init="tooltipText = '{{ $tooltipText }}'" class="relative">
     <div class="tooltip tooltip-top" x-bind:data-tip="tooltipText">
-        <button @click="copyUrl()" type="button" class="btn btn-{{ $style }} btn-{{ $size }} btn-square"
-            aria-label="{{ $tooltipText }}">
+        <button @click="copyUrl(@js($shareUrl))" type="button"
+            class="btn btn-{{ $style }} btn-{{ $size }} btn-square" aria-label="{{ $tooltipText }}">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

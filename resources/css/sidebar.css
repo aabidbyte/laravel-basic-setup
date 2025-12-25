@@ -10,10 +10,18 @@
     .sidebar-top-menus .menu-item,
     .sidebar-bottom-menus .menu-item,
     .sidebar-user-menus .menu-item {
-        @apply flex flex-row gap-2 items-center;
+        @apply flex flex-row gap-2 items-center w-full;
 
         > a {
-            @apply flex flex-row gap-2 items-center;
+            @apply flex flex-row gap-2 items-center transition-colors duration-200 w-full p-2 rounded-lg;
+        }
+
+        > a:hover:not(.active) {
+            @apply bg-primary/20;
+        }
+
+        > a.active {
+            @apply bg-accent/80 text-accent-content;
         }
 
         > * {
@@ -23,12 +31,12 @@
 
     /* Top menus section */
     .sidebar-top-menus {
-        @apply p-4 w-full flex flex-col gap-2;
+        @apply p-4 !w-full flex flex-col gap-2;
     }
 
     /* Bottom menus section */
     .sidebar-bottom-menus {
-        @apply p-4 w-full mt-auto;
+        @apply p-4 !w-full mt-auto;
     }
 
     /* User menus section */
