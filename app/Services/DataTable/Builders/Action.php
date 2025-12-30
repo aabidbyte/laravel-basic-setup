@@ -51,14 +51,19 @@ class Action
     /**
      * Modal props
      *
-     * @var array<string, mixed>
+     * @var array<string, mixed>|Closure
      */
-    private array $modalProps = [];
+    private array|Closure $modalProps = [];
 
     /**
      * Conditional visibility
      */
     private bool|Closure $show = true;
+
+    /**
+     * Modal type (blade or livewire)
+     */
+    private string $modalType = 'blade';
 
     /**
      * Button variant (ghost, primary, secondary, etc.)
@@ -150,15 +155,43 @@ class Action
      * Show a modal dialog
      *
      * @param  string  $view  Modal view name
-     * @param  array<string, mixed>  $props  Additional props for modal
+     * @param  array<string, mixed>|Closure  $props  Additional props for modal
      * @return $this
      */
-    public function modal(string $view, array $props = []): self
+    public function modal(string $view, array|Closure $props = []): self
     {
         $this->modal = $view;
         $this->modalProps = $props;
 
         return $this;
+    }
+
+    /**
+     * Show a blade modal dialog
+     *
+     * @param  string  $view  Blade view name
+     * @param  array<string, mixed>|Closure  $props  Props for the view
+     * @return $this
+     */
+    public function bladeModal(string $view, array|Closure $props = []): self
+    {
+        $this->modalType = 'blade';
+
+        return $this->modal($view, $props);
+    }
+
+    /**
+     * Show a livewire modal dialog
+     *
+     * @param  string  $component  Livewire component name
+     * @param  array<string, mixed>|Closure  $props  Props for the component
+     * @return $this
+     */
+    public function livewireModal(string $component, array|Closure $props = []): self
+    {
+        $this->modalType = 'livewire';
+
+        return $this->modal($component, $props);
     }
 
     /**
@@ -281,11 +314,19 @@ class Action
     /**
      * Get the modal props
      *
-     * @return array<string, mixed>
+     * @return array<string, mixed>|Closure
      */
-    public function getModalProps(): array
+    public function getModalProps(): array|Closure
     {
         return $this->modalProps;
+    }
+
+    /**
+     * Get the modal type
+     */
+    public function getModalType(): string
+    {
+        return $this->modalType;
     }
 
     /**
@@ -412,7 +453,9 @@ class Action
             'hasExecute' => $this->execute !== null,
             'hasModal' => $this->modal !== null,
             'modal' => $this->modal,
-            'modalProps' => $this->modalProps,
+            'modalProps' => is_array($this->modalProps) ? $this->modalProps : [],
+            'hasModalClosure' => $this->modalProps instanceof Closure,
+            'modalType' => $this->modalType,
             'confirm' => $this->confirm,
             'confirmMessage' => is_string($this->confirmMessage) ? $this->confirmMessage : null,
             'hasConfirmClosure' => $this->confirmMessage instanceof Closure,

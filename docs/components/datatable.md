@@ -18,8 +18,10 @@ The DataTable system uses a self-rendering component-based approach with Alpine.
 
 ```
 Livewire Component (extends Datatable)
-    ↓ (only contains configuration)
+    ↓ (contains configuration & rendering methods)
 Shared Template (resources/views/components/datatable.blade.php)
+    ↓ (orchestrates sub-views via backend methods)
+Modular Sub-views (resources/views/components/datatable/*.blade.php)
     ↓
 DataTableQueryBuilder (auto-joins, search, filter, sort)
     ↓
@@ -160,6 +162,8 @@ Column::make(__('Name'), 'name')
 
 ### Formatting
 
+**Secure by Default:** All column values are automatically escaped using `e()` to prevent XSS. You must explicitly call `->html()` if you intend to render HTML content within a column.
+
 **Simple formatting:**
 
 ```php
@@ -262,6 +266,31 @@ Column::make(__('Admin Notes'), 'admin_notes')
 Column::make(__('Email'), 'email')
     ->class('text-base-content/70 text-sm')
 ```
+
+### Width and Truncation
+
+Control how columns are sized and how they handle overflow:
+
+**1. Fixed Width with Truncation:**
+Forces a specific width and truncates content with ellipsis if it overflows.
+
+```php
+Column::make(__('Description'), 'description')
+    ->width('200px')
+```
+
+**2. Auto Width with No Wrap (Default):**
+Ensures the column stays on one line and is never cut or truncated. This is the **default behavior** for all columns.
+
+```php
+Column::make(__('Full Name'), 'name')
+    // nowrap() is enabled by default
+```
+
+If you explicitly want to allow wrapping, you can use `->nowrap(false)`.
+
+> [!NOTE]
+> Setting `width()` automatically applies `nowrap` and `truncate`.
 
 ## Filter API
 
@@ -423,6 +452,31 @@ Action::make('delete', __('Delete'))
     ->variant('ghost')     // ghost, primary, secondary, etc.
     ->color('error')       // error, warning, success, etc.
 
+### Modal Actions
+
+DataTable supports two types of dynamic modal actions that can render either a Blade view or a Livewire component.
+
+**1. Blade Modal:**
+
+```php
+Action::make('view', __('View Details'))
+    ->icon('eye')
+    ->bladeModal('components.users.view-modal', fn (User $user) => ['user' => $user])
+```
+
+**2. Livewire Modal:**
+
+```php
+Action::make('edit', __('Fast Edit'))
+    ->icon('pencil')
+    ->livewireModal('modals.user-edit-form', fn (User $user) => ['user' => $user])
+```
+
+**Key Features:**
+- **Dynamic Props**: Pass a closure to resolve properties based on the selected row.
+- **Isolated State**: The modal state (`modalIsOpen`) is managed within the Datatable component.
+- **Auto-Resolution**: Properties are automatically resolved and passed to the view/component.
+
 > [!TIP]
 > **Action Feedback**: Use `NotificationBuilder` within the `execute()` closure to provide visual feedback to the user after an action completes.
 >
@@ -511,11 +565,12 @@ No additional configuration needed - filters are automatically tracked and displ
 
 ### Search Highlighting
 
-Search terms are automatically highlighted in searchable columns with a yellow background. The highlighting:
-- Only applies to searchable columns
-- Preserves HTML safety (escapes before highlighting)
-- Uses case-insensitive matching
-- Wraps matches in `<mark>` tags with custom styling
+Search terms are automatically highlighted in searchable columns with a yellow background. The highlighting is built with security and flexibility in mind:
+
+- **HTML-Safe**: Highlighting uses a smart regex-based algorithm that only targets text content, avoiding matches within HTML tags or attributes. This prevents breaking tag structures or introducing security risks in HTML-enabled columns.
+- **Secure-by-Default**: For non-HTML columns, highlighting is applied *after* escaping, ensuring that malicious content is neutralized first.
+- **Support for Components**: Highlighting works seamlessly across components (like Badges), plain text, and custom HTML formatting.
+- **Automatic Matching**: Uses case-insensitive matching and wraps matches in `<mark>` tags with premium styling.
 
 ### Per-Page Selector
 
@@ -584,100 +639,53 @@ Following `docs/alpinejs/livewire-integration.md`:
 }
 ```
 
-### Example HTML
-
 ```blade
-<div x-data="dataTable()" 
+<div x-data="dataTable" 
     @datatable-action-confirmed.window="confirmAction($event.detail)"
     @datatable-action-cancelled.window="cancelAction()">
 
-    {{-- Header with Search and Bulk Actions --}}
-    <div class="mb-6 flex flex-col gap-4">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            {{-- Search --}}
-            <div class="flex-1 max-w-md">
-                <x-ui.search wire:model.live.debounce.300ms="search" />
-            </div>
+    {!! $this->renderFilters() !!}
 
-            {{-- Bulk Actions Dropdown (Conditional) --}}
-            @if ($this->hasSelection)
-                <div class="flex items-center gap-4">
-                    <span class="text-sm font-medium text-base-content/70">
-                        {{ $this->selectedCount }} selected
-                    </span>
-                    
-                    <x-ui.dropdown placement="bottom-start" menu menuSize="sm">
-                        <x-slot:trigger>
-                            <x-ui.button type="button" style="outline" size="sm" class="gap-2">
-                                {{ __('ui.table.bulk_actions') }}
-                                <x-ui.icon name="chevron-down" size="sm"></x-ui.icon>
-                            </x-ui.button>
-                        </x-slot:trigger>
+    <div class="overflow-x-auto">
+        <table class="table">
+            {!! $this->renderTableHeader() !!}
 
-                        @foreach ($this->getBulkActions() as $action)
-                            <li>
-                                <button @click="executeActionWithConfirmation('{{ $action['key'] }}', null, true)"
-                                    type="button" class="flex items-center gap-2 w-full text-left">
-                                    @if ($action['icon'])
-                                        <x-ui.icon :name="$action['icon']" size="sm"></x-ui.icon>
-                                    @endif
-                                    {{ $action['label'] }}
-                                </button>
-                            </li>
-                        @endforeach
-                    </x-ui.dropdown>
-
-                    <x-ui.button wire:click="clearSelection()" type="button" style="ghost" size="sm" class="text-error hover:bg-error/10">
-                        <x-ui.icon name="x-mark" size="sm"></x-ui.icon>
-                        {{ __('ui.actions.clear_selection') }}
-                    </x-ui.button>
-                </div>
-            @else
-                {{-- Standard filters/per-page buttons --}}
-            @endif
-        </div>
+            <tbody>
+                @foreach($this->rows as $row)
+                    {!! $this->renderTableRow($row) !!}
+                @endforeach
+            </tbody>
+        </table>
     </div>
 
-    {{-- Table --}}
-    <table class="table">
-        <thead>
-            <tr>
-                <th>
-                    <input 
-                        type="checkbox" 
-                        wire:click="toggleSelectAll()"
-                        @checked($this->isAllSelected)
-                        wire:key="select-all-checkbox-{{ $this->isAllSelected ? '1' : '0' }}"
-                        class="checkbox"
-                    >
-                </th>
-                {{-- ... --}}
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($this->rows as $row)
-                <tr 
-                    wire:key="row-{{ $row->uuid }}"
-                    wire:click="rowClicked('{{ $row->uuid }}')"
-                    @class(['bg-base-200' => $this->isSelected($row->uuid)])
-                    class="cursor-pointer hover:bg-base-200"
-                >
-                    <td @click.stop>
-                        <input 
-                            type="checkbox" 
-                            wire:model.live="selected"
-                            value="{{ $row->uuid }}"
-                            wire:key="checkbox-{{ $row->uuid }}"
-                            class="checkbox"
-                        >
-                    </td>
-                    {{-- ... --}}
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
+    {{ $this->rows->links('components.datatable.pagination') }}
 </div>
 ```
+
+## Rendering API
+
+The Datatable uses backend-driven rendering to keep the main template clean and allow for easy customization.
+
+### Rendering Methods
+
+These methods are defined in the `Datatable` base class and can be overridden in your component if you need custom UI for specific sections:
+
+| Method | Description |
+|--------|-------------|
+| `renderFilters()` | Renders the search, bulk actions, and filter toggles. |
+| `renderTableHeader()` | Renders the `<thead>` with column headers and sorting UI. |
+| `renderTableRow($row)` | Renders a single `<tr>` with data cells and actions. |
+| `renderRowActions($row)` | Renders the row actions dropdown for a specific row. |
+
+### Modular Sub-views
+
+The rendering methods use dedicated sub-views located in `resources/views/components/datatable/`:
+
+- `filters.blade.php`
+- `header.blade.php`
+- `row.blade.php`
+- `actions.blade.php`
+- `pagination.blade.php`
 
 ## Advanced Features
 

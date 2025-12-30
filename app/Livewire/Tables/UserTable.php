@@ -117,6 +117,11 @@ class UserTable extends Datatable
                 ->variant('ghost');
         }
 
+        $actions[] = Action::make('view_modal', __('ui.actions.view_details'))
+            ->icon('eye')
+            ->bladeModal('components.users.view-modal', fn (User $user) => ['user' => $user])
+            ->variant('ghost');
+
         // Only add edit action if route exists
         if (Route::has('users.edit')) {
             $actions[] = Action::make('edit', __('ui.actions.edit'))

@@ -33,6 +33,7 @@ return [
         'cancel' => 'Cancel',
         'edit' => 'Edit',
         'view' => 'View',
+        'view_details' => 'View Details',
         'activate_selected' => 'Activate Selected',
         'deactivate_selected' => 'Deactivate Selected',
         'deleted_successfully' => ':user deleted successfully',
@@ -251,6 +252,7 @@ return [
         'select_all' => 'Select All',
         'select_page' => 'Select Page',
         'select_option' => 'Select an option',
+        'action_modal_title' => 'Action Preview',
         'bulk_actions' => 'Bulk Actions',
         'filters' => 'Filters',
         'active_filters' => 'Active filters',
@@ -283,6 +285,22 @@ return [
                 'verified' => 'Verified',
                 'created_at' => 'Created At',
             ],
+            ],
         ],
+
+    // Users
+    'users' => [
+        'personal_info' => 'Personal Information',
+        'account_info' => 'Account Information',
+        'name' => 'Name',
+        'email' => 'Email',
+        'username' => 'Username',
+        'uuid' => 'UUID',
+        'status' => 'Status',
+        'active' => 'Active',
+        'inactive' => 'Inactive',
+        'created_at' => 'Created At',
+        'last_login_at' => 'Last Login At',
+        'user_not_found' => 'User not found',
     ],
 ];

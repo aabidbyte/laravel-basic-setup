@@ -288,6 +288,23 @@ abstract class Datatable extends Component
     }
 
     /**
+     * Active modal component or view
+     */
+    public ?string $modalComponent = null;
+
+    /**
+     * Active modal props
+     *
+     * @var array<string, mixed>
+     */
+    public array $modalProps = [];
+
+    /**
+     * Active modal type (blade or livewire)
+     */
+    public string $modalType = 'blade';
+
+    /**
      * Mount the component and load query string parameters and preferences.
      * Query string parameters take precedence over saved preferences.
      * If query string parameters are present, they are saved as new preferences.
@@ -461,21 +478,25 @@ abstract class Datatable extends Component
      */
     public function getRowActionsForRow(mixed $row): array
     {
-        return collect($this->rowActions())
-            ->filter(fn (Action $action) => $action->isVisible($row))
-            ->map(function (Action $action) use ($row) {
-                $array = $action->toArray();
+        return array_map(function (Action $action) use ($row) {
+            $data = $action->toArray();
 
-                // Resolve route if it's a closure
-                $route = $action->getRoute();
-                if ($route instanceof \Closure) {
-                    $array['route'] = $route($row);
-                }
+            // Resolve route if it's a closure
+            if ($action->getRoute() instanceof \Closure) {
+                $data['route'] = ($action->getRoute())($row);
+            } else {
+                $data['route'] = $action->getRoute();
+            }
 
-                return $array;
-            })
-            ->values()
-            ->toArray();
+            // Resolve modal props if it's a closure
+            if ($action->getModalProps() instanceof \Closure) {
+                $data['modalProps'] = ($action->getModalProps())($row);
+            } else {
+                $data['modalProps'] = $action->getModalProps();
+            }
+
+            return $data;
+        }, array_filter($this->rowActions(), fn (Action $action) => $action->isVisible($row)));
     }
 
     /**
@@ -530,6 +551,38 @@ abstract class Datatable extends Component
     }
 
     /**
+     * Render the filters section
+     */
+    public function renderFilters(): string
+    {
+        return view('components.datatable.filters')->render();
+    }
+
+    /**
+     * Render the table header
+     */
+    public function renderTableHeader(): string
+    {
+        return view('components.datatable.header')->render();
+    }
+
+    /**
+     * Render a table row
+     */
+    public function renderTableRow(mixed $row): string
+    {
+        return view('components.datatable.row', ['row' => $row])->render();
+    }
+
+    /**
+     * Render row actions
+     */
+    public function renderRowActions(mixed $row): string
+    {
+        return view('components.datatable.actions', ['row' => $row])->render();
+    }
+
+    /**
      * Render a column value
      *
      * @param  array<string, mixed>  $columnData  Column array data
@@ -537,7 +590,6 @@ abstract class Datatable extends Component
      */
     public function renderColumn(array $columnData, mixed $row): string
     {
-
         // Find the Column instance
         $column = collect($this->columns())
             ->first(fn (Column $col) => $col->getField() === $columnData['field']);
@@ -546,70 +598,79 @@ abstract class Datatable extends Component
             return '';
         }
 
-        // Check for content callback with component type - use resolve method
+        // 1. Resolve Value (Component, Label, or Field)
+        $value = '';
         if ($column->getContentCallback() !== null && $column->getComponentType() !== null) {
-
-            return $column->resolve($row);
-        }
-
-        // Check for label callback (non-DB column)
-        $labelCallback = $column->getLabelCallback();
-        if ($labelCallback !== null) {
-            $value = $labelCallback($row, $column);
-
-            return $column->isHtml() ? $value : e($value);
-        }
-
-        // Get value from row
-        $field = $column->getField();
-        if ($field === null) {
-            return '';
-        }
-
-        // Handle relationship fields (e.g., 'address.city.name')
-        if ($column->hasRelationship()) {
-            $value = data_get($row, $field);
+            $value = $column->resolve($row);
+        } elseif ($column->getLabelCallback() !== null) {
+            $value = ($column->getLabelCallback())($row, $column);
         } else {
-            $value = $row->{$field} ?? '';
+            $field = $column->getField();
+            if ($field) {
+                $value = $column->hasRelationship() ? data_get($row, $field) : ($row->{$field} ?? '');
+            }
         }
 
-        // Check for custom view
+        // 2. Handle Custom View (Skips further processing to ensure view integrity)
         $view = $column->getView();
         if ($view !== null) {
             return view($view, ['value' => $value, 'row' => $row, 'column' => $column])->render();
         }
 
-        // Check for format callback
+        // 3. Apply Format Callback
         $format = $column->getFormat();
         if ($format !== null) {
             $value = $format($value, $row, $column);
         }
 
-        // Apply search highlighting if searchable and search term exists
-        if ($column->isSearchable() && ! empty($this->search)) {
-            $value = $this->highlightSearchTerm($value, $this->search);
+        // 4. Security: Escape if not explicitly marked as HTML
+        // Note: Component resolution ($column->resolve) and custom formatting for HTML columns should handle their own safety
+        if (! $column->isHtml() && ! $column->getComponentType()) {
+            $value = e((string) $value);
         }
 
-        // Return escaped or HTML
-        return $value;
+        // 5. Apply Search Highlighting (Safe for both HTML and Plain Text)
+        if ($column->isSearchable() && ! empty($this->search)) {
+            $value = $this->highlightSearchTerm((string) $value, $this->search);
+        }
+
+        return (string) $value;
     }
 
     /**
-     * Highlight search term in value
+     * Highlight search term in value (HTML-safe)
      *
-     * @param  mixed  $value  Value to highlight
+     * @param  string  $value  Value to highlight
      * @param  string  $search  Search term
      */
-    protected function highlightSearchTerm(mixed $value, string $search): string
+    protected function highlightSearchTerm(string $value, string $search): string
     {
         if (empty($search) || empty($value)) {
-            return (string) $value;
+            return $value;
         }
 
-        $value = (string) $value;
-        $pattern = '/('.preg_quote($search, '/').')/i';
+        $quotedSearch = preg_quote($search, '/');
 
-        return preg_replace($pattern, '<mark class="bg-warning/30 rounded">$1</mark>', $value);
+        // Split the string into HTML tags and text content
+        // This ensures we only highlight matches in actual text nodes
+        $parts = preg_split('/(<[^>]*>)/i', $value, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+        $result = '';
+
+        if ($parts === false) {
+            return $value;
+        }
+
+        foreach ($parts as $part) {
+            if (str_starts_with($part, '<') && str_ends_with($part, '>')) {
+                // It's an HTML tag, leave it untouched
+                $result .= $part;
+            } else {
+                // It's a text node, highlight matches
+                $result .= preg_replace('/(' . $quotedSearch . ')/i', '<mark class="bg-warning/30 rounded">$1</mark>', $part);
+            }
+        }
+
+        return $result;
     }
 
     /**
@@ -818,6 +879,49 @@ abstract class Datatable extends Component
         $config['required'] = true;
 
         return $config;
+    }
+
+    /**
+     * Open a modal for a row action
+     *
+     * @param  string  $actionKey  Action key
+     * @param  string  $uuid  Row UUID
+     */
+    public function openActionModal(string $actionKey, string $uuid): void
+    {
+        $action = $this->findRowAction($actionKey);
+        if ($action === null) {
+            return;
+        }
+
+        $model = $this->findModelByUuid($uuid);
+        if ($model === null || ! $action->isVisible($model)) {
+            return;
+        }
+
+        $this->modalComponent = $action->getModal();
+        $this->modalType = $action->getModalType();
+
+        $props = $action->getModalProps();
+        if ($props instanceof \Closure) {
+            $this->modalProps = $props($model);
+        } else {
+            $this->modalProps = $props;
+        }
+
+        $this->dispatch('open-datatable-modal');
+    }
+
+    /**
+     * Close the action modal and reset state
+     */
+    public function closeActionModal(): void
+    {
+        $this->modalComponent = null;
+        $this->modalProps = [];
+        $this->modalType = 'blade';
+        
+        $this->dispatch('close-datatable-modal');
     }
 
     /**

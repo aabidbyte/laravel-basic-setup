@@ -1,232 +1,20 @@
 <div>
     {{-- Alpine.js DataTable Component --}}
     {{-- NOTE: $wire is automatically available in Alpine context, do NOT pass as parameter --}}
-    <div x-data="dataTable" 
+    <div x-data="dataTable"
         @datatable-action-confirmed.window="confirmAction($event.detail)"
         @datatable-action-cancelled.window="cancelAction()">
-        {{-- Header with Search and Filters --}}
-        <div class="mb-6 flex flex-col gap-4">
-            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                {{-- Search --}}
-                <div class="flex-1 max-w-md" wire:ignore>
-                    <x-ui.search wire:model.live.debounce.300ms="search" type="text"
-                        placeholder="{{ __('ui.table.search_placeholder') }}"></x-ui.search>
-                </div>
 
-                {{-- Bulk Actions Dropdown --}}
-                @if ($this->hasSelection)
-                    <div class="flex items-center gap-4">
-                        <span class="text-sm font-medium text-base-content/70">{{ $this->selectedCount }} {{ __('ui.table.selected') }}</span>
-                        
-                        <x-ui.dropdown placement="bottom-start" menu menuSize="sm">
-                            <x-slot:trigger>
-                                <x-ui.button type="button" style="outline" size="sm" class="gap-2">
-                                    {{ __('ui.table.bulk_actions') }}
-                                    <x-ui.icon name="chevron-down" size="sm"></x-ui.icon>
-                                </x-ui.button>
-                            </x-slot:trigger>
-
-                            @foreach ($this->getBulkActions() as $action)
-                                <li>
-                                    @if ($action['confirm'])
-                                        <button @click="executeActionWithConfirmation('{{ $action['key'] }}', null, true)"
-                                            type="button" class="flex items-center gap-2 w-full text-left">
-                                            @if ($action['icon'])
-                                                <x-ui.icon :name="$action['icon']" size="sm"></x-ui.icon>
-                                            @endif
-                                            {{ $action['label'] }}
-                                        </button>
-                                    @else
-                                        <button wire:click="executeBulkAction('{{ $action['key'] }}')" type="button"
-                                            class="flex items-center gap-2 w-full text-left">
-                                            @if ($action['icon'])
-                                                <x-ui.icon :name="$action['icon']" size="sm"></x-ui.icon>
-                                            @endif
-                                            {{ $action['label'] }}
-                                        </button>
-                                    @endif
-                                </li>
-                            @endforeach
-                        </x-ui.dropdown>
-
-                        <x-ui.button wire:click="clearSelection()" type="button" style="ghost" size="sm" class="text-error hover:bg-error/10">
-                            <x-ui.icon name="x-mark" size="sm"></x-ui.icon>
-                            {{ __('ui.actions.clear_selection') }}
-                        </x-ui.button>
-                    </div>
-            @else
-                <div class="flex items-center gap-2">
-                    {{-- Filter Toggle Button --}}
-                    <x-ui.button @click="toggleFilters()" type="button" style="ghost" size="md">
-                        <x-ui.icon name="funnel" size="sm"></x-ui.icon>
-                        {{ __('ui.table.filters') }}
-                        @if (count($this->getActiveFilters()) > 0)
-                            <x-ui.badge variant="primary"
-                                size="sm">{{ count($this->getActiveFilters()) }}</x-ui.badge>
-                        @endif
-                    </x-ui.button>
-
-                    {{-- Share Button --}}
-                    <x-ui.share-button :url="$this->getShareUrl()" size="md" style="ghost"></x-ui.share-button>
-                </div>
-            @endif
-        </div>
-
-            {{-- Active Filters Badges --}}
-            @if (count($this->getActiveFilters()) > 0)
-                <div class="flex flex-wrap gap-2 items-center">
-                    <span class="text-sm text-base-content/70">{{ __('ui.table.active_filters') }}:</span>
-                    @foreach ($this->getActiveFilters() as $filter)
-                        <x-ui.badge size="sm" variant="secondary" class="gap-1">
-                            <span class="font-medium">{{ $filter['label'] }}:</span>
-                            <span>{{ $filter['valueLabel'] }}</span>
-                            <x-ui.button wire:click="removeFilter('{{ $filter['key'] }}')" type="button"
-                                variant="ghost" size="xs" circle>
-                                <x-ui.icon name="x-mark" size="xs"></x-ui.icon>
-                            </x-ui.button>
-                        </x-ui.badge>
-                    @endforeach
-                    <x-ui.button wire:click="clearFilters" type="button" variant="link" size="sm">
-                        {{ __('ui.actions.clear_all') }}
-                    </x-ui.button>
-                </div>
-            @endif
-        </div>
-
-        {{-- Filters Panel --}}
-        <div x-show="openFilters" x-collapse class="mb-6">
-            <div class="card card-border">
-                <div class="card-body">
-                    <h3 class="card-title text-lg mb-4">{{ __('ui.table.filters') }}</h3>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        @foreach ($this->getFilters() as $filter)
-                            @if ($filter['type'] === 'select')
-                                <x-ui.select wire:model.live="filters.{{ $filter['key'] }}" :label="$filter['label']"
-                                    class="select-md" :options="$filter['options']">
-                                </x-ui.select>
-                            @endif
-                        @endforeach
-                    </div>
-
-                    <div class="card-actions justify-end mt-4">
-                        <x-ui.button wire:click="clearFilters" type="button" style="ghost" size="sm">
-                            {{ __('ui.actions.clear_filters') }}
-                        </x-ui.button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        
+        {!! $this->renderFilters() !!}
 
         {{-- Table --}}
         <div class="overflow-x-auto">
             <table class="table">
-                <thead>
-                    <tr>
-                        {{-- Select All Checkbox --}}
-                        <th class="w-12">
-                            <input type="checkbox" wire:click="toggleSelectAll()" @checked($this->isAllSelected)
-                                wire:key="select-all-checkbox-{{ $this->isAllSelected ? '1' : '0' }}"
-                                class="checkbox checkbox-sm">
-                        </th>
+                {!! $this->renderTableHeader() !!}
 
-                        {{-- Column Headers --}}
-                        @foreach ($this->getColumns() as $column)
-                            @if ($column['sortable'])
-                                <th wire:click="sort('{{ $column['field'] }}')"
-                                    class="cursor-pointer select-none hover:bg-base-200">
-                                    <div class="flex items-center gap-2 justify-between">
-                                        <span>{{ $column['label'] }}</span>
-                                        @if ($sortBy === $column['field'])
-                                            <x-ui.icon :name="$sortDirection === 'asc' ? 'chevron-up' : 'chevron-down'" size="xs"></x-ui.icon>
-                                        @endif
-                                    </div>
-                                </th>
-                            @else
-                                <th>
-                                    <div class="flex items-center gap-2">
-                                        <span>{{ $column['label'] }}</span>
-                                    </div>
-                                </th>
-                            @endif
-                        @endforeach
-
-                        {{-- Actions Column --}}
-                        <th class="w-24">{{ __('ui.table.actions') }}</th>
-                    </tr>
-                </thead>
                 <tbody>
                     @forelse ($this->rows as $row)
-                        <tr wire:key="row-{{ $row->uuid }}" wire:click="rowClicked('{{ $row->uuid }}')"
-                            @mouseenter="setHoveredRow('{{ $row->uuid }}')" @mouseleave="setHoveredRow(null)"
-                            @class([
-                                'bg-base-200' => $this->isSelected($row->uuid),
-                                'cursor-pointer hover:bg-base-200 transition-colors',
-                            ])>
-                            {{-- Selection Checkbox --}}
-                            <td @click.stop>
-                                <input type="checkbox" wire:model.live="selected" value="{{ $row->uuid }}"
-                                    wire:key="checkbox-{{ $row->uuid }}" class="checkbox checkbox-sm">
-                            </td>
-
-                            {{-- Data Columns --}}
-                            @foreach ($this->getColumns() as $column)
-                                <td class="{{ $column['class'] }}">
-                                    {!! $this->renderColumn($column, $row) !!}
-                                </td>
-                            @endforeach
-
-                            {{-- Actions Dropdown --}}
-                            <td @click.stop>
-                                <x-ui.dropdown placement="end" menu menuSize="sm">
-                                    <x-slot:trigger>
-                                        <x-ui.button type="button" style="ghost" size="sm" class="btn-square">
-                                            <x-ui.icon name="ellipsis-vertical" size="sm"></x-ui.icon>
-                                        </x-ui.button>
-                                    </x-slot:trigger>
-
-                                    @foreach ($this->getRowActionsForRow($row) as $action)
-                                        @if ($action['hasRoute'])
-                                            <li>
-                                                <a href="{{ $action['route'] }}" wire:navigate
-                                                    class="flex items-center gap-2">
-                                                    @if ($action['icon'])
-                                                        <x-ui.icon :name="$action['icon']" size="sm"></x-ui.icon>
-                                                    @endif
-                                                    {{ $action['label'] }}
-                                                </a>
-                                            </li>
-                                        @else
-                                            @if ($action['confirm'])
-                                                <li>
-                                                    <x-ui.button
-                                                        @click="executeActionWithConfirmation('{{ $action['key'] }}', '{{ $row->uuid }}', false)"
-                                                        type="button" class="flex items-center gap-2 w-full">
-                                                        @if ($action['icon'])
-                                                            <x-ui.icon :name="$action['icon']" size="sm"></x-ui.icon>
-                                                        @endif
-                                                        {{ $action['label'] }}
-                                                    </x-ui.button>
-                                                </li>
-                                            @else
-                                                <li>
-                                                    <x-ui.button
-                                                        wire:click="executeAction('{{ $action['key'] }}', '{{ $row->uuid }}')"
-                                                        type="button" class="flex items-center gap-2 w-full">
-                                                        @if ($action['icon'])
-                                                            <x-ui.icon :name="$action['icon']" size="sm"></x-ui.icon>
-                                                        @endif
-                                                        {{ $action['label'] }}
-                                                    </x-ui.button>
-                                                </li>
-                                            @endif
-                                        @endif
-                                    @endforeach
-                                </x-ui.dropdown>
-                            </td>
-                        </tr>
+                        {!! $this->renderTableRow($row) !!}
                     @empty
                         <tr>
                             <td colspan="{{ count($this->getColumns()) + 2 }}" class="text-center py-12">
@@ -243,6 +31,21 @@
 
         {{-- Pagination --}}
         {{ $this->rows->links('components.datatable.pagination') }}
+
+        {{-- Dynamic Action Modal --}}
+        <div x-data="{ modalIsOpen: false }"
+            @open-datatable-modal.window="modalIsOpen = true"
+            @close-datatable-modal.window="modalIsOpen = false">
+            <x-ui.base-modal open-state="modalIsOpen" use-parent-state="true" :title="__('ui.table.action_modal_title')"
+                on-close="$wire.closeActionModal()">
+                @if ($modalComponent)
+                    @if ($modalType === 'blade')
+                        @include($modalComponent, $modalProps)
+                    @else
+                        <livewire:is :component="$modalComponent" v-bind="$modalProps" :key="'modal-' . $modalComponent" />
+                    @endif
+                @endif
+            </x-ui.base-modal>
+        </div>
     </div>{{-- End Alpine.js DataTable Component --}}
 </div>
-

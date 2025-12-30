@@ -96,6 +96,16 @@ class Column
     private array $componentAttributes = [];
 
     /**
+     * Column width (e.g., '200px', '20rem')
+     */
+    private ?string $width = null;
+
+    /**
+     * Whether to prevent text wrapping
+     */
+    private bool $nowrap = true;
+
+    /**
      * Create a new Column instance
      *
      * @param  string  $label  Column label (displayed in header)
@@ -207,6 +217,24 @@ class Column
     {
         $this->hidden = $condition;
 
+        return $this;
+    }
+
+    /**
+     * Set the column width
+     */
+    public function width(string $width): self
+    {
+        $this->width = $width;
+        return $this;
+    }
+
+    /**
+     * Prevent text wrapping in this column
+     */
+    public function nowrap(bool $nowrap = true): self
+    {
+        $this->nowrap = $nowrap;
         return $this;
     }
 
@@ -458,6 +486,8 @@ class Column
             'hasLabelCallback' => $this->labelCallback !== null,
             'hasContentCallback' => $this->contentCallback !== null,
             'componentType' => $this->componentType,
+            'width' => $this->width,
+            'nowrap' => $this->nowrap,
         ];
     }
 }
