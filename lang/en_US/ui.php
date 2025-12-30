@@ -35,6 +35,7 @@ return [
         'view' => 'View',
         'activate_selected' => 'Activate Selected',
         'deactivate_selected' => 'Deactivate Selected',
+        'deleted_successfully' => ':user deleted successfully',
     ],
 
     // Auth Pages

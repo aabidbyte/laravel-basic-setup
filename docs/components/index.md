@@ -23,6 +23,5 @@ This documentation is organized into sections for easy navigation. Each section 
 - [Alpine.js Integration & Best Practices](alpinejs-integration-and-best-practices.md)
 - [Component Usage Guidelines](component-usage-guidelines.md)
 - [Table System](table-system.md)
-- [DataTable System](datatable-system.md)
+- [DataTable System](datatable.md)
 - [Component Index](component-index.md)
-- [Changelog](changelog.md)

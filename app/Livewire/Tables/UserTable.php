@@ -13,6 +13,7 @@ use App\Services\DataTable\Builders\Action;
 use App\Services\DataTable\Builders\BulkAction;
 use App\Services\DataTable\Builders\Column;
 use App\Services\DataTable\Builders\Filter;
+use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -130,7 +131,10 @@ class UserTable extends Datatable
             ->variant('ghost')
             ->color('error')
             ->confirm(__('ui.actions.confirm_delete'))
-            ->execute(fn (User $user) => $user->delete())
+            ->execute(function (User $user) {
+                $user->delete();
+                NotificationBuilder::make()->title(__('ui.actions.deleted_successfully',["user" => $user->name]))->success()->send();
+            })
             ->show(fn (User $user) => Auth::user()?->can('delete', $user) ?? false);
 
         return $actions;

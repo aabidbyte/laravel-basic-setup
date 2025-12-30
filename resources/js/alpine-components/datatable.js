@@ -1,144 +1,98 @@
 /**
  * Alpine.js DataTable Component
  *
- * Provides frontend state management for DataTable components:
- * - Filter panel visibility
- * - Modal state
- * - Row hover state
- *
- * IMPORTANT: Following project conventions from docs/alpinejs/livewire-integration.md:
- * - $wire is reactive and automatically available in Alpine context (do NOT pass as parameter)
- * - Validate $wire before calling methods to ensure component exists
- *
- * Usage:
- * <div x-data="dataTable()">
- *   ...
- * </div>
+ * Provides frontend state management for DataTable components.
  */
 export function dataTable() {
     return {
-        // ===== Local Alpine State (UI only) =====
+        // ===== Local Alpine State =====
         openFilters: false,
-        activeModal: null,
         hoveredRow: null,
         pendingAction: null,
-        confirmationConfig: null,
 
         // ===== Filter Methods =====
-
-        /**
-         * Toggle filter panel visibility
-         */
         toggleFilters() {
             this.openFilters = !this.openFilters;
         },
 
-        /**
-         * Close filter panel
-         */
         closeFilters() {
             this.openFilters = false;
         },
 
-        // ===== Modal Methods =====
-
-        // ===== Modal Methods =====
-
-        /**
-         * Open confirmation modal
-         */
-        openModal() {
-            this.activeModal = "confirm-action-modal";
-            if (this.$refs.confirmModal) {
-                this.$refs.confirmModal.showModal();
-            }
-        },
-
-        /**
-         * Close the active modal
-         */
-        closeModal() {
-            this.activeModal = null;
-            if (this.$refs.confirmModal) {
-                this.$refs.confirmModal.close();
-            }
-        },
+        // ===== Action Methods =====
 
         /**
          * Execute action with confirmation if needed
-         *
-         * @param {string} actionKey - Action key
-         * @param {string} uuid - Row UUID (optional for bulk actions)
-         * @param {boolean} isBulk - Whether this is a bulk action
          */
         executeActionWithConfirmation(actionKey, uuid = null, isBulk = false) {
-            if (typeof $wire === "undefined" || !$wire) {
+            const wire = this.$wire || this.$el.closest('[wire\\:id]')?.__livewire;
+            if (!wire) {
                 return;
             }
 
-            this.pendingAction = { actionKey, uuid, isBulk };
+            const method = isBulk ? 'getBulkActionConfirmation' : 'getActionConfirmation';
 
-            const method = isBulk
-                ? "getBulkActionConfirmation"
-                : "getActionConfirmation";
-
-            if (typeof $wire[method] !== "function") {
-                this.confirmAction();
-                return;
-            }
-
-            $wire[method](actionKey, uuid).then((config) => {
+            wire[method](actionKey, uuid).then((config) => {
                 if (config?.required) {
-                    this.confirmationConfig = config;
-                    this.openModal();
+                    this.pendingAction = { actionKey, uuid, isBulk };
+                    
+                    const eventPayload = {
+                        title: config.title || "Confirm Action",
+                        message: config.message || config.content || "Are you sure you want to proceed?",
+                        confirmLabel: config.confirmText || "Confirm",
+                        cancelLabel: config.cancelText || "Cancel",
+                        confirmEvent: 'datatable-action-confirmed',
+                        confirmData: { actionKey, uuid, isBulk }
+                    };
+
+                    window.dispatchEvent(new CustomEvent('confirm-modal', {
+                        detail: eventPayload,
+                        bubbles: true
+                    }));
                 } else {
-                    this.confirmAction();
+                    this.confirmAction({ actionKey, uuid, isBulk });
                 }
+            }).catch(() => {
+                // Silently handle error
             });
         },
 
         /**
-         * Confirm and execute pending action
+         * Confirm and execute action
+         * Triggered via global window event listener in Blade
          */
-        confirmAction() {
-            if (!this.pendingAction || typeof $wire === "undefined" || !$wire) {
+        confirmAction(data) {
+            const actionData = data || this.pendingAction;
+            const wire = this.$wire || this.$el.closest('[wire\\:id]')?.__livewire;
+            
+            if (!actionData || !wire) {
                 return;
             }
 
-            const { actionKey, uuid, isBulk } = this.pendingAction;
-
+            const { actionKey, uuid, isBulk } = actionData;
+            
             if (isBulk) {
-                $wire.executeBulkAction(actionKey);
+                wire.executeBulkAction(actionKey);
             } else {
-                $wire.executeAction(actionKey, uuid);
+                wire.executeAction(actionKey, uuid);
             }
 
             this.pendingAction = null;
-            this.confirmationConfig = null;
-            this.closeModal();
         },
 
         /**
-         * Cancel pending action
+         * Clear pending action if cancelled
          */
         cancelAction() {
             this.pendingAction = null;
-            this.confirmationConfig = null;
-            this.closeModal();
         },
 
-        /**
-         * Set hovered row
-         *
-         * @param {string|null} uuid - Row UUID or null
-         */
         setHoveredRow(uuid) {
             this.hoveredRow = uuid;
         },
     };
 }
 
-// Register globally if Alpine is available
-if (typeof window.Alpine !== "undefined") {
-    window.Alpine.data("dataTable", dataTable);
+if (typeof window.Alpine !== 'undefined') {
+    window.Alpine.data('dataTable', dataTable);
 }

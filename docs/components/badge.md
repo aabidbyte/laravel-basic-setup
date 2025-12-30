@@ -151,3 +151,10 @@ When rendering programmatically, the `text` prop is used instead of the slot.
 
 ---
 
+## History
+
+### Centralized Badge Component (2025-01-XX)
+- **Standardization**: Created `<x-ui.badge>` to unify all status indicators and labels across the app.
+- **Style Support**: Integrated comprehensive support for all DaisyUI badge variants (solid, outline, soft, ghost, etc.).
+- **Migration**: Replaced arbitrary badge HTML in Two-Factor settings and navigation items with the new component.
+

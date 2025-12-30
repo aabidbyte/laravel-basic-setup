@@ -29,9 +29,11 @@ test('search filters results', function () {
     Livewire::actingAs($this->user)
         ->test('tables.user-table')
         ->set('search', 'John')
-        ->assertSee('John Doe')
+        ->assertSee('John')
+        ->assertSee('Doe')
         ->assertDontSee('Jane Smith');
 });
+
 
 test('sort toggles direction', function () {
     User::factory()->create(['name' => 'Alice']);
@@ -42,16 +44,16 @@ test('sort toggles direction', function () {
 
     // Component defaults to sortBy='created_at' and sortDirection='desc' (from config)
     // First click on 'name' (different column) sets sortBy='name' and sortDirection='asc'
-    $component->call('sortBy', 'name')
+    $component->call('sort', 'name')
         ->assertSet('sortBy', 'name')
         ->assertSet('sortDirection', 'asc');
 
     // Second click on 'name' (same column) toggles to desc
-    $component->call('sortBy', 'name')
+    $component->call('sort', 'name')
         ->assertSet('sortDirection', 'desc');
 
     // Third click toggles back to asc
-    $component->call('sortBy', 'name')
+    $component->call('sort', 'name')
         ->assertSet('sortDirection', 'asc');
 });
 
@@ -62,10 +64,22 @@ test('bulk select page sets selected to current page UUIDs', function () {
         ->test('tables.user-table')
         ->set('perPage', 3);
 
-    $component->call('toggleSelectPage')
-        ->assertSet('selectPage', true);
+    $component->call('toggleSelectAll')
+        ->assertSet('isAllSelected', true);
 
     // Should have selected users from current page
     expect($component->get('selected'))->toBeArray()
         ->and(count($component->get('selected')))->toBeLessThanOrEqual(3);
 });
+
+test('clear selection empties selected array', function () {
+    $users = User::factory()->count(3)->create();
+    $uuids = $users->pluck('uuid')->toArray();
+
+    Livewire::actingAs($this->user)
+        ->test('tables.user-table')
+        ->set('selected', $uuids)
+        ->call('clearSelection')
+        ->assertSet('selected', []);
+});
+

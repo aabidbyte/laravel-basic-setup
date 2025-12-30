@@ -841,6 +841,10 @@ abstract class Datatable extends Component
         $execute = $action->getExecute();
         if ($execute !== null) {
             $execute($model);
+            
+            // Clear computed property cache to ensure fresh data on re-render
+            unset($this->rows);
+            
             $this->dispatch('$refresh');
         }
     }
@@ -928,6 +932,10 @@ abstract class Datatable extends Component
         $execute = $action->getExecute();
         if ($execute !== null) {
             $execute($models);
+            
+            // Clear computed property cache to ensure fresh data on re-render
+            unset($this->rows);
+            
             $this->dispatch('$refresh');
         }
 

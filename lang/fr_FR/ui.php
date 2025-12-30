@@ -28,6 +28,9 @@ return [
         'cancel' => 'Annuler',
         'edit' => 'Modifier',
         'view' => 'Voir',
+        'activate_selected' => 'Activer la sélection',
+        'deactivate_selected' => 'Désactiver la sélection',
+        'deleted_successfully' => ':user supprimé avec succès',
     ],
 
     // Auth Pages

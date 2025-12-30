@@ -177,3 +177,14 @@ The component uses `$attributes->merge(['class' => $dropdownClasses])` to proper
 
 ---
 
+## History
+
+### Alpine.js Integration Enhancement (2025-12-19)
+- **Active Class Binding**: Added support for `x-bind:class` to enable reactive class management (e.g., maintaining open state via Alpine).
+- **Class Merging Logic**: Updated component to use props and `$attributes->merge()` to properly combine static and dynamic classes.
+
+### Centralized Component Creation (2025-01-XX)
+- **Centralization**: Created `<x-ui.dropdown>` as the unified dropdown component for the project.
+- **Improved Pattern**: Migrated from Alpine-based toggle patterns to CSS focus pattern for better accessibility and simplicity.
+- **DaisyUI Integration**: Standardized all dropdown placements and menu styles using DaisyUI.
+

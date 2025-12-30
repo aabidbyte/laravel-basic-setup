@@ -8,7 +8,7 @@
 
 ### Description
 
-A reusable confirmation modal component that provides a consistent way to handle user confirmations throughout the application. Uses Alpine.js for state management and can be triggered via Alpine.js events. Supports custom titles, messages, button labels, and callback functions for Livewire actions.
+A reusable confirmation modal component that provides a consistent way to handle user confirmations throughout the application. It uses a **flattened Alpine.js structure** for maximum reliability and can be triggered via global window events. Supports custom titles, messages, and two methods of callbacks: direct closures or event-driven back-events.
 
 ### Props
 
@@ -68,17 +68,35 @@ A reusable confirmation modal component that provides a consistent way to handle
 </button>
 ```
 
-#### Confirmation with JavaScript Callback
+#### Confirmation with Event-Based Callback (Recommended)
+
+For more robust communication between components (like the Datatable), use `confirmEvent`. This dispatches a window event when confirmed, avoiding scope issues with stale closures.
+
+```blade
+<button @click="$dispatch('confirm-modal', {
+    title: 'Delete User',
+    message: 'Are you sure?',
+    confirmEvent: 'user-deletion-confirmed',
+    confirmData: { id: 123 }
+})" class="btn btn-error">
+    Delete
+</button>
+
+{{-- Listen for the event elsewhere --}}
+<div x-data="{}" @user-deletion-confirmed.window="console.log('User deleted:', $event.detail.id)">
+</div>
+```
+
+#### Confirmation with JavaScript Closure
+
+Useful for quick, inline logic.
 
 ```blade
 <button @click="$dispatch('confirm-modal', {
     title: 'Save Changes',
     message: 'Do you want to save your changes?',
     confirmAction: () => {
-        // Custom JavaScript code
         console.log('Changes saved');
-        // Or call a function
-        saveChanges();
     }
 })" class="btn btn-primary">
     Save
@@ -89,23 +107,22 @@ A reusable confirmation modal component that provides a consistent way to handle
 
 When dispatching the `confirm-modal` event, you can pass a configuration object with the following properties:
 
-| Property        | Type       | Default                 | Description                                                        |
-| --------------- | ---------- | ----------------------- | ------------------------------------------------------------------ |
-| `title`         | `string`   | Translation key default | Title displayed in the modal header                                |
-| `message`       | `string`   | Translation key default | Message displayed in the modal body                                |
-| `confirmLabel`  | `string`   | Translation key default | Label for the confirm button                                       |
-| `cancelLabel`   | `string`   | Translation key default | Label for the cancel button                                        |
-| `confirmAction` | `function` | `null`                  | Callback function to execute when confirmed (required for actions) |
+| Property        | Type       | Default                 | Description                                                                 |
+| --------------- | ---------- | ----------------------- | --------------------------------------------------------------------------- |
+| `title`         | `string`   | Translation key default | Title displayed in the modal header                                         |
+| `message`       | `string`   | Translation key default | Message displayed in the modal body                                         |
+| `confirmLabel`  | `string`   | Translation key default | Label for the confirm button                                                |
+| `cancelLabel`   | `string`   | Translation key default | Label for the cancel button                                                 |
+| `confirmEvent`  | `string`   | `null`                  | Global event name to dispatch on confirmation (Superior reliability)        |
+| `confirmData`   | `any`      | `null`                  | Data to include in the `$event.detail` of the `confirmEvent`                |
+| `confirmAction` | `function` | `null`                  | Callback function to execute when confirmed (Legacy/Simple fallback)        |
 
 ### Implementation Details
 
--   Uses Alpine.js for state management and event handling
--   Listens for `confirm-modal` Alpine.js events
--   Supports callback functions for both Livewire actions and custom JavaScript
--   Uses `<x-ui.base-modal>` for the underlying modal structure
--   Automatically closes after confirmation or cancellation
--   Includes proper event propagation handling (`@click.stop` for nested buttons)
--   Uses translation keys for default labels (can be overridden)
+-   **Single-Scope Architecture**: The component uses a flattened `x-data` structure, eliminating `$parent` scope errors common in nested Alpine components.
+-   **Event-Driven Communication**: Listens for `confirm-modal` on the `window` level.
+-   **Execution Priority**: If `confirmEvent` is provided, it dispatches the event first; then it executes `confirmAction` if provided.
+-   **Translation Integration**: Uses standard translation keys for all default UI text.
 
 ### Translation Keys
 
@@ -125,11 +142,11 @@ The component uses the following translation keys (can be overridden via config 
 
 ### Best Practices
 
-1. **Include Once:** Include `<x-ui.confirm-modal />` once in your app layout (already included in `app.blade.php`)
-2. **Use Callbacks:** Always provide a `confirmAction` callback function for Livewire actions
-3. **Event Propagation:** Use `@click.stop` when triggering from nested elements to prevent event bubbling
-4. **Custom Messages:** Provide clear, descriptive messages for destructive actions
-5. **Button Variants:** Use `error` variant for destructive actions, `primary` for regular confirmations
+1. **Include Once:** Include `<x-ui.confirm-modal />` once in your app layout (already included in `app.blade.php`).
+2. **Prefer Events:** Use `confirmEvent` rather than `confirmAction` closures for better reliability in complex components.
+3. **Event Propagation:** Use `@click.stop` when triggering from nested elements to prevent accidental double-triggers.
+4. **Contextual Messaging:** Always override the `message` to be specific to the action (e.g., "Are you sure you want to delete the user 'John Doe'?").
+5. **Color Semantics:** Use `error` (default) for destructive actions (Delete, Remove) and `primary` or `success` for constructive ones.
 
 ### Example: Full Implementation
 
@@ -150,4 +167,11 @@ The component uses the following translation keys (can be overridden via config 
 ```
 
 ---
+
+## History
+
+### Universal Confirmation Modal (2025-01-XX)
+- **Inception**: Created `<x-ui.confirm-modal>` as a reusable component for all confirmation dialogs.
+- **Alpine.js Integration**: Orchestrated to listen for global `confirm-modal` events for easy triggering from any component.
+- **Migration**: Replaced native browser `confirm()` calls in the Notification Center with this standardized modal.
 

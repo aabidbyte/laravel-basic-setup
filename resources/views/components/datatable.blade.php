@@ -1,7 +1,9 @@
 <div>
     {{-- Alpine.js DataTable Component --}}
     {{-- NOTE: $wire is automatically available in Alpine context, do NOT pass as parameter --}}
-    <div x-data="dataTable">
+    <div x-data="dataTable" 
+        @datatable-action-confirmed.window="confirmAction($event.detail)"
+        @datatable-action-cancelled.window="cancelAction()">
         {{-- Header with Search and Filters --}}
         <div class="mb-6 flex flex-col gap-4">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -11,6 +13,48 @@
                         placeholder="{{ __('ui.table.search_placeholder') }}"></x-ui.search>
                 </div>
 
+                {{-- Bulk Actions Dropdown --}}
+                @if ($this->hasSelection)
+                    <div class="flex items-center gap-4">
+                        <span class="text-sm font-medium text-base-content/70">{{ $this->selectedCount }} {{ __('ui.table.selected') }}</span>
+                        
+                        <x-ui.dropdown placement="bottom-start" menu menuSize="sm">
+                            <x-slot:trigger>
+                                <x-ui.button type="button" style="outline" size="sm" class="gap-2">
+                                    {{ __('ui.table.bulk_actions') }}
+                                    <x-ui.icon name="chevron-down" size="sm"></x-ui.icon>
+                                </x-ui.button>
+                            </x-slot:trigger>
+
+                            @foreach ($this->getBulkActions() as $action)
+                                <li>
+                                    @if ($action['confirm'])
+                                        <button @click="executeActionWithConfirmation('{{ $action['key'] }}', null, true)"
+                                            type="button" class="flex items-center gap-2 w-full text-left">
+                                            @if ($action['icon'])
+                                                <x-ui.icon :name="$action['icon']" size="sm"></x-ui.icon>
+                                            @endif
+                                            {{ $action['label'] }}
+                                        </button>
+                                    @else
+                                        <button wire:click="executeBulkAction('{{ $action['key'] }}')" type="button"
+                                            class="flex items-center gap-2 w-full text-left">
+                                            @if ($action['icon'])
+                                                <x-ui.icon :name="$action['icon']" size="sm"></x-ui.icon>
+                                            @endif
+                                            {{ $action['label'] }}
+                                        </button>
+                                    @endif
+                                </li>
+                            @endforeach
+                        </x-ui.dropdown>
+
+                        <x-ui.button wire:click="clearSelection()" type="button" style="ghost" size="sm" class="text-error hover:bg-error/10">
+                            <x-ui.icon name="x-mark" size="sm"></x-ui.icon>
+                            {{ __('ui.actions.clear_selection') }}
+                        </x-ui.button>
+                    </div>
+            @else
                 <div class="flex items-center gap-2">
                     {{-- Filter Toggle Button --}}
                     <x-ui.button @click="toggleFilters()" type="button" style="ghost" size="md">
@@ -25,7 +69,8 @@
                     {{-- Share Button --}}
                     <x-ui.share-button :url="$this->getShareUrl()" size="md" style="ghost"></x-ui.share-button>
                 </div>
-            </div>
+            @endif
+        </div>
 
             {{-- Active Filters Badges --}}
             @if (count($this->getActiveFilters()) > 0)
@@ -73,36 +118,7 @@
             </div>
         </div>
 
-        {{-- Bulk Actions Bar --}}
-        @if ($this->hasSelection)
-            <div class="mb-4 flex items-center gap-4">
-                <span class="text-sm font-medium">{{ $this->selectedCount }} {{ __('ui.table.selected') }}</span>
-
-                @foreach ($this->getBulkActions() as $action)
-                    @if ($action['confirm'])
-                        <x-ui.button @click="executeActionWithConfirmation('{{ $action['key'] }}', null, true)"
-                            type="button" :style="$action['variant'] ?? 'solid'" :color="$action['color'] ?? null" size="sm">
-                            @if ($action['icon'])
-                                <x-ui.icon :name="$action['icon']" size="sm"></x-ui.icon>
-                            @endif
-                            {{ $action['label'] }}
-                        </x-ui.button>
-                    @else
-                        <x-ui.button wire:click="executeBulkAction('{{ $action['key'] }}')" type="button"
-                            :style="$action['variant'] ?? 'solid'" :color="$action['color'] ?? null" size="sm">
-                            @if ($action['icon'])
-                                <x-ui.icon :name="$action['icon']" size="sm"></x-ui.icon>
-                            @endif
-                            {{ $action['label'] }}
-                        </x-ui.button>
-                    @endif
-                @endforeach
-
-                <x-ui.button wire:click="clearSelection()" type="button" style="ghost" size="sm">
-                    {{ __('ui.actions.clear_selection') }}
-                </x-ui.button>
-            </div>
-        @endif
+        
 
         {{-- Table --}}
         <div class="overflow-x-auto">
@@ -112,6 +128,7 @@
                         {{-- Select All Checkbox --}}
                         <th class="w-12">
                             <input type="checkbox" wire:click="toggleSelectAll()" @checked($this->isAllSelected)
+                                wire:key="select-all-checkbox-{{ $this->isAllSelected ? '1' : '0' }}"
                                 class="checkbox checkbox-sm">
                         </th>
 
@@ -150,8 +167,8 @@
                             ])>
                             {{-- Selection Checkbox --}}
                             <td @click.stop>
-                                <input type="checkbox" wire:click.stop="toggleRow('{{ $row->uuid }}')"
-                                    @checked($this->isSelected($row->uuid)) class="checkbox checkbox-sm">
+                                <input type="checkbox" wire:model.live="selected" value="{{ $row->uuid }}"
+                                    wire:key="checkbox-{{ $row->uuid }}" class="checkbox checkbox-sm">
                             </td>
 
                             {{-- Data Columns --}}
@@ -226,46 +243,6 @@
 
         {{-- Pagination --}}
         {{ $this->rows->links('components.datatable.pagination') }}
-
-
-
-        {{-- Confirmation Modal --}}
-        <dialog x-ref="confirmModal" x-show="activeModal === 'confirm-action-modal'" @click.self="cancelAction()"
-            class="modal" :class="{ 'modal-open': activeModal === 'confirm-action-modal' }">
-            <div class="modal-box" @click.stop>
-                <h3 class="font-bold text-lg mb-4"
-                    x-text="confirmationConfig?.title || '{{ __('ui.actions.confirm') }}'">
-                </h3>
-
-                <template x-if="confirmationConfig?.type === 'message'">
-                    <p class="py-4" x-text="confirmationConfig.message"></p>
-                </template>
-
-                <template x-if="confirmationConfig?.type === 'config'">
-                    <div class="py-4">
-                        <p x-text="confirmationConfig.content"></p>
-                    </div>
-                </template>
-
-                <template x-if="confirmationConfig?.type === 'view'">
-                    <div class="py-4">
-                        {{-- Custom view content would be rendered here --}}
-                        <p>Custom confirmation view</p>
-                    </div>
-                </template>
-
-                <div class="modal-action">
-                    <x-ui.button @click="cancelAction()" type="button" style="ghost">
-                        <span x-text="confirmationConfig?.cancelText || '{{ __('ui.actions.cancel') }}'"></span>
-                    </x-ui.button>
-                    <x-ui.button @click="confirmAction()" type="button" color="error">
-                        <span x-text="confirmationConfig?.confirmText || '{{ __('ui.actions.confirm') }}'"></span>
-                    </x-ui.button>
-                </div>
-            </div>
-            <form method="dialog" class="modal-backdrop" @click="cancelAction()">
-                <button type="button">close</button>
-            </form>
-        </dialog>
     </div>{{-- End Alpine.js DataTable Component --}}
 </div>
+

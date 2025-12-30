@@ -422,6 +422,21 @@ Action::make('delete', __('Delete'))
     ->icon('trash')
     ->variant('ghost')     // ghost, primary, secondary, etc.
     ->color('error')       // error, warning, success, etc.
+
+> [!TIP]
+> **Action Feedback**: Use `NotificationBuilder` within the `execute()` closure to provide visual feedback to the user after an action completes.
+>
+> ```php
+> use App\Services\Notifications\NotificationBuilder;
+> 
+> ->execute(function (User $user) {
+>     $user->delete();
+>     NotificationBuilder::make()
+>         ->title(__('User deleted successfully'))
+>         ->success()
+>         ->send();
+> })
+> ```
 ```
 
 ## Bulk Action API
@@ -518,6 +533,11 @@ Selection state is fully managed by Livewire and automatically:
 - Tracks selected UUIDs across all pages
 - Provides computed properties: `selectedCount()`, `hasSelection()`, `isAllSelected()`
 - Optimized database queries by checking current page rows first before querying
+- **New**: Uses `wire:model.live="selected"` on row checkboxes for seamless synchronization
+- **New**: Uses dynamic `wire:key` on checkboxes and the select-all input to force re-render and prevent persistent visual "checked" states after clearing selection
+- **New**: Bulk actions are now consolidated into a premium dropdown menu in the header, appearing only when items are selected
+- **New**: Added a "Clear Selection" button in the header for quick reset
+
 
 ## Alpine.js Integration
 
@@ -544,10 +564,8 @@ Following `docs/alpinejs/livewire-integration.md`:
 ```javascript
 {
     openFilters: false,  // Boolean for filter panel visibility
-    activeModal: null,   // String for active modal name
     hoveredRow: null,    // String for hovered row UUID
     pendingAction: null,  // Stores action waiting for confirmation
-    confirmationConfig: null, // Stores confirmation modal config
 }
 ```
 
@@ -559,11 +577,9 @@ Following `docs/alpinejs/livewire-integration.md`:
 {
     toggleFilters()         // Toggle filter panel
     closeFilters()          // Close filter panel
-    openModal()             // Open confirmation modal
-    closeModal()            // Close active modal
     executeActionWithConfirmation(actionKey, uuid, isBulk)  // Execute action with confirmation
-    confirmAction()         // Confirm and execute pending action
-    cancelAction()          // Cancel pending action
+    confirmAction(data)     // Confirm and execute pending action (triggered by event)
+    cancelAction()          // Cancel pending action (triggered by event)
     setHoveredRow(uuid)     // Set hovered row
 }
 ```
@@ -571,14 +587,56 @@ Following `docs/alpinejs/livewire-integration.md`:
 ### Example HTML
 
 ```blade
-<div x-data="dataTable()">
-    {{-- Bulk actions bar (Livewire controls visibility) --}}
-    @if ($this->hasSelection)
-        <div class="mb-4">
-            <span>{{ $this->selectedCount }} selected</span>
-            <button wire:click="clearSelection()">Clear</button>
+<div x-data="dataTable()" 
+    @datatable-action-confirmed.window="confirmAction($event.detail)"
+    @datatable-action-cancelled.window="cancelAction()">
+
+    {{-- Header with Search and Bulk Actions --}}
+    <div class="mb-6 flex flex-col gap-4">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            {{-- Search --}}
+            <div class="flex-1 max-w-md">
+                <x-ui.search wire:model.live.debounce.300ms="search" />
+            </div>
+
+            {{-- Bulk Actions Dropdown (Conditional) --}}
+            @if ($this->hasSelection)
+                <div class="flex items-center gap-4">
+                    <span class="text-sm font-medium text-base-content/70">
+                        {{ $this->selectedCount }} selected
+                    </span>
+                    
+                    <x-ui.dropdown placement="bottom-start" menu menuSize="sm">
+                        <x-slot:trigger>
+                            <x-ui.button type="button" style="outline" size="sm" class="gap-2">
+                                {{ __('ui.table.bulk_actions') }}
+                                <x-ui.icon name="chevron-down" size="sm"></x-ui.icon>
+                            </x-ui.button>
+                        </x-slot:trigger>
+
+                        @foreach ($this->getBulkActions() as $action)
+                            <li>
+                                <button @click="executeActionWithConfirmation('{{ $action['key'] }}', null, true)"
+                                    type="button" class="flex items-center gap-2 w-full text-left">
+                                    @if ($action['icon'])
+                                        <x-ui.icon :name="$action['icon']" size="sm"></x-ui.icon>
+                                    @endif
+                                    {{ $action['label'] }}
+                                </button>
+                            </li>
+                        @endforeach
+                    </x-ui.dropdown>
+
+                    <x-ui.button wire:click="clearSelection()" type="button" style="ghost" size="sm" class="text-error hover:bg-error/10">
+                        <x-ui.icon name="x-mark" size="sm"></x-ui.icon>
+                        {{ __('ui.actions.clear_selection') }}
+                    </x-ui.button>
+                </div>
+            @else
+                {{-- Standard filters/per-page buttons --}}
+            @endif
         </div>
-    @endif
+    </div>
 
     {{-- Table --}}
     <table class="table">
@@ -588,7 +646,8 @@ Following `docs/alpinejs/livewire-integration.md`:
                     <input 
                         type="checkbox" 
                         wire:click="toggleSelectAll()"
-                        @if ($this->isAllSelected) checked @endif
+                        @checked($this->isAllSelected)
+                        wire:key="select-all-checkbox-{{ $this->isAllSelected ? '1' : '0' }}"
                         class="checkbox"
                     >
                 </th>
@@ -606,8 +665,9 @@ Following `docs/alpinejs/livewire-integration.md`:
                     <td @click.stop>
                         <input 
                             type="checkbox" 
-                            wire:click.stop="toggleRow('{{ $row->uuid }}')"
-                            @if ($this->isSelected($row->uuid)) checked @endif
+                            wire:model.live="selected"
+                            value="{{ $row->uuid }}"
+                            wire:key="checkbox-{{ $row->uuid }}"
                             class="checkbox"
                         >
                     </td>
@@ -887,6 +947,19 @@ The following translation keys are used by the DataTable component. Add them to 
 ```
 
 ## History
+
+### Bulk Actions Refactor and Selection Fix (2025-12-30)
+- **UI Enhancement**: Moved Bulk Action buttons into a dedicated `<x-ui.dropdown>` for a cleaner interface.
+- **Improved Layout**: Placed "Clear Selection" button outside the dropdown with `text-error` styling for better visibility and accessibility.
+- **State Synchronization**: Updated row checkboxes to use `wire:model.live="selected"` for automatic synchronization with Livewire state.
+- **Visual State Fix**: Added dynamic `wire:key` to all checkboxes (rows and "select all") to force visual re-render after clearing selection, solving persistent "checked" states.
+- **Test Coverage**: Refactored `UsersTableTest.php` to fix legacy typos and added explicit coverage for selection clearing.
+
+### Table Actions Component (2025-01-XX)
+- **Bug Fix**: Fixed row actions dropdown not showing by adding missing actions column rendering in table body rows.
+- **Implementation**: Updated `<x-table.actions>` to render as dropdown menu with `ellipsis-vertical` icon.
+- **Icon**: Uses `DataTableUi::ICON_THREE_DOTS` constant (`ellipsis-vertical`) for dropdown trigger.
+- **Event Handling**: Added `wire:click.stop` to prevent row click events when interacting with actions.
 
 ### Component-Based Architecture (2025-01-XX)
 

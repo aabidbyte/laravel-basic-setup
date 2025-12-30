@@ -138,3 +138,10 @@ When searching for an icon name, follow these steps:
 
 ---
 
+## History
+
+### Dynamic Icon System (2025-01-XX)
+- **Refactor**: Converted the icon component from a static SVG wrapper to a dynamic system powered by Blade Icons.
+- **Multi-Pack Support**: Added built-in support for Heroicons, FontAwesome, Bootstrap, and Feather icons.
+- **Security**: Implemented strict input validation and sanitization for icon names and CSS classes to prevent XSS.
+

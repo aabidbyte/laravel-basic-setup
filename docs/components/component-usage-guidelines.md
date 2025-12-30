@@ -69,3 +69,10 @@ When migrating existing custom implementations to centralized components:
 
 ---
 
+## History
+
+### Component Centralization (2025-01-XX)
+- **Standardization**: Migrated all core UI elements to use centralized components (`<x-ui.*>`).
+- **Scope**: Replaced custom HTML and inline classes for buttons, inputs, forms, and icons across the entire application (auth forms, settings, layouts).
+- **Architecture**: Established the standard of using pure Blade components for rendering, ensuring a consistent look and feel project-wide.
+
