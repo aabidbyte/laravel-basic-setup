@@ -6,7 +6,7 @@
         <div class="mb-6 flex flex-col gap-4">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 {{-- Search --}}
-                <div class="flex-1 max-w-md">
+                <div class="flex-1 max-w-md" wire:ignore>
                     <x-ui.search wire:model.live.debounce.300ms="search" type="text"
                         placeholder="{{ __('ui.table.search_placeholder') }}"></x-ui.search>
                 </div>

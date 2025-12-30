@@ -586,12 +586,12 @@ abstract class Datatable extends Component
         }
 
         // Apply search highlighting if searchable and search term exists
-        if ($column->isSearchable() && ! empty($this->search) && ! $column->isHtml()) {
+        if ($column->isSearchable() && ! empty($this->search)) {
             $value = $this->highlightSearchTerm($value, $this->search);
         }
 
         // Return escaped or HTML
-        return $column->isHtml() ? $value : e($value);
+        return $value;
     }
 
     /**
@@ -609,7 +609,7 @@ abstract class Datatable extends Component
         $value = (string) $value;
         $pattern = '/('.preg_quote($search, '/').')/i';
 
-        return preg_replace($pattern, '<mark class="bg-warning/30 px-1 rounded">$1</mark>', $value);
+        return preg_replace($pattern, '<mark class="bg-warning/30 rounded">$1</mark>', $value);
     }
 
     /**
