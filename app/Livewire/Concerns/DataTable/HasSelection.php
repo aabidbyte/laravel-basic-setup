@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Livewire\Concerns\DataTable;
 
-use Livewire\Attributes\Computed;
-
 use Illuminate\Pagination\LengthAwarePaginator;
+use Livewire\Attributes\Computed;
 
 /**
  * Trait for handling DataTable row selection logic.

@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\User;
-use App\Models\Permission;
 use App\Constants\Auth\Permissions;
+use App\Models\Permission;
+use App\Models\User;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -22,7 +22,7 @@ it('can open the details modal via row action', function () {
 
     $component = Livewire::actingAs($this->admin)
         ->test('tables.user-table');
-    
+
     $component->call('openActionModal', 'view_modal', $user->uuid)
         ->assertSet('modalComponent', 'components.users.view-modal')
         ->assertSet('modalType', 'blade')
@@ -38,7 +38,7 @@ it('can open the details modal via row action', function () {
 it('can close the details modal', function () {
     $component = Livewire::actingAs($this->admin)
         ->test('tables.user-table');
-    
+
     $component->set('modalComponent', 'components.users.view-modal')
         ->set('modalProps', ['user' => User::factory()->make()])
         ->call('closeActionModal')
@@ -84,7 +84,7 @@ it('refreshes rows after row deletion', function () {
         ->assertSee('To Be Deleted')
         ->call('executeAction', 'delete', $user->uuid)
         ->assertDontSee('To Be Deleted');
-    
+
     expect(User::where('uuid', $user->uuid)->exists())->toBeFalse();
 });
 
@@ -98,9 +98,6 @@ it('refreshes rows after bulk deletion', function () {
         ->assertSee('Bulk Delete')
         ->call('executeBulkAction', 'delete')
         ->assertDontSee('Bulk Delete');
-    
+
     expect(User::whereIn('uuid', $uuids)->count())->toBe(0);
 });
-
-
-

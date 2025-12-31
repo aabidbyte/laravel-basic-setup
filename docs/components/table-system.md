@@ -199,7 +199,7 @@ new class extends Component
 
         <x-table.body>
             @forelse ($this->rows as $user)
-                <x-table.row wire:key="user-{{ $user->uuid }}" wire:click="rowClicked('{{ $user->uuid }}')">
+                <x-table.row wire:key="user-{{ $user->uuid }}" wire:click="rowClick('{{ $user->uuid }}')">
                     <x-table.cell>{{ $user->name }}</x-table.cell>
                     <x-table.cell>{{ $user->email }}</x-table.cell>
                     <x-table.cell>

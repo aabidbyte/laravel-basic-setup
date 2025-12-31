@@ -61,4 +61,3 @@ it('handles array with non-string items', function () {
         ->toContain('123')
         ->toContain('1');
 });
-

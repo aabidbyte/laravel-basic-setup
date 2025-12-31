@@ -34,7 +34,6 @@ test('search filters results', function () {
         ->assertDontSee('Jane Smith');
 });
 
-
 test('sort toggles direction', function () {
     User::factory()->create(['name' => 'Alice']);
     User::factory()->create(['name' => 'Bob']);
@@ -82,4 +81,3 @@ test('clear selection empties selected array', function () {
         ->call('clearSelection')
         ->assertSet('selected', []);
 });
-

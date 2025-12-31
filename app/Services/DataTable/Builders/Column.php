@@ -226,6 +226,7 @@ class Column
     public function width(string $width): self
     {
         $this->width = $width;
+
         return $this;
     }
 
@@ -235,6 +236,7 @@ class Column
     public function nowrap(bool $nowrap = true): self
     {
         $this->nowrap = $nowrap;
+
         return $this;
     }
 

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Livewire\Concerns\DataTable;
 
 use App\Constants\DataTable\DataTable as DataTableConstants;
-
 use Illuminate\Pagination\LengthAwarePaginator;
 
 /**
@@ -16,6 +15,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
  * @property int $perPage
  * @property array $filters
  * @property LengthAwarePaginator $rows
+ *
  * @method void setPage(int $page)
  * @method void getPage()
  */

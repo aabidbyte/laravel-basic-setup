@@ -746,7 +746,7 @@ protected function baseQuery(): Builder
 Handle row clicks in the component:
 
 ```php
-public function rowClicked(string $uuid): void
+public function rowClick(string $uuid): void
 {
     $user = $this->findModelByUuid($uuid); // Optimized: checks current page first
     if ($user !== null) {

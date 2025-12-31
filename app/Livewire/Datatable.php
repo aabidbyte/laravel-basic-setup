@@ -72,7 +72,7 @@ abstract class Datatable extends Component
      *
      * @param  string  $uuid  Row UUID
      */
-    public function rowClicked(string $uuid): void
+    public function rowClick(string $uuid): void
     {
         // Override in component if needed
     }
@@ -81,15 +81,14 @@ abstract class Datatable extends Component
      * Determine if the row is clickable
      *
      * @param  mixed  $row
-     * @return bool
      */
     public function rowsAreClickable(): bool
     {
-        if(isset($this->rowsClickable)){
+        if (isset($this->rowsClickable)) {
             return $this->rowsClickable;
         }
 
-        $reflector = new \ReflectionMethod($this, 'rowClicked');
+        $reflector = new \ReflectionMethod($this, 'rowClick');
 
         $this->rowsClickable = $reflector->getDeclaringClass()->getName() !== self::class;
 

@@ -3,17 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use App\Constants\DataTable\DataTableUi;
-use App\Enums\DataTable\DataTableColumnType;
-use App\Enums\DataTable\DataTableFilterType;
 use App\Models\Base\BaseUserModel;
 use App\Models\Concerns\HasDataTable;
-use App\Services\DataTable\Dsl\BulkActionItem;
-use App\Services\DataTable\Dsl\ColumnItem;
-use App\Services\DataTable\Dsl\FilterItem;
-use App\Services\DataTable\Dsl\HeaderItem;
-use App\Services\DataTable\Dsl\RowActionItem;
-use App\Services\DataTable\OptionsProviders\RoleOptionsProvider;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;

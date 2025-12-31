@@ -285,8 +285,8 @@ return [
                 'verified' => 'Verified',
                 'created_at' => 'Created At',
             ],
-            ],
         ],
+    ],
 
     // Users
     'users' => [

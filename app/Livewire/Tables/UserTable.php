@@ -138,7 +138,7 @@ class UserTable extends Datatable
             ->confirm(__('ui.actions.confirm_delete'))
             ->execute(function (User $user) {
                 $user->delete();
-                NotificationBuilder::make()->title(__('ui.actions.deleted_successfully',["user" => $user->name]))->success()->send();
+                NotificationBuilder::make()->title(__('ui.actions.deleted_successfully', ['user' => $user->name]))->success()->send();
             })
             ->show(fn (User $user) => Auth::user()?->can('delete', $user) ?? false);
 
@@ -173,7 +173,7 @@ class UserTable extends Datatable
     /**
      * Handle row click
      */
-    public function rowClicked(string $uuid): void
+    public function rowClick(string $uuid): void
     {
         // Only redirect if route exists
         if (! Route::has('users.show')) {

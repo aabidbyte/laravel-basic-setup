@@ -10,6 +10,7 @@ use App\Services\DataTable\Builders\Column;
  * Trait for handling DataTable rendering logic.
  *
  * @property string $search
+ *
  * @method array columns()
  */
 trait HasRendering
@@ -124,7 +125,7 @@ trait HasRendering
             if (str_starts_with($part, '<') && str_ends_with($part, '>')) {
                 $result .= $part;
             } else {
-                $result .= preg_replace('/(' . $quotedSearch . ')/i', '<mark class="bg-warning/30 rounded">$1</mark>', $part);
+                $result .= preg_replace('/('.$quotedSearch.')/i', '<mark class="bg-warning/30 rounded">$1</mark>', $part);
             }
         }
 

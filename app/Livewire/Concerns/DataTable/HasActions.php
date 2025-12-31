@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @property \Illuminate\Pagination\LengthAwarePaginator $rows
  * @property array $selected
+ *
  * @method \Illuminate\Database\Eloquent\Builder baseQuery()
  * @method void clearSelection()
  * @method array getActionConfirmation(string $actionKey, string $uuid)
