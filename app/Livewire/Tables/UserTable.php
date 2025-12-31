@@ -32,7 +32,7 @@ class UserTable extends Datatable
     /**
      * Get the base query
      */
-    protected function baseQuery(): Builder
+    public function baseQuery(): Builder
     {
         return User::query()->with(['roles', 'teams'])->select('users.*');
     }
@@ -42,7 +42,7 @@ class UserTable extends Datatable
      *
      * @return array<int, Column>
      */
-    protected function columns(): array
+    public function columns(): array
     {
         return [
             Column::make(__('ui.table.users.name'), 'name')

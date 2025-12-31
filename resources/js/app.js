@@ -13,6 +13,7 @@ import "./echo";
  * Since Alpine.js is included with Livewire 4, we register the plugin
  * when Alpine is initialized.
  */
+import anchor from "@alpinejs/anchor";
 import focus from "@alpinejs/focus";
 
 /**
@@ -24,6 +25,7 @@ import { dataTable } from "./alpine-components/datatable.js";
 
 // Register Focus plugin and DataTable component when Alpine is initialized
 document.addEventListener("alpine:init", () => {
+    window.Alpine.plugin(anchor);
     window.Alpine.plugin(focus);
     window.Alpine.data("dataTable", dataTable);
 });

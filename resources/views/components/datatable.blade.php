@@ -1,15 +1,16 @@
 <div>
-    {{-- Alpine.js DataTable Component --}}
-    {{-- NOTE: $wire is automatically available in Alpine context, do NOT pass as parameter --}}
-    <div x-data="dataTable"
-        @datatable-action-confirmed.window="confirmAction($event.detail)"
-        @datatable-action-cancelled.window="cancelAction()">
+    <div x-data="dataTable('{{ $this->getId() }}')"
+        @datatable:action-confirmed:{{ $this->getId() }}.window="confirmAction($event.detail)"
+        @datatable:action-cancelled:{{ $this->getId() }}.window="cancelAction()"
+        @datatable:scroll-to-top:{{ $this->getId() }}.window="$el.scrollIntoView({ behavior: 'smooth' })"
+        @datatable:clean-url:{{ $this->getId() }}.window="window.history.replaceState({}, document.title, window.location.pathname)">
 
         {!! $this->renderFilters() !!}
+        {{ $this->rows->links('components.datatable.pagination') }}
 
         {{-- Table --}}
         <div class="overflow-x-auto">
-            <table class="table">
+            <table class="table table-zebra">
                 {!! $this->renderTableHeader() !!}
 
                 <tbody>
@@ -34,8 +35,8 @@
 
         {{-- Dynamic Action Modal --}}
         <div x-data="{ modalIsOpen: false }"
-            @open-datatable-modal.window="modalIsOpen = true"
-            @close-datatable-modal.window="modalIsOpen = false">
+            @datatable:open-modal:{{ $this->getId() }}.window="modalIsOpen = true"
+            @datatable:close-modal:{{ $this->getId() }}.window="modalIsOpen = false">
             <x-ui.base-modal open-state="modalIsOpen" use-parent-state="true" :title="__('ui.table.action_modal_title')"
                 on-close="$wire.closeActionModal()">
                 @if ($modalComponent)

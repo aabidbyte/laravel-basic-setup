@@ -3,9 +3,10 @@
  *
  * Provides frontend state management for DataTable components.
  */
-export function dataTable() {
+export function dataTable(id = null) {
     return {
         // ===== Local Alpine State =====
+        id: id,
         openFilters: false,
         pendingAction: null,
 
@@ -40,7 +41,7 @@ export function dataTable() {
                         message: config.message || config.content || "Are you sure you want to proceed?",
                         confirmLabel: config.confirmText || "Confirm",
                         cancelLabel: config.cancelText || "Cancel",
-                        confirmEvent: 'datatable-action-confirmed',
+                        confirmEvent: `datatable:action-confirmed:${this.id}`,
                         confirmData: { actionKey, uuid, isBulk }
                     };
 

@@ -82,18 +82,10 @@ trait HasFilters
             ->toArray();
     }
 
-    /**
-     * Clear all filters
-     */
     public function clearFilters(): void
     {
         $this->filters = [];
-        if (method_exists($this, 'resetPage')) {
-            $this->resetPage();
-        }
-        if (method_exists($this, 'savePreferences')) {
-            $this->savePreferences();
-        }
+        $this->applyChanges();
     }
 
     /**
@@ -104,12 +96,7 @@ trait HasFilters
     public function removeFilter(string $key): void
     {
         unset($this->filters[$key]);
-        if (method_exists($this, 'resetPage')) {
-            $this->resetPage();
-        }
-        if (method_exists($this, 'savePreferences')) {
-            $this->savePreferences();
-        }
+        $this->applyChanges();
     }
 
     /**

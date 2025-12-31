@@ -1,7 +1,8 @@
 <tr wire:key="row-{{ $row->uuid }}" wire:click="rowClicked('{{ $row->uuid }}')"
     @class([
         'bg-base-200' => $this->isSelected($row->uuid),
-        'cursor-pointer hover:bg-base-200 transition-colors',
+        'cursor-pointer' => $this->rowsAreClickable(),
+        'transition-colors hover:bg-base-200/50',
     ])>
     {{-- Selection Checkbox --}}
     <td @click.stop>

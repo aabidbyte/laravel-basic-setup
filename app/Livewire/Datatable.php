@@ -78,6 +78,25 @@ abstract class Datatable extends Component
     }
 
     /**
+     * Determine if the row is clickable
+     *
+     * @param  mixed  $row
+     * @return bool
+     */
+    public function rowsAreClickable(): bool
+    {
+        if(isset($this->rowsClickable)){
+            return $this->rowsClickable;
+        }
+
+        $reflector = new \ReflectionMethod($this, 'rowClicked');
+
+        $this->rowsClickable = $reflector->getDeclaringClass()->getName() !== self::class;
+
+        return $this->rowsClickable;
+    }
+
+    /**
      * Get paginated rows
      */
     #[Computed]
@@ -95,6 +114,31 @@ abstract class Datatable extends Component
             sortDirection: $this->sortDirection,
             perPage: $this->perPage
         );
+    }
+
+    /**
+     * Apply changes to the table state (reset page, save preferences, refresh cache)
+     */
+    public function applyChanges(): void
+    {
+        if (method_exists($this, 'resetPage')) {
+            $this->resetPage();
+        }
+
+        if (method_exists($this, 'savePreferences')) {
+            $this->savePreferences();
+        }
+
+        $this->refreshTable();
+    }
+
+    /**
+     * Refresh the table by clearing the cache and scrolling to top
+     */
+    public function refreshTable(): void
+    {
+        unset($this->rows);
+        $this->dispatch("datatable:scroll-to-top:{$this->getId()}");
     }
 
     /**

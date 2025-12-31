@@ -12,7 +12,7 @@
             <div class="flex items-center gap-4">
                 <span class="text-sm font-medium text-base-content/70">{{ $this->selectedCount }} {{ __('ui.table.selected') }}</span>
                 
-                <x-ui.dropdown placement="bottom-start" menu menuSize="sm">
+                <x-ui.dropdown placement="bottom-start" menu menuSize="sm" teleport>
                     <x-slot:trigger>
                         <x-ui.button type="button" style="outline" size="sm" class="gap-2">
                             {{ __('ui.table.bulk_actions') }}
@@ -21,25 +21,23 @@
                     </x-slot:trigger>
 
                     @foreach ($this->getBulkActions() as $action)
-                        <li>
-                            @if ($action['confirm'])
-                                <button @click="executeActionWithConfirmation('{{ $action['key'] }}', null, true)"
-                                    type="button" class="flex items-center gap-2 w-full text-left">
-                                    @if ($action['icon'])
-                                        <x-ui.icon :name="$action['icon']" size="sm"></x-ui.icon>
-                                    @endif
-                                    {{ $action['label'] }}
-                                </button>
-                            @else
-                                <button wire:click="executeBulkAction('{{ $action['key'] }}')" type="button"
-                                    class="flex items-center gap-2 w-full text-left">
-                                    @if ($action['icon'])
-                                        <x-ui.icon :name="$action['icon']" size="sm"></x-ui.icon>
-                                    @endif
-                                    {{ $action['label'] }}
-                                </button>
-                            @endif
-                        </li>
+                        @if ($action['confirm'])
+                            <button @click="executeActionWithConfirmation('{{ $action['key'] }}', null, true)"
+                                type="button" class="flex items-center gap-2 w-full text-left">
+                                @if ($action['icon'])
+                                    <x-ui.icon :name="$action['icon']" size="sm"></x-ui.icon>
+                                @endif
+                                {{ $action['label'] }}
+                            </button>
+                        @else
+                            <button wire:click="executeBulkAction('{{ $action['key'] }}')" type="button"
+                                class="flex items-center gap-2 w-full text-left">
+                                @if ($action['icon'])
+                                    <x-ui.icon :name="$action['icon']" size="sm"></x-ui.icon>
+                                @endif
+                                {{ $action['label'] }}
+                            </button>
+                        @endif
                     @endforeach
                 </x-ui.dropdown>
 
@@ -59,9 +57,6 @@
                             size="sm">{{ count($this->getActiveFilters()) }}</x-ui.badge>
                     @endif
                 </x-ui.button>
-
-                {{-- Share Button --}}
-                <x-ui.share-button :url="$this->getShareUrl()" size="md" style="ghost"></x-ui.share-button>
             </div>
         @endif
     </div>

@@ -119,7 +119,7 @@ trait HasActions
                 $this->modalProps = $modalProps;
             }
 
-            $this->dispatch('open-datatable-modal');
+            $this->dispatch("datatable:open-modal:{$this->getId()}");
         }
     }
 
@@ -171,7 +171,7 @@ trait HasActions
     {
         $this->modalComponent = null;
         $this->modalProps = [];
-        $this->dispatch('close-datatable-modal');
+        $this->dispatch("datatable:close-modal:{$this->getId()}");
     }
 
     /**
@@ -184,9 +184,7 @@ trait HasActions
 
         if ($action && $model && $action->getExecute()) {
             ($action->getExecute())($model);
-            
-            // Clear rows cache to ensure UI reflects changes (e.g., deletion)
-            unset($this->rows);
+            $this->refreshTable();
         }
     }
 
@@ -201,9 +199,7 @@ trait HasActions
             $models = $this->baseQuery()->whereIn('uuid', $this->selected)->get();
             ($action->getExecute())($models);
             $this->clearSelection();
-            
-            // Clear rows cache to ensure UI reflects changes (e.g., deletion)
-            unset($this->rows);
+            $this->refreshTable();
         }
     }
 

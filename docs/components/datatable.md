@@ -640,10 +640,21 @@ Following `docs/alpinejs/livewire-integration.md`:
     toggleFilters()         // Toggle filter panel
     closeFilters()          // Close filter panel
     executeActionWithConfirmation(actionKey, uuid, isBulk)  // Execute action with confirmation
-    confirmAction(data)     // Confirm and execute pending action (triggered by event)
-    cancelAction()          // Cancel pending action (triggered by event)
+    confirmAction(data)     // Confirm and execute pending action
+    cancelAction()          // Cancel pending action
 }
 ```
+
+### Available Events
+
+These events are dispatched by the Livewire component or listened to by the Alpine component:
+
+- `datatable:open-modal:{id}`: Open action modal
+- `datatable:close-modal:{id}`: Close action modal
+- `datatable:action-confirmed:{id}`: Confirm pending action
+- `datatable:action-cancelled:{id}`: Cancel pending action
+- `datatable:scroll-to-top:{id}`: Scroll table into view
+- `datatable:clean-url:{id}`: Remove query parameters from URL
 
 ```blade
 <div x-data="dataTable" 

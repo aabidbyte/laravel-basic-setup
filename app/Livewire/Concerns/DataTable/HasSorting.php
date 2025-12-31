@@ -36,12 +36,6 @@ trait HasSorting
             $this->sortDirection = 'asc';
         }
 
-        if (method_exists($this, 'resetPage')) {
-            $this->resetPage();
-        }
-
-        if (method_exists($this, 'savePreferences')) {
-            $this->savePreferences();
-        }
+        $this->applyChanges();
     }
 }

@@ -190,7 +190,7 @@ trait HasQueryParameters
     protected function cleanUrlQueryParameters(): void
     {
         if (! empty($this->queryStringLoaded)) {
-            $this->dispatch('datatable-clean-url');
+            $this->dispatch("datatable:clean-url:{$this->getId()}");
         }
     }
 }

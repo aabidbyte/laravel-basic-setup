@@ -10,15 +10,14 @@ A centralized, flexible dropdown component that provides consistent dropdown fun
 
 ### Props
 
-| Prop           | Type           | Default         | Description                                                                    |
-| -------------- | -------------- | --------------- | ------------------------------------------------------------------------------ |
-| `placement`    | `string`       | `'end'`         | Dropdown placement: `start`, `center`, `end`, `top`, `bottom`, `left`, `right` |
-| `hover`        | `bool`         | `false`         | Enable hover to open dropdown (adds `dropdown-hover` class)                    |
-| `contentClass` | `string`       | `''`            | Additional CSS classes for dropdown content                                    |
-| `bgClass`      | `string`       | `'bg-base-100'` | Background color class for dropdown content (default: bg-base-100)             |
-| `menu`         | `bool`         | `false`         | Enable menu styling (adds `menu` class to dropdown content)                    |
-| `menuSize`     | `string`       | `'md'`          | Menu size: `xs`, `sm`, `md`, `lg`, `xl` (only applies when `menu="true"`)      |
-| `id`           | `string\|null` | `null`          | Optional ID for accessibility (auto-generated if not provided)                 |
+| Prop           | Type     | Default         | Description                                                                    |
+| -------------- | -------- | --------------- | ------------------------------------------------------------------------------ |
+| `placement`    | `string` | `'end'`         | Dropdown placement: `start`, `center`, `end`, `top`, `bottom`, `left`, `right` |
+| `hover`        | `bool`   | `false`         | Enable hover to open dropdown (adds `dropdown-hover` class)                    |
+| `contentClass` | `string` | `''`            | Additional CSS classes for dropdown content                                    |
+| `bgClass`      | `string` | `'bg-base-100'` | Background color class for dropdown content (default: bg-base-100)             |
+| `menu`         | `bool`   | `false`         | Enable menu styling (adds `menu` class to dropdown content)                    |
+| `menuSize`     | `string` | `'md'`          | Menu size: `xs`, `sm`, `md`, `lg`, `xl` (only applies when `menu="true"`)      |
 
 ### Slots
 
@@ -49,9 +48,9 @@ A centralized, flexible dropdown component that provides consistent dropdown fun
         <div class="btn btn-ghost">Menu</div>
     </x-slot:trigger>
 
-    <li><a>Item 1</a></li>
-    <li><a>Item 2</a></li>
-    <li><a>Item 3</a></li>
+    <a>Item 1</a>
+    <a>Item 2</a>
+    <a>Item 3</a>
 </x-ui.dropdown>
 ```
 
@@ -66,15 +65,13 @@ A centralized, flexible dropdown component that provides consistent dropdown fun
         </button>
     </x-slot:trigger>
 
-    <li>
-        <form method="POST" action="{{ route('preferences.locale') }}">
-            @csrf
-            <input type="hidden" name="locale" value="en_US">
-            <button type="submit" class="btn btn-ghost btn-sm justify-start w-full">
-                English
-            </button>
-        </form>
-    </li>
+    <form method="POST" action="{{ route('preferences.locale') }}">
+        @csrf
+        <input type="hidden" name="locale" value="en_US">
+        <button type="submit" class="btn btn-ghost btn-sm justify-start w-full">
+            English
+        </button>
+    </form>
 </x-ui.dropdown>
 ```
 
@@ -98,7 +95,7 @@ A centralized, flexible dropdown component that provides consistent dropdown fun
     <x-slot:trigger>
         <button class="btn">Left</button>
     </x-slot:trigger>
-    <li><a>Item</a></li>
+    <a>Item</a>
 </x-ui.dropdown>
 
 {{-- Dropdown on the top --}}
@@ -106,7 +103,7 @@ A centralized, flexible dropdown component that provides consistent dropdown fun
     <x-slot:trigger>
         <button class="btn">Top</button>
     </x-slot:trigger>
-    <li><a>Item</a></li>
+    <a>Item</a>
 </x-ui.dropdown>
 ```
 
@@ -116,7 +113,7 @@ A centralized, flexible dropdown component that provides consistent dropdown fun
 <x-ui.dropdown placement="end" menu menuSize="sm">
     <x-slot:trigger>
         <div class="btn btn-ghost btn-circle avatar">
-            <div class="w-10 rounded-full bg-base-300 text-base-content">
+            <div class="w-10 rounded-full bg-base-300 text-base-content text-center flex items-center justify-center">
                 <span class="text-xs">{{ Auth::user()->initials() }}</span>
             </div>
         </div>
@@ -125,8 +122,8 @@ A centralized, flexible dropdown component that provides consistent dropdown fun
     <div class="menu-title">
         <span>{{ Auth::user()->name }}</span>
     </div>
-    <li><a>Profile</a></li>
-    <li><a>Settings</a></li>
+    <a>Profile</a>
+    <a>Settings</a>
 </x-ui.dropdown>
 ```
 
@@ -139,7 +136,7 @@ The dropdown component supports Alpine.js `x-bind:class` for reactive class mana
     <x-slot:trigger>
         <button @click="isOpen = true">Open</button>
     </x-slot:trigger>
-    <li><a>Item</a></li>
+    <a>Item</a>
 </x-ui.dropdown>
 ```
 
@@ -153,7 +150,6 @@ The component uses `$attributes->merge(['class' => $dropdownClasses])` to proper
 -   Compatible with menu items and custom content
 -   Includes proper ARIA attributes for accessibility
 -   Supports keyboard navigation (Tab, Enter, Escape)
--   Auto-generates unique IDs if not provided
 -   **Alpine.js Support**: Properly merges Alpine.js `x-bind:class` with static classes using `$attributes->merge()`
 
 ### Current Usage in Project
@@ -187,4 +183,3 @@ The component uses `$attributes->merge(['class' => $dropdownClasses])` to proper
 - **Centralization**: Created `<x-ui.dropdown>` as the unified dropdown component for the project.
 - **Improved Pattern**: Migrated from Alpine-based toggle patterns to CSS focus pattern for better accessibility and simplicity.
 - **DaisyUI Integration**: Standardized all dropdown placements and menu styles using DaisyUI.
-

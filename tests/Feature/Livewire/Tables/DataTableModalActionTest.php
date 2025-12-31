@@ -20,28 +20,32 @@ it('can open the details modal via row action', function () {
         'email' => 'john@example.com',
     ]);
 
-    Livewire::actingAs($this->admin)
-        ->test('tables.user-table')
-        ->call('openActionModal', 'view_modal', $user->uuid)
+    $component = Livewire::actingAs($this->admin)
+        ->test('tables.user-table');
+    
+    $component->call('openActionModal', 'view_modal', $user->uuid)
         ->assertSet('modalComponent', 'components.users.view-modal')
         ->assertSet('modalType', 'blade')
         ->assertSet('modalProps', function ($props) use ($user) {
             return isset($props['user']) && $props['user']->is($user);
-        })
-        ->assertDispatched('open-datatable-modal')
+        });
+
+    $component->assertDispatched("datatable:open-modal:{$component->id()}")
         ->assertSee('John Doe')
         ->assertSee('john@example.com');
 });
 
 it('can close the details modal', function () {
-    Livewire::actingAs($this->admin)
-        ->test('tables.user-table')
-        ->set('modalComponent', 'components.users.view-modal')
+    $component = Livewire::actingAs($this->admin)
+        ->test('tables.user-table');
+    
+    $component->set('modalComponent', 'components.users.view-modal')
         ->set('modalProps', ['user' => User::factory()->make()])
         ->call('closeActionModal')
         ->assertSet('modalComponent', null)
-        ->assertSet('modalProps', [])
-        ->assertDispatched('close-datatable-modal');
+        ->assertSet('modalProps', []);
+
+    $component->assertDispatched("datatable:close-modal:{$component->id()}");
 });
 
 it('returns confirmation config for row action', function () {
