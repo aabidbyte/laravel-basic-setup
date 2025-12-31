@@ -1,4 +1,5 @@
-<tr wire:key="row-{{ $row->uuid }}" wire:click="rowClick('{{ $row->uuid }}')"
+<tr wire:key="row-{{ $row->uuid }}"
+    @if ($this->rowsAreClickable()) wire:click="handleRowClick('{{ $row->uuid }}')" @endif
     @class([
         'bg-base-200' => $this->isSelected($row->uuid),
         'cursor-pointer' => $this->rowsAreClickable(),

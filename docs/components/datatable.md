@@ -743,19 +743,45 @@ protected function baseQuery(): Builder
 
 ### Row Click Behavior
 
-Handle row clicks in the component:
+Row clicks can be handled by returning an `Action` from the `rowClick()` method. This enables modal dialogs, route navigation, or custom execution using the same fluent API as row actions.
+
+**Open Modal on Row Click:**
 
 ```php
-public function rowClick(string $uuid): void
+use App\Services\DataTable\Builders\Action;
+
+public function rowClick(string $uuid): ?Action
 {
-    $user = $this->findModelByUuid($uuid); // Optimized: checks current page first
-    if ($user !== null) {
-        $this->redirect(route('users.show', $user));
-    }
+    return Action::make('view', __('View Details'))
+        ->bladeModal('components.users.view-modal', fn (User $user) => ['user' => $user]);
 }
 ```
 
-**Note:** The `findModelByUuid()` method is available in the base `Datatable` class and automatically checks the current page rows before querying the database, minimizing queries.
+**Navigate to Route on Row Click:**
+
+```php
+public function rowClick(string $uuid): ?Action
+{
+    return Action::make('view', __('View'))
+        ->route(fn (User $user) => route('users.show', $user));
+}
+```
+
+**Execute Custom Action on Row Click:**
+
+```php
+public function rowClick(string $uuid): ?Action
+{
+    return Action::make('toggle', __('Toggle'))
+        ->execute(fn (User $user) => $user->update(['is_active' => !$user->is_active]));
+}
+```
+
+**How it Works:**
+- The `rowClick()` method receives the row's UUID and returns an `Action` instance (or `null` to disable row click)
+- The base `handleRowClick()` method processes the action: opening modals, redirecting to routes, or executing closures
+- The model is automatically resolved from the UUID using `findModelByUuid()` (checks current page first)
+- Rows are automatically styled as clickable when `rowClick()` is overridden
 
 ### State Management
 

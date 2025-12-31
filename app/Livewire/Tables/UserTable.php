@@ -171,18 +171,11 @@ class UserTable extends Datatable
     }
 
     /**
-     * Handle row click
+     * Handle row click - open user details modal
      */
-    public function rowClick(string $uuid): void
+    public function rowClick(string $uuid): ?Action
     {
-        // Only redirect if route exists
-        if (! Route::has('users.show')) {
-            return;
-        }
-
-        $user = User::where('uuid', $uuid)->first();
-        if ($user !== null) {
-            $this->redirect(route('users.show', $user));
-        }
+        return Action::make('view_modal', __('ui.actions.view_details'))
+            ->bladeModal('components.users.view-modal', fn (User $user) => ['user' => $user]);
     }
 }

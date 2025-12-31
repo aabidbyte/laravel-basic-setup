@@ -12,6 +12,7 @@ use App\Livewire\Concerns\DataTable\HasQueryParameters;
 use App\Livewire\Concerns\DataTable\HasRendering;
 use App\Livewire\Concerns\DataTable\HasSelection;
 use App\Livewire\Concerns\DataTable\HasSorting;
+use App\Services\DataTable\Builders\Action;
 use App\Services\DataTable\DataTableQueryBuilder;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -69,18 +70,17 @@ abstract class Datatable extends Component
 
     /**
      * Handle row click (optional)
+     * Return Action for modal/route/execute, or void for custom handling
      *
      * @param  string  $uuid  Row UUID
      */
-    public function rowClick(string $uuid): void
+    public function rowClick(string $uuid): ?Action
     {
-        // Override in component if needed
+        return null;
     }
 
     /**
      * Determine if the row is clickable
-     *
-     * @param  mixed  $row
      */
     public function rowsAreClickable(): bool
     {
@@ -89,7 +89,6 @@ abstract class Datatable extends Component
         }
 
         $reflector = new \ReflectionMethod($this, 'rowClick');
-
         $this->rowsClickable = $reflector->getDeclaringClass()->getName() !== self::class;
 
         return $this->rowsClickable;

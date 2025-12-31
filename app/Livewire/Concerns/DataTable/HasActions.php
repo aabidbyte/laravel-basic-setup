@@ -110,17 +110,7 @@ trait HasActions
         $model = $this->findModelByUuid($uuid);
 
         if ($action && $model) {
-            $this->modalComponent = $action->getModal();
-            $this->modalType = $action->getModalType();
-
-            $modalProps = $action->getModalProps();
-            if ($modalProps instanceof \Closure) {
-                $this->modalProps = $modalProps($model);
-            } else {
-                $this->modalProps = $modalProps;
-            }
-
-            $this->dispatch("datatable:open-modal:{$this->getId()}");
+            $this->openModalForAction($action, $model);
         }
     }
 
@@ -163,6 +153,58 @@ trait HasActions
             ['required' => true],
             $action->resolveConfirmation($models)
         );
+    }
+
+    /**
+     * Process row click - handles Action returned by rowClick()
+     */
+    public function handleRowClick(string $uuid): void
+    {
+        $action = $this->rowClick($uuid);
+
+        if ($action === null) {
+            return;
+        }
+
+        $model = $this->findModelByUuid($uuid);
+        if ($model === null) {
+            return;
+        }
+
+        // Handle modal - reuse shared method
+        if ($action->getModal() !== null) {
+            $this->openModalForAction($action, $model);
+
+            return;
+        }
+
+        // Handle route
+        if ($action->getRoute() !== null) {
+            $route = $action->getRoute();
+            $this->redirect($route instanceof \Closure ? $route($model) : $route);
+
+            return;
+        }
+
+        // Handle execute
+        if ($action->getExecute() !== null) {
+            ($action->getExecute())($model);
+            $this->refreshTable();
+        }
+    }
+
+    /**
+     * Open modal for a given action and model (shared helper)
+     */
+    protected function openModalForAction(Action $action, Model $model): void
+    {
+        $this->modalComponent = $action->getModal();
+        $this->modalType = $action->getModalType();
+
+        $modalProps = $action->getModalProps();
+        $this->modalProps = $modalProps instanceof \Closure ? $modalProps($model) : $modalProps;
+
+        $this->dispatch("datatable:open-modal:{$this->getId()}");
     }
 
     /**

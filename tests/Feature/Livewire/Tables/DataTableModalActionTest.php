@@ -101,3 +101,25 @@ it('refreshes rows after bulk deletion', function () {
 
     expect(User::whereIn('uuid', $uuids)->count())->toBe(0);
 });
+
+it('opens modal when row is clicked via handleRowClick', function () {
+    $user = User::factory()->create([
+        'name' => 'Row Click User',
+        'email' => 'rowclick@example.com',
+    ]);
+
+    $component = Livewire::actingAs($this->admin)
+        ->test('tables.user-table');
+
+    $component->call('handleRowClick', $user->uuid)
+        ->assertSet('modalComponent', 'components.users.view-modal')
+        ->assertSet('modalType', 'blade')
+        ->assertDispatched("datatable:open-modal:{$component->id()}");
+});
+
+it('detects rows are clickable when rowClick is overridden', function () {
+    $component = Livewire::actingAs($this->admin)
+        ->test('tables.user-table');
+
+    expect($component->instance()->rowsAreClickable())->toBeTrue();
+});

@@ -34,10 +34,10 @@
         {{ $this->rows->links('components.datatable.pagination') }}
 
         {{-- Dynamic Action Modal --}}
-        <div x-data="{ modalIsOpen: false }"
-            @datatable:open-modal:{{ $this->getId() }}.window="modalIsOpen = true"
+        <div x-data="{ modalIsOpen: $wire.$entangle('modalComponent').live }"
+            @datatable:open-modal:{{ $this->getId() }}.window="modalIsOpen = !!$wire.modalComponent"
             @datatable:close-modal:{{ $this->getId() }}.window="modalIsOpen = false">
-            <x-ui.base-modal open-state="modalIsOpen" use-parent-state="true" :title="__('ui.table.action_modal_title')"
+            <x-ui.base-modal open-state="!!modalIsOpen" use-parent-state="true" :title="__('ui.table.action_modal_title')"
                 on-close="$wire.closeActionModal()">
                 @if ($modalComponent)
                     @if ($modalType === 'blade')
