@@ -7,7 +7,6 @@ export function dataTable() {
     return {
         // ===== Local Alpine State =====
         openFilters: false,
-        hoveredRow: null,
         pendingAction: null,
 
         // ===== Filter Methods =====
@@ -85,10 +84,6 @@ export function dataTable() {
          */
         cancelAction() {
             this.pendingAction = null;
-        },
-
-        setHoveredRow(uuid) {
-            this.hoveredRow = uuid;
         },
     };
 }

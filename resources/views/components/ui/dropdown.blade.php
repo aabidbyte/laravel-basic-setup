@@ -70,7 +70,7 @@
             {{ $trigger }}
         </div>
     @endisset
-    <div tabindex="0" class="{{ $contentClasses }}" {{ $attributes->only(['aria-label', 'aria-labelledby']) }}>
+    <div tabindex="0" @class($contentClasses) {{ $attributes->only(['aria-label', 'aria-labelledby']) }}>
         {{ $slot }}
     </div>
 </div>

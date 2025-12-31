@@ -1,0 +1,122 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Livewire\Concerns\DataTable;
+
+use App\Services\DataTable\Builders\Filter;
+
+/**
+ * Trait for handling DataTable filters logic.
+ *
+ * @method void resetPage()
+ * @method void savePreferences()
+ */
+trait HasFilters
+{
+    /**
+     * Filter values
+     *
+     * @var array<string, mixed>
+     */
+    public array $filters = [];
+
+    /**
+     * Get filter definitions (optional)
+     *
+     * @return array<int, Filter>
+     */
+    protected function getFilterDefinitions(): array
+    {
+        return [];
+    }
+
+    /**
+     * Get filters for view
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function getFilters(): array
+    {
+        return collect($this->getFilterDefinitions())
+            ->filter(fn (Filter $filter) => $filter->isVisible())
+            ->map(fn (Filter $filter) => $filter->toArray())
+            ->values()
+            ->toArray();
+    }
+
+    /**
+     * Get active filters with their labels
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function getActiveFilters(): array
+    {
+        $filterDefinitions = collect($this->getFilterDefinitions());
+
+        return collect($this->filters)
+            ->filter(fn ($value) => $value !== null && $value !== '')
+            ->map(function ($value, $key) use ($filterDefinitions) {
+                $filter = $filterDefinitions->first(fn (Filter $f) => $f->getKey() === $key);
+
+                if ($filter === null) {
+                    return null;
+                }
+
+                // Get the label for the value
+                $valueLabel = $value;
+                if ($filter->getType() === 'select') {
+                    $options = $filter->getOptions();
+                    $valueLabel = $options[$value] ?? $value;
+                }
+
+                return [
+                    'key' => $key,
+                    'label' => $filter->getLabel(),
+                    'value' => $value,
+                    'valueLabel' => $valueLabel,
+                ];
+            })
+            ->filter()
+            ->values()
+            ->toArray();
+    }
+
+    /**
+     * Clear all filters
+     */
+    public function clearFilters(): void
+    {
+        $this->filters = [];
+        if (method_exists($this, 'resetPage')) {
+            $this->resetPage();
+        }
+        if (method_exists($this, 'savePreferences')) {
+            $this->savePreferences();
+        }
+    }
+
+    /**
+     * Remove a specific filter
+     *
+     * @param  string  $key  Filter key
+     */
+    public function removeFilter(string $key): void
+    {
+        unset($this->filters[$key]);
+        if (method_exists($this, 'resetPage')) {
+            $this->resetPage();
+        }
+        if (method_exists($this, 'savePreferences')) {
+            $this->savePreferences();
+        }
+    }
+
+    /**
+     * Render the filters section
+     */
+    public function renderFilters(): string
+    {
+        return view('components.datatable.filters')->render();
+    }
+}

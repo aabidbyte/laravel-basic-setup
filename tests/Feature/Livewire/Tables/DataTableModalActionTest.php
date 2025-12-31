@@ -43,3 +43,60 @@ it('can close the details modal', function () {
         ->assertSet('modalProps', [])
         ->assertDispatched('close-datatable-modal');
 });
+
+it('returns confirmation config for row action', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($this->admin)
+        ->test('tables.user-table')
+        ->call('getActionConfirmation', 'delete', $user->uuid)
+        ->assertReturned([
+            'required' => true,
+            'type' => 'message',
+            'message' => __('ui.actions.confirm_delete'),
+        ]);
+});
+
+it('returns confirmation config for bulk action', function () {
+    $users = User::factory()->count(2)->create();
+    $uuids = $users->pluck('uuid')->toArray();
+
+    Livewire::actingAs($this->admin)
+        ->test('tables.user-table')
+        ->set('selected', $uuids)
+        ->call('getBulkActionConfirmation', 'delete')
+        ->assertReturned([
+            'required' => true,
+            'type' => 'message',
+            'message' => __('ui.actions.confirm_bulk_delete'),
+        ]);
+});
+
+it('refreshes rows after row deletion', function () {
+    $user = User::factory()->create(['name' => 'To Be Deleted']);
+
+    Livewire::actingAs($this->admin)
+        ->test('tables.user-table')
+        ->assertSee('To Be Deleted')
+        ->call('executeAction', 'delete', $user->uuid)
+        ->assertDontSee('To Be Deleted');
+    
+    expect(User::where('uuid', $user->uuid)->exists())->toBeFalse();
+});
+
+it('refreshes rows after bulk deletion', function () {
+    $users = User::factory()->count(2)->create(['name' => 'Bulk Delete']);
+    $uuids = $users->pluck('uuid')->toArray();
+
+    Livewire::actingAs($this->admin)
+        ->test('tables.user-table')
+        ->set('selected', $uuids)
+        ->assertSee('Bulk Delete')
+        ->call('executeBulkAction', 'delete')
+        ->assertDontSee('Bulk Delete');
+    
+    expect(User::whereIn('uuid', $uuids)->count())->toBe(0);
+});
+
+
+

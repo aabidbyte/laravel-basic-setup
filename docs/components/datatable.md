@@ -8,33 +8,41 @@ The DataTable component provides a powerful, flexible way to display tabular dat
 - ✅ Row and bulk actions with confirmation modals
 - ✅ Pagination with per-page selector
 - ✅ Automatic relationship joins
-- ✅ Alpine.js-driven UI state (filters panel, modals, hover)
+- ✅ Alpine.js-driven UI state (filters panel, modals)
 - ✅ Livewire 4 features
 - ✅ Server-side selection management (optimized queries)
 
 ## Architecture
 
-The DataTable system uses a self-rendering component-based approach with Alpine.js for UI-only state management:
+The DataTable system uses a modular, trait-based architecture to adhere to SOLID principles and ensure maintainability:
 
 ```
 Livewire Component (extends Datatable)
-    ↓ (contains configuration & rendering methods)
+    ↓ (modular responsibilities via traits)
+    - HasActions (row/bulk actions, modals)
+    - HasFilters (filter state, rendering)
+    - HasPagination (per-page, navigation)
+    - HasPreferences (user preference persistence)
+    - HasQueryParameters (URL state handling)
+    - HasRendering (header, row, column rendering)
+    - HasSelection (row selection management)
+    - HasSorting (sort column/direction logic)
+    ↓
 Shared Template (resources/views/components/datatable.blade.php)
     ↓ (orchestrates sub-views via backend methods)
 Modular Sub-views (resources/views/components/datatable/*.blade.php)
     ↓
 DataTableQueryBuilder (auto-joins, search, filter, sort)
     ↓
-Alpine.js Component (UI-only: filters panel, modals, hover)
+Alpine.js Component (UI-only: filters panel, modals)
 ```
 
 **Key Benefits:**
-- ✅ **Separation of Concerns**: Configuration separate from presentation
-- ✅ **DRY**: One template for all datatables
-- ✅ **Maintainability**: Fix bugs in one place
-- ✅ **Consistency**: All datatables look and behave the same
-- ✅ **Reusability**: Easy to add new datatables
-- ✅ **Server-Side Selection**: All selection logic handled by Livewire for better performance
+- ✅ **SOLID**: Clear separation of responsibilities into focused traits
+- ✅ **Readability**: Smaller, more manageable code files
+- ✅ **Testability**: Logic isolated in traits is easier to test
+- ✅ **DRY**: Shared logic reused across all datatables
+- ✅ **Consistency**: Unified behavior for sorting, filtering, and selection
 
 **Note:** This component-based architecture replaced the previous trait-based approach (`WithDataTable` trait). All DataTable components now extend the `Datatable` base class, which provides all the functionality previously in the trait. Individual datatables only contain PHP configuration - no HTML is needed in component files.
 
@@ -596,7 +604,7 @@ Selection state is fully managed by Livewire and automatically:
 
 ## Alpine.js Integration
 
-The DataTable component uses Alpine.js for UI-only state management (filter panel, modals, row hover). All selection logic is handled by Livewire.
+The DataTable component uses Alpine.js for UI-only state management (filter panel, modals). All selection logic is handled by Livewire.
 
 ### Important Conventions
 
@@ -619,7 +627,6 @@ Following `docs/alpinejs/livewire-integration.md`:
 ```javascript
 {
     openFilters: false,  // Boolean for filter panel visibility
-    hoveredRow: null,    // String for hovered row UUID
     pendingAction: null,  // Stores action waiting for confirmation
 }
 ```
@@ -635,7 +642,6 @@ Following `docs/alpinejs/livewire-integration.md`:
     executeActionWithConfirmation(actionKey, uuid, isBulk)  // Execute action with confirmation
     confirmAction(data)     // Confirm and execute pending action (triggered by event)
     cancelAction()          // Cancel pending action (triggered by event)
-    setHoveredRow(uuid)     // Set hovered row
 }
 ```
 

@@ -1,5 +1,4 @@
 <tr wire:key="row-{{ $row->uuid }}" wire:click="rowClicked('{{ $row->uuid }}')"
-    @mouseenter="setHoveredRow('{{ $row->uuid }}')" @mouseleave="setHoveredRow(null)"
     @class([
         'bg-base-200' => $this->isSelected($row->uuid),
         'cursor-pointer hover:bg-base-200 transition-colors',
