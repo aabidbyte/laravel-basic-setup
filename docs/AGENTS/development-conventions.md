@@ -196,6 +196,14 @@ it('tests something', function () {
 -   **SFC Requirement**: **ALL Livewire components MUST use Single File Component (SFC) format** - Never create class-based components in `app/Livewire/`. All Livewire components must be single-file components with PHP class and Blade template in the same `.blade.php` file using anonymous class syntax (`new class extends Component { }`). This is the Livewire 4 standard and ensures consistency across the application.
 -   **UI Library**: Standard HTML/Tailwind CSS components
 -   **Component Reusability**: **ALWAYS use existing components when possible for consistency** - Before creating a new component, check if an existing component can be used or extended. This ensures consistency across the application and reduces code duplication.
+-   **Loading States**: **ALWAYS use `<x-ui.loading>` component for loading spinners** - Never use inline `<span class="loading loading-spinner">` markup. Use the centralized component with appropriate props (`size`, `variant`, `color`, `centered`). See `docs/components/loading.md` for documentation. Example:
+    ```blade
+    {{-- Centered loading (default) --}}
+    <x-ui.loading></x-ui.loading>
+    
+    {{-- Inline spinner --}}
+    <x-ui.loading size="sm" :centered="false"></x-ui.loading>
+    ```
 -   **Component Documentation**: **ALWAYS update `docs/components/index.md` when adding new UI components** - This ensures all components are documented with props, usage examples, and implementation details
 -   **Component Tag Format**: **ALL Blade and Livewire component tags MUST use opening and closing tags, never self-closing tags** - Always write `<x-component></x-component>` or `<livewire:component></livewire:component>` instead of `<x-component />` or `<livewire:component />`, even if the component has no content. **Exception**: Standard HTML self-closing tags (void elements) like `<img />`, `<br />`, `<hr />`, `<input />`, `<meta />`, `<link />`, `<area />`, `<base />`, `<col />`, `<embed />`, `<source />`, `<track />`, `<wbr />` should remain self-closing as per HTML5 specification.
 -   **Component Props Comments**: **NO comments shall be inside `@props` directive** - All comments for component props MUST be placed at the top of the file, isolated in a Blade comment block (`{{-- --}}`). This keeps the `@props` directive clean and makes component documentation more readable. Example:
@@ -249,6 +257,29 @@ it('tests something', function () {
 
     // Nested component (in components/ directory)
     <livewire:settings.delete-user-form />
+    ```
+
+### Livewire Event Parameters
+
+-   **Reserved Parameter Names**: When using `$this->dispatch()` with named parameters, avoid these reserved names that may conflict with Livewire internals:
+    -   `component` - Reserved by Livewire for component identification
+    -   `id` - May conflict with component ID handling
+    -   `type` - May be interpreted as internal type parameter
+-   **Recommended Alternatives**: Use descriptive prefixes like `view*` or `modal*`:
+    ```php
+    // ❌ Bad - may cause ComponentNotFoundException
+    $this->dispatch('open-modal', component: 'users.view', type: 'blade');
+
+    // ✅ Good - descriptive and safe
+    $this->dispatch('open-modal', viewPath: 'users.view', viewType: 'blade');
+    ```
+-   **Model Serialization**: When dispatching events with model data, pass UUIDs instead of model instances to avoid serialization issues:
+    ```php
+    // ❌ Bad - model loses methods after serialization
+    ->bladeModal('view-modal', fn (User $user) => ['user' => $user])
+
+    // ✅ Good - re-fetch in Blade view
+    ->bladeModal('view-modal', fn (User $user) => ['userUuid' => $user->uuid])
     ```
 
 ### Database & Models

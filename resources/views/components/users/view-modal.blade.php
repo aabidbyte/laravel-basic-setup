@@ -1,6 +1,22 @@
+{{--
+    User View Modal Content
+    
+    Props received from datatable action-modal:
+    - userUuid: UUID of the user to display
+    
+    Model is re-fetched here to have full Eloquent functionality.
+    Uses $modalIsOpen from parent action-modal Alpine scope.
+--}}
 @props([
-    'user' => null,
+    'userUuid' => null,
 ])
+
+@php
+    use App\Models\User;
+    
+    // Fetch user from UUID
+    $user = $userUuid ? User::where('uuid', $userUuid)->first() : null;
+@endphp
 
 <div class="flex flex-col gap-6 py-4">
     @if ($user)
@@ -57,6 +73,7 @@
         @endif
 
         <div class="modal-action">
+            {{-- modalIsOpen comes from parent action-modal Alpine scope --}}
             <x-ui.button @click="modalIsOpen = false" variant="ghost">
                 {{ __('ui.actions.close') }}
             </x-ui.button>

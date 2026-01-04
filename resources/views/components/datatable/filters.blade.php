@@ -21,17 +21,31 @@
                     </x-slot:trigger>
 
                     @foreach ($this->getBulkActions() as $action)
+                        @php
+                            $colorClass = match($action['color'] ?? null) {
+                                'error' => 'text-error hover:bg-error/10',
+                                'warning' => 'text-warning hover:bg-warning/10',
+                                'success' => 'text-success hover:bg-success/10',
+                                'info' => 'text-info hover:bg-info/10',
+                                'primary' => 'text-primary hover:bg-primary/10',
+                                'secondary' => 'text-secondary hover:bg-secondary/10',
+                                default => ''
+                            };
+                
+                            $baseClasses = "flex items-center gap-2 w-full text-left " . $colorClass;
+                        @endphp
+
                         @if ($action['confirm'])
-                            <button @click="executeActionWithConfirmation('{{ $action['key'] }}', null, true)"
-                                type="button" class="flex items-center gap-2 w-full text-left">
+                            <button type="button" @click="executeActionWithConfirmation('{{ $action['key'] }}', null, true)"
+                                class="{{ $baseClasses }}">
                                 @if ($action['icon'])
                                     <x-ui.icon :name="$action['icon']" size="sm"></x-ui.icon>
                                 @endif
                                 {{ $action['label'] }}
                             </button>
                         @else
-                            <button wire:click="executeBulkAction('{{ $action['key'] }}')" type="button"
-                                class="flex items-center gap-2 w-full text-left">
+                            <button type="button" wire:click="executeBulkAction('{{ $action['key'] }}')"
+                                class="{{ $baseClasses }}">
                                 @if ($action['icon'])
                                     <x-ui.icon :name="$action['icon']" size="sm"></x-ui.icon>
                                 @endif

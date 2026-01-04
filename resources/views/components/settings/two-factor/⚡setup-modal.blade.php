@@ -128,7 +128,7 @@ new class extends Component {
             <div class="relative w-64 overflow-hidden border border-base-300 rounded-lg aspect-square bg-base-200">
             @empty($qrCodeSvg)
                 <div class="absolute inset-0 flex items-center justify-center">
-                    <span class="loading loading-spinner loading-lg"></span>
+                    <x-ui.loading size="lg" :centered="false"></x-ui.loading>
                 </div>
             @else
                 <div class="flex items-center justify-center h-full p-4">

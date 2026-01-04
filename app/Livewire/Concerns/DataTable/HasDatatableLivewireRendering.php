@@ -13,7 +13,7 @@ use App\Services\DataTable\Builders\Column;
  *
  * @method array columns()
  */
-trait HasRendering
+trait HasDatatableLivewireRendering
 {
     /**
      * Get columns for view

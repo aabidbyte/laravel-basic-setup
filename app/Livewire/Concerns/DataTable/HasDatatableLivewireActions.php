@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method array getActionConfirmation(string $actionKey, string $uuid)
  * @method array getBulkActionConfirmation(string $actionKey)
  */
-trait HasActions
+trait HasDatatableLivewireActions
 {
     /**
      * Active modal component or view
@@ -195,16 +195,25 @@ trait HasActions
 
     /**
      * Open modal for a given action and model (shared helper)
+     *
+     * Dispatches global event to the action-modal Livewire component.
+     * Props are passed directly - for models, define the action with UUID:
+     * ->bladeModal('view', fn (User $user) => ['userUuid' => $user->uuid])
+     * 
+     * NOTE: Avoid using 'component' as parameter name in dispatch - it's reserved by Livewire.
      */
     protected function openModalForAction(Action $action, Model $model): void
     {
-        $this->modalComponent = $action->getModal();
-        $this->modalType = $action->getModalType();
-
         $modalProps = $action->getModalProps();
-        $this->modalProps = $modalProps instanceof \Closure ? $modalProps($model) : $modalProps;
+        $resolvedProps = $modalProps instanceof \Closure ? $modalProps($model) : $modalProps;
 
-        $this->dispatch("datatable:open-modal:{$this->getId()}");
+        $this->dispatch('open-datatable-modal',
+            viewPath: $action->getModal(),
+            viewType: $action->getModalType(),
+            viewProps: $resolvedProps,
+            viewTitle: null,
+            datatableId: $this->getId()
+        );
     }
 
     /**

@@ -9,15 +9,23 @@ use Livewire\WithPagination;
 /**
  * Trait for handling DataTable pagination logic.
  */
-trait HasPagination
+trait HasDatatableLivewirePagination
 {
     use WithPagination;
+    use \Livewire\WithoutUrlPagination;
 
     /**
      * Disable query string synchronization for pagination
      */
     public function queryStringHasPagination(): array
     {
+        // Use custom page parameter name if alias is set
+        if ($this->queryStringAlias) {
+            return [
+                'page' => ['as' => $this->getQueryParamName('page')],
+            ];
+        }
+
         return [];
     }
 

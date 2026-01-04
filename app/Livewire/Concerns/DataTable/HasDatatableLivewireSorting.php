@@ -10,7 +10,7 @@ namespace App\Livewire\Concerns\DataTable;
  * @method void resetPage()
  * @method void savePreferences()
  */
-trait HasSorting
+trait HasDatatableLivewireSorting
 {
     /**
      * Sort column
@@ -23,7 +23,7 @@ trait HasSorting
     public string $sortDirection = 'asc';
 
     /**
-     * Sort by column
+     * Sort by column - does NOT reset pagination
      *
      * @param  string  $field  Field name
      */
@@ -36,6 +36,12 @@ trait HasSorting
             $this->sortDirection = 'asc';
         }
 
-        $this->applyChanges();
+        // Save preferences without resetting page
+        if (method_exists($this, 'savePreferences')) {
+            $this->savePreferences();
+        }
+
+        // Refresh table without resetting pagination
+        $this->refreshTable();
     }
 }

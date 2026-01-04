@@ -12,8 +12,17 @@ use App\Services\DataTable\Builders\Filter;
  * @method void resetPage()
  * @method void savePreferences()
  */
-trait HasFilters
+trait HasDatatableLivewireFilters
 {
+    /**
+     * Hook called when filters are updated - resets pagination
+     */
+    public function updatedFilters(): void
+    {
+        if (method_exists($this, 'applyChanges')) {
+            $this->applyChanges();
+        }
+    }
     /**
      * Filter values
      *

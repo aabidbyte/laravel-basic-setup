@@ -119,7 +119,7 @@ class UserTable extends Datatable
 
         $actions[] = Action::make('view_modal', __('ui.actions.view_details'))
             ->icon('eye')
-            ->bladeModal('components.users.view-modal', fn (User $user) => ['user' => $user])
+            ->bladeModal('components.users.view-modal', fn (User $user) => ['userUuid' => $user->uuid])
             ->variant('ghost');
 
         // Only add edit action if route exists
@@ -176,6 +176,6 @@ class UserTable extends Datatable
     public function rowClick(string $uuid): ?Action
     {
         return Action::make('view_modal', __('ui.actions.view_details'))
-            ->bladeModal('components.users.view-modal', fn (User $user) => ['user' => $user]);
+            ->bladeModal('components.users.view-modal', fn (User $user) => ['userUuid' => $user->uuid]);
     }
 }

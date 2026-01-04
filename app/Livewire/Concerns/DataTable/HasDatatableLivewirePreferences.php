@@ -10,7 +10,7 @@ use App\Services\FrontendPreferences\FrontendPreferencesService;
 /**
  * Trait for handling DataTable user preferences logic.
  */
-trait HasPreferences
+trait HasDatatableLivewirePreferences
 {
     /**
      * Get the datatable identifier (full class name).

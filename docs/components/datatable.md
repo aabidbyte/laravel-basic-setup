@@ -19,14 +19,14 @@ The DataTable system uses a modular, trait-based architecture to adhere to SOLID
 ```
 Livewire Component (extends Datatable)
     ↓ (modular responsibilities via traits)
-    - HasActions (row/bulk actions, modals)
-    - HasFilters (filter state, rendering)
-    - HasPagination (per-page, navigation)
-    - HasPreferences (user preference persistence)
-    - HasQueryParameters (URL state handling)
-    - HasRendering (header, row, column rendering)
-    - HasSelection (row selection management)
-    - HasSorting (sort column/direction logic)
+    - HasDatatableLivewireActions (row/bulk actions, modals)
+    - HasDatatableLivewireFilters (filter state, rendering)
+    - HasDatatableLivewirePagination (per-page, navigation)
+    - HasDatatableLivewirePreferences (user preference persistence)
+    - HasDatatableLivewireQueryParameters (URL state handling)
+    - HasDatatableLivewireRendering (header, row, column rendering)
+    - HasDatatableLivewireSelection (row selection management)
+    - HasDatatableLivewireSorting (sort column/direction logic)
     ↓
 Shared Template (resources/views/components/datatable.blade.php)
     ↓ (orchestrates sub-views via backend methods)
@@ -462,14 +462,14 @@ Action::make('delete', __('Delete'))
 
 ### Modal Actions
 
-DataTable supports two types of dynamic modal actions that can render either a Blade view or a Livewire component.
+DataTable supports two types of dynamic modal actions that can render either a Blade view or a Livewire component. Modals use a **global Livewire SFC component** for centralized state management.
 
 **1. Blade Modal:**
 
 ```php
 Action::make('view', __('View Details'))
     ->icon('eye')
-    ->bladeModal('components.users.view-modal', fn (User $user) => ['user' => $user])
+    ->bladeModal('components.users.view-modal', fn (User $user) => ['userUuid' => $user->uuid])
 ```
 
 **2. Livewire Modal:**
@@ -477,13 +477,65 @@ Action::make('view', __('View Details'))
 ```php
 Action::make('edit', __('Fast Edit'))
     ->icon('pencil')
-    ->livewireModal('modals.user-edit-form', fn (User $user) => ['user' => $user])
+    ->livewireModal('modals.user-edit-form', fn (User $user) => ['userUuid' => $user->uuid])
 ```
 
+#### Global Modal Architecture
+
+The modal system uses a global Livewire SFC component (`action-modal.blade.php`) that:
+- Uses `<x-ui.base-modal>` for consistent styling
+- Exposes `modalIsOpen` to child views via Alpine.js
+- Provides immediate loading UX with `<x-ui.loading>` component
+
+```
+User clicks action → datatable-modal-loading event → Modal shows spinner
+                  → Livewire request → Server sets modalView
+                  → Livewire.hook('morph.updated') → Spinner hidden, content shown
+```
+
+#### UUID Pattern for Props
+
+> [!IMPORTANT]
+> **Always pass UUIDs, not model instances**, in modal props. Models lose Eloquent methods after serialization.
+
+```php
+// ❌ Bad - model loses methods after serialization
+->bladeModal('view-modal', fn (User $user) => ['user' => $user])
+
+// ✅ Good - re-fetch in Blade view
+->bladeModal('view-modal', fn (User $user) => ['userUuid' => $user->uuid])
+```
+
+In your Blade view, re-fetch the model:
+
+```blade
+@php
+    $user = $user ?? \App\Models\User::where('uuid', $userUuid)->first();
+@endphp
+
+<div>
+    <p>{{ $user->name }}</p>
+    <p>Created {{ $user->created_at->diffForHumans() }}</p>
+    
+    <button @click="modalIsOpen = false">Close</button>
+</div>
+```
+
+#### Loading UX
+
+Modals show a loading spinner immediately when triggered, before the server response arrives. This is achieved by:
+
+1. Action buttons dispatch `datatable-modal-loading` event before Livewire request
+2. Alpine listener shows modal with spinner immediately
+3. `Livewire.hook('morph.updated')` hides spinner when content is ready
+
+For row clicks, the loading event is only dispatched if `rowClickOpensModal()` returns true.
+
 **Key Features:**
-- **Dynamic Props**: Pass a closure to resolve properties based on the selected row.
-- **Isolated State**: The modal state (`modalIsOpen`) is managed within the Datatable component.
-- **Auto-Resolution**: Properties are automatically resolved and passed to the view/component.
+- **Immediate Feedback**: Spinner shows before server response
+- **Global State**: Modal state managed in dedicated Livewire SFC
+- **Accessible Variables**: Child views can use `modalIsOpen` from parent scope
+- **Proper Cleanup**: Event listener removed on component destroy
 
 > [!TIP]
 > **Action Feedback**: Use `NotificationBuilder` within the `execute()` closure to provide visual feedback to the user after an action completes.
@@ -499,7 +551,7 @@ Action::make('edit', __('Fast Edit'))
 >         ->send();
 > })
 > ```
-```
+
 
 ## Bulk Action API
 
@@ -698,11 +750,11 @@ These methods are defined in the `Datatable` base class and can be overridden in
 
 The rendering methods use dedicated sub-views located in `resources/views/components/datatable/`:
 
-- `filters.blade.php`
-- `header.blade.php`
-- `row.blade.php`
-- `actions.blade.php`
-- `pagination.blade.php`
+- `filters.blade.php` - Search, bulk actions, filter panel
+- `header.blade.php` - Table header with sorting
+- `row.blade.php` - Table rows with selection and actions
+- `actions.blade.php` - Row action dropdown
+- `pagination.blade.php` - Pagination controls
 
 ## Advanced Features
 

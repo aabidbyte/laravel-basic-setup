@@ -6,43 +6,53 @@
     </x-slot:trigger>
 
     @foreach ($this->getRowActionsForRow($row) as $action)
+        @php
+            $colorClass = match($action['color'] ?? null) {
+                'error' => 'text-error hover:bg-error/10',
+                'warning' => 'text-warning hover:bg-warning/10',
+                'success' => 'text-success hover:bg-success/10',
+                'info' => 'text-info hover:bg-info/10',
+                'primary' => 'text-primary hover:bg-primary/10',
+                'secondary' => 'text-secondary hover:bg-secondary/10',
+                default => 'text-base hover:bg-base-300'
+            };
+
+            $baseClasses = "flex items-center gap-2 w-full cursor-pointer px-2 py-1 rounded $colorClass";
+        @endphp
+
         @if ($action['hasRoute'])
-                <a href="{{ $action['route'] }}" wire:navigate
-                    class="flex items-center gap-2">
-                    @if ($action['icon'])
-                        <x-ui.icon :name="$action['icon']" size="sm"></x-ui.icon>
-                    @endif
-                    {{ $action['label'] }}
-                </a>
+            <a href="{{ $action['route'] }}" wire:navigate class="{{ $baseClasses }}">
+                @if ($action['icon'])
+                    <x-ui.icon :name="$action['icon']" size="sm"></x-ui.icon>
+                @endif
+                {{ $action['label'] }}
+            </a>
+        @elseif ($action['hasModal'])
+            {{-- Dispatch loading event immediately, then make Livewire request --}}
+            <button type="button" 
+                @click="window.dispatchEvent(new CustomEvent('datatable-modal-loading')); $wire.openActionModal('{{ $action['key'] }}', '{{ $row->uuid }}')"
+                class="{{ $baseClasses }}">
+                @if ($action['icon'])
+                    <x-ui.icon :name="$action['icon']" size="sm"></x-ui.icon>
+                @endif
+                {{ $action['label'] }}
+            </button>
+        @elseif ($action['confirm'])
+            <button type="button" @click="executeActionWithConfirmation('{{ $action['key'] }}', '{{ $row->uuid }}', false)"
+                class="{{ $baseClasses }}">
+                @if ($action['icon'])
+                    <x-ui.icon :name="$action['icon']" size="sm"></x-ui.icon>
+                @endif
+                {{ $action['label'] }}
+            </button>
         @else
-            @if ($action['hasModal'])
-                    <x-ui.button
-                        wire:click="openActionModal('{{ $action['key'] }}', '{{ $row->uuid }}')"
-                        type="button" class="flex items-center gap-2 w-full">
-                        @if ($action['icon'])
-                            <x-ui.icon :name="$action['icon']" size="sm"></x-ui.icon>
-                        @endif
-                        {{ $action['label'] }}
-                    </x-ui.button>
-            @elseif ($action['confirm'])
-                    <x-ui.button
-                        @click="executeActionWithConfirmation('{{ $action['key'] }}', '{{ $row->uuid }}', false)"
-                        type="button" class="flex items-center gap-2 w-full" variant="link">
-                        @if ($action['icon'])
-                            <x-ui.icon :name="$action['icon']" size="sm"></x-ui.icon>
-                        @endif
-                        {{ $action['label'] }}
-                    </x-ui.button>
-            @else
-                    <x-ui.button
-                        wire:click="executeAction('{{ $action['key'] }}', '{{ $row->uuid }}')"
-                        type="button" class="flex items-center gap-2 w-full">
-                        @if ($action['icon'])
-                            <x-ui.icon :name="$action['icon']" size="sm"></x-ui.icon>
-                        @endif
-                        {{ $action['label'] }}
-                    </x-ui.button>
-            @endif
+            <button type="button" wire:click="executeAction('{{ $action['key'] }}', '{{ $row->uuid }}')"
+                class="{{ $baseClasses }}">
+                @if ($action['icon'])
+                    <x-ui.icon :name="$action['icon']" size="sm"></x-ui.icon>
+                @endif
+                {{ $action['label'] }}
+            </button>
         @endif
     @endforeach
 </x-ui.dropdown>

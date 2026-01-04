@@ -23,16 +23,14 @@ it('can open the details modal via row action', function () {
     $component = Livewire::actingAs($this->admin)
         ->test('tables.user-table');
 
+    // Now dispatches to global modal component instead of setting local properties
     $component->call('openActionModal', 'view_modal', $user->uuid)
-        ->assertSet('modalComponent', 'components.users.view-modal')
-        ->assertSet('modalType', 'blade')
-        ->assertSet('modalProps', function ($props) use ($user) {
-            return isset($props['user']) && $props['user']->is($user);
+        ->assertDispatched('open-datatable-modal', function ($eventName, $params) use ($user) {
+            return $params['viewPath'] === 'components.users.view-modal'
+                && $params['viewType'] === 'blade'
+                && isset($params['viewProps']['userUuid'])
+                && $params['viewProps']['userUuid'] === $user->uuid;
         });
-
-    $component->assertDispatched("datatable:open-modal:{$component->id()}")
-        ->assertSee('John Doe')
-        ->assertSee('john@example.com');
 });
 
 it('can close the details modal', function () {
@@ -111,10 +109,12 @@ it('opens modal when row is clicked via handleRowClick', function () {
     $component = Livewire::actingAs($this->admin)
         ->test('tables.user-table');
 
+    // Now dispatches to global modal component instead of setting local properties
     $component->call('handleRowClick', $user->uuid)
-        ->assertSet('modalComponent', 'components.users.view-modal')
-        ->assertSet('modalType', 'blade')
-        ->assertDispatched("datatable:open-modal:{$component->id()}");
+        ->assertDispatched('open-datatable-modal', function ($eventName, $params) {
+            return $params['viewPath'] === 'components.users.view-modal'
+                && $params['viewType'] === 'blade';
+        });
 });
 
 it('detects rows are clickable when rowClick is overridden', function () {
@@ -122,4 +122,26 @@ it('detects rows are clickable when rowClick is overridden', function () {
         ->test('tables.user-table');
 
     expect($component->instance()->rowsAreClickable())->toBeTrue();
+});
+
+it('detects row click opens modal when action has modal', function () {
+    // Create at least one user for the sample row check
+    User::factory()->create();
+
+    $component = Livewire::actingAs($this->admin)
+        ->test('tables.user-table');
+
+    // UserTable's rowClick returns an action with bladeModal, so this should be true
+    expect($component->instance()->rowClickOpensModal())->toBeTrue();
+});
+
+it('returns false for rowClickOpensModal when no rows exist', function () {
+    // Clear all users
+    User::query()->forceDelete();
+
+    $component = Livewire::actingAs($this->admin)
+        ->test('tables.user-table');
+
+    // With no rows, rowClickOpensModal should return false
+    expect($component->instance()->rowClickOpensModal())->toBeFalse();
 });

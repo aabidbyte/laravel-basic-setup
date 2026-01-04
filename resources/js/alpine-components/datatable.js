@@ -2,6 +2,7 @@
  * Alpine.js DataTable Component
  *
  * Provides frontend state management for DataTable components.
+ * Note: Modal handling is now done by the global action-modal Livewire component.
  */
 export function dataTable(id = null) {
     return {
@@ -9,6 +10,30 @@ export function dataTable(id = null) {
         id: id,
         openFilters: false,
         pendingAction: null,
+
+        /**
+         * Initialize component and register listeners
+         */
+        init() {
+            // Store listener references for cleanup
+            this._confirmListener = (e) => this.confirmAction(e.detail);
+            this._scrollListener = () => this.$el.scrollIntoView({ behavior: 'smooth' });
+            this._cleanUrlListener = () => window.history.replaceState({}, document.title, window.location.pathname);
+
+            // Register listeners
+            window.addEventListener(`datatable:action-confirmed:${this.id}`, this._confirmListener);
+            window.addEventListener(`datatable:scroll-to-top:${this.id}`, this._scrollListener);
+            window.addEventListener(`datatable:clean-url:${this.id}`, this._cleanUrlListener);
+        },
+
+        /**
+         * Cleanup listeners on destroy
+         */
+        destroy() {
+            window.removeEventListener(`datatable:action-confirmed:${this.id}`, this._confirmListener);
+            window.removeEventListener(`datatable:scroll-to-top:${this.id}`, this._scrollListener);
+            window.removeEventListener(`datatable:clean-url:${this.id}`, this._cleanUrlListener);
+        },
 
         // ===== Filter Methods =====
         toggleFilters() {

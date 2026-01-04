@@ -19,8 +19,17 @@ use Illuminate\Pagination\LengthAwarePaginator;
  * @method void setPage(int $page)
  * @method void getPage()
  */
-trait HasQueryParameters
+trait HasDatatableLivewireQueryParameters
 {
+    /**
+     * Hook called when search term is updated - resets pagination
+     */
+    public function updatedSearch(): void
+    {
+        if (method_exists($this, 'applyChanges')) {
+            $this->applyChanges();
+        }
+    }
     /**
      * Search term
      */
@@ -32,6 +41,17 @@ trait HasQueryParameters
      * @var array<string, bool>
      */
     protected array $queryStringLoaded = [];
+
+    /**
+     * Get the query parameter name, optionally prefixed with alias.
+     */
+    protected function getQueryParamName(string $key): string
+    {
+        if ($this->queryStringAlias) {
+            return "{$this->queryStringAlias}_{$key}";
+        }
+        return $key;
+    }
 
     /**
      * Load query string parameters from request.
@@ -60,20 +80,23 @@ trait HasQueryParameters
         }
 
         // Load search term
-        if (isset($queryParams[DataTableConstants::QUERY_PARAM_SEARCH]) && $queryParams[DataTableConstants::QUERY_PARAM_SEARCH] !== null && $queryParams[DataTableConstants::QUERY_PARAM_SEARCH] !== '') {
-            $this->search = (string) $queryParams[DataTableConstants::QUERY_PARAM_SEARCH];
+        $searchKey = $this->getQueryParamName(DataTableConstants::QUERY_PARAM_SEARCH);
+        if (isset($queryParams[$searchKey]) && $queryParams[$searchKey] !== null && $queryParams[$searchKey] !== '') {
+            $this->search = (string) $queryParams[$searchKey];
             $this->queryStringLoaded[DataTableConstants::QUERY_PARAM_SEARCH] = true;
         }
 
         // Load sort column
-        if (isset($queryParams[DataTableConstants::QUERY_PARAM_SORT]) && $queryParams[DataTableConstants::QUERY_PARAM_SORT] !== null && $queryParams[DataTableConstants::QUERY_PARAM_SORT] !== '') {
-            $this->sortBy = (string) $queryParams[DataTableConstants::QUERY_PARAM_SORT];
+        $sortKey = $this->getQueryParamName(DataTableConstants::QUERY_PARAM_SORT);
+        if (isset($queryParams[$sortKey]) && $queryParams[$sortKey] !== null && $queryParams[$sortKey] !== '') {
+            $this->sortBy = (string) $queryParams[$sortKey];
             $this->queryStringLoaded[DataTableConstants::QUERY_PARAM_SORT] = true;
         }
 
         // Load sort direction
-        if (isset($queryParams[DataTableConstants::QUERY_PARAM_DIRECTION]) && $queryParams[DataTableConstants::QUERY_PARAM_DIRECTION] !== null) {
-            $direction = (string) $queryParams[DataTableConstants::QUERY_PARAM_DIRECTION];
+        $directionKey = $this->getQueryParamName(DataTableConstants::QUERY_PARAM_DIRECTION);
+        if (isset($queryParams[$directionKey]) && $queryParams[$directionKey] !== null) {
+            $direction = (string) $queryParams[$directionKey];
             if (in_array($direction, ['asc', 'desc'], true)) {
                 $this->sortDirection = $direction;
                 $this->queryStringLoaded[DataTableConstants::QUERY_PARAM_DIRECTION] = true;
@@ -81,8 +104,9 @@ trait HasQueryParameters
         }
 
         // Load per page
-        if (isset($queryParams[DataTableConstants::QUERY_PARAM_PER_PAGE]) && $queryParams[DataTableConstants::QUERY_PARAM_PER_PAGE] !== null) {
-            $perPage = (int) $queryParams[DataTableConstants::QUERY_PARAM_PER_PAGE];
+        $perPageKey = $this->getQueryParamName(DataTableConstants::QUERY_PARAM_PER_PAGE);
+        if (isset($queryParams[$perPageKey]) && $queryParams[$perPageKey] !== null) {
+            $perPage = (int) $queryParams[$perPageKey];
             if ($perPage > 0) {
                 $this->perPage = $perPage;
                 $this->queryStringLoaded[DataTableConstants::QUERY_PARAM_PER_PAGE] = true;
@@ -90,8 +114,9 @@ trait HasQueryParameters
         }
 
         // Load page number
-        if (isset($queryParams[DataTableConstants::QUERY_PARAM_PAGE]) && $queryParams[DataTableConstants::QUERY_PARAM_PAGE] !== null) {
-            $page = (int) $queryParams[DataTableConstants::QUERY_PARAM_PAGE];
+        $pageKey = $this->getQueryParamName(DataTableConstants::QUERY_PARAM_PAGE);
+        if (isset($queryParams[$pageKey]) && $queryParams[$pageKey] !== null) {
+            $page = (int) $queryParams[$pageKey];
             if ($page > 0) {
                 $this->setPage($page);
                 $this->queryStringLoaded[DataTableConstants::QUERY_PARAM_PAGE] = true;
@@ -100,13 +125,14 @@ trait HasQueryParameters
 
         // Load filters (handles filters[key]=value format)
         $filters = [];
+        $filtersParam = $this->getQueryParamName(DataTableConstants::QUERY_PARAM_FILTERS);
 
         // Check if filters exist as a nested array (from parse_str)
-        if (isset($queryParams[DataTableConstants::QUERY_PARAM_FILTERS]) && is_array($queryParams[DataTableConstants::QUERY_PARAM_FILTERS])) {
-            $filters = $queryParams[DataTableConstants::QUERY_PARAM_FILTERS];
+        if (isset($queryParams[$filtersParam]) && is_array($queryParams[$filtersParam])) {
+            $filters = $queryParams[$filtersParam];
         } else {
             // Fallback: check for filters[key] format in flat array
-            $filtersPrefix = DataTableConstants::QUERY_PARAM_FILTERS.'[';
+            $filtersPrefix = $filtersParam.'[';
             foreach ($queryParams as $key => $value) {
                 if (str_starts_with($key, $filtersPrefix) && str_ends_with($key, ']')) {
                     // Extract filter key from filters[key] format
@@ -153,30 +179,31 @@ trait HasQueryParameters
         $queryParams = [];
 
         if (! empty($this->search)) {
-            $queryParams[DataTableConstants::QUERY_PARAM_SEARCH] = $this->search;
+            $queryParams[$this->getQueryParamName(DataTableConstants::QUERY_PARAM_SEARCH)] = $this->search;
         }
 
         if (! empty($this->sortBy)) {
-            $queryParams[DataTableConstants::QUERY_PARAM_SORT] = $this->sortBy;
+            $queryParams[$this->getQueryParamName(DataTableConstants::QUERY_PARAM_SORT)] = $this->sortBy;
         }
 
         if ($this->sortDirection !== 'asc') {
-            $queryParams[DataTableConstants::QUERY_PARAM_DIRECTION] = $this->sortDirection;
+            $queryParams[$this->getQueryParamName(DataTableConstants::QUERY_PARAM_DIRECTION)] = $this->sortDirection;
         }
 
         if ($this->perPage !== 15) {
-            $queryParams[DataTableConstants::QUERY_PARAM_PER_PAGE] = $this->perPage;
+            $queryParams[$this->getQueryParamName(DataTableConstants::QUERY_PARAM_PER_PAGE)] = $this->perPage;
         }
 
+        $filtersParam = $this->getQueryParamName(DataTableConstants::QUERY_PARAM_FILTERS);
         foreach ($this->filters as $key => $value) {
             if ($value !== null && $value !== '') {
-                $queryParams[DataTableConstants::QUERY_PARAM_FILTERS."[{$key}]"] = $value;
+                $queryParams[$filtersParam."[{$key}]"] = $value;
             }
         }
 
         $currentPage = $page ?? ($this->rows->currentPage() ?? $this->getPage());
         if ($currentPage > 1) {
-            $queryParams[DataTableConstants::QUERY_PARAM_PAGE] = $currentPage;
+            $queryParams[$this->getQueryParamName(DataTableConstants::QUERY_PARAM_PAGE)] = $currentPage;
         }
 
         $queryString = ! empty($queryParams) ? '?'.http_build_query($queryParams) : '';
@@ -187,10 +214,21 @@ trait HasQueryParameters
     /**
      * Clean URL query parameters after they are processed.
      */
+    /**
+     * Clean URL query parameters after they are processed.
+     */
     protected function cleanUrlQueryParameters(): void
     {
         if (! empty($this->queryStringLoaded)) {
             $this->dispatch("datatable:clean-url:{$this->getId()}");
         }
+    }
+
+    /**
+     * Define query string parameters for Livewire
+     */
+    public function queryString(): array
+    {
+        return [];
     }
 }

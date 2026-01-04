@@ -57,8 +57,8 @@ class BaseModal extends Component
         public bool $preventScroll = true,
         public bool $autoOpen = false,
         public string $transition = 'scale-up',
-        public int $transitionDuration = 200,
-        public int $transitionDelay = 100,
+        public int $transitionDuration = 100,
+        public int $transitionDelay = 0,
         public bool $backdropTransition = true,
         public bool $showCloseButton = true,
         public string $closeButtonLabel = 'Close modal',
@@ -70,7 +70,7 @@ class BaseModal extends Component
         public ?string $onClose = null,
         public bool $persistent = false,
         public int $backdropOpacity = 60,
-        public string $backdropBlur = 'md',
+        public string $backdropBlur = 'none',
         public string $backdropClass = '',
     ) {
         $this->openState = $this->sanitizeAlpineIdentifier($this->openState, 'modalIsOpen');
@@ -119,7 +119,7 @@ class BaseModal extends Component
         $base = [
             'fixed',
             'inset-0',
-            'z-50',
+            'z-[9999]',
             'flex',
             'w-full',
             'p-4',
@@ -224,7 +224,7 @@ class BaseModal extends Component
 
         $transitionEnterStart = match ($this->transition) {
             'fade-in' => 'opacity-0',
-            'scale-up' => 'opacity-0 scale-50',
+            'scale-up' => 'opacity-0 scale-95',
             'scale-down' => 'opacity-0 scale-110',
             'slide-up' => 'opacity-0 translate-y-8',
             'slide-down' => 'opacity-0 -translate-y-8',

@@ -12,7 +12,7 @@ use Livewire\Attributes\Computed;
  *
  * @property LengthAwarePaginator $rows
  */
-trait HasSelection
+trait HasDatatableLivewireSelection
 {
     /**
      * Selected row UUIDs

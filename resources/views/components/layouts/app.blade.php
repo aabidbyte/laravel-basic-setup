@@ -16,6 +16,7 @@
 
     <x-notifications.toast-center></x-notifications.toast-center>
     <x-ui.confirm-modal></x-ui.confirm-modal>
+    <livewire:datatable.action-modal></livewire:datatable.action-modal>
     @stack('endBody')
 </body>
 

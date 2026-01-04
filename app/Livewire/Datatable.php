@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
-use App\Livewire\Concerns\DataTable\HasActions;
-use App\Livewire\Concerns\DataTable\HasFilters;
-use App\Livewire\Concerns\DataTable\HasPagination;
-use App\Livewire\Concerns\DataTable\HasPreferences;
-use App\Livewire\Concerns\DataTable\HasQueryParameters;
-use App\Livewire\Concerns\DataTable\HasRendering;
-use App\Livewire\Concerns\DataTable\HasSelection;
-use App\Livewire\Concerns\DataTable\HasSorting;
+use App\Livewire\Concerns\DataTable\HasDatatableLivewireActions;
+use App\Livewire\Concerns\DataTable\HasDatatableLivewireFilters;
+use App\Livewire\Concerns\DataTable\HasDatatableLivewirePagination;
+use App\Livewire\Concerns\DataTable\HasDatatableLivewirePreferences;
+use App\Livewire\Concerns\DataTable\HasDatatableLivewireQueryParameters;
+use App\Livewire\Concerns\DataTable\HasDatatableLivewireRendering;
+use App\Livewire\Concerns\DataTable\HasDatatableLivewireSelection;
+use App\Livewire\Concerns\DataTable\HasDatatableLivewireSorting;
 use App\Services\DataTable\Builders\Action;
 use App\Services\DataTable\DataTableQueryBuilder;
 use Illuminate\Database\Eloquent\Builder;
@@ -22,19 +22,25 @@ use Livewire\Component;
 /**
  * Base DataTable Component
  *
- * Provides self-rendering datatable functionality with shared template.
- * Individual datatables only need to provide configuration (columns, filters, actions).
+ * Provides a shared, trait-based implementation for all datatables in the application.
+ * Handles sorting, searching, filtering, pagination, and row actions.
  */
 abstract class Datatable extends Component
 {
-    use HasActions;
-    use HasFilters;
-    use HasPagination;
-    use HasPreferences;
-    use HasQueryParameters;
-    use HasRendering;
-    use HasSelection;
-    use HasSorting;
+    use HasDatatableLivewireActions;
+    use HasDatatableLivewireFilters;
+    use HasDatatableLivewirePagination;
+    use HasDatatableLivewirePreferences;
+    use HasDatatableLivewireQueryParameters;
+    use HasDatatableLivewireRendering;
+    use HasDatatableLivewireSelection;
+    use HasDatatableLivewireSorting;
+
+    /**
+     * Optional alias for namespacing query string parameters.
+     * Useful when multiple datatables are on the same page.
+     */
+    public ?string $queryStringAlias = null;
 
     /**
      * Get the base query
@@ -92,6 +98,30 @@ abstract class Datatable extends Component
         $this->rowsClickable = $reflector->getDeclaringClass()->getName() !== self::class;
 
         return $this->rowsClickable;
+    }
+
+    /**
+     * Determine if row click action opens a modal (used for loading UX)
+     * 
+     * Fetches a sample row to check if the rowClick action has hasModal set.
+     * Returns false if table is empty or rowClick doesn't use a modal.
+     */
+    public function rowClickOpensModal(): bool
+    {
+        if (! $this->rowsAreClickable()) {
+            return false;
+        }
+
+        // Check if any rows exist to test with
+        $sampleRow = $this->baseQuery()->first();
+        if (! $sampleRow) {
+            return false;
+        }
+
+        // Get the action from rowClick and check if it has a modal
+        $action = $this->rowClick($sampleRow->uuid);
+        
+        return $action?->getModal() !== null;
     }
 
     /**
