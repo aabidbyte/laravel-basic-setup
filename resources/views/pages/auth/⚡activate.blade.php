@@ -46,7 +46,7 @@ new class extends Component {
     public function activateAccount(): void
     {
         if (!$this->tokenValid || !$this->user) {
-            NotificationBuilder::make()->title(__('auth.activation.invalid_token'))->error()->send();
+            NotificationBuilder::make()->title(__('ui.auth.activation.invalid_token'))->error()->send();
             return;
         }
 
@@ -58,9 +58,9 @@ new class extends Component {
 
             $this->activated = true;
 
-            NotificationBuilder::make()->title(__('auth.activation.success'))->success()->send();
+            NotificationBuilder::make()->title(__('ui.auth.activation.success'))->success()->send();
         } catch (\Exception $e) {
-            NotificationBuilder::make()->title(__('auth.activation.error'))->content($e->getMessage())->error()->send();
+            NotificationBuilder::make()->title(__('ui.auth.activation.error'))->content($e->getMessage())->error()->send();
         }
     }
 
@@ -70,7 +70,7 @@ new class extends Component {
     public function render()
     {
         return view('pages.auth.activate-content')->layout('layouts.auth', [
-            'title' => __('auth.activation.title'),
+            'title' => __('ui.auth.activation.title'),
         ]);
     }
 }; ?>

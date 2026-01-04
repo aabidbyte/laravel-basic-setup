@@ -62,17 +62,12 @@
                 />
             @endif
 
-            <div class="form-control">
-                <label class="label cursor-pointer justify-start gap-2">
-                    <input
-                        type="checkbox"
-                        name="remember"
-                        class="checkbox checkbox-primary"
-                        {{ old('remember') ? 'checked' : '' }}
-                    />
-                    <span class="label-text">{{ __('ui.auth.login.remember_me') }}</span>
-                </label>
-            </div>
+            <x-ui.checkbox
+                name="remember"
+                label="{{ __('ui.auth.login.remember_me') }}"
+                color="primary"
+                :checked="old('remember')"
+            />
 
             <x-ui.button
                 type="submit"

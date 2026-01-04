@@ -197,4 +197,12 @@ class MailSettings extends BaseModel
             ],
         ];
     }
+
+    /**
+     * Get a human-readable label for this mail settings.
+     */
+    public function label(): string
+    {
+        return $this->provider . ' (' . ($this->from_address ?? 'no address') . ')';
+    }
 }

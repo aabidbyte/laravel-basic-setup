@@ -46,12 +46,12 @@ class UserActivatedNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject(__('notifications.user_activated.subject', ['name' => $this->activatedUser->name]))
-            ->greeting(__('notifications.user_activated.greeting'))
-            ->line(__('notifications.user_activated.line1', ['name' => $this->activatedUser->name]))
-            ->line(__('notifications.user_activated.line2'))
-            ->action(__('notifications.user_activated.action'), route('users.show', $this->activatedUser->uuid))
-            ->salutation(__('notifications.user_activated.salutation', ['app' => config('app.name')]));
+            ->subject(__('messages.notifications.user_activated.subject', ['name' => $this->activatedUser->name]))
+            ->greeting(__('messages.notifications.user_activated.greeting'))
+            ->line(__('messages.notifications.user_activated.line1', ['name' => $this->activatedUser->name]))
+            ->line(__('messages.notifications.user_activated.line2'))
+            ->action(__('messages.notifications.user_activated.action'), route('users.show', $this->activatedUser->uuid))
+            ->salutation(__('messages.notifications.user_activated.salutation', ['app' => config('app.name')]));
     }
 
     /**
@@ -62,12 +62,12 @@ class UserActivatedNotification extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'title' => __('notifications.user_activated.title', ['name' => $this->activatedUser->name]),
-            'subtitle' => __('notifications.user_activated.subtitle'),
-            'content' => __('notifications.user_activated.content', [
+            'title' =>(__('messages.notifications.user_activated.title', ['name' => $this->activatedUser->name])),
+            'subtitle' =>(__('messages.notifications.user_activated.subtitle')),
+            'content' =>(__('messages.notifications.user_activated.content', [
                 'name' => $this->activatedUser->name,
-                'email' => $this->activatedUser->email ?? __('common.no_email'),
-            ]),
+                'email' => $this->activatedUser->email ?? __('messages.common.no_email'),
+            ])),
             'type' => 'success',
             'link' => route('users.show', $this->activatedUser->uuid),
             'activated_user_id' => $this->activatedUser->id,

@@ -134,6 +134,9 @@ return [
     'namespaces' => [
         'ui',
         'messages',
+        'auth',
+        'pagination',
+        'emails',
     ],
 
     /*

@@ -46,4 +46,12 @@ class Team extends BaseModel
     {
         return $this->mailSettings()->active()->exists();
     }
+
+    /**
+     * Get a human-readable label for this team.
+     */
+    public function label(): string
+    {
+        return $this->name;
+    }
 }

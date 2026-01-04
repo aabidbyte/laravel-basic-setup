@@ -9,13 +9,12 @@
     ])>
     {{-- Selection Checkbox --}}
     <td @click.stop>
-        <input
-            type="checkbox"
+        <x-ui.checkbox
             wire:model.live="selected"
             value="{{ $row->uuid }}"
             wire:key="checkbox-{{ $row->uuid }}"
-            class="checkbox checkbox-sm"
-        >
+            size="sm"
+        />
     </td>
 
     {{-- Data Columns --}}

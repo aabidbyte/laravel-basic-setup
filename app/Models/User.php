@@ -66,6 +66,16 @@ class User extends BaseUserModel
     }
 
     /**
+     * Get a human-readable label for this user.
+     *
+     * Used for notifications and UI display to provide context about the model.
+     */
+    public function label(): string
+    {
+        return $this->name;
+    }
+
+    /**
      * Get the user's initials
      */
     public function initials(): string

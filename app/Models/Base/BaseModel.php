@@ -23,4 +23,12 @@ abstract class BaseModel extends EloquentModel
 {
     use HasUuid;
     use SoftDeletes;
+
+    /**
+     * Get a human-readable label for this model.
+     *
+     * Used for notifications and UI display to provide context about the model.
+     * All models must implement this method.
+     */
+    abstract public function label(): string;
 }

@@ -1,7 +1,6 @@
 <?php
 
 return [
-    // Navigation & Menu
     'navigation' => [
         'platform' => 'Platform',
         'dashboard' => 'Dashboard',
@@ -13,8 +12,6 @@ return [
         'user' => 'User',
         'settings' => 'Settings',
     ],
-
-    // Actions
     'actions' => [
         'logout' => 'Log Out',
         'save' => 'Save',
@@ -37,9 +34,12 @@ return [
         'activate_selected' => 'Activate Selected',
         'deactivate_selected' => 'Deactivate Selected',
         'deleted_successfully' => ':user deleted successfully',
+        'activate' => 'Activate',
+        'deactivate' => 'Deactivate',
+        'back_to_list' => 'Back to List',
+        'copied' => 'Copied',
+        'copy' => 'Copy',
     ],
-
-    // Auth Pages
     'auth' => [
         'login' => [
             'title' => 'Log in to your account',
@@ -115,9 +115,23 @@ return [
             'use_recovery_code' => 'login using a recovery code',
             'use_auth_code' => 'login using an authentication code',
         ],
+        'activation' => [
+            'success_title' => 'Activation Successful',
+            'success_message' => 'Your account has been successfully activated. You can now log in.',
+            'login_button' => 'Log In',
+            'title' => 'Activate Account',
+            'welcome' => 'Welcome, :name. Please set your password to activate your account.',
+            'password_label' => 'Password',
+            'password_confirmation_label' => 'Confirm Password',
+            'submit' => 'Activate Account',
+            'invalid_title' => 'Invalid Token',
+            'invalid_message' => 'The activation token is invalid or has expired.',
+            'back_to_login' => 'Back to Login',
+            'invalid_token' => 'Invalid activation token.',
+            'success' => 'Account activated successfully.',
+            'error' => 'Failed to activate account.',
+        ],
     ],
-
-    // Settings Pages
     'settings' => [
         'title' => 'Settings',
         'description' => 'Manage your profile and account settings',
@@ -187,21 +201,20 @@ return [
             'success' => 'Your account has been deleted.',
         ],
     ],
-
-    // Preferences
     'preferences' => [
         'theme' => 'Theme',
         'theme_light' => 'Light',
         'theme_dark' => 'Dark',
         'locale' => 'Language',
     ],
-
-    // Page Titles
     'pages' => [
         'dashboard' => 'Dashboard',
         'notifications' => 'Notifications',
         'users' => [
             'index' => 'Users',
+            'create' => 'Create New User',
+            'edit' => 'Edit User',
+            'show' => 'User Details',
             'description' => 'Manage and view all users in the system',
         ],
         'settings' => [
@@ -210,8 +223,6 @@ return [
             'two_factor' => 'Two-Factor Authentication',
         ],
     ],
-
-    // Notifications
     'notifications' => [
         'dropdown' => [
             'title' => 'Notifications',
@@ -226,21 +237,15 @@ return [
         'empty' => 'You have no notifications.',
         'dismiss' => 'Dismiss notification',
     ],
-
-    // Common UI Elements
     'common' => [
         'saved' => 'Saved.',
     ],
-
-    // Modals
     'modals' => [
         'confirm' => [
             'title' => 'Confirm Action',
             'message' => 'Are you sure you want to proceed?',
         ],
     ],
-
-    // Table
     'table' => [
         'search_placeholder' => 'Search...',
         'actions' => 'Actions',
@@ -286,9 +291,8 @@ return [
                 'created_at' => 'Created At',
             ],
         ],
+        'copy_failed' => 'resources/views/components/ui/share-button.blade.php:70',
     ],
-
-    // Users
     'users' => [
         'personal_info' => 'Personal Information',
         'account_info' => 'Account Information',
@@ -302,5 +306,66 @@ return [
         'created_at' => 'Created At',
         'last_login_at' => 'Last Login At',
         'user_not_found' => 'User not found',
+        'timezone' => 'Timezone',
+        'locale' => 'Language',
+        'select_timezone' => 'Select timezone',
+        'select_locale' => 'Select language',
+        'password' => 'Password',
+        'password_confirmation' => 'Confirm Password',
+        'roles' => 'Roles',
+        'teams' => 'Additional Teams',
+        'primary_team' => 'Primary Team',
+        'no_primary_team' => 'No Primary Team',
+        'index' => [
+            'description' => 'Manage and view all users in the system',
+        ],
+        'actions' => [
+            'create' => 'Create New User',
+        ],
+        'create' => [
+            'title' => 'Create New User',
+            'description' => 'Add a new user to the system',
+            'basic_info' => 'Basic Information',
+            'activation' => 'Account Activation',
+            'send_activation_email' => 'Send activation email to user',
+            'activation_hint' => 'If enabled, the user will receive an email to set their password. Otherwise, you must set the password now.',
+            'preferences' => 'Preferences',
+            'roles_teams' => 'Roles & Teams',
+            'submit' => 'Create User',
+            'success' => ':name has been created successfully',
+            'error' => 'Failed to create user',
+        ],
+        'edit' => [
+            'title' => 'Edit User',
+            'description' => 'Update user information',
+            'basic_info' => 'Basic Information',
+            'password' => 'Password',
+            'password_hint' => 'Leave blank to keep current password',
+            'status' => 'Status',
+            'is_active' => 'User is active',
+            'preferences' => 'Preferences',
+            'roles_teams' => 'Roles & Teams',
+            'submit' => 'Save Changes',
+            'success' => ':name has been updated successfully',
+            'error' => 'Failed to update user',
+        ],
+        'show' => [
+            'title' => 'User Details',
+            'description' => 'View user information',
+            'subtitle' => 'resources/views/pages/users/⚡show.blade.php:27',
+            'activation_link_generated' => 'resources/views/pages/users/⚡show.blade.php:42',
+            'activation_link_error' => 'resources/views/pages/users/⚡show.blade.php:44',
+            'activation_error' => 'resources/views/pages/users/⚡show.blade.php:65',
+            'deactivation_error' => 'resources/views/pages/users/⚡show.blade.php:86',
+            'generate_link' => 'resources/views/pages/users/⚡show.blade.php:144',
+            'confirm_activate' => 'resources/views/pages/users/⚡show.blade.php:151',
+            'confirm_deactivate' => 'resources/views/pages/users/⚡show.blade.php:166',
+            'activation_link_title' => 'resources/views/pages/users/⚡show.blade.php:338',
+            'activation_link_description' => 'resources/views/pages/users/⚡show.blade.php:343',
+        ],
+        'no_email' => 'No Email',
+        'created_by' => 'Created By',
+        'preferences' => 'Preferences',
+        'not_set' => 'Not Set',
     ],
 ];

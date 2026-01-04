@@ -138,7 +138,7 @@ class UserTable extends Datatable
             ->confirm(__('ui.actions.confirm_delete'))
             ->execute(function (User $user) {
                 $user->delete();
-                NotificationBuilder::make()->title(__('ui.actions.deleted_successfully', ['user' => $user->name]))->success()->send();
+                NotificationBuilder::make()->title(__('ui.actions.deleted_successfully', ['user' => $user->label()]))->success()->send();
             })
             ->show(fn (User $user) => Auth::user()?->can('delete', $user) ?? false);
 

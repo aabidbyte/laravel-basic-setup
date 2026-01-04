@@ -136,4 +136,12 @@ abstract class BaseUserModel extends Authenticatable
     {
         return $query->where('is_active', false);
     }
+
+    /**
+     * Get a human-readable label for this model.
+     *
+     * Used for notifications and UI display to provide context about the model.
+     * All user models must implement this method.
+     */
+    abstract public function label(): string;
 }

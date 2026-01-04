@@ -1,7 +1,6 @@
 <?php
 
 return [
-    // Navigation & Menu
     'navigation' => [
         'platform' => 'Plateforme',
         'dashboard' => 'Tableau de bord',
@@ -13,8 +12,6 @@ return [
         'user' => 'Utilisateur',
         'settings' => 'Paramètres',
     ],
-
-    // Actions
     'actions' => [
         'logout' => 'Se déconnecter',
         'save' => 'Enregistrer',
@@ -31,9 +28,18 @@ return [
         'activate_selected' => 'Activer la sélection',
         'deactivate_selected' => 'Désactiver la sélection',
         'deleted_successfully' => ':user supprimé avec succès',
+        'clear_filters' => 'Effacer les filtres',
+        'clear_all' => 'Tout effacer',
+        'confirm_action' => 'Êtes-vous sûr de vouloir effectuer cette action ?',
+        'confirm_delete' => 'Êtes-vous sûr de vouloir supprimer cet élément ?',
+        'confirm_bulk_delete' => 'Êtes-vous sûr de vouloir supprimer les éléments sélectionnés ?',
+        'view_details' => 'Voir les détails',
+        'activate' => 'Activer',
+        'deactivate' => 'Désactiver',
+        'back_to_list' => 'Retour à la liste',
+        'copied' => 'Copié',
+        'copy' => 'Copier',
     ],
-
-    // Auth Pages
     'auth' => [
         'login' => [
             'title' => 'Connectez-vous à votre compte',
@@ -109,9 +115,23 @@ return [
             'use_recovery_code' => 'vous connecter en utilisant un code de récupération',
             'use_auth_code' => 'vous connecter en utilisant un code d\'authentification',
         ],
+        'activation' => [
+            'success_title' => 'Activation réussie',
+            'success_message' => 'Votre compte a été activé avec succès. Vous pouvez maintenant vous connecter.',
+            'login_button' => 'Se connecter',
+            'title' => 'Activer le compte',
+            'welcome' => 'Bienvenue, :name. Veuillez définir votre mot de passe pour activer votre compte.',
+            'password_label' => 'Mot de passe',
+            'password_confirmation_label' => 'Confirmer le mot de passe',
+            'submit' => 'Activer le compte',
+            'invalid_title' => 'Jeton invalide',
+            'invalid_message' => 'Le jeton d\'activation est invalide ou a expiré.',
+            'back_to_login' => 'Retour à la connexion',
+            'invalid_token' => 'Jeton d\'activation invalide.',
+            'success' => 'Compte activé avec succès.',
+            'error' => 'Échec de l\'activation du compte.',
+        ],
     ],
-
-    // Settings Pages
     'settings' => [
         'title' => 'Paramètres',
         'description' => 'Gérez votre profil et les paramètres de votre compte',
@@ -181,20 +201,22 @@ return [
             'success' => 'Votre compte a été supprimé.',
         ],
     ],
-
-    // Preferences
     'preferences' => [
         'theme' => 'Thème',
         'theme_light' => 'Clair',
         'theme_dark' => 'Sombre',
         'locale' => 'Langue',
     ],
-
-    // Page Titles
     'pages' => [
         'dashboard' => 'Tableau de bord',
         'notifications' => 'Notifications',
-        'users' => 'Utilisateurs',
+        'users' => [
+            'index' => 'Utilisateurs',
+            'create' => 'Créer un utilisateur',
+            'edit' => 'Modifier l\'utilisateur',
+            'show' => 'Détails de l\'utilisateur',
+            'description' => 'Gérer et voir tous les utilisateurs du système',
+        ],
         'users_description' => 'Gérer et voir tous les utilisateurs du système',
         'settings' => [
             'profile' => 'Paramètres du profil',
@@ -202,8 +224,6 @@ return [
             'two_factor' => 'Authentification à deux facteurs',
         ],
     ],
-
-    // Notifications
     'notifications' => [
         'dropdown' => [
             'title' => 'Notifications',
@@ -218,21 +238,15 @@ return [
         'empty' => 'Vous n\'avez aucune notification.',
         'dismiss' => 'Fermer la notification',
     ],
-
-    // Common UI Elements
     'common' => [
         'saved' => 'Enregistré.',
     ],
-
-    // Modals
     'modals' => [
         'confirm' => [
             'title' => 'Confirmer l\'action',
             'message' => 'Êtes-vous sûr de vouloir continuer?',
         ],
     ],
-
-    // Table
     'table' => [
         'search_placeholder' => 'Rechercher...',
         'actions' => 'Actions',
@@ -250,6 +264,109 @@ return [
             'verified_yes' => 'Oui',
             'verified_no' => 'Non',
             'created_at' => 'Créé le',
+            'status' => 'Statut',
+            'status_active' => 'Actif',
+            'status_inactive' => 'Inactif',
+            'filters' => [
+                'role' => 'Rôle',
+                'all_roles' => 'Tous les rôles',
+                'status' => 'Statut',
+                'all_status' => 'Tous les statuts',
+                'verified' => 'Vérifié',
+                'created_at' => 'Créé le',
+            ],
         ],
+        'empty_message' => 'Aucun enregistrement trouvé.',
+        'no_results' => 'Aucun résultat trouvé',
+        'selected' => 'sélectionné',
+        'select_all' => 'Tout sélectionner',
+        'select_page' => 'Sélectionner la page',
+        'select_option' => 'Sélectionner une option',
+        'action_modal_title' => 'Aperçu de l\'action',
+        'bulk_actions' => 'Actions groupées',
+        'filters' => 'Filtres',
+        'active_filters' => 'Filtres actifs',
+        'per_page' => 'Par page',
+        'showing_results' => 'Affichage de :from à :to sur :total résultats',
+        'share_page' => 'Partager la page avec les filtres',
+        'url_copied' => 'URL copiée dans le presse-papiers !',
+        'yes' => 'Oui',
+        'no' => 'Non',
+        'copy_failed' => 'Échec de la copie',
+    ],
+    'users' => [
+        'personal_info' => 'Informations personnelles',
+        'account_info' => 'Informations du compte',
+        'name' => 'Nom',
+        'email' => 'E-mail',
+        'username' => 'Nom d\'utilisateur',
+        'uuid' => 'UUID',
+        'status' => 'Statut',
+        'active' => 'Actif',
+        'inactive' => 'Inactif',
+        'created_at' => 'Créé le',
+        'last_login_at' => 'Dernière connexion le',
+        'user_not_found' => 'Utilisateur non trouvé',
+        'timezone' => 'Fuseau horaire',
+        'locale' => 'Langue',
+        'select_timezone' => 'Sélectionner le fuseau horaire',
+        'select_locale' => 'Sélectionner la langue',
+        'password' => 'Mot de passe',
+        'password_confirmation' => 'Confirmer le mot de passe',
+        'roles' => 'Rôles',
+        'teams' => 'Équipes supplémentaires',
+        'primary_team' => 'Équipe principale',
+        'no_primary_team' => 'Aucune équipe principale',
+        'index' => [
+            'description' => 'Gérer et voir tous les utilisateurs du système',
+        ],
+        'actions' => [
+            'create' => 'Créer un utilisateur',
+        ],
+        'create' => [
+            'title' => 'Créer un nouvel utilisateur',
+            'description' => 'Ajouter un nouvel utilisateur au système',
+            'basic_info' => 'Informations de base',
+            'activation' => 'Activation du compte',
+            'send_activation_email' => 'Envoyer l\'e-mail d\'activation à l\'utilisateur',
+            'activation_hint' => 'Si activé, l\'utilisateur recevra un e-mail pour définir son mot de passe. Sinon, vous devez définir le mot de passe maintenant.',
+            'preferences' => 'Préférences',
+            'roles_teams' => 'Rôles et équipes',
+            'submit' => 'Créer l\'utilisateur',
+            'success' => ':name a été créé avec succès',
+            'error' => 'Échec de la création de l\'utilisateur',
+        ],
+        'edit' => [
+            'title' => 'Modifier l\'utilisateur',
+            'description' => 'Mettre à jour les informations de l\'utilisateur',
+            'basic_info' => 'Informations de base',
+            'password' => 'Mot de passe',
+            'password_hint' => 'Laissez vide pour conserver le mot de passe actuel',
+            'status' => 'Statut',
+            'is_active' => 'L\'utilisateur est actif',
+            'preferences' => 'Préférences',
+            'roles_teams' => 'Rôles et équipes',
+            'submit' => 'Enregistrer les modifications',
+            'success' => ':name a été mis à jour avec succès',
+            'error' => 'Échec de la mise à jour de l\'utilisateur',
+        ],
+        'show' => [
+            'title' => 'Détails de l\'utilisateur',
+            'description' => 'Voir les informations de l\'utilisateur',
+            'subtitle' => 'Détails et gestion de l\'utilisateur',
+            'activation_link_generated' => 'Lien d\'activation généré',
+            'activation_link_error' => 'Erreur lors de la génération du lien',
+            'activation_error' => 'Erreur lors de l\'activation',
+            'deactivation_error' => 'Erreur lors de la désactivation',
+            'generate_link' => 'Générer le lien d\'activation',
+            'confirm_activate' => 'Confirmer l\'activation',
+            'confirm_deactivate' => 'Confirmer la désactivation',
+            'activation_link_title' => 'Lien d\'activation',
+            'activation_link_description' => 'Copiez ce lien et envoyez-le à l\'utilisateur pour activer son compte.',
+        ],
+        'no_email' => 'Aucune adresse e-mail',
+        'created_by' => 'Créé par',
+        'preferences' => 'Préférences',
+        'not_set' => 'Non défini',
     ],
 ];

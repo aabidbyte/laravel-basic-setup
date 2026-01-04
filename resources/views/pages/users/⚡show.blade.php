@@ -19,11 +19,11 @@ new class extends BasePageComponent {
     /**
      * Mount the component and authorize access.
      */
-    public function mount(string $user): void
+    public function mount(User $user): void
     {
         $this->authorize(Permissions::VIEW_USERS);
 
-        $this->user = User::where('uuid', $user)->firstOrFail();
+        $this->user = $user;
         $this->pageTitle = $this->user->name;
         $this->pageSubtitle = __('ui.users.show.subtitle');
     }

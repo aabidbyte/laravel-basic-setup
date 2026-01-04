@@ -2,13 +2,12 @@
     <tr>
         {{-- Select All Checkbox --}}
         <th class="w-12">
-            <input
-                type="checkbox"
+            <x-ui.checkbox
                 wire:click="toggleSelectAll()"
-                @checked($this->isAllSelected)
+                :checked="$this->isAllSelected"
                 wire:key="select-all-checkbox-{{ $this->isAllSelected ? '1' : '0' }}"
-                class="checkbox checkbox-sm"
-            >
+                size="sm"
+            />
         </th>
 
         {{-- Column Headers --}}

@@ -256,12 +256,13 @@ new class extends BasePageComponent {
     <div wire:key="load-more-container">
         @if ($this->remainingCount > 0)
             <div class="flex justify-center pt-2">
-                <button
+                <x-ui.button
                     wire:click="loadMore"
-                    class="btn btn-sm btn-ghost"
+                    variant="ghost"
+                    size="sm"
                 >
                     {{ __('ui.notifications.see_previous') }} ({{ $this->remainingCount }})
-                </button>
+                </x-ui.button>
             </div>
         @endif
     </div>

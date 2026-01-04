@@ -185,7 +185,7 @@ class UserService
         // Send the email using MailBuilder
         MailBuilder::make()
             ->to($user)
-            ->mailable(new UserActivationMail($user, $activationUrl))
+            ->mailable((new UserActivationMail($user, $activationUrl))->locale(config('app.locale')))
             ->send();
     }
 

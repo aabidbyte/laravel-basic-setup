@@ -47,6 +47,15 @@ class UserActivationMail extends Mailable implements ShouldQueue
     }
 
     /**
+     * Get the locale for this mailable.
+     * This ensures translations work correctly when sent via queue.
+     */
+    public function locale($locale = null): static
+    {
+        return parent::locale($locale ?? config('app.locale'));
+    }
+
+    /**
      * Get the message content definition.
      */
     public function content(): Content

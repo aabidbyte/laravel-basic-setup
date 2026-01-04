@@ -10,21 +10,22 @@
                             class="w-8 h-8 text-success"
                         ></x-ui.icon>
                     </div>
-                    <h2 class="card-title justify-center text-2xl">{{ __('auth.activation.success_title') }}</h2>
-                    <p class="text-base-content/70">{{ __('auth.activation.success_message') }}</p>
-                    <a
+                    <h2 class="card-title justify-center text-2xl">{{ __('ui.auth.activation.success_title') }}</h2>
+                    <p class="text-base-content/70">{{ __('ui.auth.activation.success_message') }}</p>
+                    <x-ui.button
                         href="{{ route('login') }}"
-                        class="btn btn-primary w-full"
+                        variant="primary"
+                        class="w-full"
                     >
-                        {{ __('auth.activation.login_button') }}
-                    </a>
+                        {{ __('ui.auth.activation.login_button') }}
+                    </x-ui.button>
                 </div>
             @elseif ($tokenValid && $user)
                 {{-- Activation form --}}
                 <div class="text-center mb-6">
-                    <h2 class="card-title justify-center text-2xl">{{ __('auth.activation.title') }}</h2>
+                    <h2 class="card-title justify-center text-2xl">{{ __('ui.auth.activation.title') }}</h2>
                     <p class="text-base-content/70 mt-2">
-                        {{ __('auth.activation.welcome', ['name' => $user->name]) }}
+                        {{ __('ui.auth.activation.welcome', ['name' => $user->name]) }}
                     </p>
                 </div>
 
@@ -36,7 +37,7 @@
                         type="password"
                         wire:model="password"
                         name="password"
-                        :label="__('auth.activation.password_label')"
+                        :label="__('ui.auth.activation.password_label')"
                         required
                         autofocus
                         autocomplete="new-password"
@@ -46,7 +47,7 @@
                         type="password"
                         wire:model="password_confirmation"
                         name="password_confirmation"
-                        :label="__('auth.activation.password_confirmation_label')"
+                        :label="__('ui.auth.activation.password_confirmation_label')"
                         required
                         autocomplete="new-password"
                     ></x-ui.input>
@@ -62,7 +63,7 @@
                                 wire:target="activateAccount"
                                 size="sm"
                             ></x-ui.loading>
-                            {{ __('auth.activation.submit') }}
+                            {{ __('ui.auth.activation.submit') }}
                         </x-ui.button>
                     </div>
                 </x-ui.form>
@@ -75,14 +76,14 @@
                             class="w-8 h-8 text-error"
                         ></x-ui.icon>
                     </div>
-                    <h2 class="card-title justify-center text-2xl">{{ __('auth.activation.invalid_title') }}</h2>
-                    <p class="text-base-content/70">{{ __('auth.activation.invalid_message') }}</p>
-                    <a
+                    <h2 class="card-title justify-center text-2xl">{{ __('ui.auth.activation.invalid_title') }}</h2>
+                    <p class="text-base-content/70">{{ __('ui.auth.activation.invalid_message') }}</p>
+                    <x-ui.button
                         href="{{ route('login') }}"
-                        class="btn btn-ghost"
+                        variant="ghost"
                     >
-                        {{ __('auth.activation.back_to_login') }}
-                    </a>
+                        {{ __('ui.auth.activation.back_to_login') }}
+                    </x-ui.button>
                 </div>
             @endif
         </div>
