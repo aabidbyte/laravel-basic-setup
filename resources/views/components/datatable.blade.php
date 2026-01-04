@@ -18,10 +18,10 @@
 
         {{-- Table with Loading Overlay --}}
         <div class="relative overflow-x-auto">
-            {{-- Loading Overlay --}}
-            <div wire:loading.delay.shortest 
+            {{-- Loading Overlay - uses wire:loading.flex to ensure display:flex when shown --}}
+            <div wire:loading.flex.delay.shortest 
                  wire:target="sort, search, filters, perPage, gotoPage, previousPage, nextPage, toggleSelectAll, selected"
-                 class="absolute inset-0 bg-base-100/50 z-50 flex items-center justify-center backdrop-blur-[1px]">
+                 class="absolute inset-0 bg-base-100/50 z-50 items-center justify-center backdrop-blur-[1px] hidden">
                 <x-ui.loading size="md" :centered="false"></x-ui.loading>
             </div>
 
