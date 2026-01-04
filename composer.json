@@ -66,7 +66,7 @@
     },
     "scripts": {
         "pint" : [
-            "./vendor/bin/pint"
+            "./vendor/bin/pint --parallel"
         ],
         "setup": [
             "composer install",
