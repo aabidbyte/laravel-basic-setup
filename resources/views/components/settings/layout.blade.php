@@ -2,21 +2,30 @@
     <div class="me-10 w-full pb-4 md:w-[220px]">
         <ul class="menu bg-base-200 rounded-box p-2">
             <li>
-                <a href="{{ route('profile.edit') }}" wire:navigate
-                    class="{{ request()->routeIs('profile.edit') ? 'active' : '' }}">
+                <a
+                    href="{{ route('profile.edit') }}"
+                    wire:navigate
+                    class="{{ request()->routeIs('profile.edit') ? 'active' : '' }}"
+                >
                     {{ __('ui.settings.profile.title') }}
                 </a>
             </li>
             <li>
-                <a href="{{ route('user-password.edit') }}" wire:navigate
-                    class="{{ request()->routeIs('user-password.edit') ? 'active' : '' }}">
+                <a
+                    href="{{ route('user-password.edit') }}"
+                    wire:navigate
+                    class="{{ request()->routeIs('user-password.edit') ? 'active' : '' }}"
+                >
                     {{ __('ui.settings.password.title') }}
                 </a>
             </li>
             @if (Laravel\Fortify\Features::canManageTwoFactorAuthentication())
                 <li>
-                    <a href="{{ route('two-factor.show') }}" wire:navigate
-                        class="{{ request()->routeIs('two-factor.show') ? 'active' : '' }}">
+                    <a
+                        href="{{ route('two-factor.show') }}"
+                        wire:navigate
+                        class="{{ request()->routeIs('two-factor.show') ? 'active' : '' }}"
+                    >
                         {{ __('ui.settings.two_factor.title') }}
                     </a>
                 </li>

@@ -11,7 +11,7 @@ use Illuminate\Session\Store;
 class SessionPreferencesStore implements PreferencesStore
 {
     public function __construct(
-        private readonly Store $session
+        private readonly Store $session,
     ) {}
 
     /**

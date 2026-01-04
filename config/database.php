@@ -18,7 +18,6 @@ $redisDefault = [
 ];
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Default Database Connection Name
@@ -45,7 +44,6 @@ return [
     */
 
     'connections' => [
-
         'sqlite' => [
             'driver' => 'sqlite',
             'url' => env('DB_URL'),
@@ -124,7 +122,6 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
         ],
-
     ],
 
     /*
@@ -155,7 +152,6 @@ return [
     */
 
     'redis' => [
-
         'client' => env('REDIS_CLIENT', (function () {
             // In production/staging, prefer phpredis if extension is available
             if ((isProduction() || isStaging()) && extension_loaded('redis')) {
@@ -169,7 +165,7 @@ return [
         'options' => [
             'cluster' => 'redis',
             // In tests we must not prefix keys to satisfy Redis key format assertions
-            'prefix' => isTesting() ? '' : Str::slug(config('app.name'), '_').'_database_',
+            'prefix' => isTesting() ? '' : Str::slug(config('app.name'), '_') . '_database_',
             'persistent' => false,
         ],
 
@@ -193,7 +189,5 @@ return [
             'backoff_base' => 100,
             'backoff_cap' => 1000,
         ],
-
     ],
-
 ];

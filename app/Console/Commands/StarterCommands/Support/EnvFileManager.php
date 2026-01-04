@@ -25,7 +25,7 @@ class EnvFileManager
                 $envContent = preg_replace(
                     "/^{$key}=.*/m",
                     "{$key}={$formattedValue}",
-                    $envContent
+                    $envContent,
                 );
             } else {
                 // Add new variable at the end of the file
@@ -51,7 +51,7 @@ class EnvFileManager
 
         // If value contains spaces, special characters, or starts with a number, wrap in quotes
         if (preg_match('/[\s#=]|^\d/', $escaped)) {
-            return '"'.$escaped.'"';
+            return '"' . $escaped . '"';
         }
 
         return $escaped;

@@ -11,7 +11,7 @@ use Illuminate\Support\HtmlString;
 class NotificationContent
 {
     public function __construct(
-        protected string|Htmlable|HtmlString|null $content = null
+        protected string|Htmlable|HtmlString|null $content = null,
     ) {}
 
     /**

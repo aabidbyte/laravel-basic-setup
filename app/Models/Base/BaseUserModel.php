@@ -3,6 +3,7 @@
 namespace App\Models\Base;
 
 use App\Models\Concerns\HasUuid;
+use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -25,7 +26,10 @@ use Illuminate\Support\Facades\DB;
  */
 abstract class BaseUserModel extends Authenticatable
 {
-    use HasFactory, HasUuid, Notifiable, SoftDeletes;
+    use HasFactory;
+    use HasUuid;
+    use Notifiable;
+    use SoftDeletes;
 
     /**
      * Boot the model
@@ -37,7 +41,7 @@ abstract class BaseUserModel extends Authenticatable
         // Prevent deletion of SuperAdmin user (ID 1)
         static::deleting(function (BaseUserModel $user) {
             if ($user->id === 1) {
-                throw new \Exception('Cannot delete SuperAdmin user with ID 1');
+                throw new Exception('Cannot delete SuperAdmin user with ID 1');
             }
         });
 
@@ -54,7 +58,7 @@ abstract class BaseUserModel extends Authenticatable
                 // If not set, check if current authenticated user is user ID 1
                 $variableSet = DB::selectOne('SELECT @laravel_user_id_1_self_edit as value')?->value;
 
-                if ($variableSet != 1) {
+                if ($variableSet !== 1) {
                     // Variable not set, check if user is updating themselves
                     $currentUser = \Illuminate\Support\Facades\Auth::user();
 
@@ -62,7 +66,7 @@ abstract class BaseUserModel extends Authenticatable
                         // User ID 1 is updating themselves - allow it
                         DB::statement('SET @laravel_user_id_1_self_edit = 1');
                     } else {
-                        throw new \Exception('Cannot edit user ID 1 - only user ID 1 can edit themselves');
+                        throw new Exception('Cannot edit user ID 1 - only user ID 1 can edit themselves');
                     }
                 }
             }

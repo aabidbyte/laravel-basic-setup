@@ -32,7 +32,7 @@ class GenerateAppKeys extends Command
         // Generate APP_KEY if not set
         $appKey = config('app.key');
         if (empty($appKey) || $appKey === 'base64:') {
-            $appKey = 'base64:'.base64_encode(random_bytes(32));
+            $appKey = 'base64:' . base64_encode(random_bytes(32));
             $envManager->update(['APP_KEY' => $appKey]);
             $this->info('✅ Generated APP_KEY');
         } else {

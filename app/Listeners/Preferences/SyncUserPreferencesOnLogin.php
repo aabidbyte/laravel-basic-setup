@@ -17,7 +17,7 @@ use Illuminate\Auth\Events\Login;
 class SyncUserPreferencesOnLogin
 {
     public function __construct(
-        private readonly FrontendPreferencesService $preferences
+        private readonly FrontendPreferencesService $preferences,
     ) {}
 
     /**

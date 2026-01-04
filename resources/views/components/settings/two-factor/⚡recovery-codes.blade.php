@@ -49,12 +49,25 @@ new class extends Component {
     }
 }; ?>
 
-<div class="card bg-base-200" wire:cloak x-data="{ showRecoveryCodes: false }">
+<div
+    class="card bg-base-200"
+    wire:cloak
+    x-data="{ showRecoveryCodes: false }"
+>
     <div class="card-body">
         <div class="flex items-center gap-2 mb-2">
-            <svg class="h-5 w-5 text-base-content/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            <svg
+                class="h-5 w-5 text-base-content/70"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+            >
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                />
             </svg>
             <h3 class="text-lg font-bold text-base-content">{{ __('ui.settings.two_factor.recovery.title') }}</h3>
         </div>
@@ -63,33 +76,62 @@ new class extends Component {
         </p>
 
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <x-ui.button type="button" x-show="!showRecoveryCodes" @click="showRecoveryCodes = true" variant="primary"
-                aria-expanded="false" aria-controls="recovery-codes-section">
+            <x-ui.button
+                type="button"
+                x-show="!showRecoveryCodes"
+                @click="showRecoveryCodes = true"
+                variant="primary"
+                aria-expanded="false"
+                aria-controls="recovery-codes-section"
+            >
                 {{ __('ui.settings.two_factor.recovery.view_button') }}
             </x-ui.button>
 
-            <x-ui.button type="button" x-show="showRecoveryCodes" @click="showRecoveryCodes = false" variant="primary"
-                aria-expanded="true" aria-controls="recovery-codes-section">
+            <x-ui.button
+                type="button"
+                x-show="showRecoveryCodes"
+                @click="showRecoveryCodes = false"
+                variant="primary"
+                aria-expanded="true"
+                aria-controls="recovery-codes-section"
+            >
                 {{ __('ui.settings.two_factor.recovery.hide_button') }}
             </x-ui.button>
 
             @if (filled($recoveryCodes))
-                <x-ui.button type="button" x-show="showRecoveryCodes" wire:click="regenerateRecoveryCodes"
-                    variant="outline">
+                <x-ui.button
+                    type="button"
+                    x-show="showRecoveryCodes"
+                    wire:click="regenerateRecoveryCodes"
+                    variant="outline"
+                >
                     {{ __('ui.settings.two_factor.recovery.regenerate_button') }}
                 </x-ui.button>
             @endif
         </div>
 
-        <div x-show="showRecoveryCodes" x-transition id="recovery-codes-section" class="mt-4"
-            x-bind:aria-hidden="!showRecoveryCodes">
+        <div
+            x-show="showRecoveryCodes"
+            x-transition
+            id="recovery-codes-section"
+            class="mt-4"
+            x-bind:aria-hidden="!showRecoveryCodes"
+        >
 
             @if (filled($recoveryCodes))
                 <div class="card bg-base-100">
                     <div class="card-body">
-                        <div class="font-mono text-sm space-y-1" role="list" aria-label="Recovery codes">
+                        <div
+                            class="font-mono text-sm space-y-1"
+                            role="list"
+                            aria-label="Recovery codes"
+                        >
                             @foreach ($recoveryCodes as $code)
-                                <div role="listitem" class="select-text" wire:loading.class="opacity-50 animate-pulse">
+                                <div
+                                    role="listitem"
+                                    class="select-text"
+                                    wire:loading.class="opacity-50 animate-pulse"
+                                >
                                     {{ $code }}
                                 </div>
                             @endforeach

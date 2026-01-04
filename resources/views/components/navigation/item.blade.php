@@ -10,7 +10,10 @@
     <details {!! $detailsOpenAttr !!}>
         <summary class="{{ $item['isActive'] ?? false ? 'active' : '' }}">
             @if ($item['icon'] ?? null)
-                <x-ui.icon name="{{ $item['icon'] }}" class="h-5 w-5"></x-ui.icon>
+                <x-ui.icon
+                    name="{{ $item['icon'] }}"
+                    class="h-5 w-5"
+                ></x-ui.icon>
             @endif
             <span>{{ $item['title'] ?? '' }}</span>
             @if ($item['hasBadge'] ?? false)
@@ -25,10 +28,17 @@
     </details>
 @elseif ($item['hasUrl'] ?? false)
     @if ($item['isExternal'] ?? false)
-        <a href="{{ $item['url'] ?? '#' }}" target="_blank" rel="noopener noreferrer"
-            {{ $attributes->merge($itemAttributes) }}>
+        <a
+            href="{{ $item['url'] ?? '#' }}"
+            target="_blank"
+            rel="noopener noreferrer"
+            {{ $attributes->merge($itemAttributes) }}
+        >
             @if ($item['icon'] ?? null)
-                <x-ui.icon name="{{ $item['icon'] }}" class="h-5 w-5"></x-ui.icon>
+                <x-ui.icon
+                    name="{{ $item['icon'] }}"
+                    class="h-5 w-5"
+                ></x-ui.icon>
             @endif
             {{ $item['title'] ?? '' }}
             @if ($item['hasBadge'] ?? false)
@@ -36,10 +46,17 @@
             @endif
         </a>
     @else
-        <a href="{{ $item['url'] ?? '#' }}" wire:navigate class="{{ $item['isActive'] ?? false ? 'active' : '' }}"
-            {{ $attributes->merge($itemAttributes) }}>
+        <a
+            href="{{ $item['url'] ?? '#' }}"
+            wire:navigate
+            class="{{ $item['isActive'] ?? false ? 'active' : '' }}"
+            {{ $attributes->merge($itemAttributes) }}
+        >
             @if ($item['icon'] ?? null)
-                <x-ui.icon name="{{ $item['icon'] }}" class="h-5 w-5"></x-ui.icon>
+                <x-ui.icon
+                    name="{{ $item['icon'] }}"
+                    class="h-5 w-5"
+                ></x-ui.icon>
             @endif
             {{ $item['title'] ?? '' }}
             @if ($item['hasBadge'] ?? false)

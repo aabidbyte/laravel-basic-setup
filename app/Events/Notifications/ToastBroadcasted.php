@@ -14,14 +14,16 @@ use Illuminate\Queue\SerializesModels;
 
 class ToastBroadcasted implements ShouldBroadcastNow
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable;
+    use InteractsWithSockets;
+    use SerializesModels;
 
     /**
      * Create a new event instance.
      */
     public function __construct(
         public ToastPayload $payload,
-        public string $channel
+        public string $channel,
     ) {}
 
     /**

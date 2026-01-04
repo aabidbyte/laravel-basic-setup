@@ -428,7 +428,7 @@ class Column
         return \App\Constants\DataTable\DataTableUi::renderComponent(
             $this->componentType,
             $content,
-            $this->componentAttributes
+            $this->componentAttributes,
         );
     }
 

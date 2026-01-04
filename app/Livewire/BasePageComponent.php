@@ -48,7 +48,6 @@ abstract class BasePageComponent extends Component
         }
 
         return $this->pageTitle;
-
     }
 
     public function getPageSubtitle(): ?string

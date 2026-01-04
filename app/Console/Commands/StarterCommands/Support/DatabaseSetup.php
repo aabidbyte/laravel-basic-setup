@@ -2,9 +2,11 @@
 
 namespace App\Console\Commands\StarterCommands\Support;
 
+use Exception;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use InvalidArgumentException;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
@@ -14,10 +16,13 @@ use function Laravel\Prompts\select;
 use function Laravel\Prompts\text;
 use function Laravel\Prompts\warning;
 
+use PDO;
+use PDOException;
+
 class DatabaseSetup
 {
     public function __construct(
-        protected EnvFileManager $envManager
+        protected EnvFileManager $envManager,
     ) {}
 
     /**
@@ -39,7 +44,7 @@ class DatabaseSetup
                 'mariadb' => 'MariaDB',
             ],
             default: 'mysql',
-            hint: 'Select your database type.'
+            hint: 'Select your database type.',
         );
 
         $dbHost = '127.0.0.1';
@@ -54,35 +59,35 @@ class DatabaseSetup
             // Get database credentials
             $dbHost = text(
                 label: 'Database host',
-                default: config('database.connections.'.$connection.'.host', '127.0.0.1'),
+                default: config('database.connections.' . $connection . '.host', '127.0.0.1'),
                 required: true,
-                hint: 'The database server hostname or IP address.'
+                hint: 'The database server hostname or IP address.',
             );
 
             $dbPort = text(
                 label: 'Database port',
-                default: config('database.connections.'.$connection.'.port', $connection === 'pgsql' ? '5432' : '3306'),
+                default: config('database.connections.' . $connection . '.port', $connection === 'pgsql' ? '5432' : '3306'),
                 required: true,
-                hint: 'The database server port.'
+                hint: 'The database server port.',
             );
 
             $dbDatabase = text(
                 label: 'Database name',
-                default: config('database.connections.'.$connection.'.database', 'laravel'),
+                default: config('database.connections.' . $connection . '.database', 'laravel'),
                 required: true,
-                hint: 'The name of the database.'
+                hint: 'The name of the database.',
             );
 
             $dbUsername = text(
                 label: 'Database username',
-                default: config('database.connections.'.$connection.'.username', 'root'),
+                default: config('database.connections.' . $connection . '.username', 'root'),
                 required: true,
-                hint: 'The database username.'
+                hint: 'The database username.',
             );
 
             $dbPassword = password(
                 label: 'Database password',
-                hint: 'The database password (leave empty if no password).'
+                hint: 'The database password (leave empty if no password).',
             );
 
             // Ask about MySQL version if using MySQL/MariaDB
@@ -90,7 +95,7 @@ class DatabaseSetup
                 $isMySQL8Plus = confirm(
                     label: 'Are you using MySQL 8.0+ or MariaDB 10.4+?',
                     default: true,
-                    hint: 'These versions use "caching_sha2_password" authentication by default.'
+                    hint: 'These versions use "caching_sha2_password" authentication by default.',
                 );
 
                 // Default to caching_sha2_password for MySQL 8.0+
@@ -104,7 +109,7 @@ class DatabaseSetup
                 label: 'Database file path',
                 default: database_path('database.sqlite'),
                 required: true,
-                hint: 'Path to the SQLite database file (will be created if it doesn\'t exist).'
+                hint: 'Path to the SQLite database file (will be created if it doesn\'t exist).',
             );
 
             // Create SQLite database file if it doesn't exist
@@ -188,17 +193,17 @@ class DatabaseSetup
 
         // Set database config values directly using Config facade
         Config::set('database.default', $connection);
-        Config::set('database.connections.'.$connection.'.driver', $connection);
-        Config::set('database.connections.'.$connection.'.host', $dbHost);
-        Config::set('database.connections.'.$connection.'.port', $dbPort);
-        Config::set('database.connections.'.$connection.'.database', $dbDatabase);
-        Config::set('database.connections.'.$connection.'.username', $dbUsername);
-        Config::set('database.connections.'.$connection.'.password', $dbPassword ?: '');
+        Config::set('database.connections.' . $connection . '.driver', $connection);
+        Config::set('database.connections.' . $connection . '.host', $dbHost);
+        Config::set('database.connections.' . $connection . '.port', $dbPort);
+        Config::set('database.connections.' . $connection . '.database', $dbDatabase);
+        Config::set('database.connections.' . $connection . '.username', $dbUsername);
+        Config::set('database.connections.' . $connection . '.password', $dbPassword ?: '');
         if ($connection === 'mysql' || $connection === 'mariadb') {
-            Config::set('database.connections.'.$connection.'.charset', 'utf8mb4');
-            Config::set('database.connections.'.$connection.'.collation', 'utf8mb4_unicode_ci');
+            Config::set('database.connections.' . $connection . '.charset', 'utf8mb4');
+            Config::set('database.connections.' . $connection . '.collation', 'utf8mb4_unicode_ci');
         } elseif ($connection === 'pgsql') {
-            Config::set('database.connections.'.$connection.'.charset', 'utf8');
+            Config::set('database.connections.' . $connection . '.charset', 'utf8');
         }
 
         // Clear DB connection cache to ensure new config is used
@@ -222,8 +227,8 @@ class DatabaseSetup
             info('✅ Database connection successful!');
 
             return true;
-        } catch (\Exception $e) {
-            error('❌ Database connection failed: '.$e->getMessage());
+        } catch (Exception $e) {
+            error('❌ Database connection failed: ' . $e->getMessage());
 
             // Provide brief guidance for common MySQL errors
             $errorMessage = $e->getMessage();
@@ -231,12 +236,11 @@ class DatabaseSetup
                 info('💡 MySQL authentication plugin issue detected.');
                 info('   Update your MySQL user to use caching_sha2_password (default for MySQL 8.0+):');
                 $connection = Config::get('database.default');
-                $dbUsername = Config::get('database.connections.'.$connection.'.username');
-                $dbHost = Config::get('database.connections.'.$connection.'.host');
-                $dbPassword = Config::get('database.connections.'.$connection.'.password');
-                info('   ALTER USER \''.$dbUsername.'\'@\''.$dbHost.'\' IDENTIFIED WITH caching_sha2_password BY \''.$dbPassword.'\';');
+                $dbUsername = Config::get('database.connections.' . $connection . '.username');
+                $dbHost = Config::get('database.connections.' . $connection . '.host');
+                $dbPassword = Config::get('database.connections.' . $connection . '.password');
+                info('   ALTER USER \'' . $dbUsername . '\'@\'' . $dbHost . '\' IDENTIFIED WITH caching_sha2_password BY \'' . $dbPassword . '\';');
                 info('   FLUSH PRIVILEGES;');
-
             } elseif (str_contains($errorMessage, 'Access denied')) {
                 // Check if this is a Docker connection issue
                 if (preg_match('/@\'?(\d+\.\d+\.\d+\.\d+)\'?/', $errorMessage, $matches)) {
@@ -245,10 +249,10 @@ class DatabaseSetup
                     if (preg_match('/^172\.(1[6-9]|2[0-9]|3[0-1])\./', $connectingFrom) ||
                         preg_match('/^192\.168\./', $connectingFrom) ||
                         preg_match('/^10\./', $connectingFrom)) {
-                        info('💡 Docker network detected. The connection is coming from: '.$connectingFrom);
+                        info('💡 Docker network detected. The connection is coming from: ' . $connectingFrom);
                         $connection = Config::get('database.default');
-                        $dbHost = Config::get('database.connections.'.$connection.'.host');
-                        $dbUsername = Config::get('database.connections.'.$connection.'.username');
+                        $dbHost = Config::get('database.connections.' . $connection . '.host');
+                        $dbUsername = Config::get('database.connections.' . $connection . '.username');
 
                         if ($dbHost === '127.0.0.1' || $dbHost === 'localhost') {
                             info('');
@@ -256,28 +260,26 @@ class DatabaseSetup
                             info('   1. Use "host.docker.internal" as the database host (Docker Desktop)');
                             info('   2. Use your Docker service name if MySQL is in the same Docker network');
                             info('   3. Grant MySQL access from any host (for Docker):');
-                            info('      CREATE USER IF NOT EXISTS \''.$dbUsername.'\'@\'%\' IDENTIFIED BY \'your_password\';');
-                            info('      GRANT ALL PRIVILEGES ON *.* TO \''.$dbUsername.'\'@\'%\';');
+                            info('      CREATE USER IF NOT EXISTS \'' . $dbUsername . '\'@\'%\' IDENTIFIED BY \'your_password\';');
+                            info('      GRANT ALL PRIVILEGES ON *.* TO \'' . $dbUsername . '\'@\'%\';');
                             info('      FLUSH PRIVILEGES;');
                         } else {
                             info('');
                             info('   The MySQL user may not have permissions from this IP address.');
                             info('   Grant access from any host (for Docker):');
-                            info('   CREATE USER IF NOT EXISTS \''.$dbUsername.'\'@\'%\' IDENTIFIED BY \'your_password\';');
-                            info('   GRANT ALL PRIVILEGES ON *.* TO \''.$dbUsername.'\'@\'%\';');
+                            info('   CREATE USER IF NOT EXISTS \'' . $dbUsername . '\'@\'%\' IDENTIFIED BY \'your_password\';');
+                            info('   GRANT ALL PRIVILEGES ON *.* TO \'' . $dbUsername . '\'@\'%\';');
                             info('   FLUSH PRIVILEGES;');
                         }
                     } else {
                         info('💡 Please verify your database username and password are correct.');
-                        info('   Connection attempted from: '.$connectingFrom);
+                        info('   Connection attempted from: ' . $connectingFrom);
                     }
                 } else {
                     info('💡 Please verify your database username and password are correct.');
                 }
-
             } elseif (str_contains($errorMessage, 'Unknown database')) {
                 info('💡 The database does not exist. Please create it first.');
-
             }
 
             info('You can manually update the .env file and try again.');
@@ -312,8 +314,8 @@ class DatabaseSetup
             info('✅ Database connection successful!');
 
             return 'success';
-        } catch (\Exception $e) {
-            error('❌ Database connection failed: '.$e->getMessage());
+        } catch (Exception $e) {
+            error('❌ Database connection failed: ' . $e->getMessage());
 
             // Provide brief guidance for common MySQL errors
             $errorMessage = $e->getMessage();
@@ -321,12 +323,11 @@ class DatabaseSetup
                 info('💡 MySQL authentication plugin issue detected.');
                 info('   Update your MySQL user to use caching_sha2_password (default for MySQL 8.0+):');
                 $connection = Config::get('database.default');
-                $dbUsername = Config::get('database.connections.'.$connection.'.username');
-                $dbHost = Config::get('database.connections.'.$connection.'.host');
-                $dbPassword = Config::get('database.connections.'.$connection.'.password');
-                info('   ALTER USER \''.$dbUsername.'\'@\''.$dbHost.'\' IDENTIFIED WITH caching_sha2_password BY \''.$dbPassword.'\';');
+                $dbUsername = Config::get('database.connections.' . $connection . '.username');
+                $dbHost = Config::get('database.connections.' . $connection . '.host');
+                $dbPassword = Config::get('database.connections.' . $connection . '.password');
+                info('   ALTER USER \'' . $dbUsername . '\'@\'' . $dbHost . '\' IDENTIFIED WITH caching_sha2_password BY \'' . $dbPassword . '\';');
                 info('   FLUSH PRIVILEGES;');
-
             } elseif (str_contains($errorMessage, 'Access denied')) {
                 // Check if this is a Docker connection issue
                 if (preg_match('/@\'?(\d+\.\d+\.\d+\.\d+)\'?/', $errorMessage, $matches)) {
@@ -335,10 +336,10 @@ class DatabaseSetup
                     if (preg_match('/^172\.(1[6-9]|2[0-9]|3[0-1])\./', $connectingFrom) ||
                         preg_match('/^192\.168\./', $connectingFrom) ||
                         preg_match('/^10\./', $connectingFrom)) {
-                        info('💡 Docker network detected. The connection is coming from: '.$connectingFrom);
+                        info('💡 Docker network detected. The connection is coming from: ' . $connectingFrom);
                         $connection = Config::get('database.default');
-                        $dbHost = Config::get('database.connections.'.$connection.'.host');
-                        $dbUsername = Config::get('database.connections.'.$connection.'.username');
+                        $dbHost = Config::get('database.connections.' . $connection . '.host');
+                        $dbUsername = Config::get('database.connections.' . $connection . '.username');
 
                         if ($dbHost === '127.0.0.1' || $dbHost === 'localhost') {
                             info('');
@@ -346,28 +347,26 @@ class DatabaseSetup
                             info('   1. Use "host.docker.internal" as the database host (Docker Desktop)');
                             info('   2. Use your Docker service name if MySQL is in the same Docker network');
                             info('   3. Grant MySQL access from any host (for Docker):');
-                            info('      CREATE USER IF NOT EXISTS \''.$dbUsername.'\'@\'%\' IDENTIFIED BY \'your_password\';');
-                            info('      GRANT ALL PRIVILEGES ON *.* TO \''.$dbUsername.'\'@\'%\';');
+                            info('      CREATE USER IF NOT EXISTS \'' . $dbUsername . '\'@\'%\' IDENTIFIED BY \'your_password\';');
+                            info('      GRANT ALL PRIVILEGES ON *.* TO \'' . $dbUsername . '\'@\'%\';');
                             info('      FLUSH PRIVILEGES;');
                         } else {
                             info('');
                             info('   The MySQL user may not have permissions from this IP address.');
                             info('   Grant access from any host (for Docker):');
-                            info('   CREATE USER IF NOT EXISTS \''.$dbUsername.'\'@\'%\' IDENTIFIED BY \'your_password\';');
-                            info('   GRANT ALL PRIVILEGES ON *.* TO \''.$dbUsername.'\'@\'%\';');
+                            info('   CREATE USER IF NOT EXISTS \'' . $dbUsername . '\'@\'%\' IDENTIFIED BY \'your_password\';');
+                            info('   GRANT ALL PRIVILEGES ON *.* TO \'' . $dbUsername . '\'@\'%\';');
                             info('   FLUSH PRIVILEGES;');
                         }
                     } else {
                         info('💡 Please verify your database username and password are correct.');
-                        info('   Connection attempted from: '.$connectingFrom);
+                        info('   Connection attempted from: ' . $connectingFrom);
                     }
                 } else {
                     info('💡 Please verify your database username and password are correct.');
                 }
-
             } elseif (str_contains($errorMessage, 'Unknown database')) {
                 info('💡 The database does not exist. Please create it first.');
-
             }
 
             info('');
@@ -381,7 +380,7 @@ class DatabaseSetup
                     'exit' => 'Skip and fix the connection manually later',
                 ],
                 default: 'retry_new',
-                hint: 'You can also manually update the .env file and run the setup again.'
+                hint: 'You can also manually update the .env file and run the setup again.',
             );
 
             if ($retryOption === 'retry_same') {
@@ -409,16 +408,16 @@ class DatabaseSetup
     protected function logDatabaseConfig(string $connection, string $dbHost, string $dbPort, string $dbDatabase, string $dbUsername, string $dbPassword): void
     {
         info('Database credentials that Laravel will use:');
-        info('  Connection: '.Config::get('database.connections.'.$connection.'.driver', $connection));
-        info('  Host: '.Config::get('database.connections.'.$connection.'.host', $dbHost));
-        info('  Port: '.Config::get('database.connections.'.$connection.'.port', $dbPort));
-        info('  Database: '.Config::get('database.connections.'.$connection.'.database', $dbDatabase ?: '(empty)'));
-        info('  Username: '.Config::get('database.connections.'.$connection.'.username', $dbUsername ?: '(empty)'));
-        $configPassword = Config::get('database.connections.'.$connection.'.password', '');
-        info('  Password: '.($configPassword ?: '(empty)'));
+        info('  Connection: ' . Config::get('database.connections.' . $connection . '.driver', $connection));
+        info('  Host: ' . Config::get('database.connections.' . $connection . '.host', $dbHost));
+        info('  Port: ' . Config::get('database.connections.' . $connection . '.port', $dbPort));
+        info('  Database: ' . Config::get('database.connections.' . $connection . '.database', $dbDatabase ?: '(empty)'));
+        info('  Username: ' . Config::get('database.connections.' . $connection . '.username', $dbUsername ?: '(empty)'));
+        $configPassword = Config::get('database.connections.' . $connection . '.password', '');
+        info('  Password: ' . ($configPassword ?: '(empty)'));
         if ($connection === 'mysql' || $connection === 'mariadb') {
-            info('  Charset: '.Config::get('database.connections.'.$connection.'.charset', 'utf8mb4'));
-            info('  Collation: '.Config::get('database.connections.'.$connection.'.collation', 'utf8mb4_unicode_ci'));
+            info('  Charset: ' . Config::get('database.connections.' . $connection . '.charset', 'utf8mb4'));
+            info('  Collation: ' . Config::get('database.connections.' . $connection . '.collation', 'utf8mb4_unicode_ci'));
         }
     }
 
@@ -432,19 +431,19 @@ class DatabaseSetup
             $dsn = match ($connection) {
                 'mysql', 'mariadb' => "mysql:host={$host};port={$port}",
                 'pgsql' => "pgsql:host={$host};port={$port}",
-                default => throw new \InvalidArgumentException("Unsupported connection type: {$connection}"),
+                default => throw new InvalidArgumentException("Unsupported connection type: {$connection}"),
             };
 
-            $pdo = new \PDO($dsn, $username, $password);
-            $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+            $pdo = new PDO($dsn, $username, $password);
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
             // Check if database exists
             $databaseExists = false;
             if ($connection === 'mysql' || $connection === 'mariadb') {
-                $stmt = $pdo->query('SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '.$pdo->quote($database));
+                $stmt = $pdo->query('SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = ' . $pdo->quote($database));
                 $databaseExists = $stmt->rowCount() > 0;
             } elseif ($connection === 'pgsql') {
-                $stmt = $pdo->query('SELECT 1 FROM pg_database WHERE datname = '.$pdo->quote($database));
+                $stmt = $pdo->query('SELECT 1 FROM pg_database WHERE datname = ' . $pdo->quote($database));
                 $databaseExists = $stmt->rowCount() > 0;
             }
 
@@ -453,7 +452,7 @@ class DatabaseSetup
                 $createDatabase = confirm(
                     label: "Database '{$database}' does not exist. Would you like to create it?",
                     default: true,
-                    hint: 'The database will be created with the specified charset and collation.'
+                    hint: 'The database will be created with the specified charset and collation.',
                 );
 
                 if ($createDatabase) {
@@ -466,14 +465,14 @@ class DatabaseSetup
                             label: 'Database charset',
                             default: 'utf8mb4',
                             required: true,
-                            hint: 'Character set for the database (e.g., utf8mb4, utf8).'
+                            hint: 'Character set for the database (e.g., utf8mb4, utf8).',
                         );
 
                         $collation = text(
                             label: 'Database collation',
                             default: 'utf8mb4_unicode_ci',
                             required: true,
-                            hint: 'Collation for the database (e.g., utf8mb4_unicode_ci, utf8mb4_general_ci).'
+                            hint: 'Collation for the database (e.g., utf8mb4_unicode_ci, utf8mb4_general_ci).',
                         );
                     }
 
@@ -490,7 +489,7 @@ class DatabaseSetup
                             info("   Charset: {$charset}");
                             info("   Collation: {$collation}");
                         }
-                    } catch (\PDOException $e) {
+                    } catch (PDOException $e) {
                         error("❌ Failed to create database: {$e->getMessage()}");
                         info('');
                         info('Please create the database manually and try again.');
@@ -503,7 +502,7 @@ class DatabaseSetup
             } else {
                 info("✅ Database '{$database}' already exists.");
             }
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             // If we can't connect to check, that's okay - we'll catch it in the connection test
             \Laravel\Prompts\warning("Could not check if database exists: {$e->getMessage()}");
             info('Will attempt to connect to the database in the next step.');

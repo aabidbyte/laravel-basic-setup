@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Default Mailer
@@ -36,7 +35,6 @@ return [
     */
 
     'mailers' => [
-
         'smtp' => [
             'transport' => 'smtp',
             'scheme' => env('MAIL_SCHEME'),
@@ -45,6 +43,17 @@ return [
             'port' => env('MAIL_PORT', 2525),
             'username' => env('MAIL_USERNAME'),
             'password' => env('MAIL_PASSWORD'),
+            'timeout' => null,
+            'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
+        ],
+
+        'mailpit' => [
+            'transport' => 'smtp',
+            'host' => env('MAILPIT_HOST', '127.0.0.1'),
+            'port' => env('MAILPIT_PORT', 1025),
+            'encryption' => null,
+            'username' => null,
+            'password' => null,
             'timeout' => null,
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
         ],
@@ -96,7 +105,6 @@ return [
             ],
             'retry_after' => 60,
         ],
-
     ],
 
     /*
@@ -115,4 +123,21 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Development Email Redirect
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, all outgoing emails will be redirected to the specified
+    | addresses instead of the actual recipients. This prevents accidental
+    | emails to real users during development. Emails to users with roles
+    | in 'allowed_roles' will still be delivered to the original address.
+    |
+    */
+
+    'dev_redirect' => [
+        'enabled' => env('MAIL_DEV_REDIRECT_ENABLED', false),
+        'to' => env('MAIL_DEV_REDIRECT_TO', ''),
+        'allowed_roles' => env('MAIL_DEV_REDIRECT_TO_ROLES', ''),
+    ],
 ];

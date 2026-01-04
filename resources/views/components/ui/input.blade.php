@@ -23,7 +23,8 @@
     @endif
     <input
         {{ $attributes->merge(['class' => 'input input-bordered w-full' . ($hasError ? ' input-error' : '')])->except(['label', 'error']) }}
-        id="{{ $inputId }}" />
+        id="{{ $inputId }}"
+    />
     @if ($error || ($errors->has($attributes->get('name')) ?? false))
         <div class="label">
             <span class="label-text-alt text-error">{{ $error ?? $errors->first($attributes->get('name')) }}</span>

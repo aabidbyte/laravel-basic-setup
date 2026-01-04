@@ -49,9 +49,9 @@ export function createNotificationsStore() {
          * @returns {Function} Unsubscribe function
          */
         subscribe(callback) {
-            if (typeof callback !== "function") {
+            if (typeof callback !== 'function') {
                 console.error(
-                    "[Notifications Store] Subscribe callback must be a function"
+                    '[Notifications Store] Subscribe callback must be a function',
                 );
                 return () => {};
             }
@@ -71,12 +71,12 @@ export function createNotificationsStore() {
          * @param {Object} payload - Event payload
          */
         _emit(eventName, payload) {
-            if (eventName === "notification.changed") {
+            if (eventName === 'notification.changed') {
                 window.dispatchEvent(
-                    new CustomEvent("notifications-changed", {
+                    new CustomEvent('notifications-changed', {
                         detail: payload,
                         bubbles: true,
-                    })
+                    }),
                 );
             }
 
@@ -86,13 +86,13 @@ export function createNotificationsStore() {
                 } catch (error) {
                     // Component not found errors are expected during Livewire navigation
                     // Silently ignore them - they occur when components are removed during navigation
-                    const errorMessage = error?.message || String(error || "");
-                    if (errorMessage.includes("Component not found")) {
+                    const errorMessage = error?.message || String(error || '');
+                    if (errorMessage.includes('Component not found')) {
                         return;
                     }
                     console.error(
-                        "[Notifications Store] Error in subscriber callback:",
-                        error
+                        '[Notifications Store] Error in subscriber callback:',
+                        error,
                     );
                 }
             });
@@ -107,16 +107,16 @@ export function createNotificationsStore() {
                 return;
             }
 
-            if (typeof window.Echo === "undefined") {
+            if (typeof window.Echo === 'undefined') {
                 return;
             }
 
             const handleToast = (event) => {
-                this._emit("toast.received", event);
+                this._emit('toast.received', event);
             };
 
             const handleNotification = (event) => {
-                this._emit("notification.changed", event);
+                this._emit('notification.changed', event);
             };
 
             // In auth context (no userUuid), only subscribe to session channel
@@ -139,7 +139,7 @@ export function createNotificationsStore() {
                 {
                     toast: handleToast,
                     notification: handleNotification,
-                }
+                },
             );
 
             // Subscribe to all team channels
@@ -153,13 +153,13 @@ export function createNotificationsStore() {
                         `private-notifications.team.${teamUuid}`,
                         {
                             toast: handleToast,
-                        }
+                        },
                     );
                 });
             }
 
             // Subscribe to global channel
-            this._subscribeToChannel("private-notifications.global", {
+            this._subscribeToChannel('private-notifications.global', {
                 toast: handleToast,
             });
 
@@ -170,7 +170,7 @@ export function createNotificationsStore() {
                     `public-notifications.session.${this.config.sessionId}`,
                     {
                         toast: handleToast,
-                    }
+                    },
                 );
             }
         },
@@ -192,18 +192,18 @@ export function createNotificationsStore() {
 
                 // Some broadcasters require leading dot; support both for resilience
                 if (handlers.toast) {
-                    listener.listen(".toast.received", handlers.toast);
-                    listener.listen("toast.received", handlers.toast);
+                    listener.listen('.toast.received', handlers.toast);
+                    listener.listen('toast.received', handlers.toast);
                 }
 
                 if (handlers.notification) {
                     listener.listen(
-                        ".notification.changed",
-                        handlers.notification
+                        '.notification.changed',
+                        handlers.notification,
                     );
                     listener.listen(
-                        "notification.changed",
-                        handlers.notification
+                        'notification.changed',
+                        handlers.notification,
                     );
                 }
 
@@ -212,7 +212,7 @@ export function createNotificationsStore() {
             } catch (error) {
                 console.error(
                     `[Notifications Store] Error subscribing to channel ${channelName}:`,
-                    error
+                    error,
                 );
             }
         },
@@ -234,18 +234,18 @@ export function createNotificationsStore() {
 
                 // Some broadcasters require leading dot; support both for resilience
                 if (handlers.toast) {
-                    listener.listen(".toast.received", handlers.toast);
-                    listener.listen("toast.received", handlers.toast);
+                    listener.listen('.toast.received', handlers.toast);
+                    listener.listen('toast.received', handlers.toast);
                 }
 
                 if (handlers.notification) {
                     listener.listen(
-                        ".notification.changed",
-                        handlers.notification
+                        '.notification.changed',
+                        handlers.notification,
                     );
                     listener.listen(
-                        "notification.changed",
-                        handlers.notification
+                        'notification.changed',
+                        handlers.notification,
                     );
                 }
 
@@ -254,7 +254,7 @@ export function createNotificationsStore() {
             } catch (error) {
                 console.error(
                     `[Notifications Store] Error subscribing to channel ${channelName}:`,
-                    error
+                    error,
                 );
             }
         },
@@ -269,14 +269,14 @@ export function createNotificationsStore() {
                 try {
                     if (
                         listener &&
-                        typeof listener.stopListening === "function"
+                        typeof listener.stopListening === 'function'
                     ) {
                         listener.stopListening();
                     }
                 } catch (error) {
                     console.error(
-                        "[Notifications Store] Error cleaning up listener:",
-                        error
+                        '[Notifications Store] Error cleaning up listener:',
+                        error,
                     );
                 }
             });

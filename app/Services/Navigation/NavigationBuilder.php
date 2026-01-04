@@ -99,7 +99,7 @@ class NavigationBuilder implements Arrayable
     public function getItems(): array
     {
         return array_values(
-            array_filter($this->items, fn (NavigationItem $item) => $item->isVisible())
+            array_filter($this->items, fn (NavigationItem $item) => $item->isVisible()),
         );
     }
 

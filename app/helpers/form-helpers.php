@@ -52,7 +52,7 @@ function render_select_options(array $options, mixed $selected = null): string
             $isSelected = ($value === '');
         } else {
             // Compare selected value with option value (loose comparison for type flexibility)
-            $isSelected = ($selected == $value);
+            $isSelected = ($selected === $value);
         }
 
         // Escape values and labels for security

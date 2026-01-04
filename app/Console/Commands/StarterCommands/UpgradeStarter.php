@@ -294,7 +294,7 @@ class UpgradeStarter extends Command
                 warning('Diff is very long. Showing first 2000 characters...');
                 $this->line(substr($output, 0, 2000));
                 info('');
-                info('... (truncated - use "git diff HEAD..upstream/'.$branch.'" to see full diff)');
+                info('... (truncated - use "git diff HEAD..upstream/' . $branch . '" to see full diff)');
             } else {
                 $this->line($output);
             }

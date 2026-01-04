@@ -113,7 +113,7 @@ class UserTable extends Datatable
         if (Route::has('users.show')) {
             $actions[] = Action::make('view', __('ui.actions.view'))
                 ->icon('eye')
-                ->route(fn (User $user) => route('users.show', $user))
+                ->route(fn (User $user) => route('users.show', $user->uuid))
                 ->variant('ghost');
         }
 
@@ -126,9 +126,9 @@ class UserTable extends Datatable
         if (Route::has('users.edit')) {
             $actions[] = Action::make('edit', __('ui.actions.edit'))
                 ->icon('pencil')
-                ->route(fn (User $user) => route('users.edit', $user))
+                ->route(fn (User $user) => route('users.edit', $user->uuid))
                 ->variant('ghost')
-                ->show(fn (User $user) => Auth::user()?->can('update', $user) ?? false);
+                ->show(fn (User $user) => Auth::user()?->can(Permissions::EDIT_USERS) ?? false);
         }
 
         $actions[] = Action::make('delete', __('ui.actions.delete'))

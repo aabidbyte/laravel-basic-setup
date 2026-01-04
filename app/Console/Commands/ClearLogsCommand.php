@@ -100,7 +100,7 @@ class ClearLogsCommand extends Command
         $validLevels[] = LogChannels::DEPRECATIONS;
 
         if (! in_array($level, $validLevels, true)) {
-            warning("Invalid log level: {$level}. Valid levels are: ".implode(', ', $validLevels));
+            warning("Invalid log level: {$level}. Valid levels are: " . implode(', ', $validLevels));
 
             return Command::FAILURE;
         }

@@ -9,6 +9,8 @@ use App\Models\User;
 use App\Services\FrontendPreferences\Stores\SessionPreferencesStore;
 use App\Services\FrontendPreferences\Stores\UserJsonPreferencesStore;
 use App\Services\I18nService;
+use DateTimeZone;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Session\Store as SessionStore;
 use Illuminate\Support\Facades\Auth;
@@ -19,7 +21,7 @@ class FrontendPreferencesService
 
     public function __construct(
         private readonly SessionStore $session,
-        private readonly I18nService $i18nService
+        private readonly I18nService $i18nService,
     ) {}
 
     /**
@@ -258,10 +260,10 @@ class FrontendPreferencesService
 
         // Validate timezone
         try {
-            new \DateTimeZone($timezone);
+            new DateTimeZone($timezone);
 
             return $timezone;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return FrontendPreferences::DEFAULT_TIMEZONE;
         }
     }
@@ -275,9 +277,9 @@ class FrontendPreferencesService
     {
         // Validate timezone
         try {
-            new \DateTimeZone($timezone);
+            new DateTimeZone($timezone);
             $this->set(FrontendPreferences::KEY_TIMEZONE, $timezone);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->set(FrontendPreferences::KEY_TIMEZONE, FrontendPreferences::DEFAULT_TIMEZONE);
         }
     }

@@ -70,8 +70,8 @@ function formatCurrency($amount, ?string $locale = null, ?string $currencyCode =
 
     // Place symbol based on position
     if ($symbolPosition === 'after') {
-        return $formattedAmount.' '.$symbol;
+        return $formattedAmount . ' ' . $symbol;
     }
 
-    return $symbol.$formattedAmount;
+    return $symbol . $formattedAmount;
 }

@@ -28,7 +28,7 @@ class SampleTeamSeeder extends Seeder
         foreach ($teams as $teamData) {
             $team = Team::firstOrCreate(
                 ['name' => $teamData['name']],
-                $teamData
+                $teamData,
             );
             $this->command->info("✅ Created team: {$team->name}");
         }

@@ -24,7 +24,7 @@
         'lg' => 'loading-lg',
         'xl' => 'loading-xl',
     ];
-    
+
     $variantClasses = [
         'spinner' => 'loading-spinner',
         'dots' => 'loading-dots',
@@ -33,7 +33,7 @@
         'bars' => 'loading-bars',
         'infinity' => 'loading-infinity',
     ];
-    
+
     $colorClasses = [
         'primary' => 'text-primary',
         'secondary' => 'text-secondary',
@@ -44,7 +44,7 @@
         'warning' => 'text-warning',
         'error' => 'text-error',
     ];
-    
+
     $loadingClass = implode(' ', [
         'loading',
         $variantClasses[$variant] ?? 'loading-spinner',

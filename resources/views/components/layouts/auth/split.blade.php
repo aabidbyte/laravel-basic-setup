@@ -1,6 +1,10 @@
         <div class=" min-h-screen  grid grid-cols-1 lg:grid-cols-2  w-full h-full">
             <div class="text-center lg:text-left hidden lg:grid bg-base-content grid-cols-1 place-items-center">
-                <a href="{{ route('dashboard') }}" class="flex items-center text-lg font-medium mb-8" wire:navigate>
+                <a
+                    href="{{ route('dashboard') }}"
+                    class="flex items-center text-lg font-medium mb-8"
+                    wire:navigate
+                >
                     <x-app-logo-icon class="me-2 h-7 fill-current text-base-300"></x-app-logo-icon>
                     <span class="text-base-300">{{ config('app.name', 'Laravel') }}</span>
                 </a>
@@ -23,8 +27,11 @@
                         <x-preferences.locale-switcher></x-preferences.locale-switcher>
                     </div>
                     <div class="card-body">
-                        <a href="{{ route('dashboard') }}"
-                            class="flex flex-col items-center gap-2 font-medium lg:hidden mb-4" wire:navigate>
+                        <a
+                            href="{{ route('dashboard') }}"
+                            class="flex flex-col items-center gap-2 font-medium lg:hidden mb-4"
+                            wire:navigate
+                        >
                             <x-app-logo-icon class="size-9 fill-current text-base-content"></x-app-logo-icon>
                             <span class="text-base-content">{{ config('app.name', 'Laravel') }}</span>
                         </a>

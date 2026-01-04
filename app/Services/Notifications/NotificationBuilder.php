@@ -14,6 +14,8 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
+use RuntimeException;
 
 class NotificationBuilder
 {
@@ -255,14 +257,14 @@ class NotificationBuilder
      *
      * @param  User|Authenticatable|string|null  $user  The user instance, authenticatable, or UUID string. If null, uses the current authenticated user.
      *
-     * @throws \RuntimeException If no user is provided and no authenticated user is available
+     * @throws RuntimeException If no user is provided and no authenticated user is available
      */
     public function toUserTeams(User|Authenticatable|string|null $user = null): static
     {
         if ($user === null) {
             $user = Auth::user();
             if (! $user instanceof User) {
-                throw new \RuntimeException('Cannot send to user teams: no authenticated user available.');
+                throw new RuntimeException('Cannot send to user teams: no authenticated user available.');
             }
         }
 
@@ -311,13 +313,13 @@ class NotificationBuilder
     /**
      * Send the notification (broadcast toast + optionally persist).
      *
-     * @throws \InvalidArgumentException If the notification title is missing or empty
-     * @throws \RuntimeException If the notification channel cannot be determined
+     * @throws InvalidArgumentException If the notification title is missing or empty
+     * @throws RuntimeException If the notification channel cannot be determined
      */
     public function send(): void
     {
         if ($this->title === null || trim($this->title) === '') {
-            throw new \InvalidArgumentException('Notification title is required.');
+            throw new InvalidArgumentException('Notification title is required.');
         }
 
         // Render icon HTML server-side
@@ -389,18 +391,18 @@ class NotificationBuilder
      *
      * @param  ToastPayload  $payload  The toast payload to send
      *
-     * @throws \RuntimeException If the user ID is not available or the user is not found
+     * @throws RuntimeException If the user ID is not available or the user is not found
      */
     protected function sendToUserTeams(ToastPayload $payload): void
     {
         $targetUserId = $this->userId ?? Auth::id();
         if (! $targetUserId) {
-            throw new \RuntimeException('Cannot send to user teams: no user ID available.');
+            throw new RuntimeException('Cannot send to user teams: no user ID available.');
         }
 
         $user = is_string($targetUserId) ? User::where('uuid', $targetUserId)->first() : User::find($targetUserId);
         if (! $user) {
-            throw new \RuntimeException('Cannot send to user teams: user not found.');
+            throw new RuntimeException('Cannot send to user teams: user not found.');
         }
 
         // Get all teams for the user
@@ -438,7 +440,7 @@ class NotificationBuilder
      *
      * @return string The broadcast channel name
      *
-     * @throws \RuntimeException If no session ID is available
+     * @throws RuntimeException If no session ID is available
      */
     protected function determineChannel(): string
     {
@@ -466,7 +468,7 @@ class NotificationBuilder
         // Uses PUBLIC channel - session ID itself acts as security mechanism (cryptographically random)
         $currentSessionId = session()->getId();
         if (! $currentSessionId) {
-            throw new \RuntimeException('Cannot determine notification channel: no session ID available.');
+            throw new RuntimeException('Cannot determine notification channel: no session ID available.');
         }
 
         return "public-notifications.session.{$currentSessionId}";

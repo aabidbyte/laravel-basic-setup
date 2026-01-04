@@ -11,7 +11,7 @@ use Illuminate\Session\Store;
 class SessionDataTablePreferencesStore implements DataTablePreferencesStore
 {
     public function __construct(
-        private readonly Store $session
+        private readonly Store $session,
     ) {}
 
     /**

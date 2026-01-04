@@ -15,7 +15,7 @@ class MapLoginIdentifier
      * This must run before Fortify's validation, as Fortify expects
      * the field name to match config('fortify.username') which is 'email'.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {

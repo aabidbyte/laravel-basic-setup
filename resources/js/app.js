@@ -4,7 +4,7 @@
  * allow your team to quickly build robust real-time web applications.
  */
 
-import "./echo";
+import './echo';
 
 /**
  * Alpine.js Focus Plugin
@@ -13,26 +13,26 @@ import "./echo";
  * Since Alpine.js is included with Livewire 4, we register the plugin
  * when Alpine is initialized.
  */
-import anchor from "@alpinejs/anchor";
-import focus from "@alpinejs/focus";
+import anchor from '@alpinejs/anchor';
+import focus from '@alpinejs/focus';
 
 /**
  * Alpine.js DataTable Component
  *
  * Provides frontend state management for DataTable components.
  */
-import { dataTable } from "./alpine-components/datatable.js";
+import { dataTable } from './alpine-components/datatable.js';
 
 // Register Focus plugin and DataTable component when Alpine is initialized
-document.addEventListener("alpine:init", () => {
+document.addEventListener('alpine:init', () => {
     window.Alpine.plugin(anchor);
     window.Alpine.plugin(focus);
-    window.Alpine.data("dataTable", dataTable);
+    window.Alpine.data('dataTable', dataTable);
 });
 
 // Also register immediately if Alpine is already available
 // (handles cases where this script loads after Alpine)
 if (window.Alpine) {
     window.Alpine.plugin(focus);
-    window.Alpine.data("dataTable", dataTable);
+    window.Alpine.data('dataTable', dataTable);
 }

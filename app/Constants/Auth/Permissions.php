@@ -63,6 +63,17 @@ class Permissions
     // User permissions
     public const VIEW_USERS = 'view users';
 
+    public const CREATE_USERS = 'create users';
+
+    public const EDIT_USERS = 'edit users';
+
+    public const DELETE_USERS = 'delete users';
+
+    public const GENERATE_ACTIVATION_LINKS = 'generate activation links';
+
+    // Mail settings permissions
+    public const CONFIGURE_MAIL_SETTINGS = 'configure mail settings';
+
     /**
      * Get all permission constants as an array.
      *
@@ -95,6 +106,11 @@ class Permissions
             self::VIEW_ALL_POSTS,
             self::VIEW_POST,
             self::VIEW_USERS,
+            self::CREATE_USERS,
+            self::EDIT_USERS,
+            self::DELETE_USERS,
+            self::GENERATE_ACTIVATION_LINKS,
+            self::CONFIGURE_MAIL_SETTINGS,
         ];
     }
 }

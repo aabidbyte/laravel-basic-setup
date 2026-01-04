@@ -11,7 +11,7 @@ test('toArrayFromMany converts multiple items to array', function () {
             ->url('/item1'),
         NavigationItem::make()
             ->title('Item 2')
-            ->url('/item2')
+            ->url('/item2'),
     );
 
     expect($result)->toHaveCount(2)
@@ -28,7 +28,7 @@ test('toArrayFromMany filters out invisible items', function () {
         NavigationItem::make()
             ->title('Hidden')
             ->url('/hidden')
-            ->show(false)
+            ->show(false),
     );
 
     expect($result)->toHaveCount(1)
@@ -44,7 +44,7 @@ test('toArrayFromMany returns empty array when all items are invisible', functio
         NavigationItem::make()
             ->title('Hidden 2')
             ->url('/hidden2')
-            ->show(false)
+            ->show(false),
     );
 
     expect($result)->toBeEmpty();
@@ -61,7 +61,7 @@ test('toArrayFromMany handles items with closures', function () {
         NavigationItem::make()
             ->title('Dynamic Hidden')
             ->url('/hidden')
-            ->show(fn () => ! $visible)
+            ->show(fn () => ! $visible),
     );
 
     expect($result)->toHaveCount(1)

@@ -13,7 +13,7 @@
 
 @php
     use App\Models\User;
-    
+
     // Fetch user from UUID
     $user = $userUuid ? User::where('uuid', $userUuid)->first() : null;
 @endphp
@@ -53,13 +53,17 @@
                 </div>
                 <div class="flex flex-col gap-1">
                     <span class="text-xs text-base-content/60">{{ __('ui.users.status') }}</span>
-                    <x-ui.badge :variant="$user->is_active ? 'success' : 'error'" size="sm">
+                    <x-ui.badge
+                        :variant="$user->is_active ? 'success' : 'error'"
+                        size="sm"
+                    >
                         {{ $user->is_active ? __('ui.users.active') : __('ui.users.inactive') }}
                     </x-ui.badge>
                 </div>
                 <div class="flex flex-col gap-1">
                     <span class="text-xs text-base-content/60">{{ __('ui.users.created_at') }}</span>
-                    <span>{{ $user->created_at?->diffForHumans() }} ({{ $user->created_at?->format('Y-m-d H:i') }})</span>
+                    <span>{{ $user->created_at?->diffForHumans() }}
+                        ({{ $user->created_at?->format('Y-m-d H:i') }})</span>
                 </div>
             </div>
         </div>
@@ -68,19 +72,26 @@
             <div class="divider"></div>
             <div class="flex flex-col gap-1">
                 <span class="text-xs text-base-content/60">{{ __('ui.users.last_login_at') }}</span>
-                <span>{{ $user->last_login_at->diffForHumans() }} ({{ $user->last_login_at->format('Y-m-d H:i') }})</span>
+                <span>{{ $user->last_login_at->diffForHumans() }}
+                    ({{ $user->last_login_at->format('Y-m-d H:i') }})</span>
             </div>
         @endif
 
         <div class="modal-action">
             {{-- modalIsOpen comes from parent action-modal Alpine scope --}}
-            <x-ui.button @click="modalIsOpen = false" variant="ghost">
+            <x-ui.button
+                @click="modalIsOpen = false"
+                variant="ghost"
+            >
                 {{ __('ui.actions.close') }}
             </x-ui.button>
         </div>
     @else
         <div class="alert alert-error">
-            <x-ui.icon name="exclamation-triangle" size="sm"></x-ui.icon>
+            <x-ui.icon
+                name="exclamation-triangle"
+                size="sm"
+            ></x-ui.icon>
             <span>{{ __('ui.users.user_not_found') }}</span>
         </div>
     @endif

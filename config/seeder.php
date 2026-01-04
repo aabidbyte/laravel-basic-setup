@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Seeder Configuration
@@ -17,5 +16,4 @@ return [
     'super_admin_emails' => env('SUPER_ADMIN_EMAILS', 'admin@example.com'),
 
     'admin_password' => env('ADMIN_PASSWORD', 'password'),
-
 ];

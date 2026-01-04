@@ -132,49 +132,75 @@ new class extends BasePageComponent {
     }
 }; ?>
 
-<div x-data="notificationCenter()" x-init="init()" x-on:notifications-changed.window="$wire.$refresh()"
-    wire:key="notification-center-{{ Auth::user()?->uuid ?? 'guest' }}" class="flex flex-col gap-4">
+<div
+    x-data="notificationCenter()"
+    x-init="init()"
+    x-on:notifications-changed.window="$wire.$refresh()"
+    wire:key="notification-center-{{ Auth::user()?->uuid ?? 'guest' }}"
+    class="flex flex-col gap-4"
+>
     @if ($this->totalCount > 0)
         <div class="flex justify-end gap-2">
             @if ($this->unreadCount > 0)
-                <x-ui.button variant="ghost" size="sm" wire:click="markAllAsRead">
+                <x-ui.button
+                    variant="ghost"
+                    size="sm"
+                    wire:click="markAllAsRead"
+                >
                     {{ __('ui.notifications.mark_all_read') }}
                 </x-ui.button>
             @endif
-            <x-ui.button variant="error" size="sm"
+            <x-ui.button
+                variant="error"
+                size="sm"
                 @click="$dispatch('confirm-modal', {
                 title: '{{ addslashes(__('ui.notifications.clear_all')) }}',
                 message: '{{ addslashes(__('ui.modals.confirm.message')) }}',
                 confirmAction: () => $wire.clearAll()
-            })">
+            })"
+            >
                 {{ __('ui.notifications.clear_all') }} ({{ $this->totalCount }})
             </x-ui.button>
         </div>
     @endif
 
     <div wire:key="notifications-list">
-        <div wire:key="notifications-content-{{ $this->notifications->count() }}" class="flex flex-col gap-4">
+        <div
+            wire:key="notifications-content-{{ $this->notifications->count() }}"
+            class="flex flex-col gap-4"
+        >
             @if ($this->notifications->isEmpty())
                 <div class="card bg-base-200">
                     <div class="card-body text-center">
-                        <x-ui.icon name="bell" class="h-12 w-12 mx-auto opacity-50 mb-4"></x-ui.icon>
+                        <x-ui.icon
+                            name="bell"
+                            class="h-12 w-12 mx-auto opacity-50 mb-4"
+                        ></x-ui.icon>
                         <p class="text-base-content opacity-60">{{ __('ui.notifications.empty') }}</p>
                     </div>
                 </div>
             @else
                 @foreach ($this->notifications as $notification)
-                    <div wire:key="notification-{{ $notification['id'] }}"
+                    <div
+                        wire:key="notification-{{ $notification['id'] }}"
                         x-intersect.once="$wire.markAsRead('{{ $notification['id'] }}')"
-                        class="card bg-base-200 hover:bg-base-300 transition-colors {{ $notification['isRead'] ? 'opacity-75' : '' }}">
+                        class="card bg-base-200 hover:bg-base-300 transition-colors {{ $notification['isRead'] ? 'opacity-75' : '' }}"
+                    >
                         <div class="card-body">
                             <div class="flex items-start gap-3">
-                                <div wire:click="markAsRead('{{ $notification['id'] }}')"
-                                    class="flex-shrink-0 {{ $notification['isRead'] ? 'opacity-50' : '' }} cursor-pointer">
-                                    <x-ui.icon name="{{ $notification['icon']['name'] }}"
-                                        class="{{ $notification['icon']['class'] }}"></x-ui.icon>
+                                <div
+                                    wire:click="markAsRead('{{ $notification['id'] }}')"
+                                    class="flex-shrink-0 {{ $notification['isRead'] ? 'opacity-50' : '' }} cursor-pointer"
+                                >
+                                    <x-ui.icon
+                                        name="{{ $notification['icon']['name'] }}"
+                                        class="{{ $notification['icon']['class'] }}"
+                                    ></x-ui.icon>
                                 </div>
-                                <div wire:click="markAsRead('{{ $notification['id'] }}')"
-                                    class="flex-1 cursor-pointer">
+                                <div
+                                    wire:click="markAsRead('{{ $notification['id'] }}')"
+                                    class="flex-1 cursor-pointer"
+                                >
                                     <h3 class="font-semibold text-lg {{ $notification['isRead'] ? '' : 'font-bold' }}">
                                         {{ $notification['title'] }}
                                     </h3>
@@ -185,8 +211,11 @@ new class extends BasePageComponent {
                                         <div class="text-sm mt-2">{!! $notification['content'] !!}</div>
                                     @endif
                                     @if ($notification['link'])
-                                        <a href="{{ $notification['link'] }}" wire:navigate
-                                            class="text-sm text-primary underline mt-2 inline-block">
+                                        <a
+                                            href="{{ $notification['link'] }}"
+                                            wire:navigate
+                                            class="text-sm text-primary underline mt-2 inline-block"
+                                        >
                                             {{ __('ui.notifications.view') }}
                                         </a>
                                     @endif
@@ -195,15 +224,25 @@ new class extends BasePageComponent {
                                 </div>
                                 <div class="flex items-center gap-2">
                                     @if (!$notification['isRead'])
-                                        <x-ui.badge variant="primary" size="sm">{{ __('ui.notifications.unread') }}</x-ui.badge>
+                                        <x-ui.badge
+                                            variant="primary"
+                                            size="sm"
+                                        >{{ __('ui.notifications.unread') }}</x-ui.badge>
                                     @endif
-                                    <x-ui.button variant="ghost" color="error" size="sm"
+                                    <x-ui.button
+                                        variant="ghost"
+                                        color="error"
+                                        size="sm"
                                         @click.stop="$dispatch('confirm-modal', {
                                 title: '{{ addslashes(__('ui.notifications.delete')) }}',
                                 message: '{{ addslashes(__('ui.modals.confirm.message')) }}',
                                 confirmAction: () => $wire.delete('{{ $notification['id'] }}')
-                            })">
-                                        <x-ui.icon name="trash" class="h-4 w-4"></x-ui.icon>
+                            })"
+                                    >
+                                        <x-ui.icon
+                                            name="trash"
+                                            class="h-4 w-4"
+                                        ></x-ui.icon>
                                     </x-ui.button>
                                 </div>
                             </div>
@@ -217,7 +256,10 @@ new class extends BasePageComponent {
     <div wire:key="load-more-container">
         @if ($this->remainingCount > 0)
             <div class="flex justify-center pt-2">
-                <button wire:click="loadMore" class="btn btn-sm btn-ghost">
+                <button
+                    wire:click="loadMore"
+                    class="btn btn-sm btn-ghost"
+                >
                     {{ __('ui.notifications.see_previous') }} ({{ $this->remainingCount }})
                 </button>
             </div>

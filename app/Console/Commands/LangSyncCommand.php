@@ -146,7 +146,7 @@ class LangSyncCommand extends Command
             $files = File::allFiles($path);
             foreach ($files as $file) {
                 $extension = $file->getExtension();
-                if (! in_array($extension, ['php', 'blade.php'])) {
+                if (! in_array($extension, ['php', 'blade.php'], true)) {
                     continue;
                 }
 
@@ -165,7 +165,7 @@ class LangSyncCommand extends Command
     {
         $content = File::get($filePath);
         $lines = explode("\n", $content);
-        $relativePath = str_replace(base_path().'/', '', $filePath);
+        $relativePath = str_replace(base_path() . '/', '', $filePath);
 
         // Get comment ranges to exclude matches within comments
         $commentRanges = $this->getCommentRanges($content);
@@ -620,12 +620,12 @@ class LangSyncCommand extends Command
                 $filename = $file->getFilenameWithoutExtension();
 
                 // Skip protected files
-                if (in_array($filename, $this->protectedFiles)) {
+                if (in_array($filename, $this->protectedFiles, true)) {
                     continue;
                 }
 
                 // Skip ui.php and messages.php unless --prune-all is set
-                if (! $this->option('prune-all') && in_array($filename, $this->namespaces)) {
+                if (! $this->option('prune-all') && in_array($filename, $this->namespaces, true)) {
                     continue;
                 }
 
@@ -817,7 +817,7 @@ class LangSyncCommand extends Command
                 ['Keys added to locales', $this->stats['keys_added']],
                 ['Keys pruned', $this->stats['keys_pruned']],
                 ['Files updated', $this->stats['files_updated']],
-            ]
+            ],
         );
 
         if (! $this->option('write')) {

@@ -35,16 +35,17 @@ return new class extends Migration
             $table->uuid('uuid')->unique()->index();
             $table->string('name');
             $table->string('username')->nullable()->unique();
-            $table->string('email')->unique();
+            $table->string('email')->nullable()->unique(); // Nullable for users without email
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->foreignId('team_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignId('created_by_user_id')->nullable(); // Track who created user (FK added after table exists)
             $table->boolean('is_active')->default(true);
             $table->timestamp('last_login_at')->nullable();
             $table->text('two_factor_secret')->nullable();
             $table->text('two_factor_recovery_codes')->nullable();
             $table->timestamp('two_factor_confirmed_at')->nullable();
-            $table->json('frontend_preferences')->nullable();
+            $table->json('frontend_preferences')->nullable(); // Stores timezone, locale, and other preferences
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();
@@ -52,6 +53,15 @@ return new class extends Migration
             $table->index('username');
             $table->index('team_id');
             $table->index('is_active');
+            $table->index('created_by_user_id');
+        });
+
+        // Add self-referencing foreign key for created_by_user_id after table exists
+        Schema::table('users', function (Blueprint $table) {
+            $table->foreign('created_by_user_id')
+                ->references('id')
+                ->on('users')
+                ->nullOnDelete();
         });
 
         // Team user pivot table
@@ -95,6 +105,40 @@ return new class extends Migration
             $table->timestamp('read_at')->nullable();
             $table->timestamps();
             $table->softDeletes();
+        });
+
+        // Mail settings table (polymorphic for User, Team, or App-level)
+        Schema::create('mail_settings', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique()->index();
+
+            // Polymorphic relationship (User, Team, or 'app' for global)
+            $table->string('settable_type'); // 'App\Models\User', 'App\Models\Team', or 'app'
+            $table->unsignedBigInteger('settable_id')->nullable(); // null for app-level
+
+            // Mail provider configuration
+            $table->string('provider')->default('smtp'); // smtp, ses, postmark, resend, etc.
+
+            // SMTP settings
+            $table->string('host')->nullable();
+            $table->integer('port')->nullable();
+            $table->string('username')->nullable();
+            $table->text('password')->nullable(); // Encrypted via model cast
+            $table->string('encryption')->nullable(); // tls, ssl, null
+
+            // From settings
+            $table->string('from_address')->nullable();
+            $table->string('from_name')->nullable();
+
+            // Status
+            $table->boolean('is_active')->default(true);
+
+            $table->timestamps();
+            $table->softDeletes();
+
+            // Indexes for common lookups
+            $table->index(['settable_type', 'settable_id']);
+            $table->index('is_active');
         });
 
         // Permission tables
@@ -200,7 +244,7 @@ return new class extends Migration
         });
 
         app('cache')
-            ->store(config('permission.cache.store') != 'default' ? config('permission.cache.store') : null)
+            ->store(config('permission.cache.store') !== 'default' ? config('permission.cache.store') : null)
             ->forget(config('permission.cache.key'));
 
         // Telescope tables
@@ -320,6 +364,7 @@ return new class extends Migration
         Schema::dropIfExists($tableNames['permissions']);
 
         // Drop other tables
+        Schema::dropIfExists('mail_settings');
         Schema::dropIfExists('notifications');
         Schema::dropIfExists('team_user');
         Schema::dropIfExists('teams');

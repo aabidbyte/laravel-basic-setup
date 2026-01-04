@@ -17,7 +17,6 @@ $queueWorkersDefaultConfig = [
 ];
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Horizon Name
@@ -81,7 +80,7 @@ return [
     |
     */
 
-    'prefix' => Str::slug(config('app.name'), '_').'_horizon:',
+    'prefix' => Str::slug(config('app.name'), '_') . '_horizon:',
 
     /*
     |--------------------------------------------------------------------------

@@ -5,8 +5,10 @@ namespace Database\Seeders\Production;
 use App\Constants\Auth\Roles;
 use App\Models\Team;
 use App\Models\User;
+use Exception;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use InvalidArgumentException;
 
 class EssentialUserSeeder extends Seeder
 {
@@ -24,7 +26,7 @@ class EssentialUserSeeder extends Seeder
         $defaultTeam = Team::where('name', 'Default Team')->first();
 
         if (! $defaultTeam) {
-            throw new \Exception('Essential teams must be created before users. Run EssentialTeamSeeder first.');
+            throw new Exception('Essential teams must be created before users. Run EssentialTeamSeeder first.');
         }
 
         // Create SuperAdmin (PROTECTED - cannot be deleted)
@@ -47,7 +49,7 @@ class EssentialUserSeeder extends Seeder
             return;
         }
 
-        $this->command->info('🔐 Creating '.count($emails).' superAdmin user(s) from .env...');
+        $this->command->info('🔐 Creating ' . count($emails) . ' superAdmin user(s) from .env...');
 
         foreach ($emails as $email) {
             $superAdmin = User::firstOrCreate(
@@ -57,7 +59,7 @@ class EssentialUserSeeder extends Seeder
                     'password' => Hash::make($superAdminPassword),
                     'email_verified_at' => now(),
                     'team_id' => $defaultTeam->id,
-                ]
+                ],
             );
 
             // Always update team_id and password (in case user already exists)
@@ -96,13 +98,13 @@ class EssentialUserSeeder extends Seeder
 
         $configKey = match ($envKey) {
             'SUPER_ADMIN_PASSWORD' => 'seeder.super_admin_password',
-            default => throw new \InvalidArgumentException("Unknown password key: {$envKey}"),
+            default => throw new InvalidArgumentException("Unknown password key: {$envKey}"),
         };
 
         $password = config($configKey);
 
         if (empty($password)) {
-            throw new \Exception("Environment variable {$envKey} must be set in production environment.");
+            throw new Exception("Environment variable {$envKey} must be set in production environment.");
         }
 
         return $password;

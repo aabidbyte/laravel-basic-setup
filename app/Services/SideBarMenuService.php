@@ -30,7 +30,7 @@ class SideBarMenuService
                     ->title(__('ui.navigation.users'))
                     ->route('users.index')
                     ->icon('users')
-                    ->show(Auth::user()?->can(Permissions::VIEW_USERS) ?? false)
+                    ->show(Auth::user()?->can(Permissions::VIEW_USERS) ?? false),
             )
             ->toArray();
     }
@@ -55,7 +55,7 @@ class SideBarMenuService
                     ->title(__('ui.navigation.documentation'))
                     ->url('https://laravel.com/docs/starter-kits#livewire')
                     ->external()
-                    ->icon('book-open')
+                    ->icon('book-open'),
             )
             ->toArray();
     }
@@ -72,7 +72,7 @@ class SideBarMenuService
             ->items(
                 NavigationItem::make()
                     ->title(__('ui.navigation.settings'))
-                    ->route('profile.edit')
+                    ->route('profile.edit'),
             )
             ->toArray();
     }

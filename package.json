@@ -4,7 +4,11 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "format:php": "composer run pint",
+        "format:blade": "blade-formatter \"resources/views/**/*.blade.php\" \"app/**/*.blade.php\" -w",
+        "format:js": "prettier --write \"resources/js/**/*.js\"",
+        "format:all": "npm run format:php && npm run format:blade && npm run format:js"
     },
     "dependencies": {
         "@alpinejs/anchor": "^3.15.3",
@@ -23,8 +27,11 @@
         "lightningcss-linux-x64-gnu": "^1.29.1"
     },
     "devDependencies": {
+        "blade-formatter": "^1.44.2",
         "daisyui": "^5.5.13",
         "laravel-echo": "^2.2.6",
+        "prettier": "^3.7.4",
+        "prettier-plugin-tailwindcss": "^0.7.2",
         "pusher-js": "^8.4.0"
     }
 }

@@ -1,4 +1,9 @@
-<x-ui.dropdown placement="end" menu menuSize="sm" contentClass="sidebar-user-menus">
+<x-ui.dropdown
+    placement="end"
+    menu
+    menuSize="sm"
+    contentClass="sidebar-user-menus"
+>
     <x-slot:trigger>
         <div class="btn btn-ghost btn-circle avatar">
             <div class="w-10 rounded-full bg-base-300 text-base-content flex items-center justify-center">
@@ -32,9 +37,15 @@
 
     <div class="divider my-1"></div>
     <div class="mx-auto">
-        <form method="POST" action="{{ route('logout') }}">
+        <form
+            method="POST"
+            action="{{ route('logout') }}"
+        >
             @csrf
-            <x-ui.button type="submit" class="w-full">
+            <x-ui.button
+                type="submit"
+                class="w-full"
+            >
                 {{ __('ui.actions.logout') }}
             </x-ui.button>
         </form>

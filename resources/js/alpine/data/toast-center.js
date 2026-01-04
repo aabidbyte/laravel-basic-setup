@@ -143,7 +143,9 @@ export function toastCenter() {
 
             const store = window.Alpine.store('notifications');
             if (!store) {
-                console.error('[Toast Center] Notifications store is not available');
+                console.error(
+                    '[Toast Center] Notifications store is not available',
+                );
                 return;
             }
 
@@ -219,7 +221,10 @@ export function toastCenter() {
                 notificationSound.play().catch((error) => {
                     // Silently fail for sound playback (user might have disabled audio)
                     if (error.name !== 'NotAllowedError') {
-                        console.error('[Toast Center] Error playing sound:', error);
+                        console.error(
+                            '[Toast Center] Error playing sound:',
+                            error,
+                        );
                     }
                 });
             } catch (error) {
@@ -284,7 +289,10 @@ export function toastItem(toast, toasts, displayDuration) {
                 try {
                     window.location.href = toast.link;
                 } catch (error) {
-                    console.error('[Toast Item] Error navigating to link:', error);
+                    console.error(
+                        '[Toast Item] Error navigating to link:',
+                        error,
+                    );
                 }
             }
         },
@@ -307,7 +315,7 @@ export function toastItem(toast, toasts, displayDuration) {
                 this.elapsedTime = Date.now() - this.startTime;
                 this.progress = Math.max(
                     0,
-                    100 - (this.elapsedTime / this.displayDuration) * 100
+                    100 - (this.elapsedTime / this.displayDuration) * 100,
                 );
 
                 if (this.progress <= 0) {
@@ -368,4 +376,3 @@ export function toastItem(toast, toasts, displayDuration) {
         },
     };
 }
-

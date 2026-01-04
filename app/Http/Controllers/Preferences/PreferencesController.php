@@ -16,7 +16,7 @@ class PreferencesController extends Controller
 {
     public function __construct(
         private readonly FrontendPreferencesService $preferences,
-        private readonly I18nService $i18nService
+        private readonly I18nService $i18nService,
     ) {}
 
     /**

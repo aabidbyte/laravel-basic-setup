@@ -33,17 +33,17 @@ class FortifyServiceProvider extends ServiceProvider
         // Fortify will automatically resolve these from the container when needed
         $this->app->singleton(
             \Laravel\Fortify\Contracts\EmailVerificationNotificationSentResponse::class,
-            EmailVerificationNotificationSentResponse::class
+            EmailVerificationNotificationSentResponse::class,
         );
 
         $this->app->singleton(
             \Laravel\Fortify\Contracts\PasswordResetResponse::class,
-            PasswordResetResponse::class
+            PasswordResetResponse::class,
         );
 
         $this->app->singleton(
             \Laravel\Fortify\Contracts\SuccessfulPasswordResetLinkRequestResponse::class,
-            SuccessfulPasswordResetLinkRequestResponse::class
+            SuccessfulPasswordResetLinkRequestResponse::class,
         );
     }
 
@@ -209,7 +209,7 @@ class FortifyServiceProvider extends ServiceProvider
 
         RateLimiter::for('login', function (Request $request) {
             $identifier = getIdentifierFromRequest($request) ?? $request->input(Fortify::username());
-            $throttleKey = Str::transliterate(Str::lower($identifier).'|'.$request->ip());
+            $throttleKey = Str::transliterate(Str::lower($identifier) . '|' . $request->ip());
 
             return Limit::perMinute(5)->by($throttleKey);
         });

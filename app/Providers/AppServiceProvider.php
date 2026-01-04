@@ -5,11 +5,13 @@ namespace App\Providers;
 use App\Auth\PasswordBrokerManager;
 use App\Constants\Auth\Roles;
 use App\Http\Middleware\Teams\TeamsPermission;
+use App\Listeners\DevEmailRedirectListener;
 use App\Listeners\Preferences\SyncUserPreferencesOnLogin;
 use App\Observers\Notifications\DatabaseNotificationObserver;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Http\Kernel;
+use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Event;
@@ -32,7 +34,6 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->singleton(\App\Services\FrontendPreferences\FrontendPreferencesService::class);
         $this->app->singleton(\App\Services\I18nService::class);
-
     }
 
     /**
@@ -50,6 +51,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Register event listeners
         Event::listen(Login::class, SyncUserPreferencesOnLogin::class);
+        Event::listen(MessageSending::class, DevEmailRedirectListener::class);
 
         DatabaseNotification::observe(DatabaseNotificationObserver::class);
 

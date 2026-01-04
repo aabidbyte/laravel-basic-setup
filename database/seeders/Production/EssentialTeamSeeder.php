@@ -22,7 +22,7 @@ class EssentialTeamSeeder extends Seeder
             ['name' => 'Default Team'],
             [
                 'name' => 'Default Team',
-            ]
+            ],
         );
 
         $this->command->info("✅ Created team: {$defaultTeam->name}");

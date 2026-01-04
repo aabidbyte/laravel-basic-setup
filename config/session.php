@@ -126,7 +126,7 @@ return [
     |
     */
 
-    'cookie' => Str::slug(config('app.name'), '_').'_session',
+    'cookie' => Str::slug(config('app.name'), '_') . '_session',
 
     /*
     |--------------------------------------------------------------------------
@@ -209,5 +209,4 @@ return [
     */
 
     'partitioned' => false,
-
 ];

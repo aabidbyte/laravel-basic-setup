@@ -15,21 +15,21 @@ export function notificationCenter() {
         init() {
             if (!window.Alpine) {
                 console.error(
-                    "[Notification Center] Alpine.js is not available"
+                    '[Notification Center] Alpine.js is not available',
                 );
                 return;
             }
 
-            const store = window.Alpine.store("notifications");
+            const store = window.Alpine.store('notifications');
             if (!store) {
                 console.error(
-                    "[Notification Center] Notifications store is not available"
+                    '[Notification Center] Notifications store is not available',
                 );
                 return;
             }
 
             this.unsubscribe = store.subscribe((eventName) => {
-                if (eventName !== "notification.changed") {
+                if (eventName !== 'notification.changed') {
                     return;
                 }
 
@@ -61,21 +61,21 @@ export function notificationDropdown() {
         init() {
             if (!window.Alpine) {
                 console.error(
-                    "[Notification Dropdown] Alpine.js is not available"
+                    '[Notification Dropdown] Alpine.js is not available',
                 );
                 return;
             }
 
-            const store = window.Alpine.store("notifications");
+            const store = window.Alpine.store('notifications');
             if (!store) {
                 console.error(
-                    "[Notification Dropdown] Notifications store is not available"
+                    '[Notification Dropdown] Notifications store is not available',
                 );
                 return;
             }
 
             this.unsubscribe = store.subscribe((eventName) => {
-                if (eventName !== "notification.changed") {
+                if (eventName !== 'notification.changed') {
                     return;
                 }
 

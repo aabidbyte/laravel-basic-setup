@@ -60,7 +60,7 @@ class HtmlSanitizer
         $html = preg_replace('/src\s*=\s*\'data:[^\']*\'/i', '', $html);
 
         // Use strip_tags with allowed tags
-        $allowedTagsString = '<'.implode('><', self::ALLOWED_TAGS).'>';
+        $allowedTagsString = '<' . implode('><', self::ALLOWED_TAGS) . '>';
 
         // First pass: strip all tags except allowed ones (strip_tags preserves attributes)
         $html = strip_tags($html, $allowedTagsString);
@@ -87,7 +87,7 @@ class HtmlSanitizer
 
                 if (empty($allowedAttrs)) {
                     // No attributes allowed for this tag
-                    return '<'.$tag.'>';
+                    return '<' . $tag . '>';
                 }
 
                 // Extract and filter attributes
@@ -101,11 +101,11 @@ class HtmlSanitizer
                     }
                 }
 
-                $filteredAttrsString = ! empty($filteredAttrs) ? ' '.implode(' ', $filteredAttrs) : '';
+                $filteredAttrsString = ! empty($filteredAttrs) ? ' ' . implode(' ', $filteredAttrs) : '';
 
-                return '<'.$tag.$filteredAttrsString.'>';
+                return '<' . $tag . $filteredAttrsString . '>';
             },
-            $html
+            $html,
         );
     }
 

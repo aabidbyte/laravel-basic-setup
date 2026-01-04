@@ -41,7 +41,7 @@ class CreateNewUser implements CreatesNewUsers
 
         // Create a personal team for the user
         $team = Team::create([
-            'name' => $user->name."'s Team",
+            'name' => $user->name . "'s Team",
         ]);
 
         // Attach user to team

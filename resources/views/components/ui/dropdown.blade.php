@@ -59,7 +59,12 @@
         // We only need basic classes on the wrapper, positioning is handled by Alpine Anchor
         // We derive the Alpine anchor placement from the props
         $alpinePlacement = match ($placement) {
-            'start' => 'bottom-start', // dropdown-start aligns right edge (RTL) but usually means left in LTR? DaisyUI dropdown-start aligns to the start side.
+            'start'
+                => 'bottom-start', // dropdown-start aligns right edge (RTL) but usually means left in LTR? DaisyUI dropdown-start aligns to the start side.
+            // dropdown-start aligns right edge (RTL) but usually means left in LTR? DaisyUI dropdown-start aligns to the start side.
+            // dropdown-start aligns right edge (RTL) but usually means left in LTR? DaisyUI dropdown-start aligns to the start side.
+            // dropdown-start aligns right edge (RTL) but usually means left in LTR? DaisyUI dropdown-start aligns to the start side.
+            // dropdown-start aligns right edge (RTL) but usually means left in LTR? DaisyUI dropdown-start aligns to the start side.
             // DaisyUI: dropdown-end => right aligned to trigger (right:0). Anchor: bottom-end.
             'end' => 'bottom-end',
             'center' => 'bottom',
@@ -76,30 +81,51 @@
     <div
         {{ $attributes->except(['placement', 'hover', 'contentClass', 'bgClass', 'menu', 'menuSize', 'teleport', 'aria-label', 'aria-labelledby'])->merge(['class' => $dropdownClasses]) }}>
         @isset($trigger)
-            <div tabindex="0" role="button">
+            <div
+                tabindex="0"
+                role="button"
+            >
                 {{ $trigger }}
             </div>
         @endisset
-        <div tabindex="-1" @class($contentClasses) {{ $attributes->only(['aria-label', 'aria-labelledby']) }}>
+        <div
+            tabindex="-1"
+            @class($contentClasses)
+            {{ $attributes->only(['aria-label', 'aria-labelledby']) }}
+        >
             {{ $slot }}
         </div>
     </div>
 @else
-    <div x-data="{ open: false }" @click.outside="open = false" class="inline-block"
-        {{ $attributes->except(['placement', 'hover', 'contentClass', 'bgClass', 'menu', 'menuSize', 'teleport', 'aria-label', 'aria-labelledby']) }}>
+    <div
+        x-data="{ open: false }"
+        @click.outside="open = false"
+        class="inline-block"
+        {{ $attributes->except(['placement', 'hover', 'contentClass', 'bgClass', 'menu', 'menuSize', 'teleport', 'aria-label', 'aria-labelledby']) }}
+    >
         @isset($trigger)
-            <div x-ref="trigger" @click="open = !open" role="button">
+            <div
+                x-ref="trigger"
+                @click="open = !open"
+                role="button"
+            >
                 {{ $trigger }}
             </div>
         @endisset
 
         <template x-teleport="body">
-            <div x-show="open" x-anchor.{{ $alpinePlacement }}.offset.4="$refs.trigger"
+            <div
+                x-show="open"
+                x-anchor.{{ $alpinePlacement }}.offset.4="$refs.trigger"
                 x-transition:enter="transition ease-out duration-100"
-                x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100"
-                x-transition:leave-end="opacity-0 scale-95" @class($contentClasses . ' z-50 shadow-xl border border-base-200')
-                {{ $attributes->only(['aria-label', 'aria-labelledby']) }}>
+                x-transition:enter-start="opacity-0 scale-95"
+                x-transition:enter-end="opacity-100 scale-100"
+                x-transition:leave="transition ease-in duration-75"
+                x-transition:leave-start="opacity-100 scale-100"
+                x-transition:leave-end="opacity-0 scale-95"
+                @class($contentClasses . ' z-50 shadow-xl border border-base-200')
+                {{ $attributes->only(['aria-label', 'aria-labelledby']) }}
+            >
                 {{ $slot }}
             </div>
         </template>

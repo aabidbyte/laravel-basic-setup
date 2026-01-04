@@ -11,8 +11,8 @@ use Livewire\WithPagination;
  */
 trait HasDatatableLivewirePagination
 {
-    use WithPagination;
     use \Livewire\WithoutUrlPagination;
+    use WithPagination;
 
     /**
      * Disable query string synchronization for pagination

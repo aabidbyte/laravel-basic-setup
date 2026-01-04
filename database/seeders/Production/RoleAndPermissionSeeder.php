@@ -40,11 +40,11 @@ class RoleAndPermissionSeeder extends Seeder
 
         foreach ($permissionNames as $permissionName) {
             Permission::firstOrCreate(
-                ['name' => $permissionName, 'guard_name' => 'web']
+                ['name' => $permissionName, 'guard_name' => 'web'],
             );
         }
 
-        $this->command->info('✅ Created '.count($permissionNames).' permissions');
+        $this->command->info('✅ Created ' . count($permissionNames) . ' permissions');
     }
 
     /**
@@ -56,11 +56,11 @@ class RoleAndPermissionSeeder extends Seeder
 
         foreach ($roleNames as $roleName) {
             Role::firstOrCreate(
-                ['name' => $roleName, 'guard_name' => 'web']
+                ['name' => $roleName, 'guard_name' => 'web'],
             );
         }
 
-        $this->command->info('✅ Created '.count($roleNames).' roles');
+        $this->command->info('✅ Created ' . count($roleNames) . ' roles');
     }
 
     /**
@@ -75,6 +75,6 @@ class RoleAndPermissionSeeder extends Seeder
         }
 
         $superAdminRole->givePermissionTo(Permission::all());
-        $this->command->info('✅ Assigned all permissions to '.Roles::SUPER_ADMIN.' role');
+        $this->command->info('✅ Assigned all permissions to ' . Roles::SUPER_ADMIN . ' role');
     }
 }

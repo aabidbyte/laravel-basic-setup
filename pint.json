@@ -1,8 +1,70 @@
 {
     "preset": "laravel",
     "rules": {
-        "method_chaining_indentation": true
+        "method_chaining_indentation": true,
+        "global_namespace_import": {
+            "import_classes": true,
+            "import_constants": false,
+            "import_functions": false
+        },
+        "no_unused_imports": true,
+        "ordered_imports": {
+            "sort_algorithm": "alpha"
+        },
+        "strict_comparison": true,
+        "strict_param": true,
+        "no_superfluous_phpdoc_tags": {
+            "allow_mixed": true
+        },
+        "array_syntax": {
+            "syntax": "short"
+        },
+        "trailing_comma_in_multiline": {
+            "elements": [
+                "arguments",
+                "arrays",
+                "match",
+                "parameters"
+            ]
+        },
+        "no_trailing_comma_in_singleline": {
+            "elements": [
+                "arguments",
+                "array",
+                "array_destructuring",
+                "group_import"
+            ]
+        },
+        "no_extra_blank_lines": {
+            "tokens": [
+                "attribute",
+                "break",
+                "case",
+                "continue",
+                "curly_brace_block",
+                "default",
+                "extra",
+                "parenthesis_brace_block",
+                "return",
+                "square_brace_block",
+                "switch",
+                "throw",
+                "use",
+                "use_trait"
+            ]
+        },
+        "binary_operator_spaces": {
+            "default": "single_space"
+        },
+        "concat_space": {
+            "spacing": "one"
+        },
+        "no_leading_import_slash": true,
+        "single_trait_insert_per_statement": true,
+        "short_scalar_cast": true,
+        "nullable_type_declaration_for_default_null_value": {
+            "use_nullable_type_declaration": true
+        }
     },
     "exclude": []
 }
-

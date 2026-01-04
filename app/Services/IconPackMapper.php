@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use Exception;
+
 /**
  * Maps icon pack names to Blade Icons component names.
  * Handles validation and sanitization of icon names, pack names, and CSS classes.
@@ -145,7 +147,6 @@ class IconPackMapper
      */
     public function renderIcon(?string $name, ?string $pack = null, string $class = '', ?string $size = null): string
     {
-
         // Handle size prop for backward compatibility
         $sizeClass = $this->getSizeClass($size);
 
@@ -167,7 +168,7 @@ class IconPackMapper
         // Render the icon with fallback
         try {
             return svg($componentName, $sanitizedClass)->toHtml();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Fallback to question mark icon if component doesn't exist
             return svg('heroicon-o-question-mark-circle', $sanitizedClass)->toHtml();
         }

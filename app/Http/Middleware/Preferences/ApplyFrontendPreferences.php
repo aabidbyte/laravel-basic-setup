@@ -12,13 +12,13 @@ use Symfony\Component\HttpFoundation\Response;
 class ApplyFrontendPreferences
 {
     public function __construct(
-        private readonly FrontendPreferencesService $preferences
+        private readonly FrontendPreferencesService $preferences,
     ) {}
 
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {

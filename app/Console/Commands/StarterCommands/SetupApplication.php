@@ -4,6 +4,7 @@ namespace App\Console\Commands\StarterCommands;
 
 use App\Console\Commands\StarterCommands\Support\DatabaseSetup;
 use App\Console\Commands\StarterCommands\Support\EnvFileManager;
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
@@ -53,7 +54,7 @@ class SetupApplication extends Command
         $setupDatabase = confirm(
             label: 'Would you like to set up the database connection?',
             default: true,
-            hint: 'This will collect database credentials and test the connection.'
+            hint: 'This will collect database credentials and test the connection.',
         );
 
         if (! $setupDatabase) {
@@ -106,7 +107,7 @@ class SetupApplication extends Command
             $runMigrations = confirm(
                 label: 'Would you like to run database migrations?',
                 default: true,
-                hint: 'This will create all database tables.'
+                hint: 'This will create all database tables.',
             );
         } else {
             // Database setup was skipped, skip migrations too
@@ -127,7 +128,7 @@ class SetupApplication extends Command
                 if (! confirm(
                     label: 'Are you sure you want to continue?',
                     default: true,
-                    hint: 'This will delete all existing data in the database. Use --no-fresh to keep existing data.'
+                    hint: 'This will delete all existing data in the database. Use --no-fresh to keep existing data.',
                 )) {
                     info('Cancelled. Migrations will not be run.');
                     $runMigrations = false;
@@ -148,8 +149,8 @@ class SetupApplication extends Command
                         $this->call('migrate', ['--force' => true]);
                     }
                     info('✅ Migrations completed successfully!');
-                } catch (\Exception $e) {
-                    error('❌ Migration failed: '.$e->getMessage());
+                } catch (Exception $e) {
+                    error('❌ Migration failed: ' . $e->getMessage());
 
                     info('Please check the error above and try again.');
 
@@ -200,7 +201,7 @@ class SetupApplication extends Command
             }
 
             return $artisan->has($command);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return false;
         }
     }

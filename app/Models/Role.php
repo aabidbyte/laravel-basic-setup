@@ -9,7 +9,8 @@ use Spatie\Permission\Models\Role as SpatieRole;
 
 class Role extends SpatieRole
 {
-    use HasUuid, SoftDeletes;
+    use HasUuid;
+    use SoftDeletes;
 
     /**
      * The attributes that are mass assignable.

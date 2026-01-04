@@ -4,7 +4,7 @@
  *
  * This is a standalone Livewire SFC that handles all datatable action modals globally.
  * It listens for the 'open-datatable-modal' event and renders the appropriate content.
- * 
+ *
  * Uses <x-ui.base-modal> internally and exposes modalIsOpen to child views.
  */
 
@@ -13,8 +13,7 @@ declare(strict_types=1);
 use Livewire\Attributes\On;
 use Livewire\Component;
 
-new class extends Component
-{
+new class extends Component {
     /**
      * Modal view/component path
      */
@@ -57,13 +56,8 @@ new class extends Component
      * @param  string|null  $datatableId  ID of the datatable for callbacks
      */
     #[On('open-datatable-modal')]
-    public function openModal(
-        string $viewPath,
-        string $viewType = 'blade',
-        array $viewProps = [],
-        ?string $viewTitle = null,
-        ?string $datatableId = null
-    ): void {
+    public function openModal(string $viewPath, string $viewType = 'blade', array $viewProps = [], ?string $viewTitle = null, ?string $datatableId = null): void
+    {
         $this->modalView = $viewPath;
         $this->modalType = $viewType;
         $this->modalProps = $viewProps;
@@ -101,17 +95,17 @@ new class extends Component
     modalIsOpen: $wire.$entangle('isOpen'),
     isLoading: false,
     _loadingListener: null,
-    
+
     init() {
         // Store listener reference for cleanup
         this._loadingListener = () => {
             this.isLoading = true;
             this.modalIsOpen = true;
         };
-        
+
         // Listen for loading trigger (dispatched from datatable before server request)
         window.addEventListener('datatable-modal-loading', this._loadingListener);
-        
+
         // Use Livewire hook to detect when component has finished updating
         // This fires after every Livewire update, so we check if modal is open with content
         Livewire.hook('morph.updated', ({ component }) => {
@@ -120,7 +114,7 @@ new class extends Component
             }
         });
     },
-    
+
     destroy() {
         // Clean up event listener on component destroy
         if (this._loadingListener) {
@@ -128,27 +122,37 @@ new class extends Component
         }
     }
 }">
-    <x-ui.base-modal 
-        open-state="modalIsOpen" 
+    <x-ui.base-modal
+        open-state="modalIsOpen"
         use-parent-state="true"
         :title="$modalTitle ?? __('ui.table.action_modal_title')"
         on-close="$wire.closeModal()"
-        :show-close-button="true">
-        
+        :show-close-button="true"
+    >
+
         {{-- Loading State --}}
-        <div x-show="isLoading" x-cloak>
+        <div
+            x-show="isLoading"
+            x-cloak
+        >
             <x-ui.loading></x-ui.loading>
         </div>
 
         {{-- Content (always rendered by Blade, visibility toggled by Alpine) --}}
-        <div x-show="!isLoading" x-cloak wire:loading.class="opacity-50">
+        <div
+            x-show="!isLoading"
+            x-cloak
+            wire:loading.class="opacity-50"
+        >
             @if ($isOpen && $modalView)
                 @if ($modalType === 'blade')
                     @include($modalView, $modalProps)
                 @else
-                    <livewire:is :component="$modalView" 
-                                 v-bind="$modalProps" 
-                                 :key="'modal-' . $modalView . '-' . uniqid()" />
+                    <livewire:is
+                        :component="$modalView"
+                        v-bind="$modalProps"
+                        :key="'modal-' . $modalView . '-' . uniqid()"
+                    />
                 @endif
             @endif
         </div>

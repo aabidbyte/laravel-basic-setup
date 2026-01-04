@@ -13,8 +13,7 @@ use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
 use Symfony\Component\HttpFoundation\Response;
 
-new class extends BasePageComponent
-{
+new class extends BasePageComponent {
     public ?string $pageTitle = 'ui.pages.settings.two_factor';
 
     public ?string $pageSubtitle = 'ui.settings.two_factor.description';
@@ -60,7 +59,7 @@ new class extends BasePageComponent
 
         $enableTwoFactorAuthentication($user);
 
-        if (! $this->requiresConfirmation) {
+        if (!$this->requiresConfirmation) {
             $this->twoFactorEnabled = $user->hasEnabledTwoFactorAuthentication();
         }
 
@@ -154,7 +153,7 @@ new class extends BasePageComponent
 
         $this->dispatch('close-two-factor-setup-modal');
 
-        if (! $this->requiresConfirmation) {
+        if (!$this->requiresConfirmation) {
             $this->twoFactorEnabled = Auth::user()->hasEnabledTwoFactorAuthentication();
         }
     }
@@ -194,23 +193,33 @@ new class extends BasePageComponent
 
 <section class="w-full">
     <x-settings.layout>
-        <div class="flex flex-col w-full mx-auto space-y-6" wire:cloak>
+        <div
+            class="flex flex-col w-full mx-auto space-y-6"
+            wire:cloak
+        >
             @if ($twoFactorEnabled)
                 <div class="card bg-base-200">
                     <div class="card-body">
                         <div class="flex items-center gap-3">
-                            <x-ui.badge color="success"
-                                size="lg">{{ __('ui.settings.two_factor.enabled') }}</x-ui.badge>
+                            <x-ui.badge
+                                color="success"
+                                size="lg"
+                            >{{ __('ui.settings.two_factor.enabled') }}</x-ui.badge>
                         </div>
 
                         <p class="text-base-content/70">
                             {{ __('ui.settings.two_factor.enabled_description') }}
                         </p>
 
-                        <livewire:settings.two-factor.recovery-codes :$requiresConfirmation></livewire:settings.two-factor.recovery-codes>
+                        <livewire:settings.two-factor.recovery-codes
+                            :$requiresConfirmation></livewire:settings.two-factor.recovery-codes>
 
                         <div class="card-actions">
-                            <x-ui.button type="button" wire:click="disable" variant="error">
+                            <x-ui.button
+                                type="button"
+                                wire:click="disable"
+                                variant="error"
+                            >
                                 {{ __('ui.settings.two_factor.disable_button') }}
                             </x-ui.button>
                         </div>
@@ -220,8 +229,10 @@ new class extends BasePageComponent
                 <div class="card bg-base-200">
                     <div class="card-body">
                         <div class="flex items-center gap-3">
-                            <x-ui.badge color="error"
-                                size="lg">{{ __('ui.settings.two_factor.disabled') }}</x-ui.badge>
+                            <x-ui.badge
+                                color="error"
+                                size="lg"
+                            >{{ __('ui.settings.two_factor.disabled') }}</x-ui.badge>
                         </div>
 
                         <p class="text-base-content/70">
@@ -229,7 +240,11 @@ new class extends BasePageComponent
                         </p>
 
                         <div class="card-actions">
-                            <x-ui.button type="button" wire:click="enable" variant="primary">
+                            <x-ui.button
+                                type="button"
+                                wire:click="enable"
+                                variant="primary"
+                            >
                                 {{ __('ui.settings.two_factor.enable_button') }}
                             </x-ui.button>
                         </div>
@@ -239,22 +254,27 @@ new class extends BasePageComponent
         </div>
     </x-settings.layout>
 
-    <div x-data="{
-        showModal: false,
-        init() {
-            $wire.on('open-two-factor-setup-modal', () => {
-                this.showModal = true;
-            });
-
-            $wire.on('close-two-factor-setup-modal', () => {
-                this.showModal = false;
-            });
-        }
-    }" x-show="showModal" style="display: none;">
-        <livewire:settings.two-factor.setup-modal 
-            :modal-config="$this->modalConfig" 
+    <div
+        x-data="{
+            showModal: false,
+            init() {
+                $wire.on('open-two-factor-setup-modal', () => {
+                    this.showModal = true;
+                });
+        
+                $wire.on('close-two-factor-setup-modal', () => {
+                    this.showModal = false;
+                });
+            }
+        }"
+        x-show="showModal"
+        style="display: none;"
+    >
+        <livewire:settings.two-factor.setup-modal
+            :modal-config="$this->modalConfig"
             :qr-code-svg="$qrCodeSvg"
-            :manual-setup-key="$manualSetupKey" 
-            lazy />
+            :manual-setup-key="$manualSetupKey"
+            lazy
+        />
     </div>
 </section>

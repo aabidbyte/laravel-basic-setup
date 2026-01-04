@@ -10,12 +10,12 @@
  * - Separation of Concerns: Each module handles specific functionality
  */
 
-import { createNotificationsStore } from "./alpine/stores/notifications-store.js";
-import { toastCenter, toastItem } from "./alpine/data/toast-center.js";
+import { createNotificationsStore } from './alpine/stores/notifications-store.js';
+import { toastCenter, toastItem } from './alpine/data/toast-center.js';
 import {
     notificationCenter,
     notificationDropdown,
-} from "./alpine/data/notification-center.js";
+} from './alpine/data/notification-center.js';
 
 // Module-level initialization state
 let storeRegistered = false;
@@ -30,7 +30,7 @@ function registerNotificationsStore() {
         return;
     }
 
-    window.Alpine.store("notifications", createNotificationsStore());
+    window.Alpine.store('notifications', createNotificationsStore());
     storeRegistered = true;
 }
 
@@ -42,10 +42,10 @@ function registerAlpineDataComponents() {
         return;
     }
 
-    window.Alpine.data("toastCenter", toastCenter);
-    window.Alpine.data("toastItem", toastItem);
-    window.Alpine.data("notificationCenter", notificationCenter);
-    window.Alpine.data("notificationDropdown", notificationDropdown);
+    window.Alpine.data('toastCenter', toastCenter);
+    window.Alpine.data('toastItem', toastItem);
+    window.Alpine.data('notificationCenter', notificationCenter);
+    window.Alpine.data('notificationDropdown', notificationDropdown);
     componentsRegistered = true;
 }
 
@@ -64,8 +64,8 @@ function initializeNotifications() {
     }
 
     // Create config key to detect changes
-    const configKey = `${config?.userUuid || "null"}-${
-        config?.sessionId || "null"
+    const configKey = `${config?.userUuid || 'null'}-${
+        config?.sessionId || 'null'
     }`;
 
     // Skip if same config is already initialized
@@ -76,17 +76,17 @@ function initializeNotifications() {
     currentConfigKey = configKey;
 
     // Store config in Alpine store for reference
-    window.Alpine.store("notificationRealtimeConfig", config);
+    window.Alpine.store('notificationRealtimeConfig', config);
 
     // Initialize notifications store with config
-    const notificationsStore = window.Alpine.store("notifications");
-    if (notificationsStore && typeof notificationsStore.init === "function") {
+    const notificationsStore = window.Alpine.store('notifications');
+    if (notificationsStore && typeof notificationsStore.init === 'function') {
         try {
             notificationsStore.init(config);
         } catch (error) {
             console.error(
-                "[Notification System] Error initializing store:",
-                error
+                '[Notification System] Error initializing store:',
+                error,
             );
         }
     }
@@ -98,8 +98,8 @@ function initializeNotifications() {
         Array.isArray(config.pendingNotifications) &&
         config.pendingNotifications.length > 0
     ) {
-        const store = window.Alpine.store("notifications");
-        if (store && typeof store._emit === "function") {
+        const store = window.Alpine.store('notifications');
+        if (store && typeof store._emit === 'function') {
             // Reset pending notifications flag when config changes
             store._pendingNotificationsProcessed = false;
 
@@ -107,7 +107,7 @@ function initializeNotifications() {
                 if (store && !store._pendingNotificationsProcessed) {
                     store._pendingNotificationsProcessed = true;
                     config.pendingNotifications.forEach((notification) => {
-                        store._emit("toast.received", notification);
+                        store._emit('toast.received', notification);
                     });
                 }
             }, 100);
@@ -125,7 +125,7 @@ function initializeNotificationSystem() {
 }
 
 // Initialize when Alpine is ready
-document.addEventListener("alpine:init", initializeNotificationSystem);
+document.addEventListener('alpine:init', initializeNotificationSystem);
 
 // Initialize immediately if Alpine is already available
 if (window.Alpine) {
@@ -133,4 +133,4 @@ if (window.Alpine) {
 }
 
 // Re-initialize after Livewire navigation (config may have changed)
-document.addEventListener("livewire:navigated", initializeNotifications);
+document.addEventListener('livewire:navigated', initializeNotifications);

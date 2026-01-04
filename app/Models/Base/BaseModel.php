@@ -21,5 +21,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 abstract class BaseModel extends EloquentModel
 {
-    use HasUuid, SoftDeletes;
+    use HasUuid;
+    use SoftDeletes;
 }

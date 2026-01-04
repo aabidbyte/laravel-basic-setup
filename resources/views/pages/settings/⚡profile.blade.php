@@ -6,8 +6,7 @@ use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
-new class extends BasePageComponent
-{
+new class extends BasePageComponent {
     public ?string $pageTitle = 'ui.pages.settings.profile';
 
     public ?string $pageSubtitle = 'ui.settings.profile.description';
@@ -72,18 +71,38 @@ new class extends BasePageComponent
 
 <section class="w-full">
     <x-settings.layout>
-        <x-ui.form wire:submit="updateProfileInformation" class="w-full">
-            <x-ui.input type="text" wire:model="name" name="name" :label="__('ui.settings.profile.name_label')" required autofocus
-                autocomplete="name"></x-ui.input>
+        <x-ui.form
+            wire:submit="updateProfileInformation"
+            class="w-full"
+        >
+            <x-ui.input
+                type="text"
+                wire:model="name"
+                name="name"
+                :label="__('ui.settings.profile.name_label')"
+                required
+                autofocus
+                autocomplete="name"
+            ></x-ui.input>
 
-            <x-ui.input type="email" wire:model="email" name="email" :label="__('ui.settings.profile.email_label')" required autocomplete="email"></x-ui.input>
+            <x-ui.input
+                type="email"
+                wire:model="email"
+                name="email"
+                :label="__('ui.settings.profile.email_label')"
+                required
+                autocomplete="email"
+            ></x-ui.input>
 
             @if (Auth::user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !Auth::user()->hasVerifiedEmail())
                 <div class="alert alert-info mt-4">
                     <span class="text-sm">
                         {{ __('ui.settings.profile.email_unverified') }}
-                        <button type="button" wire:click.prevent="resendVerificationNotification"
-                            class="link link-primary">
+                        <button
+                            type="button"
+                            wire:click.prevent="resendVerificationNotification"
+                            class="link link-primary"
+                        >
                             {{ __('ui.settings.profile.resend_verification') }}
                         </button>
                     </span>
@@ -91,7 +110,12 @@ new class extends BasePageComponent
             @endif
 
             <div class="flex items-center gap-4">
-                <x-ui.button type="submit" variant="primary" class="w-full" data-test="update-profile-button">
+                <x-ui.button
+                    type="submit"
+                    variant="primary"
+                    class="w-full"
+                    data-test="update-profile-button"
+                >
                     {{ __('ui.actions.save') }}
                 </x-ui.button>
 

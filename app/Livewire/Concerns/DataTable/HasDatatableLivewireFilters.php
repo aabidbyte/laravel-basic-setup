@@ -23,6 +23,7 @@ trait HasDatatableLivewireFilters
             $this->applyChanges();
         }
     }
+
     /**
      * Filter values
      *

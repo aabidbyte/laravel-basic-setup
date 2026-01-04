@@ -11,7 +11,7 @@ use App\Services\DataTable\Contracts\DataTablePreferencesStore;
 class UserJsonDataTablePreferencesStore implements DataTablePreferencesStore
 {
     public function __construct(
-        private readonly User $user
+        private readonly User $user,
     ) {}
 
     /**

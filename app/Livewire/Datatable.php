@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
+use ReflectionMethod;
 
 /**
  * Base DataTable Component
@@ -94,7 +95,7 @@ abstract class Datatable extends Component
             return $this->rowsClickable;
         }
 
-        $reflector = new \ReflectionMethod($this, 'rowClick');
+        $reflector = new ReflectionMethod($this, 'rowClick');
         $this->rowsClickable = $reflector->getDeclaringClass()->getName() !== self::class;
 
         return $this->rowsClickable;
@@ -102,7 +103,7 @@ abstract class Datatable extends Component
 
     /**
      * Determine if row click action opens a modal (used for loading UX)
-     * 
+     *
      * Fetches a sample row to check if the rowClick action has hasModal set.
      * Returns false if table is empty or rowClick doesn't use a modal.
      */
@@ -120,7 +121,7 @@ abstract class Datatable extends Component
 
         // Get the action from rowClick and check if it has a modal
         $action = $this->rowClick($sampleRow->uuid);
-        
+
         return $action?->getModal() !== null;
     }
 
@@ -140,7 +141,7 @@ abstract class Datatable extends Component
             search: $this->search,
             sortBy: $this->sortBy,
             sortDirection: $this->sortDirection,
-            perPage: $this->perPage
+            perPage: $this->perPage,
         );
     }
 

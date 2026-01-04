@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Default Queue Connection Name
@@ -29,7 +28,6 @@ return [
     */
 
     'connections' => [
-
         'sync' => [
             'driver' => 'sync',
         ],
@@ -41,7 +39,6 @@ return [
             'retry_after' => 90,
             'block_for' => 5,
         ],
-
     ],
 
     /*
@@ -77,5 +74,4 @@ return [
         'connection' => 'default',
         'queue' => 'failed_jobs',
     ],
-
 ];

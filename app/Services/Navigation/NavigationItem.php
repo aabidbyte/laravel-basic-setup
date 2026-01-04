@@ -60,14 +60,14 @@ class NavigationItem implements Arrayable
     {
         $visibleItems = array_filter(
             $items,
-            fn (NavigationItem $item) => $item->isVisible()
+            fn (NavigationItem $item) => $item->isVisible(),
         );
 
         return array_values(
             array_map(
                 fn (NavigationItem $item) => $item->toArray(),
-                $visibleItems
-            )
+                $visibleItems,
+            ),
         );
     }
 
@@ -279,7 +279,7 @@ class NavigationItem implements Arrayable
     public function getItems(): array
     {
         return array_values(
-            array_filter($this->items, fn (NavigationItem $item) => $item->isVisible())
+            array_filter($this->items, fn (NavigationItem $item) => $item->isVisible()),
         );
     }
 

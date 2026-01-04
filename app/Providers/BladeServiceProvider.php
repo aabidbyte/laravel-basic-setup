@@ -24,7 +24,6 @@ class BladeServiceProvider extends ServiceProvider
 
     private function initLayoutVariables()
     {
-
         View::composer([
             'components.layouts.app',
             'components.layouts.auth',
@@ -37,7 +36,6 @@ class BladeServiceProvider extends ServiceProvider
             $i18n = app(I18nService::class);
             $view->with('htmlLangAttribute', $i18n->getHtmlLangAttribute());
             $view->with('htmlDirAttribute', $i18n->getHtmlDirAttribute());
-
         });
 
         // Share I18nService and FrontendPreferencesService with layout templates and preference components

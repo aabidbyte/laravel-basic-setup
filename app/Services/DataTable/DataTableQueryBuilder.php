@@ -6,6 +6,7 @@ namespace App\Services\DataTable;
 
 use App\Services\DataTable\Builders\Column;
 use App\Services\DataTable\Builders\Filter;
+use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -48,7 +49,7 @@ class DataTableQueryBuilder
         string $search,
         ?string $sortBy,
         string $sortDirection,
-        int $perPage
+        int $perPage,
     ): LengthAwarePaginator {
         // Auto-join relationships from columns
         $this->applyAutoJoins($query, $columns);
@@ -98,7 +99,7 @@ class DataTableQueryBuilder
         Builder $query,
         array $relationships,
         string $parentTable = '',
-        string $parentKey = ''
+        string $parentKey = '',
     ): void {
         if (empty($relationships)) {
             return;
@@ -123,7 +124,7 @@ class DataTableQueryBuilder
                     $query,
                     $relationships,
                     $relatedModel->getTable(),
-                    $relationshipName
+                    $relationshipName,
                 );
             }
 
@@ -154,10 +155,10 @@ class DataTableQueryBuilder
                     $query,
                     $relationships,
                     $relatedTable,
-                    $relationshipName
+                    $relationshipName,
                 );
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Relationship doesn't exist, skip
             return;
         }
@@ -175,7 +176,7 @@ class DataTableQueryBuilder
             $relatedTable,
             "{$parentTable}.{$foreignKey}",
             '=',
-            "{$relatedTable}.{$ownerKey}"
+            "{$relatedTable}.{$ownerKey}",
         );
     }
 
@@ -191,7 +192,7 @@ class DataTableQueryBuilder
             $relatedTable,
             "{$parentTable}.{$localKey}",
             '=',
-            "{$relatedTable}.{$foreignKey}"
+            "{$relatedTable}.{$foreignKey}",
         );
     }
 
@@ -211,7 +212,7 @@ class DataTableQueryBuilder
             $pivotTable,
             "{$parentTable}.{$parentKey}",
             '=',
-            "{$pivotTable}.{$foreignPivotKey}"
+            "{$pivotTable}.{$foreignPivotKey}",
         );
 
         // Join related table
@@ -219,7 +220,7 @@ class DataTableQueryBuilder
             $relatedTable,
             "{$pivotTable}.{$relatedPivotKey}",
             '=',
-            "{$relatedTable}.{$relatedKey}"
+            "{$relatedTable}.{$relatedKey}",
         );
     }
 
@@ -377,7 +378,7 @@ class DataTableQueryBuilder
             try {
                 $relation = $model->{$relationshipName}();
                 $model = $relation->getRelated();
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // Relationship doesn't exist, return base table
                 return $model->getTable();
             }

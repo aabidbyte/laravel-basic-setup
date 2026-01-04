@@ -26,7 +26,6 @@ $createLevelSpecificChannel = function (string $channel, string $level): array {
 };
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Default Log Channel
@@ -71,7 +70,6 @@ return [
     */
 
     'channels' => [
-
         LogChannels::STACK => [
             'driver' => 'stack',
             'channels' => explode(',', (string) env('LOG_STACK', implode(',', LogChannels::levelChannels()))),
@@ -129,7 +127,7 @@ return [
             'handler_with' => [
                 'host' => env('PAPERTRAIL_URL'),
                 'port' => env('PAPERTRAIL_PORT'),
-                'connectionString' => 'tls://'.env('PAPERTRAIL_URL').':'.env('PAPERTRAIL_PORT'),
+                'connectionString' => 'tls://' . env('PAPERTRAIL_URL') . ':' . env('PAPERTRAIL_PORT'),
             ],
             'processors' => [PsrLogMessageProcessor::class],
         ],
@@ -162,7 +160,5 @@ return [
             'driver' => 'monolog',
             'handler' => NullHandler::class,
         ],
-
     ],
-
 ];

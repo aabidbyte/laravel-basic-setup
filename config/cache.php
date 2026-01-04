@@ -3,7 +3,6 @@
 use Illuminate\Support\Str;
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Default Cache Store
@@ -32,7 +31,6 @@ return [
     */
 
     'stores' => [
-
         'array' => [
             'driver' => 'array',
             'serialize' => false,
@@ -43,7 +41,6 @@ return [
             'connection' => 'cache',
             'lock_connection' => 'default',
         ],
-
     ],
 
     /*
@@ -57,6 +54,5 @@ return [
     |
     */
 
-    'prefix' => Str::slug(config('app.name'), '_').'_cache_',
-
+    'prefix' => Str::slug(config('app.name'), '_') . '_cache_',
 ];

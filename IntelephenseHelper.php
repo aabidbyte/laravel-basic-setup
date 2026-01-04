@@ -777,8 +777,6 @@ interface Builder
      * Add a relationship count / exists condition to the query.
      *
      * @param  string  $relation
-     * @param  string  $operator
-     * @param  int  $count
      * @param  string  $boolean
      * @param  \Closure|null  $callback
      * @return $this
@@ -789,8 +787,6 @@ interface Builder
      * Add a relationship count / exists condition to the query with an "or".
      *
      * @param  string  $relation
-     * @param  string  $operator
-     * @param  int  $count
      * @return $this
      */
     public function orDoesntHave($relation): static;
@@ -838,8 +834,6 @@ interface Builder
     /**
      * Add a relationship count / exists condition to the query with where clauses.
      *
-     * @param  string  $relation
-     * @param  \Closure  $callback
      * @return $this
      */
     public function withCount($relations): static;
@@ -922,7 +916,6 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
      * @param  array  $values
      * @return \Illuminate\Database\Eloquent\Model
      */
@@ -931,8 +924,6 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
-     * @param  array  $values
      * @return \Illuminate\Database\Eloquent\Model
      */
     public function find($id, $columns = ['*']);
@@ -940,8 +931,6 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
-     * @param  array  $values
      * @return \Illuminate\Database\Eloquent\Model
      */
     public function findOrFail($id, $columns = ['*']);
@@ -949,8 +938,6 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
-     * @param  array  $values
      * @return \Illuminate\Database\Eloquent\Model
      */
     public function findOrNew($id, $columns = ['*']);
@@ -958,8 +945,6 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
-     * @param  array  $values
      * @return \Illuminate\Database\Eloquent\Model
      */
     public function findMany($ids, $columns = ['*']);
@@ -975,8 +960,6 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
-     * @param  array  $values
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
     public function paginate($perPage = 15, $columns = ['*'], $pageName = 'page', $page = null);
@@ -984,8 +967,6 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
-     * @param  array  $values
      * @return \Illuminate\Contracts\Pagination\Paginator
      */
     public function simplePaginate($perPage = 15, $columns = ['*'], $pageName = 'page', $page = null);
@@ -1031,25 +1012,17 @@ interface Builder
 
     /**
      * Get the first result from the query or create a new instance.
-     *
-     * @param  array  $attributes
-     * @param  array  $values
      */
     public function exists(): bool;
 
     /**
      * Get the first result from the query or create a new instance.
-     *
-     * @param  array  $attributes
-     * @param  array  $values
      */
     public function doesntExist(): bool;
 
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
-     * @param  array  $values
      * @return $this
      */
     public function latest($column = 'created_at'): static;
@@ -1057,8 +1030,6 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
-     * @param  array  $values
      * @return $this
      */
     public function oldest($column = 'created_at'): static;
@@ -1066,8 +1037,6 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
-     * @param  array  $values
      * @return $this
      */
     public function inRandomOrder($seed = ''): static;
@@ -1075,8 +1044,6 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
-     * @param  array  $values
      * @return $this
      */
     public function limit($value): static;
@@ -1084,8 +1051,6 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
-     * @param  array  $values
      * @return $this
      */
     public function offset($value): static;
@@ -1093,8 +1058,6 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
-     * @param  array  $values
      * @return $this
      */
     public function take($value): static;
@@ -1102,8 +1065,6 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
-     * @param  array  $values
      * @return $this
      */
     public function skip($value): static;
@@ -1111,8 +1072,6 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
-     * @param  array  $values
      * @return $this
      */
     public function select($columns = ['*']): static;
@@ -1120,8 +1079,6 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
-     * @param  array  $values
      * @return $this
      */
     public function selectRaw($expression, $bindings = []): static;
@@ -1129,8 +1086,6 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
-     * @param  array  $values
      * @return $this
      */
     public function addSelect($column): static;
@@ -1138,8 +1093,6 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
-     * @param  array  $values
      * @return $this
      */
     public function distinct(): static;
@@ -1147,8 +1100,6 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
-     * @param  array  $values
      * @return $this
      */
     public function from($table): static;
@@ -1156,8 +1107,6 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
-     * @param  array  $values
      * @return $this
      */
     public function join($table, $first, $operator = null, $second = null, $type = 'inner', $where = false): static;
@@ -1165,8 +1114,6 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
-     * @param  array  $values
      * @return $this
      */
     public function leftJoin($table, $first, $operator = null, $second = null): static;
@@ -1174,8 +1121,6 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
-     * @param  array  $values
      * @return $this
      */
     public function rightJoin($table, $first, $operator = null, $second = null): static;
@@ -1183,8 +1128,6 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
-     * @param  array  $values
      * @return $this
      */
     public function crossJoin($table, $first = null, $operator = null, $second = null): static;
@@ -1192,8 +1135,6 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
-     * @param  array  $values
      * @return $this
      */
     public function union($query, $all = false): static;
@@ -1201,8 +1142,6 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
-     * @param  array  $values
      * @return $this
      */
     public function unionAll($query): static;
@@ -1210,8 +1149,6 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
-     * @param  array  $values
      * @return $this
      */
     public function when($value, $callback, $default = null): static;
@@ -1219,8 +1156,6 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
-     * @param  array  $values
      * @return $this
      */
     public function unless($value, $callback, $default = null): static;
@@ -1228,8 +1163,6 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
-     * @param  array  $values
      * @return $this
      */
     public function tap($callback): static;
@@ -1237,8 +1170,6 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
-     * @param  array  $values
      * @return \Illuminate\Database\Eloquent\Model
      */
     public function macro($name, $macro);
@@ -1246,8 +1177,6 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
-     * @param  array  $values
      * @return \Illuminate\Database\Eloquent\Model
      */
     public function mixin($mixin, $replace = true);
@@ -1255,8 +1184,6 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
-     * @param  array  $values
      * @return \Illuminate\Database\Eloquent\Model
      */
     public function hasMacro($name);
@@ -1264,8 +1191,6 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
-     * @param  array  $values
      * @return \Illuminate\Database\Eloquent\Model
      */
     public function getMacro($name);
@@ -1273,8 +1198,6 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @param  array  $attributes
-     * @param  array  $values
      * @return \Illuminate\Database\Eloquent\Model
      */
     public function __call($method, $parameters);

@@ -6,6 +6,7 @@ namespace App\Livewire\Concerns\DataTable;
 
 use App\Services\DataTable\Builders\Action;
 use App\Services\DataTable\Builders\BulkAction;
+use Closure;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -70,14 +71,14 @@ trait HasDatatableLivewireActions
             $data = $action->toArray();
 
             // Resolve route if it's a closure
-            if ($action->getRoute() instanceof \Closure) {
+            if ($action->getRoute() instanceof Closure) {
                 $data['route'] = ($action->getRoute())($row);
             } else {
                 $data['route'] = $action->getRoute();
             }
 
             // Resolve modal props if it's a closure
-            if ($action->getModalProps() instanceof \Closure) {
+            if ($action->getModalProps() instanceof Closure) {
                 $data['modalProps'] = ($action->getModalProps())($row);
             } else {
                 $data['modalProps'] = $action->getModalProps();
@@ -130,7 +131,7 @@ trait HasDatatableLivewireActions
 
         return array_merge(
             ['required' => true],
-            $action->resolveConfirmation($model)
+            $action->resolveConfirmation($model),
         );
     }
 
@@ -151,7 +152,7 @@ trait HasDatatableLivewireActions
 
         return array_merge(
             ['required' => true],
-            $action->resolveConfirmation($models)
+            $action->resolveConfirmation($models),
         );
     }
 
@@ -181,7 +182,7 @@ trait HasDatatableLivewireActions
         // Handle route
         if ($action->getRoute() !== null) {
             $route = $action->getRoute();
-            $this->redirect($route instanceof \Closure ? $route($model) : $route);
+            $this->redirect($route instanceof Closure ? $route($model) : $route);
 
             return;
         }
@@ -199,20 +200,20 @@ trait HasDatatableLivewireActions
      * Dispatches global event to the action-modal Livewire component.
      * Props are passed directly - for models, define the action with UUID:
      * ->bladeModal('view', fn (User $user) => ['userUuid' => $user->uuid])
-     * 
+     *
      * NOTE: Avoid using 'component' as parameter name in dispatch - it's reserved by Livewire.
      */
     protected function openModalForAction(Action $action, Model $model): void
     {
         $modalProps = $action->getModalProps();
-        $resolvedProps = $modalProps instanceof \Closure ? $modalProps($model) : $modalProps;
+        $resolvedProps = $modalProps instanceof Closure ? $modalProps($model) : $modalProps;
 
         $this->dispatch('open-datatable-modal',
             viewPath: $action->getModal(),
             viewType: $action->getModalType(),
             viewProps: $resolvedProps,
             viewTitle: null,
-            datatableId: $this->getId()
+            datatableId: $this->getId(),
         );
     }
 

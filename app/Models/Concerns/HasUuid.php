@@ -4,6 +4,7 @@ namespace App\Models\Concerns;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 /**
  * Trait for models that require automatic UUID generation.
@@ -50,7 +51,7 @@ trait HasUuid
         } while ($exists && $attempt < $maxAttempts);
 
         if ($exists) {
-            throw new \RuntimeException('Unable to generate unique UUID after '.$maxAttempts.' attempts.');
+            throw new RuntimeException('Unable to generate unique UUID after ' . $maxAttempts . ' attempts.');
         }
 
         return $uuid;

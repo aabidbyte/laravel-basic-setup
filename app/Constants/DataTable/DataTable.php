@@ -21,7 +21,7 @@ class DataTable
      */
     public static function getUserPreferenceKey(string $entityKey): string
     {
-        return self::USER_PREF_KEY_PREFIX.'.'.$entityKey;
+        return self::USER_PREF_KEY_PREFIX . '.' . $entityKey;
     }
 
     /**
@@ -29,7 +29,7 @@ class DataTable
      */
     public static function getSessionKey(string $entityKey): string
     {
-        return self::SESSION_KEY.'.'.$entityKey;
+        return self::SESSION_KEY . '.' . $entityKey;
     }
 
     /**

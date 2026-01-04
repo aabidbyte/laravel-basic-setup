@@ -25,7 +25,7 @@ class LevelSpecificLogChannelFactory
         $filteredHandler = new FilterHandler(
             $rotatingHandler,
             $level,
-            $level
+            $level,
         );
 
         $logger->pushHandler($filteredHandler);

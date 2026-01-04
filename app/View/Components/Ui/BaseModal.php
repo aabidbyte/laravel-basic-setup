@@ -70,7 +70,7 @@ class BaseModal extends Component
         public ?string $onClose = null,
         public bool $persistent = false,
         public int $backdropOpacity = 60,
-        public string $backdropBlur = 'none',
+        public string $backdropBlur = 'md',
         public string $backdropClass = '',
     ) {
         $this->openState = $this->sanitizeAlpineIdentifier($this->openState, 'modalIsOpen');
@@ -81,8 +81,8 @@ class BaseModal extends Component
         $this->backdropBlur = $this->sanitizeBackdropBlur($this->backdropBlur);
 
         $this->modalId = $this->id ?? ($modalId ?? uniqid('modal-', true));
-        $this->titleId = $titleId ?? ($this->modalId.'-title');
-        $this->descriptionId = $descriptionId ?? ($this->modalId.'-description');
+        $this->titleId = $titleId ?? ($this->modalId . '-title');
+        $this->descriptionId = $descriptionId ?? ($this->modalId . '-description');
 
         $this->closeAction = $this->buildCloseAction();
         $this->containerBaseClasses = $this->buildContainerBaseClasses();
@@ -105,10 +105,10 @@ class BaseModal extends Component
             return '';
         }
 
-        $closeAction = $this->openState.' = false';
+        $closeAction = $this->openState . ' = false';
 
         if ($this->onClose) {
-            return $closeAction.', '.$this->onClose;
+            return $closeAction . ', ' . $this->onClose;
         }
 
         return $closeAction;
@@ -134,7 +134,7 @@ class BaseModal extends Component
             : trim(sprintf(
                 'bg-base-300/%d %s',
                 $this->backdropOpacity,
-                $this->backdropBlur === 'none' ? '' : $this->backdropBlur
+                $this->backdropBlur === 'none' ? '' : $this->backdropBlur,
             ));
 
         return trim(implode(' ', [...$base, $placementClasses, $backdropClasses]));
@@ -164,7 +164,7 @@ class BaseModal extends Component
             default => 'justify-center',
         };
 
-        return $items.' '.$justify;
+        return $items . ' ' . $justify;
     }
 
     private function buildDialogClasses(): string
@@ -216,11 +216,11 @@ class BaseModal extends Component
         [$durationClass, $delayClass] = $this->buildDurationAndDelayClasses($this->transitionDuration, $this->transitionDelay);
 
         $transitionEnter = trim(match ($this->transition) {
-            'fade-in' => 'transition ease-out '.$durationClass,
-            default => 'transition ease-out '.$durationClass.' '.$delayClass,
+            'fade-in' => 'transition ease-out ' . $durationClass,
+            default => 'transition ease-out ' . $durationClass . ' ' . $delayClass,
         });
 
-        $transitionLeave = 'transition ease-in '.$durationClass;
+        $transitionLeave = 'transition ease-in ' . $durationClass;
 
         $transitionEnterStart = match ($this->transition) {
             'fade-in' => 'opacity-0',
@@ -243,10 +243,10 @@ class BaseModal extends Component
         };
 
         return new ComponentAttributeBag([
-            'x-transition:enter' => trim($transitionEnter.' motion-reduce:transition-opacity'),
+            'x-transition:enter' => trim($transitionEnter . ' motion-reduce:transition-opacity'),
             'x-transition:enter-start' => $transitionEnterStart,
             'x-transition:enter-end' => $transitionEnterEnd,
-            'x-transition:leave' => trim($transitionLeave.' motion-reduce:transition-opacity'),
+            'x-transition:leave' => trim($transitionLeave . ' motion-reduce:transition-opacity'),
             'x-transition:leave-start' => 'opacity-100 scale-100',
             'x-transition:leave-end' => 'opacity-0 scale-95',
         ]);
@@ -290,15 +290,15 @@ class BaseModal extends Component
 
         if (! $this->useParentState) {
             $xDataValue = Js::from($this->open || $this->autoOpen);
-            $defaults['x-data'] = '{ '.$this->openState.': '.$xDataValue.' }';
+            $defaults['x-data'] = '{ ' . $this->openState . ': ' . $xDataValue . ' }';
         }
 
         $xInitParts = [];
         if ($this->autoOpen) {
-            $xInitParts[] = '$nextTick(() => { '.$this->openState.' = true; })';
+            $xInitParts[] = '$nextTick(() => { ' . $this->openState . ' = true; })';
         }
         if ($this->onOpen) {
-            $xInitParts[] = '$watch(\''.$this->openState.'\', (value) => { if (value) { '.$this->onOpen.' } })';
+            $xInitParts[] = '$watch(\'' . $this->openState . '\', (value) => { if (value) { ' . $this->onOpen . ' } })';
         }
         if (! empty($xInitParts)) {
             $defaults['x-init'] = implode('; ', $xInitParts);

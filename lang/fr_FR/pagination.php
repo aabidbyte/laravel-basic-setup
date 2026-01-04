@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Pagination Language Lines
@@ -24,5 +23,4 @@ return [
     'pagination_navigation' => 'Navigation de pagination',
     'go_to_page' => 'Aller à la page :page',
     'go_to_page_label' => 'Aller à la page',
-
 ];

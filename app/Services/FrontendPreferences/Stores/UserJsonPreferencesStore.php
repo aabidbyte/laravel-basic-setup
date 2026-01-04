@@ -10,7 +10,7 @@ use App\Services\FrontendPreferences\Contracts\PreferencesStore;
 class UserJsonPreferencesStore implements PreferencesStore
 {
     public function __construct(
-        private readonly User $user
+        private readonly User $user,
     ) {}
 
     /**

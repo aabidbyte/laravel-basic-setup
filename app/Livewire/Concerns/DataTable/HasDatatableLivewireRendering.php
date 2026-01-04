@@ -125,7 +125,7 @@ trait HasDatatableLivewireRendering
             if (str_starts_with($part, '<') && str_ends_with($part, '>')) {
                 $result .= $part;
             } else {
-                $result .= preg_replace('/('.$quotedSearch.')/i', '<mark class="bg-warning/30 rounded">$1</mark>', $part);
+                $result .= preg_replace('/(' . $quotedSearch . ')/i', '<mark class="bg-warning/30 rounded">$1</mark>', $part);
             }
         }
 

@@ -5,6 +5,7 @@ namespace Database\Seeders\Development;
 use App\Constants\Auth\Roles;
 use App\Models\Team;
 use App\Models\User;
+use Exception;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -28,17 +29,17 @@ class SampleUserSeeder extends Seeder
         $team2 = Team::where('name', 'Team 2')->first();
 
         if (! $defaultTeam) {
-            throw new \Exception('Default team must be created before users. Run EssentialTeamSeeder first.');
+            throw new Exception('Default team must be created before users. Run EssentialTeamSeeder first.');
         }
 
         if (! $team1 || ! $team2) {
-            throw new \Exception('Sample teams must be created before users. Run SampleTeamSeeder first.');
+            throw new Exception('Sample teams must be created before users. Run SampleTeamSeeder first.');
         }
 
         // Get first team (lowest ID) for superAdmin users
         $firstTeam = Team::orderBy('id')->first();
         if (! $firstTeam) {
-            throw new \Exception('No teams found. Run team seeders first.');
+            throw new Exception('No teams found. Run team seeders first.');
         }
 
         // Create superAdmin users from .env (optional, must be created first)
@@ -87,7 +88,7 @@ class SampleUserSeeder extends Seeder
             return;
         }
 
-        $this->command->info('🔐 Creating '.count($emails).' superAdmin user(s) from .env...');
+        $this->command->info('🔐 Creating ' . count($emails) . ' superAdmin user(s) from .env...');
 
         foreach ($emails as $email) {
             $superAdmin = User::firstOrCreate(
@@ -97,7 +98,7 @@ class SampleUserSeeder extends Seeder
                     'password' => Hash::make('password'),
                     'email_verified_at' => now(),
                     'team_id' => $team->id,
-                ]
+                ],
             );
 
             // Always update team_id (in case user already exists)
@@ -131,11 +132,11 @@ class SampleUserSeeder extends Seeder
             ['email' => $email],
             [
                 'name' => $name,
-                'username' => 'admin'.str($team->name)->slug().$index,
+                'username' => 'admin' . str($team->name)->slug() . $index,
                 'password' => Hash::make('password'),
                 'email_verified_at' => now(),
                 'team_id' => $team->id,
-            ]
+            ],
         );
 
         // Always update team_id (in case user already exists)
@@ -166,7 +167,7 @@ class SampleUserSeeder extends Seeder
         // Get all available teams
         $teams = Team::all();
         if ($teams->isEmpty()) {
-            throw new \Exception('No teams found. Run team seeders first.');
+            throw new Exception('No teams found. Run team seeders first.');
         }
 
         $teamCount = $teams->count();

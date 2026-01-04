@@ -34,7 +34,8 @@
     @endif
     <select
         {{ $attributes->merge(['class' => 'select select-bordered w-full' . ($hasError ? ' select-error' : '')])->except(['label', 'error', 'options', 'selected', 'placeholder', 'prependEmpty']) }}
-        id="{{ $selectId }}">
+        id="{{ $selectId }}"
+    >
         {!! render_select_options($options, $selected) !!}
     </select>
     @if ($error || ($errors->has($attributes->get('name')) ?? false))

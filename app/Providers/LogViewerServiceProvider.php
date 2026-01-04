@@ -44,7 +44,7 @@ class LogViewerServiceProvider extends ServiceProvider
 
             return in_array(optional($user)->email, [
                 //
-            ]);
+            ], true);
         });
     }
 }

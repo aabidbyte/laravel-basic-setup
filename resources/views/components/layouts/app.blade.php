@@ -1,5 +1,9 @@
 <!DOCTYPE html>
-<html lang="{{ $htmlLangAttribute }}" dir="{{ $htmlDirAttribute }}" data-theme="{{ $currentTheme }}">
+<html
+    lang="{{ $htmlLangAttribute }}"
+    dir="{{ $htmlDirAttribute }}"
+    data-theme="{{ $currentTheme }}"
+>
 
 <head>
     @include('partials.head')

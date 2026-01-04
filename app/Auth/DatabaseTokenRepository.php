@@ -6,6 +6,7 @@ use App\Models\PasswordResetToken;
 use Illuminate\Auth\Passwords\DatabaseTokenRepository as BaseDatabaseTokenRepository;
 use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
+use SensitiveParameter;
 
 /**
  * Custom database token repository that uses the PasswordResetToken model
@@ -25,7 +26,7 @@ class DatabaseTokenRepository extends BaseDatabaseTokenRepository
     /**
      * Determine if a token record exists and is valid.
      */
-    public function exists(CanResetPasswordContract $user, #[\SensitiveParameter] $token): bool
+    public function exists(CanResetPasswordContract $user, #[SensitiveParameter] $token): bool
     {
         $identifier = $user->getEmailForPasswordReset();
         $record = PasswordResetToken::where('identifier', $identifier)->first();
@@ -65,7 +66,7 @@ class DatabaseTokenRepository extends BaseDatabaseTokenRepository
                 'identifier' => $identifier,
                 'token' => $this->hasher->make($token),
                 'created_at' => now(),
-            ]
+            ],
         );
 
         return $token;

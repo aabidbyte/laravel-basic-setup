@@ -2,7 +2,10 @@
 
 <div class="flex items-start gap-2">
     <div class="flex-shrink-0 mt-0.5">
-        <x-ui.icon name="{{ $iconName }}" class="{{ $iconClass }}"></x-ui.icon>
+        <x-ui.icon
+            name="{{ $iconName }}"
+            class="{{ $iconClass }}"
+        ></x-ui.icon>
     </div>
     <div class="flex-1 min-w-0">
         <div class="truncate">{{ $title }}</div>
@@ -14,6 +17,9 @@
         </div>
     </div>
     @if (!$isRead)
-        <x-ui.badge variant="primary" size="xs"></x-ui.badge>
+        <x-ui.badge
+            variant="primary"
+            size="xs"
+        ></x-ui.badge>
     @endif
 </div>

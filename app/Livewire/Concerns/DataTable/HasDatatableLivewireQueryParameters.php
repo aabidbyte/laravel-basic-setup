@@ -30,6 +30,7 @@ trait HasDatatableLivewireQueryParameters
             $this->applyChanges();
         }
     }
+
     /**
      * Search term
      */
@@ -50,6 +51,7 @@ trait HasDatatableLivewireQueryParameters
         if ($this->queryStringAlias) {
             return "{$this->queryStringAlias}_{$key}";
         }
+
         return $key;
     }
 
@@ -132,7 +134,7 @@ trait HasDatatableLivewireQueryParameters
             $filters = $queryParams[$filtersParam];
         } else {
             // Fallback: check for filters[key] format in flat array
-            $filtersPrefix = $filtersParam.'[';
+            $filtersPrefix = $filtersParam . '[';
             foreach ($queryParams as $key => $value) {
                 if (str_starts_with($key, $filtersPrefix) && str_ends_with($key, ']')) {
                     // Extract filter key from filters[key] format
@@ -166,9 +168,9 @@ trait HasDatatableLivewireQueryParameters
         if (preg_match('#/livewire-[^/]+/update#', $currentUrl)) {
             if ($referer) {
                 $parsedReferer = parse_url($referer);
-                $url = ($parsedReferer['scheme'] ?? 'http').'://'
-                    .($parsedReferer['host'] ?? '')
-                    .($parsedReferer['path'] ?? '/');
+                $url = ($parsedReferer['scheme'] ?? 'http') . '://'
+                    . ($parsedReferer['host'] ?? '')
+                    . ($parsedReferer['path'] ?? '/');
             } else {
                 $url = $currentUrl;
             }
@@ -197,7 +199,7 @@ trait HasDatatableLivewireQueryParameters
         $filtersParam = $this->getQueryParamName(DataTableConstants::QUERY_PARAM_FILTERS);
         foreach ($this->filters as $key => $value) {
             if ($value !== null && $value !== '') {
-                $queryParams[$filtersParam."[{$key}]"] = $value;
+                $queryParams[$filtersParam . "[{$key}]"] = $value;
             }
         }
 
@@ -206,9 +208,9 @@ trait HasDatatableLivewireQueryParameters
             $queryParams[$this->getQueryParamName(DataTableConstants::QUERY_PARAM_PAGE)] = $currentPage;
         }
 
-        $queryString = ! empty($queryParams) ? '?'.http_build_query($queryParams) : '';
+        $queryString = ! empty($queryParams) ? '?' . http_build_query($queryParams) : '';
 
-        return $url.$queryString;
+        return $url . $queryString;
     }
 
     /**

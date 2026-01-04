@@ -5,14 +5,20 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\Base\BaseUserModel;
 use App\Models\Concerns\HasDataTable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use RuntimeException;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends BaseUserModel
 {
-    use HasDataTable, HasRoles, TwoFactorAuthenticatable;
+    use HasDataTable;
+    use HasRoles;
+    use TwoFactorAuthenticatable;
 
     /**
      * The attributes that are mass assignable.
@@ -25,8 +31,10 @@ class User extends BaseUserModel
         'email',
         'password',
         'team_id',
+        'created_by_user_id',
         'is_active',
         'last_login_at',
+        'frontend_preferences',
     ];
 
     /**
@@ -72,7 +80,7 @@ class User extends BaseUserModel
     /**
      * Get the teams that the user belongs to.
      */
-    public function teams(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function teams(): BelongsToMany
     {
         return $this->belongsToMany(Team::class, 'team_user')
             ->withTimestamps();
@@ -81,9 +89,77 @@ class User extends BaseUserModel
     /**
      * Get the user's primary team.
      */
-    public function team(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class);
+    }
+
+    /**
+     * Get the user who created this user.
+     */
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by_user_id');
+    }
+
+    /**
+     * Get the users created by this user.
+     */
+    public function createdUsers(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(User::class, 'created_by_user_id');
+    }
+
+    /**
+     * Get the mail settings for this user.
+     */
+    public function mailSettings(): MorphMany
+    {
+        return $this->morphMany(MailSettings::class, 'settable');
+    }
+
+    /**
+     * Check if user has custom mail settings configured.
+     */
+    public function hasMailSettings(): bool
+    {
+        return $this->mailSettings()->active()->exists();
+    }
+
+    /**
+     * Get the user's timezone from frontend_preferences.
+     */
+    public function getTimezoneAttribute(): ?string
+    {
+        return $this->frontend_preferences['timezone'] ?? null;
+    }
+
+    /**
+     * Set the user's timezone in frontend_preferences.
+     */
+    public function setTimezoneAttribute(?string $value): void
+    {
+        $preferences = $this->frontend_preferences ?? [];
+        $preferences['timezone'] = $value;
+        $this->frontend_preferences = $preferences;
+    }
+
+    /**
+     * Get the user's locale from frontend_preferences.
+     */
+    public function getLocaleAttribute(): ?string
+    {
+        return $this->frontend_preferences['locale'] ?? null;
+    }
+
+    /**
+     * Set the user's locale in frontend_preferences.
+     */
+    public function setLocaleAttribute(?string $value): void
+    {
+        $preferences = $this->frontend_preferences ?? [];
+        $preferences['locale'] = $value;
+        $this->frontend_preferences = $preferences;
     }
 
     /**
@@ -138,7 +214,7 @@ class User extends BaseUserModel
     public function getEmailForPasswordReset(): string
     {
         if (empty($this->email)) {
-            throw new \RuntimeException('User must have an email address to reset password via email notification.');
+            throw new RuntimeException('User must have an email address to reset password via email notification.');
         }
 
         return $this->email;

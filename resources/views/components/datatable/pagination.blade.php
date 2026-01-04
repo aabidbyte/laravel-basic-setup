@@ -7,11 +7,20 @@
 
 @if ($paginator->hasPages())
 
-    <nav role="navigation" aria-label="{{ __('pagination.pagination_navigation') }}" class="flex items-center gap-2">
+    <nav
+        role="navigation"
+        aria-label="{{ __('pagination.pagination_navigation') }}"
+        class="flex items-center gap-2"
+    >
         <div class="flex items-center gap-2">
             <x-ui.tooltip text="{{ __('ui.table.per_page') }}">
-                <x-ui.select wire:model.live="perPage" :label="null" class="select-sm" :options="['10' => '10', '15' => '15', '25' => '25', '50' => '50', '100' => '100']"
-                    :prependEmpty="false">
+                <x-ui.select
+                    wire:model.live="perPage"
+                    :label="null"
+                    class="select-sm"
+                    :options="['10' => '10', '15' => '15', '25' => '25', '50' => '50', '100' => '100']"
+                    :prependEmpty="false"
+                >
                 </x-ui.select>
             </x-ui.tooltip>
         </div>
@@ -23,13 +32,21 @@
                     {!! __('pagination.previous') !!}
                 </span>
             @else
-                <x-ui.button wire:click="previousPage('{{ $paginator->getPageName() }}')" style="ghost" size="sm">
+                <x-ui.button
+                    wire:click="previousPage('{{ $paginator->getPageName() }}')"
+                    style="ghost"
+                    size="sm"
+                >
                     {!! __('pagination.previous') !!}
                 </x-ui.button>
             @endif
 
             @if ($paginator->hasMorePages())
-                <x-ui.button wire:click="nextPage('{{ $paginator->getPageName() }}')" style="ghost" size="sm">
+                <x-ui.button
+                    wire:click="nextPage('{{ $paginator->getPageName() }}')"
+                    style="ghost"
+                    size="sm"
+                >
                     {!! __('pagination.next') !!}
                 </x-ui.button>
             @else
@@ -56,15 +73,32 @@
 
                     {{-- Previous Page Link --}}
                     @if ($paginator->onFirstPage())
-                        <span aria-disabled="true" aria-label="{{ __('pagination.previous') }}">
-                            <span class="btn btn-sm btn-ghost btn-disabled rounded-r-none" aria-hidden="true">
-                                <x-ui.icon name="chevron-left" size="sm" />
+                        <span
+                            aria-disabled="true"
+                            aria-label="{{ __('pagination.previous') }}"
+                        >
+                            <span
+                                class="btn btn-sm btn-ghost btn-disabled rounded-r-none"
+                                aria-hidden="true"
+                            >
+                                <x-ui.icon
+                                    name="chevron-left"
+                                    size="sm"
+                                />
                             </span>
                         </span>
                     @else
-                        <x-ui.button wire:click="previousPage('{{ $paginator->getPageName() }}')" style="ghost"
-                            size="sm" class="rounded-r-none" aria-label="{{ __('pagination.previous') }}">
-                            <x-ui.icon name="chevron-left" size="sm" />
+                        <x-ui.button
+                            wire:click="previousPage('{{ $paginator->getPageName() }}')"
+                            style="ghost"
+                            size="sm"
+                            class="rounded-r-none"
+                            aria-label="{{ __('pagination.previous') }}"
+                        >
+                            <x-ui.icon
+                                name="chevron-left"
+                                size="sm"
+                            />
                         </x-ui.button>
                     @endif
 
@@ -87,8 +121,11 @@
                                 @else
                                     <x-ui.button
                                         wire:click="gotoPage({{ $page }}, '{{ $paginator->getPageName() }}')"
-                                        style="ghost" size="sm" class="rounded-none"
-                                        aria-label="{{ __('pagination.go_to_page', ['page' => $page]) }}">
+                                        style="ghost"
+                                        size="sm"
+                                        class="rounded-none"
+                                        aria-label="{{ __('pagination.go_to_page', ['page' => $page]) }}"
+                                    >
                                         {{ $page }}
                                     </x-ui.button>
                                 @endif
@@ -98,35 +135,68 @@
 
                     {{-- Next Page Link --}}
                     @if ($paginator->hasMorePages())
-                        <x-ui.button wire:click="nextPage('{{ $paginator->getPageName() }}')" style="ghost"
-                            size="sm" class="rounded-l-none" aria-label="{{ __('pagination.next') }}">
-                            <x-ui.icon name="chevron-right" size="sm" />
+                        <x-ui.button
+                            wire:click="nextPage('{{ $paginator->getPageName() }}')"
+                            style="ghost"
+                            size="sm"
+                            class="rounded-l-none"
+                            aria-label="{{ __('pagination.next') }}"
+                        >
+                            <x-ui.icon
+                                name="chevron-right"
+                                size="sm"
+                            />
                         </x-ui.button>
                     @else
-                        <span aria-disabled="true" aria-label="{{ __('pagination.next') }}">
-                            <span class="btn btn-sm btn-ghost btn-disabled rounded-l-none" aria-hidden="true">
-                                <x-ui.icon name="chevron-right" size="sm" />
+                        <span
+                            aria-disabled="true"
+                            aria-label="{{ __('pagination.next') }}"
+                        >
+                            <span
+                                class="btn btn-sm btn-ghost btn-disabled rounded-l-none"
+                                aria-hidden="true"
+                            >
+                                <x-ui.icon
+                                    name="chevron-right"
+                                    size="sm"
+                                />
                             </span>
                         </span>
                     @endif
                 </span>
                 @if ($paginator->lastPage() > 20)
                     <div class="flex items-center gap-2">
-                        <input type="number" wire:model.blur="gotoPageInput"
+                        <input
+                            type="number"
+                            wire:model.blur="gotoPageInput"
                             wire:keydown.enter="gotoPage(gotoPageInput)"
-                            class="input input-sm input-bordered w-16 text-center" min="1"
-                            max="{{ $paginator->lastPage() }}" placeholder="1"
-                            aria-label="{{ __('pagination.go_to_page_label') }}" />
+                            class="input input-sm input-bordered w-16 text-center"
+                            min="1"
+                            max="{{ $paginator->lastPage() }}"
+                            placeholder="1"
+                            aria-label="{{ __('pagination.go_to_page_label') }}"
+                        />
                         <x-ui.tooltip text="{{ __('pagination.go_to_page_label') }}">
-                            <x-ui.button wire:click="gotoPage(gotoPageInput)" style="ghost" size="sm"
-                                aria-label="{{ __('pagination.go_to_page', ['page' => 'X']) }}">
-                                <x-ui.icon name="chevron-double-right" size="sm" />
+                            <x-ui.button
+                                wire:click="gotoPage(gotoPageInput)"
+                                style="ghost"
+                                size="sm"
+                                aria-label="{{ __('pagination.go_to_page', ['page' => 'X']) }}"
+                            >
+                                <x-ui.icon
+                                    name="chevron-double-right"
+                                    size="sm"
+                                />
                             </x-ui.button>
                         </x-ui.tooltip>
                     </div>
                 @endif
                 {{-- Share Button --}}
-                <x-ui.share-button :url="$shareUrl" size="sm" style="ghost"></x-ui.share-button>
+                <x-ui.share-button
+                    :url="$shareUrl"
+                    size="sm"
+                    style="ghost"
+                ></x-ui.share-button>
             </div>
         </div>
     </nav>

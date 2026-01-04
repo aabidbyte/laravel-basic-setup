@@ -67,6 +67,9 @@
     $finalClass = $classes . ' whitespace-nowrap';
 @endphp
 
-<span class="{!! $finalClass !!}" {{ $attributes->except(['style', 'variant', 'color', 'size', 'class', 'text']) }}>
+<span
+    class="{!! $finalClass !!}"
+    {{ $attributes->except(['style', 'variant', 'color', 'size', 'class', 'text']) }}
+>
     {{ $text ?? $slot }}
 </span>
