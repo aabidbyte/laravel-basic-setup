@@ -13,7 +13,10 @@
                     color="primary"
                     class="gap-2"
                 >
-                    <x-ui.icon name="plus" size="sm"></x-ui.icon>
+                    <x-ui.icon
+                        name="plus"
+                        size="sm"
+                    ></x-ui.icon>
                     {{ __('ui.users.actions.create') }}
                 </x-ui.button>
             @endcan

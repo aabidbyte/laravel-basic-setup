@@ -98,13 +98,13 @@ new class extends BasePageComponent {
                 <div class="alert alert-info mt-4">
                     <span class="text-sm">
                         {{ __('ui.settings.profile.email_unverified') }}
-                        <button
+                        <x-ui.button
                             type="button"
                             wire:click.prevent="resendVerificationNotification"
-                            class="link link-primary"
-                        >
-                            {{ __('ui.settings.profile.resend_verification') }}
-                        </button>
+                            style="link"
+                            color="primary"
+                            size="sm"
+                        >{{ __('ui.settings.profile.resend_verification') }}</x-ui.button>
                     </span>
                 </div>
             @endif

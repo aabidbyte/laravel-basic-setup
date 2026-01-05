@@ -18,7 +18,8 @@ app/Services/
 
 -   Fluent builder for individual menu items
 -   Supports: title, URL/route, icons, badges, nested items, conditional visibility, external links, HTML attributes
--   Methods: `make()`, `title()`, `url()`, `route()`, `icon()`, `show()`, `external()`, `items()`, `badge()`, `active()`, `attributes()`
+-   Methods: `make()`, `title()`, `url()`, `route()`, `icon()`, `show()`, `external()`, `items()`, `badge()`, `active()`, `activeRoutes()`, `attributes()`
+-   **`activeRoutes()`**: Set route patterns for active state detection with wildcards (e.g., `users.*` to match all user CRUD routes)
 -   **Note**: Form and button support have been removed. Use static forms in Blade templates for actions like logout.
 -   **Attributes**: Returns attributes as an array (not a string) for use with `$attributes->merge()` in Blade components
 -   **Icons**: Accepts icon component names (e.g., 'home', 'user', 'settings') which are rendered using the `<x-ui.icon>` Blade component. Icons support multiple icon packs (heroicons, fontawesome, bootstrap, feather) and include security validation.
@@ -59,6 +60,7 @@ public function getTopMenus(): array
                 NavigationItem::make()
                     ->title('Users')
                     ->route('users.index')
+                    ->activeRoutes('users.*')  // Keeps Users menu active for all users.* routes
                     ->badge(fn() => User::count())
                     ->items(
                         NavigationItem::make()
@@ -132,6 +134,7 @@ The sidebar uses a unified component structure:
 -   ✅ Dynamic badges (closures for real-time counts)
 -   ✅ External link handling
 -   ✅ Active state detection (automatic route matching)
+-   ✅ **Active route patterns**: Use `activeRoutes()` for wildcard matching (e.g., `users.*` for CRUD routes)
 -   ✅ Icon support (icon component names via `<x-ui.icon>`, supports multiple icon packs with security validation)
 -   ✅ HTML attributes support (returns array for `$attributes->merge()`)
 -   ✅ Fully testable (24 unit tests)

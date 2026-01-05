@@ -89,14 +89,15 @@
 
                 <div class="mt-5 text-center text-sm text-base-content/70">
                     <span>{{ __('ui.auth.two_factor.switch_to_recovery') }}</span>
-                    <button
+                    <x-ui.button
                         type="button"
                         @click="toggleInput()"
-                        class="link link-primary"
-                    >
-                        <span x-show="!showRecoveryInput">{{ __('ui.auth.two_factor.use_recovery_code') }}</span>
-                        <span x-show="showRecoveryInput">{{ __('ui.auth.two_factor.use_auth_code') }}</span>
-                    </button>
+                        style="link"
+                        color="primary"
+                        size="sm"
+                    ><span x-show="!showRecoveryInput">{{ __('ui.auth.two_factor.use_recovery_code') }}</span><span
+                            x-show="showRecoveryInput"
+                        >{{ __('ui.auth.two_factor.use_auth_code') }}</span></x-ui.button>
                 </div>
             </form>
         </div>

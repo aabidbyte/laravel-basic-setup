@@ -243,7 +243,39 @@ it('tests something', function () {
     -   **Structure**: Must extend `App\Livewire\DataTableComponent` and provide configuration via methods.
     -   **Usage**: Use `<livewire:tables.user-table />` syntax.
 
-### Routing
+### Component-First UI Development
+
+> **CRITICAL RULE**: All user-facing UI MUST use centralized `x-ui.*` components. Raw HTML tags for common UI patterns are NOT allowed.
+
+#### Mandatory Component Usage
+
+| Pattern | Use Component | NOT Raw HTML |
+|---------|---------------|--------------|
+| Titles (h1-h6) | `<x-ui.title level="2">` | `<h2 class="...">` |
+| Avatars | `<x-ui.avatar :user="$user">` | `<div class="avatar">...</div>` |
+| Links (styled) | `<x-ui.link href="...">` | `<a class="link link-primary">` |
+| Buttons | `<x-ui.button>` | `<button class="btn btn-primary">` |
+| Badges | `<x-ui.badge>` | `<span class="badge">` |
+| Loading | `<x-ui.loading>` | `<span class="loading">` |
+| Icons | `<x-ui.icon>` | `<svg>...</svg>` or raw Heroicons |
+| Inputs | `<x-ui.input>` | `<input class="input">` |
+| Forms | `<x-ui.form>` | `<form class="...">` |
+
+#### Allowed Raw HTML
+
+These structural elements are acceptable without components:
+-   **Containers**: `<div>`, `<section>`, `<article>`, `<main>`, `<header>`, `<footer>`, `<nav>`, `<aside>`
+-   **Layout utilities**: Tailwind's `flex`, `grid`, `gap-*`, `p-*`, `m-*`, `w-*`, `max-w-*`
+-   **Semantic lists**: `<ul>`, `<ol>`, `<li>`, `<dl>`, `<dt>`, `<dd>`
+-   **Card structures**: DaisyUI's `.card`, `.card-body` classes (no component yet)
+-   **Alerts**: DaisyUI's `.alert` classes (no component yet)
+
+#### Rationale
+
+1.  **Consistency**: Components ensure uniform styling across the app
+2.  **Maintainability**: Style changes propagate automatically
+3.  **Documentation**: Usage is self-documenting via component names
+4.  **Refactoring**: Easy to update all instances at once
 
 -   **Web Routes**: Use `Route::livewire()` for interactive pages (preferred method in Livewire 4)
 -   **Static Views**: Use `Route::view()` for simple pages

@@ -30,6 +30,7 @@ class SideBarMenuService
                     ->title(__('ui.navigation.users'))
                     ->route('users.index')
                     ->icon('users')
+                    ->activeRoutes('users.*')
                     ->show(Auth::user()?->can(Permissions::VIEW_USERS) ?? false),
             )
             ->toArray();

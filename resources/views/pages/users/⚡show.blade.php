@@ -105,71 +105,74 @@ new class extends BasePageComponent {
                 {{-- Header with actions --}}
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                     <div class="flex items-center gap-4">
-                        <div class="avatar placeholder">
-                            <div class="bg-primary text-primary-content rounded-full w-16">
-                                <span class="text-xl">{{ $user->initials() }}</span>
-                            </div>
-                        </div>
+                        <x-ui.avatar
+                            :user="$user"
+                            size="lg"
+                        ></x-ui.avatar>
                         <div>
-                            <h2 class="card-title text-2xl">{{ $user->name }}</h2>
+                            <x-ui.title level="2">{{ $user->name }}</x-ui.title>
                             <p class="text-base-content/60">{{ $user->email ?? __('ui.users.no_email') }}</p>
                         </div>
                     </div>
                     <div class="flex flex-wrap gap-2">
                         @can(Permissions::EDIT_USERS)
-                            <a
+                            <x-ui.button
                                 href="{{ route('users.edit', $user->uuid) }}"
+                                color="primary"
+                                size="sm"
                                 wire:navigate
-                                class="btn btn-primary btn-sm"
                             >
                                 <x-ui.icon
                                     name="pencil"
                                     size="sm"
                                 ></x-ui.icon>
                                 {{ __('ui.actions.edit') }}
-                            </a>
+                            </x-ui.button>
                         @endcan
 
                         @if (!$user->is_active)
                             @can(Permissions::GENERATE_ACTIVATION_LINKS)
-                                <button
+                                <x-ui.button
                                     wire:click="generateActivationLink"
-                                    class="btn btn-secondary btn-sm"
+                                    color="secondary"
+                                    size="sm"
                                 >
                                     <x-ui.icon
                                         name="link"
                                         size="sm"
                                     ></x-ui.icon>
                                     {{ __('ui.users.show.generate_link') }}
-                                </button>
+                                </x-ui.button>
                             @endcan
 
                             @can(Permissions::EDIT_USERS)
-                                <button
+                                <x-ui.button
                                     wire:click="activateUser"
                                     wire:confirm="{{ __('ui.users.show.confirm_activate') }}"
-                                    class="btn btn-success btn-sm"
+                                    color="success"
+                                    size="sm"
                                 >
                                     <x-ui.icon
                                         name="check"
                                         size="sm"
                                     ></x-ui.icon>
                                     {{ __('ui.actions.activate') }}
-                                </button>
+                                </x-ui.button>
                             @endcan
                         @else
                             @can(Permissions::EDIT_USERS)
-                                <button
+                                <x-ui.button
                                     wire:click="deactivateUser"
                                     wire:confirm="{{ __('ui.users.show.confirm_deactivate') }}"
-                                    class="btn btn-warning btn-sm"
+                                    color="warning"
+                                    size="sm"
                                 >
                                     <x-ui.icon
                                         name="x-mark"
                                         size="sm"
                                     ></x-ui.icon>
                                     {{ __('ui.actions.deactivate') }}
-                                </button>
+                                </x-ui.button>
                             @endcan
                         @endif
                     </div>
@@ -189,9 +192,10 @@ new class extends BasePageComponent {
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {{-- Personal Information --}}
                     <div class="space-y-4">
-                        <h3 class="text-lg font-semibold text-base-content/70 border-b pb-2">
-                            {{ __('ui.users.personal_info') }}
-                        </h3>
+                        <x-ui.title
+                            level="3"
+                            class="text-base-content/70 border-b pb-2"
+                        >{{ __('ui.users.personal_info') }}</x-ui.title>
 
                         <div class="space-y-3">
                             <div>
@@ -213,9 +217,10 @@ new class extends BasePageComponent {
 
                     {{-- Account Information --}}
                     <div class="space-y-4">
-                        <h3 class="text-lg font-semibold text-base-content/70 border-b pb-2">
-                            {{ __('ui.users.account_info') }}
-                        </h3>
+                        <x-ui.title
+                            level="3"
+                            class="text-base-content/70 border-b pb-2"
+                        >{{ __('ui.users.account_info') }}</x-ui.title>
 
                         <div class="space-y-3">
                             <div>
@@ -256,9 +261,10 @@ new class extends BasePageComponent {
 
                 {{-- Preferences --}}
                 <div class="mt-8 space-y-4">
-                    <h3 class="text-lg font-semibold text-base-content/70 border-b pb-2">
-                        {{ __('ui.users.preferences') }}
-                    </h3>
+                    <x-ui.title
+                        level="3"
+                        class="text-base-content/70 border-b pb-2"
+                    >{{ __('ui.users.preferences') }}</x-ui.title>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
@@ -281,9 +287,10 @@ new class extends BasePageComponent {
                 {{-- Roles --}}
                 @if ($user->roles->count() > 0)
                     <div class="mt-8 space-y-4">
-                        <h3 class="text-lg font-semibold text-base-content/70 border-b pb-2">
-                            {{ __('ui.users.roles') }}
-                        </h3>
+                        <x-ui.title
+                            level="3"
+                            class="text-base-content/70 border-b pb-2"
+                        >{{ __('ui.users.roles') }}</x-ui.title>
                         <div class="flex flex-wrap gap-2">
                             @foreach ($user->roles as $role)
                                 <x-ui.badge
@@ -298,9 +305,10 @@ new class extends BasePageComponent {
                 {{-- Teams --}}
                 @if ($user->teams->count() > 0)
                     <div class="mt-8 space-y-4">
-                        <h3 class="text-lg font-semibold text-base-content/70 border-b pb-2">
-                            {{ __('ui.users.teams') }}
-                        </h3>
+                        <x-ui.title
+                            level="3"
+                            class="text-base-content/70 border-b pb-2"
+                        >{{ __('ui.users.teams') }}</x-ui.title>
                         <div class="flex flex-wrap gap-2">
                             @foreach ($user->teams as $team)
                                 <x-ui.badge
@@ -314,17 +322,17 @@ new class extends BasePageComponent {
 
                 {{-- Back button --}}
                 <div class="mt-8 pt-4 border-t">
-                    <a
+                    <x-ui.button
                         href="{{ route('users.index') }}"
+                        style="ghost"
                         wire:navigate
-                        class="btn btn-ghost"
                     >
                         <x-ui.icon
                             name="arrow-left"
                             size="sm"
                         ></x-ui.icon>
                         {{ __('ui.actions.back_to_list') }}
-                    </a>
+                    </x-ui.button>
                 </div>
             </div>
         </div>
@@ -343,15 +351,16 @@ new class extends BasePageComponent {
                         x-data="{ copied: false }"
                         class="flex items-center gap-2"
                     >
-                        <input
+                        <x-ui.input
                             type="text"
-                            :value="'{{ $activationLink }}'"
+                            x-bind:value="'{{ $activationLink }}'"
                             readonly
-                            class="input input-bordered w-full font-mono text-sm"
-                        >
-                        <button
+                            class="font-mono text-sm"
+                        ></x-ui.input>
+                        <x-ui.button
                             @click="navigator.clipboard.writeText('{{ $activationLink }}'); copied = true; setTimeout(() => copied = false, 2000)"
-                            class="btn btn-primary btn-sm"
+                            color="primary"
+                            size="sm"
                         >
                             <x-ui.icon
                                 x-show="!copied"
@@ -364,9 +373,8 @@ new class extends BasePageComponent {
                                 name="check"
                                 size="sm"
                             ></x-ui.icon>
-                            <span
-                                x-text="copied ? '{{ __('ui.actions.copied') }}' : '{{ __('ui.actions.copy') }}'"></span>
-                        </button>
+                            <span x-text="copied ? '{{ __('ui.actions.copied') }}' : '{{ __('ui.actions.copy') }}'"></span>
+                        </x-ui.button>
                     </div>
 
                     <div class="alert alert-warning">
@@ -379,12 +387,10 @@ new class extends BasePageComponent {
                 </div>
 
                 <x-slot:actions>
-                    <button
+                    <x-ui.button
                         wire:click="closeActivationModal"
-                        class="btn btn-ghost"
-                    >
-                        {{ __('ui.actions.close') }}
-                    </button>
+                        style="ghost"
+                    >{{ __('ui.actions.close') }}</x-ui.button>
                 </x-slot:actions>
             </x-ui.base-modal>
         @endif

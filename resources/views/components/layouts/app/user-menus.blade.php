@@ -5,10 +5,11 @@
     contentClass="sidebar-user-menus"
 >
     <x-slot:trigger>
-        <div class="btn btn-ghost btn-circle avatar">
-            <div class="w-10 rounded-full bg-base-300 text-base-content flex items-center justify-center">
-                <span class="text-xs uppercase">{{ Auth::user()->initials() }}</span>
-            </div>
+        <div class="btn btn-ghost btn-circle">
+            <x-ui.avatar
+                :user="Auth::user()"
+                size="sm"
+            ></x-ui.avatar>
         </div>
     </x-slot:trigger>
 

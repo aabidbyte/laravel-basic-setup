@@ -33,13 +33,10 @@
                 >
                     @if (Route::has('password.request'))
                         <x-slot:label-append>
-                            <a
+                            <x-ui.link
                                 href="{{ route('password.request') }}"
-                                wire:navigate
-                                class="label-text-alt link"
-                            >
-                                {{ __('ui.auth.login.forgot_password') }}
-                            </a>
+                                class="label-text-alt"
+                            >{{ __('ui.auth.login.forgot_password') }}</x-ui.link>
                         </x-slot:label-append>
                     @endif
                 </x-ui.password>
@@ -82,13 +79,7 @@
         @if (Route::has('register'))
             <div class="text-center text-sm text-base-content/70">
                 <span>{{ __('ui.auth.login.no_account') }}</span>
-                <a
-                    href="{{ route('register') }}"
-                    wire:navigate
-                    class="link link-primary"
-                >
-                    {{ __('ui.auth.login.sign_up') }}
-                </a>
+                <x-ui.link href="{{ route('register') }}">{{ __('ui.auth.login.sign_up') }}</x-ui.link>
             </div>
         @endif
     </div>

@@ -29,7 +29,7 @@
     {{-- Top Row: Back Button + Actions --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-            @if($backHref)
+            @if ($backHref)
                 <x-ui.button
                     href="{{ $backHref }}"
                     wire:navigate
@@ -37,13 +37,16 @@
                     size="sm"
                     class="gap-2"
                 >
-                    <x-ui.icon name="arrow-left" size="sm"></x-ui.icon>
+                    <x-ui.icon
+                        name="arrow-left"
+                        size="sm"
+                    ></x-ui.icon>
                     <span class="hidden sm:inline">{{ $backLabel }}</span>
                 </x-ui.button>
             @endif
         </div>
 
-        @if(isset($topActions))
+        @if (isset($topActions))
             <div class="flex flex-wrap items-center gap-2">
                 {{ $topActions }}
             </div>
@@ -56,10 +59,11 @@
     </div>
 
     {{-- Bottom Row: Back Button + Actions (Optional) --}}
-    @if($showBottomBar || isset($bottomActions) || isset($bottomLeft))
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 pt-4 border-t border-base-300">
+    @if ($showBottomBar || isset($bottomActions) || isset($bottomLeft))
+        <div
+            class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 pt-4 border-t border-base-300">
             <div>
-                @if(isset($bottomLeft))
+                @if (isset($bottomLeft))
                     {{ $bottomLeft }}
                 @elseif($backHref)
                     <x-ui.button
@@ -69,13 +73,16 @@
                         size="sm"
                         class="gap-2"
                     >
-                        <x-ui.icon name="arrow-left" size="sm"></x-ui.icon>
+                        <x-ui.icon
+                            name="arrow-left"
+                            size="sm"
+                        ></x-ui.icon>
                         <span class="hidden sm:inline">{{ $backLabel }}</span>
                     </x-ui.button>
                 @endif
             </div>
 
-            @if(isset($bottomActions))
+            @if (isset($bottomActions))
                 <div class="flex flex-wrap items-center gap-2">
                     {{ $bottomActions }}
                 </div>

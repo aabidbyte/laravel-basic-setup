@@ -86,7 +86,7 @@ $circleClass = $circle ? 'btn-circle' : '';
 
 @endphp
 
-@if($href ?? false)
+@if ($href ?? false)
     <a
         href="{{ $href }}"
         {{ $attributes->merge(['class' => trim("btn {$btnClasses}")])->except(['variant', 'style', 'color', 'size', 'type', 'text', 'href']) }}

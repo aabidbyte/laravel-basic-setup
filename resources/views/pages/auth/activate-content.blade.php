@@ -10,7 +10,7 @@
                             class="w-8 h-8 text-success"
                         ></x-ui.icon>
                     </div>
-                    <h2 class="card-title justify-center text-2xl">{{ __('ui.auth.activation.success_title') }}</h2>
+                    <x-ui.title level="2" class="justify-center">{{ __('ui.auth.activation.success_title') }}</x-ui.title>
                     <p class="text-base-content/70">{{ __('ui.auth.activation.success_message') }}</p>
                     <x-ui.button
                         href="{{ route('login') }}"
@@ -23,7 +23,7 @@
             @elseif ($tokenValid && $user)
                 {{-- Activation form --}}
                 <div class="text-center mb-6">
-                    <h2 class="card-title justify-center text-2xl">{{ __('ui.auth.activation.title') }}</h2>
+                    <x-ui.title level="2" class="justify-center">{{ __('ui.auth.activation.title') }}</x-ui.title>
                     <p class="text-base-content/70 mt-2">
                         {{ __('ui.auth.activation.welcome', ['name' => $user->name]) }}
                     </p>
@@ -76,7 +76,7 @@
                             class="w-8 h-8 text-error"
                         ></x-ui.icon>
                     </div>
-                    <h2 class="card-title justify-center text-2xl">{{ __('ui.auth.activation.invalid_title') }}</h2>
+                    <x-ui.title level="2" class="justify-center">{{ __('ui.auth.activation.invalid_title') }}</x-ui.title>
                     <p class="text-base-content/70">{{ __('ui.auth.activation.invalid_message') }}</p>
                     <x-ui.button
                         href="{{ route('login') }}"

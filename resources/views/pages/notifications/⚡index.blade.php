@@ -170,15 +170,10 @@ new class extends BasePageComponent {
             class="flex flex-col gap-4"
         >
             @if ($this->notifications->isEmpty())
-                <div class="card bg-base-200">
-                    <div class="card-body text-center">
-                        <x-ui.icon
-                            name="bell"
-                            class="h-12 w-12 mx-auto opacity-50 mb-4"
-                        ></x-ui.icon>
-                        <p class="text-base-content opacity-60">{{ __('ui.notifications.empty') }}</p>
-                    </div>
-                </div>
+                <x-ui.empty-state
+                    icon="bell"
+                    :description="__('ui.notifications.empty')"
+                ></x-ui.empty-state>
             @else
                 @foreach ($this->notifications as $notification)
                     <div
@@ -201,9 +196,10 @@ new class extends BasePageComponent {
                                     wire:click="markAsRead('{{ $notification['id'] }}')"
                                     class="flex-1 cursor-pointer"
                                 >
-                                    <h3 class="font-semibold text-lg {{ $notification['isRead'] ? '' : 'font-bold' }}">
-                                        {{ $notification['title'] }}
-                                    </h3>
+                                    <x-ui.title
+                                        level="4"
+                                        class="{{ $notification['isRead'] ? '' : 'font-bold' }}"
+                                    >{{ $notification['title'] }}</x-ui.title>
                                     @if ($notification['subtitle'])
                                         <p class="text-sm opacity-80 mt-1">{{ $notification['subtitle'] }}</p>
                                     @endif
@@ -211,13 +207,11 @@ new class extends BasePageComponent {
                                         <div class="text-sm mt-2">{!! $notification['content'] !!}</div>
                                     @endif
                                     @if ($notification['link'])
-                                        <a
+                                        <x-ui.link
                                             href="{{ $notification['link'] }}"
-                                            wire:navigate
-                                            class="text-sm text-primary underline mt-2 inline-block"
-                                        >
-                                            {{ __('ui.notifications.view') }}
-                                        </a>
+                                            class="text-sm mt-2 inline-block"
+                                            underline
+                                        >{{ __('ui.notifications.view') }}</x-ui.link>
                                     @endif
                                     <p class="text-xs opacity-60 mt-2">
                                         {{ $notification['createdAt']->diffForHumans() }}</p>

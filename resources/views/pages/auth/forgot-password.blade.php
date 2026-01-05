@@ -33,13 +33,7 @@
 
         <div class="text-center text-sm text-base-content/70">
             <span>{{ __('ui.auth.forgot_password.back_to_login') }}</span>
-            <a
-                href="{{ route('login') }}"
-                wire:navigate
-                class="link link-primary"
-            >
-                {{ __('ui.auth.forgot_password.log_in') }}
-            </a>
+            <x-ui.link href="{{ route('login') }}">{{ __('ui.auth.forgot_password.log_in') }}</x-ui.link>
         </div>
     </div>
 </x-layouts.auth>

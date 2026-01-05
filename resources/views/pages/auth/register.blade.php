@@ -60,13 +60,7 @@
 
         <div class="text-center text-sm text-base-content/70">
             <span>{{ __('ui.auth.register.has_account') }}</span>
-            <a
-                href="{{ route('login') }}"
-                wire:navigate
-                class="link link-primary"
-            >
-                {{ __('ui.auth.register.log_in') }}
-            </a>
+            <x-ui.link href="{{ route('login') }}">{{ __('ui.auth.register.log_in') }}</x-ui.link>
         </div>
     </div>
 </x-layouts.auth>

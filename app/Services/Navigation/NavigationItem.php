@@ -29,6 +29,14 @@ class NavigationItem implements Arrayable
 
     protected bool|Closure|null $active = null;
 
+    /**
+     * Route patterns for active state detection (supports wildcards).
+     * When set, the item is active if current route matches any of these patterns.
+     *
+     * @var array<string>
+     */
+    protected array $activeRoutes = [];
+
     protected array $attributes = [];
 
     /**
@@ -179,6 +187,25 @@ class NavigationItem implements Arrayable
     public function active(bool|Closure $active): static
     {
         $this->active = $active;
+
+        return $this;
+    }
+
+    /**
+     * Set route patterns for active state detection (supports wildcards).
+     * The item will be active if the current route matches any of these patterns.
+     *
+     * Example:
+     * ```php
+     * ->activeRoutes(['users.*'])           // Matches users.index, users.create, users.edit, etc.
+     * ->activeRoutes(['users.index', 'users.create', 'users.edit'])
+     * ```
+     *
+     * @param  array<string>|string  $routes  Route pattern(s) to match (supports Laravel's route wildcard syntax)
+     */
+    public function activeRoutes(array|string $routes): static
+    {
+        $this->activeRoutes = is_array($routes) ? $routes : [$routes];
 
         return $this;
     }
@@ -347,6 +374,12 @@ class NavigationItem implements Arrayable
             return false;
         }
 
+        // If activeRoutes is set, use those patterns for matching
+        if (! empty($this->activeRoutes)) {
+            return request()->routeIs($this->activeRoutes);
+        }
+
+        // Fallback to exact route matching
         if ($this->route) {
             return request()->routeIs($this->route);
         }

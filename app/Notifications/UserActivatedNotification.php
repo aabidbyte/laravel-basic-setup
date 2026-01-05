@@ -62,9 +62,9 @@ class UserActivatedNotification extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'title' =>(__('messages.notifications.user_activated.title', ['name' => $this->activatedUser->name])),
-            'subtitle' =>(__('messages.notifications.user_activated.subtitle')),
-            'content' =>(__('messages.notifications.user_activated.content', [
+            'title' => (__('messages.notifications.user_activated.title', ['name' => $this->activatedUser->name])),
+            'subtitle' => (__('messages.notifications.user_activated.subtitle')),
+            'content' => (__('messages.notifications.user_activated.content', [
                 'name' => $this->activatedUser->name,
                 'email' => $this->activatedUser->email ?? __('messages.common.no_email'),
             ])),
