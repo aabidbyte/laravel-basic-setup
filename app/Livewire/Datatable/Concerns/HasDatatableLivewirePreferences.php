@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Concerns\DataTable;
+namespace App\Livewire\DataTable\Concerns;
 
 use App\Constants\DataTable\DataTable as DataTableConstants;
 use App\Services\FrontendPreferences\FrontendPreferencesService;

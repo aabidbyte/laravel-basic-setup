@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\BasePageComponent;
+use App\Livewire\Bases\BasePageComponent;
 use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Password;
@@ -10,6 +10,10 @@ new class extends BasePageComponent {
     public ?string $pageTitle = 'ui.pages.settings.password';
 
     public ?string $pageSubtitle = 'ui.settings.password.description';
+
+    protected string $placeholderType = 'form';
+
+    protected int $placeholderRows = 3;
 
     public string $current_password = '';
 

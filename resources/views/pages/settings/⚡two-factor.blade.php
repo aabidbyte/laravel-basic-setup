@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\BasePageComponent;
+use App\Livewire\Bases\BasePageComponent;
 use App\Services\Notifications\NotificationBuilder;
 use Laravel\Fortify\Actions\ConfirmTwoFactorAuthentication;
 use Laravel\Fortify\Actions\DisableTwoFactorAuthentication;
@@ -17,6 +17,10 @@ new class extends BasePageComponent {
     public ?string $pageTitle = 'ui.pages.settings.two_factor';
 
     public ?string $pageSubtitle = 'ui.settings.two_factor.description';
+
+    protected string $placeholderType = 'form';
+
+    protected int $placeholderRows = 2;
 
     #[Locked]
     public bool $twoFactorEnabled;

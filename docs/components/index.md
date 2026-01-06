@@ -27,6 +27,7 @@ This documentation is organized into sections for easy navigation. Each section 
 - [Link](link.md)
 - [Loading](loading.md)
 - [Empty State](empty-state.md)
+- [Placeholder](placeholder.md)
 - [Alpine.js Integration & Best Practices](alpinejs-integration-and-best-practices.md)
 - [Component Usage Guidelines](component-usage-guidelines.md)
 - [Table System](table-system.md)

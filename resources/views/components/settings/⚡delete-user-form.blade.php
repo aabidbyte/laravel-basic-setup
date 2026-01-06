@@ -1,11 +1,11 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Livewire\Bases\LivewireBaseComponent;
 use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Support\Facades\Auth;
-use Livewire\Component;
 
-new class extends Component {
+new class extends LivewireBaseComponent {
     public string $password = '';
 
     /**

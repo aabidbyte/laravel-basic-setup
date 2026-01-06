@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Livewire\BasePageComponent;
+use App\Livewire\Bases\BasePageComponent;
 use Illuminate\Support\Facades\View;
 
 test('BasePageComponent shares page title via View::share', function () {

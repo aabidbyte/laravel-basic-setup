@@ -6,7 +6,7 @@ namespace App\Livewire\Tables;
 
 use App\Constants\Auth\Permissions;
 use App\Constants\DataTable\DataTableUi;
-use App\Livewire\Datatable;
+use App\Livewire\DataTable\Datatable;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\DataTable\Builders\Action;
@@ -117,11 +117,6 @@ class UserTable extends Datatable
                 ->variant('ghost');
         }
 
-        $actions[] = Action::make('view_modal', __('ui.actions.view_details'))
-            ->icon('eye')
-            ->bladeModal('components.users.view-modal', fn (User $user) => ['userUuid' => $user->uuid])
-            ->variant('ghost');
-
         // Only add edit action if route exists
         if (Route::has('users.edit')) {
             $actions[] = Action::make('edit', __('ui.actions.edit'))
@@ -171,11 +166,15 @@ class UserTable extends Datatable
     }
 
     /**
-     * Handle row click - open user details modal
+     * Handle row click
      */
     public function rowClick(string $uuid): ?Action
     {
-        return Action::make('view_modal', __('ui.actions.view_details'))
-            ->bladeModal('components.users.view-modal', fn (User $user) => ['userUuid' => $user->uuid]);
+        if (Route::has('users.show')) {
+            return Action::make()
+                ->route('users.show', $uuid);
+        }
+
+        return null;
     }
 }

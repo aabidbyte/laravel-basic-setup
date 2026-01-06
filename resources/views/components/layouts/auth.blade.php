@@ -6,7 +6,7 @@
 >
 
 <head>
-    @include('partials.auth.head')
+    @include('partials.head', ['layout' => 'auth'])
 
     @livewireStyles
 </head>

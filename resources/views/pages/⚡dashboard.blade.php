@@ -1,9 +1,11 @@
 <?php
 
-use App\Livewire\BasePageComponent;
+use App\Livewire\Bases\BasePageComponent;
 
 new class extends BasePageComponent {
     public ?string $pageTitle = 'ui.pages.dashboard';
+
+    protected string $placeholderType = 'card';
 }; ?>
 
 <div class="flex h-full w-full flex-1 flex-col gap-4">

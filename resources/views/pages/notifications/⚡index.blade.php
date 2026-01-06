@@ -1,12 +1,16 @@
 <?php
 
 use App\Events\Notifications\DatabaseNotificationChanged;
-use App\Livewire\BasePageComponent;
+use App\Livewire\Bases\BasePageComponent;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 
 new class extends BasePageComponent {
     public ?string $pageTitle = 'ui.pages.notifications';
+
+    protected string $placeholderType = 'list';
+
+    protected int $placeholderRows = 5;
 
     public int $visibleCount = 10;
 

@@ -1,3 +1,7 @@
+@props([
+    'layout' => 'app',
+])
+
 <meta charset="utf-8" />
 <meta
     name="viewport"
@@ -37,4 +41,12 @@
 <script type="text/javascript">
     window.notificationRealtimeConfig = @js($notificationRealtimeConfig);
 </script>
-@vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/notification-center.js'])
+
+@php
+    $cssFile = config("assets.css.{$layout}", config('assets.css.app'));
+    $sharedJs = config('assets.js.shared', []);
+    $layoutJs = config("assets.js.{$layout}", []);
+    $allAssets = array_merge([$cssFile], $sharedJs, $layoutJs);
+@endphp
+
+@vite($allAssets)

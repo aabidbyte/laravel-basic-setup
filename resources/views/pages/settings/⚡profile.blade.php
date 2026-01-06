@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\BasePageComponent;
+use App\Livewire\Bases\BasePageComponent;
 use App\Models\User;
 use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Support\Facades\Auth;
@@ -10,6 +10,10 @@ new class extends BasePageComponent {
     public ?string $pageTitle = 'ui.pages.settings.profile';
 
     public ?string $pageSubtitle = 'ui.settings.profile.description';
+
+    protected string $placeholderType = 'form';
+
+    protected int $placeholderRows = 3;
 
     public string $name = '';
 

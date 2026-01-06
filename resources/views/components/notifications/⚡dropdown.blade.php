@@ -1,9 +1,9 @@
 <?php
 
+use App\Livewire\Bases\LivewireBaseComponent;
 use Illuminate\Support\Facades\Auth;
-use Livewire\Component;
 
-new class extends Component {
+new class extends LivewireBaseComponent {
     public function refreshNotifications(): void
     {
         $this->dispatch('$refresh');

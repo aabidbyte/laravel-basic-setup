@@ -4,10 +4,10 @@ use App\Services\Notifications\NotificationBuilder;
 use Laravel\Fortify\Actions\ConfirmTwoFactorAuthentication;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Validate;
-use Livewire\Component;
+use App\Livewire\Bases\LivewireBaseComponent;
 use Illuminate\Support\Facades\Auth;
 
-new class extends Component {
+new class extends LivewireBaseComponent {
     #[Locked]
     public string $qrCodeSvg = '';
 

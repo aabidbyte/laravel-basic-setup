@@ -797,25 +797,28 @@ protected function baseQuery(): Builder
 
 Row clicks can be handled by returning an `Action` from the `rowClick()` method. This enables modal dialogs, route navigation, or custom execution using the same fluent API as row actions.
 
-**Open Modal on Row Click:**
+> [!TIP]
+> For row-click actions, `Action::make()` can be called without arguments since the action key and label aren't displayed.
+
+**Navigate to Route on Row Click (Recommended):**
 
 ```php
 use App\Services\DataTable\Builders\Action;
 
 public function rowClick(string $uuid): ?Action
 {
-    return Action::make('view', __('View Details'))
-        ->bladeModal('components.users.view-modal', fn (User $user) => ['user' => $user]);
+    return Action::make()
+        ->route('users.show', $uuid);
 }
 ```
 
-**Navigate to Route on Row Click:**
+**Open Modal on Row Click:**
 
 ```php
 public function rowClick(string $uuid): ?Action
 {
-    return Action::make('view', __('View'))
-        ->route(fn (User $user) => route('users.show', $user));
+    return Action::make()
+        ->bladeModal('components.users.view-modal', fn (User $user) => ['userUuid' => $user->uuid]);
 }
 ```
 
@@ -824,9 +827,25 @@ public function rowClick(string $uuid): ?Action
 ```php
 public function rowClick(string $uuid): ?Action
 {
-    return Action::make('toggle', __('Toggle'))
+    return Action::make()
         ->execute(fn (User $user) => $user->update(['is_active' => !$user->is_active]));
 }
+```
+
+**Route Method Signatures:**
+
+The `route()` method supports multiple signatures for flexibility:
+
+```php
+// Direct URL
+->route('/users/123')
+
+// Route name with parameters (Laravel style)
+->route('users.show', $uuid)
+->route('users.show', ['user' => $uuid])
+
+// Closure for dynamic routes (receives model)
+->route(fn (User $user) => route('users.show', $user))
 ```
 
 **How it Works:**
@@ -1013,14 +1032,21 @@ if (\Illuminate\Support\Facades\Route::has('users.show')) {
 
 ### Alpine Component Not Working
 
-Ensure `resources/js/app.js` registers the component:
+The `dataTable` Alpine component is loaded via a separate entry point (`resources/js/datatable.js`) that is only included on the app layout.
 
-```javascript
-import { dataTable } from "./alpine-components/datatable.js";
+**File Locations:**
+- Component implementation: `resources/js/alpine/data/datatable.js`
+- Entry point: `resources/js/datatable.js`
+- Asset config: `resources/assets.json` (under `js.app`)
 
-document.addEventListener("alpine:init", () => {
-    window.Alpine.data("dataTable", dataTable);
-});
+Ensure `resources/assets.json` includes the datatable entry point in the `app` array:
+
+```json
+{
+    "js": {
+        "app": ["resources/js/datatable.js"]
+    }
+}
 ```
 
 ### Tests Failing

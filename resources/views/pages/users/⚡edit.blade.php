@@ -1,7 +1,7 @@
 <?php
 
 use App\Constants\Auth\Permissions;
-use App\Livewire\BasePageComponent;
+use App\Livewire\Bases\BasePageComponent;
 use App\Models\Role;
 use App\Models\Team;
 use App\Models\User;
@@ -15,6 +15,10 @@ new class extends BasePageComponent {
     public ?string $pageTitle = 'ui.pages.users.edit';
 
     public ?string $pageSubtitle = null;
+
+    protected string $placeholderType = 'form';
+
+    protected int $placeholderRows = 4;
 
     public ?User $editUser = null;
 
@@ -169,7 +173,10 @@ new class extends BasePageComponent {
     @if ($editUser)
         <div class="card bg-base-100 shadow-xl">
             <div class="card-body">
-                <x-ui.title level="2" class="mb-6">{{ __('ui.users.edit.title', ['name' => $editUser->name]) }}</x-ui.title>
+                <x-ui.title
+                    level="2"
+                    class="mb-6"
+                >{{ __('ui.users.edit.title', ['name' => $editUser->name]) }}</x-ui.title>
 
                 <x-ui.form
                     wire:submit="updateUser"
@@ -177,7 +184,10 @@ new class extends BasePageComponent {
                 >
                     {{-- Basic Information --}}
                     <div class="space-y-4">
-                        <x-ui.title level="3" class="text-base-content/70">{{ __('ui.users.edit.basic_info') }}</x-ui.title>
+                        <x-ui.title
+                            level="3"
+                            class="text-base-content/70"
+                        >{{ __('ui.users.edit.basic_info') }}</x-ui.title>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <x-ui.input
@@ -208,7 +218,10 @@ new class extends BasePageComponent {
                     {{-- Password (optional on edit) --}}
                     <div class="divider"></div>
                     <div class="space-y-4">
-                        <x-ui.title level="3" class="text-base-content/70">{{ __('ui.users.edit.password') }}</x-ui.title>
+                        <x-ui.title
+                            level="3"
+                            class="text-base-content/70"
+                        >{{ __('ui.users.edit.password') }}</x-ui.title>
                         <p class="text-sm text-base-content/60">{{ __('ui.users.edit.password_hint') }}</p>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -233,7 +246,10 @@ new class extends BasePageComponent {
                     {{-- Status --}}
                     <div class="divider"></div>
                     <div class="space-y-4">
-                        <x-ui.title level="3" class="text-base-content/70">{{ __('ui.users.edit.status') }}</x-ui.title>
+                        <x-ui.title
+                            level="3"
+                            class="text-base-content/70"
+                        >{{ __('ui.users.edit.status') }}</x-ui.title>
 
                         <div class="form-control">
                             <label class="label cursor-pointer justify-start gap-4">
@@ -250,7 +266,10 @@ new class extends BasePageComponent {
                     {{-- Preferences --}}
                     <div class="divider"></div>
                     <div class="space-y-4">
-                        <x-ui.title level="3" class="text-base-content/70">{{ __('ui.users.edit.preferences') }}</x-ui.title>
+                        <x-ui.title
+                            level="3"
+                            class="text-base-content/70"
+                        >{{ __('ui.users.edit.preferences') }}</x-ui.title>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="form-control w-full">
@@ -303,7 +322,10 @@ new class extends BasePageComponent {
                     {{-- Roles & Teams --}}
                     <div class="divider"></div>
                     <div class="space-y-4">
-                        <x-ui.title level="3" class="text-base-content/70">{{ __('ui.users.edit.roles_teams') }}</x-ui.title>
+                        <x-ui.title
+                            level="3"
+                            class="text-base-content/70"
+                        >{{ __('ui.users.edit.roles_teams') }}</x-ui.title>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {{-- Roles --}}

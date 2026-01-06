@@ -6,7 +6,7 @@
 >
 
 <head>
-    @include('partials.head')
+    @include('partials.head', ['layout' => 'app'])
 
     @livewireStyles
 </head>

@@ -3,6 +3,7 @@
 use App\Constants\Auth\Permissions;
 use App\Models\Permission;
 use App\Models\User;
+use Illuminate\Support\Facades\Route;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -14,24 +15,8 @@ beforeEach(function () {
     $this->admin->givePermissionTo($permission);
 });
 
-it('can open the details modal via row action', function () {
-    $user = User::factory()->create([
-        'name' => 'John Doe',
-        'email' => 'john@example.com',
-    ]);
-
-    $component = Livewire::actingAs($this->admin)
-        ->test('tables.user-table');
-
-    // Now dispatches to global modal component instead of setting local properties
-    $component->call('openActionModal', 'view_modal', $user->uuid)
-        ->assertDispatched('open-datatable-modal', function ($eventName, $params) use ($user) {
-            return $params['viewPath'] === 'components.users.view-modal'
-                && $params['viewType'] === 'blade'
-                && isset($params['viewProps']['userUuid'])
-                && $params['viewProps']['userUuid'] === $user->uuid;
-        });
-});
+// Note: UserTable's rowActions no longer includes a view_modal action.
+// If modal actions need testing, create a dedicated test table component.
 
 it('can close the details modal', function () {
     $component = Livewire::actingAs($this->admin)
@@ -100,7 +85,10 @@ it('refreshes rows after bulk deletion', function () {
     expect(User::whereIn('uuid', $uuids)->count())->toBe(0);
 });
 
-it('opens modal when row is clicked via handleRowClick', function () {
+it('redirects when row is clicked and route exists', function () {
+    // Register a temporary route for testing
+    Route::get('/users/{user}', fn () => 'User page')->name('users.show');
+
     $user = User::factory()->create([
         'name' => 'Row Click User',
         'email' => 'rowclick@example.com',
@@ -109,12 +97,26 @@ it('opens modal when row is clicked via handleRowClick', function () {
     $component = Livewire::actingAs($this->admin)
         ->test('tables.user-table');
 
-    // Now dispatches to global modal component instead of setting local properties
+    // rowClick should redirect to the user show page
     $component->call('handleRowClick', $user->uuid)
-        ->assertDispatched('open-datatable-modal', function ($eventName, $params) {
-            return $params['viewPath'] === 'components.users.view-modal'
-                && $params['viewType'] === 'blade';
-        });
+        ->assertRedirect(route('users.show', $user->uuid));
+});
+
+it('does nothing when row is clicked but route does not exist', function () {
+    // Clear routes to ensure users.show doesn't exist
+    Route::getRoutes()->refreshNameLookups();
+
+    $user = User::factory()->create([
+        'name' => 'Row Click User',
+        'email' => 'rowclick@example.com',
+    ]);
+
+    $component = Livewire::actingAs($this->admin)
+        ->test('tables.user-table');
+
+    // rowClick should not dispatch anything when route doesn't exist
+    $component->call('handleRowClick', $user->uuid)
+        ->assertNotDispatched('open-datatable-modal');
 });
 
 it('detects rows are clickable when rowClick is overridden', function () {
@@ -125,14 +127,18 @@ it('detects rows are clickable when rowClick is overridden', function () {
 });
 
 it('detects row click opens modal when action has modal', function () {
+    // Register a temporary route for testing - without this, rowClick returns null
+    Route::get('/users/{user}', fn () => 'User page')->name('users.show');
+
     // Create at least one user for the sample row check
     User::factory()->create();
 
     $component = Livewire::actingAs($this->admin)
         ->test('tables.user-table');
 
-    // UserTable's rowClick returns an action with bladeModal, so this should be true
-    expect($component->instance()->rowClickOpensModal())->toBeTrue();
+    // UserTable's rowClick now returns a route action, not a modal action
+    // So rowClickOpensModal should return false
+    expect($component->instance()->rowClickOpensModal())->toBeFalse();
 });
 
 it('returns false for rowClickOpensModal when no rows exist', function () {

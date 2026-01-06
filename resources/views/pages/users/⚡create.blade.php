@@ -1,7 +1,7 @@
 <?php
 
 use App\Constants\Auth\Permissions;
-use App\Livewire\BasePageComponent;
+use App\Livewire\Bases\BasePageComponent;
 use App\Models\Role;
 use App\Models\Team;
 use App\Models\User;
@@ -16,6 +16,10 @@ new class extends BasePageComponent {
     public ?string $pageTitle = 'ui.pages.users.create';
 
     public ?string $pageSubtitle = 'ui.users.create.description';
+
+    protected string $placeholderType = 'form';
+
+    protected int $placeholderRows = 4;
 
     // Form fields
     public string $name = '';
@@ -173,7 +177,10 @@ new class extends BasePageComponent {
 <section class="w-full max-w-4xl mx-auto">
     <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
-            <x-ui.title level="2" class="mb-6">{{ __('ui.users.create.title') }}</x-ui.title>
+            <x-ui.title
+                level="2"
+                class="mb-6"
+            >{{ __('ui.users.create.title') }}</x-ui.title>
 
             <x-ui.form
                 wire:submit="createUser"
@@ -181,7 +188,10 @@ new class extends BasePageComponent {
             >
                 {{-- Basic Information --}}
                 <div class="space-y-4">
-                    <x-ui.title level="3" class="text-base-content/70">{{ __('ui.users.create.basic_info') }}</x-ui.title>
+                    <x-ui.title
+                        level="3"
+                        class="text-base-content/70"
+                    >{{ __('ui.users.create.basic_info') }}</x-ui.title>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <x-ui.input
@@ -213,7 +223,10 @@ new class extends BasePageComponent {
                 {{-- Activation Options --}}
                 <div class="divider"></div>
                 <div class="space-y-4">
-                    <x-ui.title level="3" class="text-base-content/70">{{ __('ui.users.create.activation') }}</x-ui.title>
+                    <x-ui.title
+                        level="3"
+                        class="text-base-content/70"
+                    >{{ __('ui.users.create.activation') }}</x-ui.title>
 
                     <div class="form-control">
                         <label class="label cursor-pointer justify-start gap-4">
@@ -255,7 +268,10 @@ new class extends BasePageComponent {
                 {{-- Preferences --}}
                 <div class="divider"></div>
                 <div class="space-y-4">
-                    <x-ui.title level="3" class="text-base-content/70">{{ __('ui.users.create.preferences') }}</x-ui.title>
+                    <x-ui.title
+                        level="3"
+                        class="text-base-content/70"
+                    >{{ __('ui.users.create.preferences') }}</x-ui.title>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="form-control w-full">
@@ -308,7 +324,10 @@ new class extends BasePageComponent {
                 {{-- Roles & Teams --}}
                 <div class="divider"></div>
                 <div class="space-y-4">
-                    <x-ui.title level="3" class="text-base-content/70">{{ __('ui.users.create.roles_teams') }}</x-ui.title>
+                    <x-ui.title
+                        level="3"
+                        class="text-base-content/70"
+                    >{{ __('ui.users.create.roles_teams') }}</x-ui.title>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {{-- Roles --}}

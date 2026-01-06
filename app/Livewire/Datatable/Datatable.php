@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire;
+namespace App\Livewire\DataTable;
 
-use App\Livewire\Concerns\DataTable\HasDatatableLivewireActions;
-use App\Livewire\Concerns\DataTable\HasDatatableLivewireFilters;
-use App\Livewire\Concerns\DataTable\HasDatatableLivewirePagination;
-use App\Livewire\Concerns\DataTable\HasDatatableLivewirePreferences;
-use App\Livewire\Concerns\DataTable\HasDatatableLivewireQueryParameters;
-use App\Livewire\Concerns\DataTable\HasDatatableLivewireRendering;
-use App\Livewire\Concerns\DataTable\HasDatatableLivewireSelection;
-use App\Livewire\Concerns\DataTable\HasDatatableLivewireSorting;
+use App\Livewire\Bases\LivewireBaseComponent;
+use App\Livewire\DataTable\Concerns\HasDatatableLivewireActions;
+use App\Livewire\DataTable\Concerns\HasDatatableLivewireFilters;
+use App\Livewire\DataTable\Concerns\HasDatatableLivewirePagination;
+use App\Livewire\DataTable\Concerns\HasDatatableLivewirePreferences;
+use App\Livewire\DataTable\Concerns\HasDatatableLivewireQueryParameters;
+use App\Livewire\DataTable\Concerns\HasDatatableLivewireRendering;
+use App\Livewire\DataTable\Concerns\HasDatatableLivewireSelection;
+use App\Livewire\DataTable\Concerns\HasDatatableLivewireSorting;
 use App\Services\DataTable\Builders\Action;
 use App\Services\DataTable\DataTableQueryBuilder;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
-use Livewire\Component;
 use ReflectionMethod;
 
 /**
@@ -26,7 +26,7 @@ use ReflectionMethod;
  * Provides a shared, trait-based implementation for all datatables in the application.
  * Handles sorting, searching, filtering, pagination, and row actions.
  */
-abstract class Datatable extends Component
+abstract class Datatable extends LivewireBaseComponent
 {
     use HasDatatableLivewireActions;
     use HasDatatableLivewireFilters;
@@ -36,6 +36,16 @@ abstract class Datatable extends Component
     use HasDatatableLivewireRendering;
     use HasDatatableLivewireSelection;
     use HasDatatableLivewireSorting;
+
+    /**
+     * Placeholder type for lazy loading skeleton.
+     */
+    protected string $placeholderType = 'table';
+
+    /**
+     * Number of rows for the table skeleton placeholder.
+     */
+    protected int $placeholderRows = 5;
 
     /**
      * Optional alias for namespacing query string parameters.

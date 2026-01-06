@@ -3,10 +3,10 @@
 use App\Services\Notifications\NotificationBuilder;
 use Laravel\Fortify\Actions\GenerateNewRecoveryCodes;
 use Livewire\Attributes\Locked;
-use Livewire\Component;
+use App\Livewire\Bases\LivewireBaseComponent;
 use Illuminate\Support\Facades\Auth;
 
-new class extends Component {
+new class extends LivewireBaseComponent {
     #[Locked]
     public array $recoveryCodes = [];
 

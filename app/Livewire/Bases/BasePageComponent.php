@@ -1,11 +1,16 @@
 <?php
 
-namespace App\Livewire;
+namespace App\Livewire\Bases;
 
 use Illuminate\Support\Facades\View;
-use Livewire\Component;
 
-abstract class BasePageComponent extends Component
+/**
+ * Base component for full-page Livewire components.
+ *
+ * Extends LivewireBaseComponent with page-specific functionality
+ * like page title and subtitle handling.
+ */
+abstract class BasePageComponent extends LivewireBaseComponent
 {
     public ?string $pageTitle = null;
 

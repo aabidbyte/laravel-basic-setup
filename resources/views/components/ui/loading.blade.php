@@ -6,14 +6,14 @@
     - variant: spinner, dots, ring, ball, bars, infinity (default: spinner)
     - color: primary, secondary, accent, neutral, info, success, warning, error (default: primary)
     - centered: bool - wrap in flex container with centering (default: true)
-    - padding: tailwind padding class for centered container (default: py-12)
+    - padding: tailwind padding class for centered container (default: )
 --}}
 @props([
     'size' => 'lg',
     'variant' => 'spinner',
     'color' => 'primary',
     'centered' => true,
-    'padding' => 'py-12',
+    'padding' => '',
 ])
 
 @php

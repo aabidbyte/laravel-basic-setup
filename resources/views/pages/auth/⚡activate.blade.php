@@ -1,12 +1,10 @@
-<?php
-
+use App\Livewire\Bases\BasePageComponent;
 use App\Models\User;
 use App\Services\Notifications\NotificationBuilder;
 use App\Services\Users\ActivationService;
 use Illuminate\Validation\Rules\Password;
-use Livewire\Component;
 
-new class extends Component {
+new class extends BasePageComponent {
     public ?string $token = null;
     public ?User $user = null;
     public bool $tokenValid = false;

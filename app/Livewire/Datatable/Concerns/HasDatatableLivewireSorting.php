@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Concerns\DataTable;
+namespace App\Livewire\DataTable\Concerns;
 
 /**
  * Trait for handling DataTable sorting logic.

@@ -1,0 +1,16 @@
+{
+    "css": {
+        "app": "resources/css/app.css",
+        "auth": "resources/css/auth.css"
+    },
+    "js": {
+        "shared": [
+            "resources/js/app.js",
+            "resources/js/notification-center.js"
+        ],
+        "app": [
+            "resources/js/datatable.js"
+        ],
+        "auth": []
+    }
+}

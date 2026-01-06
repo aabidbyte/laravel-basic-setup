@@ -140,7 +140,29 @@ The project uses the following PSR-4 autoload mappings (defined in `composer.jso
     -   Directory structure must match namespace structure
     -   Example: `app/Models/User.php` → `namespace App\Models;`
 
-2.  **Test Support Classes**:
+2.  **Livewire Components**:
+
+    -   **MUST be organized by domain** - never place components directly in `app/Livewire/`
+    -   **Required structure**:
+        ```
+        app/Livewire/
+        ├── Bases/              # Base classes (LivewireBaseComponent, BasePageComponent)
+        ├── DataTable/          # DataTable system
+        │   ├── Datatable.php
+        │   └── Concerns/       # DataTable-specific concerns/traits
+        ├── Tables/             # Table implementations (UserTable, etc.)
+        └── [Domain]/           # Feature-specific components organized by domain
+        ```
+    -   **Namespaces must match directory structure**:
+        -   `App\Livewire\Bases\LivewireBaseComponent`
+        -   `App\Livewire\DataTable\Datatable`
+        -   `App\Livewire\DataTable\Concerns\HasDatatableLivewireActions`
+        -   `App\Livewire\Tables\UserTable`
+    -   **All Livewire components MUST extend `LivewireBaseComponent`** (provides placeholder functionality)
+    -   **Page components extend `BasePageComponent`** (extends LivewireBaseComponent with title/subtitle handling)
+    -   **Use domain-specific `Concerns/` subdirectory** for traits shared within that domain
+
+3.  **Test Support Classes**:
 
     -   **Test models, helpers, and support classes MUST be in `tests/Support/`**
     -   Use namespace `Tests\Support\{Category}` matching directory structure
@@ -148,7 +170,7 @@ The project uses the following PSR-4 autoload mappings (defined in `composer.jso
     -   **Never define classes directly in test files** - always create separate files in `tests/Support/`
     -   Test support classes are automatically autoloaded via the `Tests\` → `tests/` mapping
 
-3.  **Test Files**:
+4.  **Test Files**:
     -   Test files themselves should be in `tests/Feature/` or `tests/Unit/`
     -   Test files don't need namespaces (Pest handles this)
     -   Import test support classes using their full namespace: `use Tests\Support\Models\TestModel;`

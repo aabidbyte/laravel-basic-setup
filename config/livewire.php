@@ -253,7 +253,7 @@ return [
     |
     */
 
-    'csp_safe' => false,
+    'csp_safe' => true,
 
     /*
     |---------------------------------------------------------------------------
@@ -272,4 +272,12 @@ return [
         'max_calls' => 50,           // Maximum method calls per request
         'max_components' => 20,      // Maximum components per batch request
     ],
+    /*
+    |--------------------------------------------------------------------------
+    | Request Timeout
+    |--------------------------------------------------------------------------
+    | The number of milliseconds before a Livewire request times out.
+    | Default is 60000 (60 seconds). Set to null to disable timeout.
+    */
+    'request_timeout' => 60000, // 60 seconds (default)
 ];

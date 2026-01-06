@@ -1,19 +1,24 @@
 <?php
 
 use App\Constants\Auth\Permissions;
-use App\Livewire\BasePageComponent;
+use App\Livewire\Bases\BasePageComponent;
 use App\Models\User;
 use App\Services\Notifications\NotificationBuilder;
 use App\Services\Users\UserService;
-use Illuminate\Support\Facades\Auth;
 
 new class extends BasePageComponent {
     public ?string $pageTitle = 'ui.pages.users.show';
 
     public ?string $pageSubtitle = null;
 
+    protected string $placeholderType = 'card';
+
+    protected int $placeholderRows = 4;
+
     public ?User $user = null;
+
     public ?string $activationLink = null;
+
     public bool $showActivationModal = false;
 
     /**
@@ -373,7 +378,8 @@ new class extends BasePageComponent {
                                 name="check"
                                 size="sm"
                             ></x-ui.icon>
-                            <span x-text="copied ? '{{ __('ui.actions.copied') }}' : '{{ __('ui.actions.copy') }}'"></span>
+                            <span
+                                x-text="copied ? '{{ __('ui.actions.copied') }}' : '{{ __('ui.actions.copy') }}'"></span>
                         </x-ui.button>
                     </div>
 

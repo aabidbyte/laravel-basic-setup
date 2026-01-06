@@ -10,10 +10,10 @@
 
 declare(strict_types=1);
 
+use App\Livewire\Bases\LivewireBaseComponent;
 use Livewire\Attributes\On;
-use Livewire\Component;
 
-new class extends Component {
+new class extends LivewireBaseComponent {
     /**
      * Modal view/component path
      */

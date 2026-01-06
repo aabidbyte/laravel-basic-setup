@@ -39,6 +39,11 @@ class Action
     private string|Closure|null $route = null;
 
     /**
+     * Route parameters (when route is a route name)
+     */
+    private mixed $routeParameters = null;
+
+    /**
      * Execute closure (receives model instance)
      */
     private ?Closure $execute = null;
@@ -100,10 +105,10 @@ class Action
     /**
      * Create a new Action instance
      *
-     * @param  string  $key  Unique action identifier
-     * @param  string  $label  Action label displayed to user
+     * @param  string  $key  Unique action identifier (optional for row-click actions)
+     * @param  string  $label  Action label displayed to user (optional for row-click actions)
      */
-    public static function make(string $key, string $label): self
+    public static function make(string $key = '', string $label = ''): self
     {
         $instance = new self;
         $instance->key = $key;
@@ -128,12 +133,19 @@ class Action
     /**
      * Navigate to a route when clicked
      *
-     * @param  string|Closure  $route  Route name or closure receiving model
+     * Supports multiple signatures:
+     * - `route('full-url')` - Direct URL
+     * - `route('route.name', $params)` - Laravel route name with parameters
+     * - `route(fn ($model) => route('route.name', $model))` - Closure receiving model
+     *
+     * @param  string|Closure  $route  Route URL, route name, or closure receiving model
+     * @param  mixed  $parameters  Optional parameters when $route is a route name
      * @return $this
      */
-    public function route(string|Closure $route): self
+    public function route(string|Closure $route, mixed $parameters = null): self
     {
         $this->route = $route;
+        $this->routeParameters = $parameters;
 
         return $this;
     }
@@ -289,10 +301,25 @@ class Action
 
     /**
      * Get the route
+     *
+     * If route parameters were provided, resolves the route name to a URL.
      */
     public function getRoute(): string|Closure|null
     {
+        // If parameters were provided and route is a string (route name), resolve it
+        if ($this->routeParameters !== null && is_string($this->route)) {
+            return route($this->route, $this->routeParameters);
+        }
+
         return $this->route;
+    }
+
+    /**
+     * Get the route parameters
+     */
+    public function getRouteParameters(): mixed
+    {
+        return $this->routeParameters;
     }
 
     /**

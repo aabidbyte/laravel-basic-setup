@@ -20,7 +20,7 @@
 
 @php
     // Common classes for both modes
-    $contentClasses = 'dropdown-content rounded-lg gap-2 whitespace-nowrap';
+    $contentClasses = 'dropdown-content rounded-lg gap-2';
 
     if (!empty($bgClass)) {
         $contentClasses .= ' ' . $bgClass;
@@ -61,6 +61,7 @@
         $alpinePlacement = match ($placement) {
             'start'
                 => 'bottom-start', // dropdown-start aligns right edge (RTL) but usually means left in LTR? DaisyUI dropdown-start aligns to the start side.
+            // dropdown-start aligns right edge (RTL) but usually means left in LTR? DaisyUI dropdown-start aligns to the start side.
             // dropdown-start aligns right edge (RTL) but usually means left in LTR? DaisyUI dropdown-start aligns to the start side.
             // dropdown-start aligns right edge (RTL) but usually means left in LTR? DaisyUI dropdown-start aligns to the start side.
             // dropdown-start aligns right edge (RTL) but usually means left in LTR? DaisyUI dropdown-start aligns to the start side.
