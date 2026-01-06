@@ -54,31 +54,15 @@ new class extends LivewireBaseComponent {
 @endphp
 
 <div
-    x-data="{
-        {{ $modalStateId }}: true,
-        showVerificationStep: false,
-        modalId: 'two-factor-setup',
-        modalConfig: @js($modalConfig),
+    x-data="twoFactorSetup({
+        modalStateId: '{{ $modalStateId }}',
+        initialModalConfig: @js($modalConfig),
         verificationModalConfig: @js([
-    'title' => __('ui.settings.two_factor.setup.title_verify'),
-    'description' => __('ui.settings.two_factor.setup.description_verify'),
-    'buttonText' => __('ui.actions.continue'),
-]),
-        closeModal() {
-            {{ $modalStateId }} = false;
-            $wire.$parent.closeModal();
-        },
-        init() {
-            $wire.on('show-verification-step', () => {
-                this.showVerificationStep = true;
-                this.modalConfig = this.verificationModalConfig;
-            });
-            $wire.on('hide-verification-step', () => {
-                this.showVerificationStep = false;
-                this.modalConfig = @js($modalConfig);
-            });
-        }
-    }"
+            'title' => __('ui.settings.two_factor.setup.title_verify'),
+            'description' => __('ui.settings.two_factor.setup.description_verify'),
+            'buttonText' => __('ui.actions.continue'),
+        ])
+    })"
     @close-modal.window="if ($event.detail === modalId) { closeModal(); }"
 >
     <x-ui.base-modal
@@ -86,7 +70,7 @@ new class extends LivewireBaseComponent {
         :title="modalConfig . title || ''"
         max-width="md"
         :auto-open="true"
-        :open-state="$modalStateId"
+        open-state="isOpen"
     >
         <div class="flex flex-col items-center space-y-4 mb-6">
             <div class="avatar placeholder">
@@ -189,12 +173,8 @@ new class extends LivewireBaseComponent {
                     <x-ui.button
                         type="button"
                         variant="ghost"
-                        x-data="{ copied: false }"
-                        @click="
-                            navigator.clipboard.writeText('{{ $manualSetupKey }}');
-                            copied = true;
-                            setTimeout(() => copied = false, 1500);
-                        "
+                        x-data="copyToClipboard('{{ $manualSetupKey }}')"
+                        @click="copy()"
                         class="join-item"
                     >
                         <svg

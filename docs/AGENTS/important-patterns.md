@@ -287,3 +287,129 @@ The application includes a centralized, flexible dropdown component located at `
 -   Previous Alpine.js-based dropdowns (like locale-switcher) have been migrated to CSS focus pattern
 -   The component is fully compatible with DaisyUI's dropdown classes and behavior
 
+### CSP-Safe Alpine.js Development (CRITICAL)
+
+> **MANDATORY RULE**: All Alpine.js components with complex logic MUST be CSP-safe. This project uses Livewire's `csp_safe` mode which prohibits inline JavaScript evaluation.
+
+#### What is NOT Allowed (CSP Violations)
+
+```blade
+{{-- ❌ FORBIDDEN: Inline functions in x-data --}}
+<div x-data="{
+    isOpen: false,
+    toggle() { this.isOpen = !this.isOpen },
+    handleClick(e) {
+        console.log(e);
+    }
+}">
+```
+
+```blade
+{{-- ❌ FORBIDDEN: Arrow functions --}}
+<div x-data="{ items: [], add: () => { this.items.push('new') } }">
+```
+
+```blade
+{{-- ❌ FORBIDDEN: Complex expressions with methods --}}
+<button @click="items.filter(i => i.active).forEach(i => process(i))">
+```
+
+#### What IS Allowed (CSP-Safe)
+
+**Simple objects without methods:**
+```blade
+{{-- ✅ ALLOWED: Simple state objects --}}
+<div x-data="{ isOpen: false, count: 0, name: 'test' }">
+    <button @click="isOpen = !isOpen">Toggle</button>
+    <button @click="count++">Increment</button>
+</div>
+```
+
+**Registered Alpine components:**
+```blade
+{{-- ✅ ALLOWED: Registered component --}}
+<div x-data="confirmModal({ title: 'Delete?' })">
+    <button @click="openModal()">Open</button>
+</div>
+```
+
+#### How to Create CSP-Safe Components
+
+1. **Create file** in `resources/js/alpine/data/my-component.js`:
+
+```javascript
+/**
+ * My Component - CSP-Safe Alpine Data Component
+ * Self-registers as 'myComponent'
+ */
+export function myComponent(config = {}) {
+    return {
+        isOpen: config.isOpen || false,
+        title: config.title || 'Default Title',
+        
+        toggle() {
+            this.isOpen = !this.isOpen;
+        },
+        
+        handleEvent(event) {
+            // Complex logic here
+            console.log(event.detail);
+        }
+    };
+}
+
+// Self-register when Alpine initializes
+document.addEventListener('alpine:init', () => {
+    window.Alpine.data('myComponent', myComponent);
+});
+```
+
+2. **Add to `resources/assets.json`** (in appropriate section):
+
+```json
+{
+    "js": {
+        "shared": ["resources/js/alpine/data/my-component.js"],
+        "app": [],
+        "auth": []
+    }
+}
+```
+
+3. **Use in Blade** with simple config object:
+
+```blade
+<div x-data="myComponent({ title: @js(__('ui.my_title')) })">
+    <button @click="toggle()">Toggle</button>
+</div>
+```
+
+#### CSP-Safe Component Locations
+
+| Component | File | Purpose |
+|-----------|------|---------|
+| `dataTable` | [datatable.js](file:///Users/hop/Packages/laravel-basic-setup/resources/js/datatable.js) | DataTable functionality |
+| `notificationCenter` | [notification-center.js](file:///Users/hop/Packages/laravel-basic-setup/resources/js/notification-center.js) | Notification system |
+| `toastCenter` | [notification-center.js](file:///Users/hop/Packages/laravel-basic-setup/resources/js/notification-center.js) | Toast notifications |
+| `confirmModal` | [confirm-modal.js](file:///Users/hop/Packages/laravel-basic-setup/resources/js/alpine/data/confirm-modal.js) | Confirmation dialogs |
+| `actionModal` | [action-modal.js](file:///Users/hop/Packages/laravel-basic-setup/resources/js/alpine/data/action-modal.js) | DataTable action modals |
+| `copyToClipboard` | [copy-to-clipboard.js](file:///Users/hop/Packages/laravel-basic-setup/resources/js/alpine/data/copy-to-clipboard.js) | Copy functionality |
+| `shareButton` | [share-button.js](file:///Users/hop/Packages/laravel-basic-setup/resources/js/alpine/data/share-button.js) | Sharing functionality |
+| `themeSwitcher` | [theme-switcher.js](file:///Users/hop/Packages/laravel-basic-setup/resources/js/alpine/data/theme-switcher.js) | Theme toggling |
+| `passwordVisibility` | [password-visibility.js](file:///Users/hop/Packages/laravel-basic-setup/resources/js/alpine/data/password-visibility.js) | Password show/hide |
+| `dropdown` | [dropdown.js](file:///Users/hop/Packages/laravel-basic-setup/resources/js/alpine/data/dropdown.js) | Dropdown menus |
+| `twoFactorSetup` | [two-factor-setup.js](file:///Users/hop/Packages/laravel-basic-setup/resources/js/alpine/data/two-factor-setup.js) | 2FA setup process |
+
+> [!TIP]
+> Always check [csp-safety.md](file:///Users/hop/Packages/laravel-basic-setup/docs/AGENTS/csp-safety.md) for detailed implementation rules.
+
+#### Quick Reference: When to Extract
+
+| Inline x-data Content | CSP-Safe? | Action |
+|-----------------------|-----------|--------|
+| `{ open: false }` | ✅ Yes | Keep inline |
+| `{ count: 0, name: '' }` | ✅ Yes | Keep inline |
+| `{ toggle() { ... } }` | ❌ No | Extract to JS file |
+| `{ async fetch() { ... } }` | ❌ No | Extract to JS file |
+| Arrow functions `() => {}` | ❌ No | Extract to JS file |
+

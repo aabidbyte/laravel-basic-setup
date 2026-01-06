@@ -13,68 +13,12 @@
 @endphp
 
 <div
-    x-data="{
-        copied: false,
-        tooltipText: null,
-        copyUrl(url) {
-            console.log('[Share Button] Copying URL:', url);
-    
-            // Check if Clipboard API is available (requires secure context)
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(url).then(() => {
-                    console.log('[Share Button] URL copied successfully via Clipboard API');
-                    this.copied = true;
-                    this.tooltipText = '{{ $copiedText }}';
-                    setTimeout(() => {
-                        this.copied = false;
-                        this.tooltipText = '{{ $tooltipText }}';
-                    }, 2000);
-                }).catch((error) => {
-                    console.error('[Share Button] Clipboard API failed:', error);
-                    // Fallback if clipboard API fails
-                    this.fallbackCopy(url);
-                });
-            } else {
-                console.log('[Share Button] Clipboard API not available, using fallback');
-                // Fallback for browsers without Clipboard API support
-                this.fallbackCopy(url);
-            }
-        },
-        fallbackCopy(url) {
-            console.log('[Share Button] Using fallback copy method for URL:', url);
-            try {
-                const textarea = document.createElement('textarea');
-                textarea.value = url;
-                textarea.style.position = 'fixed';
-                textarea.style.opacity = '0';
-                document.body.appendChild(textarea);
-                textarea.select();
-                const success = document.execCommand('copy');
-                document.body.removeChild(textarea);
-    
-                if (success) {
-                    console.log('[Share Button] URL copied successfully via fallback method');
-                } else {
-                    console.warn('[Share Button] Fallback copy command returned false');
-                }
-    
-                this.copied = true;
-                this.tooltipText = '{{ $copiedText }}';
-                setTimeout(() => {
-                    this.copied = false;
-                    this.tooltipText = '{{ $tooltipText }}';
-                }, 2000);
-            } catch (err) {
-                console.error('[Share Button] Fallback copy failed:', err);
-                // If copy fails, show error in tooltip
-                this.tooltipText = '{{ __('ui.table.copy_failed') ?? 'Copy failed' }}';
-                setTimeout(() => {
-                    this.tooltipText = '{{ $tooltipText }}';
-                }, 2000);
-            }
-        }
-    }"
-    x-init="tooltipText = '{{ $tooltipText }}'"
+    x-data="shareButton({
+        url: @js($shareUrl),
+        initialTooltip: @js($tooltipText),
+        copiedText: @js($copiedText),
+        copyFailedText: @js(__('ui.table.copy_failed') ?? 'Copy failed')
+    })"
     class="relative"
 >
     <div
@@ -82,7 +26,7 @@
         x-bind:data-tip="tooltipText"
     >
         <button
-            @click="copyUrl(@js($shareUrl))"
+            @click="copyUrl()"
             type="button"
             class="btn btn-{{ $style }} btn-{{ $size }} btn-square"
             aria-label="{{ $tooltipText }}"

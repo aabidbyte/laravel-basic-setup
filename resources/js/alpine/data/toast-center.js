@@ -346,6 +346,38 @@ export function toastItem(toast, toasts, displayDuration) {
         },
 
         /**
+         * Handle resume auto-dismiss event (CSP-safe replacement for inline handler)
+         */
+        handleResumeDismiss() {
+            // Schedule remaining time to dismiss
+            const remainingTime = this.displayDuration - this.elapsedTime;
+            this.timeout = setTimeout(() => {
+                this.isVisible = false;
+                setTimeout(() => {
+                    this.removeToast();
+                }, 300);
+            }, remainingTime);
+            this.resumeProgress();
+        },
+
+        /**
+         * Handle pause auto-dismiss event (CSP-safe replacement for inline handler)
+         */
+        handlePauseDismiss() {
+            clearTimeout(this.timeout);
+            this.pauseProgress();
+        },
+
+        /**
+         * Dismiss toast immediately (CSP-safe method for button click)
+         */
+        dismiss() {
+            this.isVisible = false;
+            this._cleanup();
+            this.removeToast();
+        },
+
+        /**
          * Schedule toast dismissal
          * @private
          */

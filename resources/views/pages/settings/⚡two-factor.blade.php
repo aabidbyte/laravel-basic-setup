@@ -259,18 +259,7 @@ new class extends BasePageComponent {
     </x-settings.layout>
 
     <div
-        x-data="{
-            showModal: false,
-            init() {
-                $wire.on('open-two-factor-setup-modal', () => {
-                    this.showModal = true;
-                });
-        
-                $wire.on('close-two-factor-setup-modal', () => {
-                    this.showModal = false;
-                });
-            }
-        }"
+        x-data="twoFactorSetupTrigger()"
         x-show="showModal"
         style="display: none;"
     >

@@ -1,7 +1,7 @@
 <form
     method="POST"
     action="{{ route('preferences.theme') }}"
-    x-data="{ currentTheme: '{{ $currentTheme }}' }"
+    x-data="themeSwitcher('{{ $currentTheme }}')"
 >
     @csrf
     <input
@@ -14,10 +14,7 @@
         <input
             type="checkbox"
             :checked="currentTheme === 'dark'"
-            @change="
-                $refs.themeInput.value = $el.checked ? 'dark' : 'light';
-                $el.closest('form').submit();
-            "
+            @change="toggle($event)"
         />
 
         {{-- Sun icon (light theme) - shown when checkbox is unchecked (swap-off) --}}

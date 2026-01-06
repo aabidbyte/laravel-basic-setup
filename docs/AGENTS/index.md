@@ -22,6 +22,7 @@ This documentation is organized into sections for easy navigation. Each section 
 - [Notification Builder System](notification-builder-system.md)
 - [Mail Builder System](mail-builder-system.md)
 - [Important Patterns](important-patterns.md)
+- [CSP Safety Guide (Alpine.js)](csp-safety.md)
 - [Development Workflow](development-workflow.md)
 - [Environment Configuration](environment-configuration.md)
 - [Security Considerations](security-considerations.md)

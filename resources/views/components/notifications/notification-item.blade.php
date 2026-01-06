@@ -7,7 +7,7 @@
             class="{{ $iconClass }}"
         ></x-ui.icon>
     </div>
-    <div class="flex-1 min-w-0">
+    <div class="flex-1">
         <div class="truncate">{{ $title }}</div>
         @if ($subtitle)
             <div class="text-xs opacity-70 truncate">{{ $subtitle }}</div>

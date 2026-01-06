@@ -70,3 +70,8 @@ function inEnvironment(string ...$environments): bool
 
     return false;
 }
+
+function cspNonce(): string
+{
+    return Vite::cspNonce();
+}

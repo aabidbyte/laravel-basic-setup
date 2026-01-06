@@ -3,20 +3,9 @@
         <div
             class="relative w-full h-auto"
             x-cloak
-            x-data="{
-                showRecoveryInput: @js($errors->has('recovery_code')),
-                code: '',
-                recovery_code: '',
-                toggleInput() {
-                    this.showRecoveryInput = !this.showRecoveryInput;
-                    this.code = '';
-                    this.recovery_code = '';
-                    $dispatch('clear-2fa-auth-code');
-                    $nextTick(() => {
-                        this.showRecoveryInput ? this.$refs.recovery_code?.focus() : $dispatch('focus-2fa-auth-code');
-                    });
-                },
-            }"
+            x-data="twoFactorChallenge({
+                showRecoveryInput: @js($errors->has('recovery_code'))
+            })"
         >
             <div x-show="!showRecoveryInput">
                 <x-auth-header

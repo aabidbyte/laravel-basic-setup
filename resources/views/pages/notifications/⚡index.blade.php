@@ -157,11 +157,7 @@ new class extends BasePageComponent {
             <x-ui.button
                 variant="error"
                 size="sm"
-                @click="$dispatch('confirm-modal', {
-                title: '{{ addslashes(__('ui.notifications.clear_all')) }}',
-                message: '{{ addslashes(__('ui.modals.confirm.message')) }}',
-                confirmAction: () => $wire.clearAll()
-            })"
+                @click="openConfirmClearAll('{{ addslashes(__('ui.notifications.clear_all')) }}', '{{ addslashes(__('ui.modals.confirm.message')) }}')"
             >
                 {{ __('ui.notifications.clear_all') }} ({{ $this->totalCount }})
             </x-ui.button>
@@ -231,11 +227,7 @@ new class extends BasePageComponent {
                                         variant="ghost"
                                         color="error"
                                         size="sm"
-                                        @click.stop="$dispatch('confirm-modal', {
-                                title: '{{ addslashes(__('ui.notifications.delete')) }}',
-                                message: '{{ addslashes(__('ui.modals.confirm.message')) }}',
-                                confirmAction: () => $wire.delete('{{ $notification['id'] }}')
-                            })"
+                                        @click.stop="openConfirmDelete('{{ $notification['id'] }}', '{{ addslashes(__('ui.notifications.delete')) }}', '{{ addslashes(__('ui.modals.confirm.message')) }}')"
                                     >
                                         <x-ui.icon
                                             name="trash"

@@ -6,11 +6,22 @@
     "js": {
         "shared": [
             "resources/js/app.js",
-            "resources/js/notification-center.js"
+            "resources/js/notification-center.js",
+            "resources/js/alpine/data/confirm-modal.js",
+            "resources/js/alpine/data/copy-to-clipboard.js",
+            "resources/js/alpine/data/share-button.js",
+            "resources/js/alpine/data/theme-switcher.js",
+            "resources/js/alpine/data/password-visibility.js",
+            "resources/js/alpine/data/dropdown.js"
         ],
         "app": [
-            "resources/js/datatable.js"
+            "resources/js/datatable.js",
+            "resources/js/alpine/data/action-modal.js",
+            "resources/js/alpine/data/two-factor-setup.js",
+            "resources/js/alpine/data/two-factor-setup-trigger.js"
         ],
-        "auth": []
+        "auth": [
+            "resources/js/alpine/data/two-factor-challenge.js"
+        ]
     }
 }

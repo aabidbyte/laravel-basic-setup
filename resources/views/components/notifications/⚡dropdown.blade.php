@@ -130,13 +130,7 @@ new class extends LivewireBaseComponent {
     x-data="notificationDropdown()"
     x-init="init()"
     x-on:notifications-changed.window="$wire.$refresh()"
-    @click.away="
-        if (wasOpened) {
-            $wire.markVisibleAsRead();
-            wasOpened = false;
-        }
-        isOpen = false;
-    "
+    @click.away="close()"
     wire:key="notification-dropdown-{{ Auth::user()?->uuid ?? 'guest' }}"
 >
     <x-ui.dropdown
@@ -151,10 +145,7 @@ new class extends LivewireBaseComponent {
                 x-ref="trigger"
                 class="btn btn-ghost btn-circle relative"
                 type="button"
-                @click="
-                    isOpen = true;
-                    wasOpened = true;
-                "
+                @click="toggle()"
             >
                 <x-ui.icon
                     name="bell"

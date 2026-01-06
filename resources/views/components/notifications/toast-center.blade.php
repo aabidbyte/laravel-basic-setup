@@ -18,16 +18,9 @@
                 x-show="isVisible"
                 :class="`pointer-events-auto relative rounded-lg border ${toast.typeClasses.border} bg-base-100 text-base-content overflow-hidden`"
                 role="alert"
-                @pause-auto-dismiss.window="clearTimeout(timeout); pauseProgress()"
-                @resume-auto-dismiss.window="timeout = setTimeout(() => { isVisible = false; removeToast() }, displayDuration - elapsedTime); resumeProgress()"
+                @pause-auto-dismiss.window="handlePauseDismiss()"
+                @resume-auto-dismiss.window="handleResumeDismiss()"
                 @click="handleClick()"
-                x-init="$nextTick(() => {
-                    isVisible = true;
-                    startProgress();
-                }), (timeout = setTimeout(() => {
-                    isVisible = false;
-                    removeToast();
-                }, displayDuration))"
                 x-transition:enter="transition duration-300 ease-out"
                 x-transition:enter-start="translate-y-8 opacity-0"
                 x-transition:enter-end="translate-y-0 opacity-100"
@@ -93,7 +86,7 @@
 
                     {{-- Dismiss Button --}}
                     <button
-                        @click.stop="isVisible = false; clearTimeout(timeout); if (progressInterval) clearInterval(progressInterval); removeToast()"
+                        @click.stop="dismiss()"
                         type="button"
                         class="ml-auto shrink-0 text-base-content/40 hover:text-base-content/60 focus:outline-2 focus:outline-offset-2 focus:outline-base-content"
                         aria-label="{{ __('ui.notifications.dismiss') }}"

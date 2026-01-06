@@ -29,16 +29,8 @@
     href="/apple-touch-icon.png"
 />
 
-<link
-    rel="preconnect"
-    href="https://fonts.bunny.net"
-/>
-<link
-    href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600"
-    rel="stylesheet"
-/>
 
-<script type="text/javascript">
+<script type="text/javascript" @cspNonce>
     window.notificationRealtimeConfig = @js($notificationRealtimeConfig);
 </script>
 
@@ -50,3 +42,5 @@
 @endphp
 
 @vite($allAssets)
+
+@livewireStyles(['nonce' => cspNonce()])

@@ -100,15 +100,15 @@
     </div>
 @else
     <div
-        x-data="{ open: false }"
-        @click.outside="open = false"
+        x-data="dropdown()"
+        @click.outside="close()"
         class="inline-block"
         {{ $attributes->except(['placement', 'hover', 'contentClass', 'bgClass', 'menu', 'menuSize', 'teleport', 'aria-label', 'aria-labelledby']) }}
     >
         @isset($trigger)
             <div
                 x-ref="trigger"
-                @click="open = !open"
+                @click="toggle()"
                 role="button"
             >
                 {{ $trigger }}

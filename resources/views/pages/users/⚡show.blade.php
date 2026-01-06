@@ -353,7 +353,7 @@ new class extends BasePageComponent {
                     <p class="text-base-content/70">{{ __('ui.users.show.activation_link_description') }}</p>
 
                     <div
-                        x-data="{ copied: false }"
+                        x-data="copyToClipboard('{{ $activationLink }}')"
                         class="flex items-center gap-2"
                     >
                         <x-ui.input
@@ -363,7 +363,7 @@ new class extends BasePageComponent {
                             class="font-mono text-sm"
                         ></x-ui.input>
                         <x-ui.button
-                            @click="navigator.clipboard.writeText('{{ $activationLink }}'); copied = true; setTimeout(() => copied = false, 2000)"
+                            @click="copy()"
                             color="primary"
                             size="sm"
                         >

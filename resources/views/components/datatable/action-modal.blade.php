@@ -91,37 +91,7 @@ new class extends LivewireBaseComponent {
     
     Child views can use: @click="modalIsOpen = false" to close modal
 --}}
-<div x-data="{
-    modalIsOpen: $wire.$entangle('isOpen'),
-    isLoading: false,
-    _loadingListener: null,
-
-    init() {
-        // Store listener reference for cleanup
-        this._loadingListener = () => {
-            this.isLoading = true;
-            this.modalIsOpen = true;
-        };
-
-        // Listen for loading trigger (dispatched from datatable before server request)
-        window.addEventListener('datatable-modal-loading', this._loadingListener);
-
-        // Use Livewire hook to detect when component has finished updating
-        // This fires after every Livewire update, so we check if modal is open with content
-        Livewire.hook('morph.updated', ({ component }) => {
-            if (component.id === $wire.id && this.modalIsOpen && $wire.modalView) {
-                this.isLoading = false;
-            }
-        });
-    },
-
-    destroy() {
-        // Clean up event listener on component destroy
-        if (this._loadingListener) {
-            window.removeEventListener('datatable-modal-loading', this._loadingListener);
-        }
-    }
-}">
+<div x-data="actionModal()">
     <x-ui.base-modal
         open-state="modalIsOpen"
         use-parent-state="true"

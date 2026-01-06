@@ -23,7 +23,7 @@
     @endif
     <div
         class="relative overflow-visible"
-        x-data="{ showPassword: false }"
+        x-data="passwordVisibility()"
     >
         <input
             type="password"
@@ -33,7 +33,7 @@
         />
         <button
             type="button"
-            @click.stop="showPassword = !showPassword"
+            @click.stop="toggle()"
             class="absolute right-2 top-1/2 -translate-y-1/2 btn btn-ghost btn-sm btn-circle p-0 h-8 w-8 min-h-0 z-10"
             :aria-label="showPassword ? 'Hide password' : 'Show password'"
             tabindex="0"

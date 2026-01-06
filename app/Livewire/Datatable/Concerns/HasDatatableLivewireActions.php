@@ -182,7 +182,7 @@ trait HasDatatableLivewireActions
         // Handle route
         if ($action->getRoute() !== null) {
             $route = $action->getRoute();
-            $this->redirect($route instanceof Closure ? $route($model) : $route);
+            $this->redirect($route instanceof Closure ? $route($model) : $route, navigate: true);
 
             return;
         }
