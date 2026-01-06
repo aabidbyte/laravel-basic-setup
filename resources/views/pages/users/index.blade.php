@@ -1,6 +1,5 @@
 @php
     use App\Constants\Auth\Permissions;
-    use Illuminate\Support\Facades\Auth;
 @endphp
 
 <x-layouts.app>

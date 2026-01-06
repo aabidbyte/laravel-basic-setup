@@ -392,6 +392,62 @@ export function toastItem(toast, toasts, displayDuration) {
         },
 
         /**
+         * Get wrapper class string
+         * @returns {string}
+         */
+        getWrapperClass() {
+            return `pointer-events-auto relative rounded-lg border ${toast.typeClasses.border} bg-base-100 text-base-content overflow-hidden`;
+        },
+
+        /**
+         * Get progress bar class string
+         * @returns {string}
+         */
+        getProgressBarClass() {
+            return `h-full ${toast.progressColor}`;
+        },
+
+        /**
+         * Get progress bar style string
+         * @returns {string}
+         */
+        getProgressBarStyle() {
+            return `width: ${this.progress}%`;
+        },
+
+        /**
+         * Get content wrapper class string
+         * @returns {string}
+         */
+        getContentClass() {
+            return `flex w-full items-center gap-2.5 rounded-lg ${toast.typeClasses.bgOverlay} p-4 transition-all duration-300`;
+        },
+
+        /**
+         * Get link class string
+         * @returns {string}
+         */
+        getLinkClass() {
+            return `text-sm font-medium ${toast.typeClasses.linkText} focus:outline-2 focus:outline-offset-2`;
+        },
+
+        /**
+         * Get icon container class string
+         * @returns {string}
+         */
+        getIconClass() {
+            return `shrink-0 rounded-full ${toast.typeClasses.iconBg} ${toast.typeClasses.iconText}`;
+        },
+
+        /**
+         * Get title class string
+         * @returns {string}
+         */
+        getTitleClass() {
+            return `text-sm font-semibold ${toast.typeClasses.titleText}`;
+        },
+
+        /**
          * Cleanup all timers and intervals
          * @private
          */

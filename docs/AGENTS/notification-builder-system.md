@@ -135,7 +135,8 @@ NotificationBuilder::make()
 -   Features:
     -   Subscribes to user, team, and global channels
     -   Renders toasts using DaisyUI alert components
-    -   Supports all toast types with appropriate icons
+    -   **Client-side icon rendering**: Uses `<x-ui.icon>` with logic-based visibility (`x-show`) for CSP safety
+    -   **Safe content rendering**: Uses `x-text` instead of `x-html`
     -   Auto-dismisses after 5 seconds
     -   Supports click-to-navigate via link
     -   Slide animation (enters from right, exits to right)

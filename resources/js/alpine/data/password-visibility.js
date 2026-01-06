@@ -5,10 +5,10 @@
 export function passwordVisibility() {
     return {
         showPassword: false,
-        
+
         toggle() {
             this.showPassword = !this.showPassword;
-        }
+        },
     };
 }
 

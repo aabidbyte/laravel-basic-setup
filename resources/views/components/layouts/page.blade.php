@@ -25,7 +25,7 @@
     $backLabel = $backLabel ?? __('ui.actions.back');
 @endphp
 
-<div class="container mx-auto px-4 py-6 sm:py-8 flex flex-col gap-4 sm:gap-6">
+<div class="flex flex-col gap-4 sm:gap-6">
     {{-- Top Row: Back Button + Actions --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>

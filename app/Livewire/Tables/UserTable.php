@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Tables;
 
-use App\Constants\Auth\Permissions;
+use App\Constants\Auth\PolicyAbilities;
 use App\Constants\DataTable\DataTableUi;
 use App\Livewire\DataTable\Datatable;
 use App\Models\Role;
@@ -15,7 +15,6 @@ use App\Services\DataTable\Builders\Column;
 use App\Services\DataTable\Builders\Filter;
 use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 class UserTable extends Datatable
@@ -25,12 +24,12 @@ class UserTable extends Datatable
      */
     public function mount(): void
     {
-        parent::mount();
-        $this->authorize(Permissions::VIEW_USERS);
+        // Authorize access to the list
+        $this->authorize(PolicyAbilities::VIEW_ANY, User::class);
     }
 
     /**
-     * Get the base query
+     * Define the base query for the table.
      */
     public function baseQuery(): Builder
     {
@@ -78,7 +77,7 @@ class UserTable extends Datatable
                 ->placeholder(__('ui.table.users.filters.all_roles'))
                 ->type('select')
                 ->relationship('roles', 'name')
-                ->optionsCallback(fn () => Role::pluck('name', 'name')->toArray()),
+                ->options($this->getRoleOptions()), // Use memoized options
 
             Filter::make('is_active', __('ui.table.users.filters.status'))
                 ->placeholder(__('ui.table.users.filters.all_status'))
@@ -101,6 +100,17 @@ class UserTable extends Datatable
     }
 
     /**
+     * Get role options (memoized).
+     *
+     * @return array<string, string>
+     */
+    protected function getRoleOptions(): array
+    {
+        return $this->memoize('filter:roles', fn () => Role::pluck('name', 'name')->toArray(),
+        );
+    }
+
+    /**
      * Get row action definitions
      *
      * @return array<int, Action>
@@ -114,16 +124,16 @@ class UserTable extends Datatable
             $actions[] = Action::make('view', __('ui.actions.view'))
                 ->icon('eye')
                 ->route(fn (User $user) => route('users.show', $user->uuid))
-                ->variant('ghost');
+                ->variant('ghost')
+                ->can(PolicyAbilities::VIEW);
         }
 
-        // Only add edit action if route exists
         if (Route::has('users.edit')) {
             $actions[] = Action::make('edit', __('ui.actions.edit'))
                 ->icon('pencil')
                 ->route(fn (User $user) => route('users.edit', $user->uuid))
                 ->variant('ghost')
-                ->show(fn (User $user) => Auth::user()?->can(Permissions::EDIT_USERS) ?? false);
+                ->can(PolicyAbilities::UPDATE);
         }
 
         $actions[] = Action::make('delete', __('ui.actions.delete'))
@@ -133,9 +143,12 @@ class UserTable extends Datatable
             ->confirm(__('ui.actions.confirm_delete'))
             ->execute(function (User $user) {
                 $user->delete();
-                NotificationBuilder::make()->title(__('ui.actions.deleted_successfully', ['user' => $user->label()]))->success()->send();
+                NotificationBuilder::make()
+                    ->title(__('ui.actions.deleted_successfully', ['user' => $user->label()]))
+                    ->success()
+                    ->send();
             })
-            ->show(fn (User $user) => Auth::user()?->can('delete', $user) ?? false);
+            ->can(PolicyAbilities::DELETE);
 
         return $actions;
     }
@@ -151,17 +164,22 @@ class UserTable extends Datatable
             BulkAction::make('activate', __('ui.actions.activate_selected'))
                 ->icon('check')
                 ->variant('ghost')
-                ->execute(fn ($users) => $users->each->update(['is_active' => true])),
+                ->execute(fn ($users) => $users->each->update(['is_active' => true]))
+                ->can(PolicyAbilities::UPDATE),
+
             BulkAction::make('deactivate', __('ui.actions.deactivate_selected'))
                 ->icon('x-mark')
                 ->variant('ghost')
-                ->execute(fn ($users) => $users->each->update(['is_active' => false])),
+                ->execute(fn ($users) => $users->each->update(['is_active' => false]))
+                ->can(PolicyAbilities::UPDATE),
+
             BulkAction::make('delete', __('ui.actions.delete_selected'))
                 ->icon('trash')
                 ->variant('ghost')
                 ->color('error')
                 ->confirm(__('ui.actions.confirm_bulk_delete'))
-                ->execute(fn ($users) => $users->each->delete()),
+                ->execute(fn ($users) => $users->each->delete())
+                ->can(PolicyAbilities::DELETE),
         ];
     }
 
@@ -172,7 +190,8 @@ class UserTable extends Datatable
     {
         if (Route::has('users.show')) {
             return Action::make()
-                ->route('users.show', $uuid);
+                ->route('users.show', $uuid)
+                ->can(PolicyAbilities::VIEW);
         }
 
         return null;

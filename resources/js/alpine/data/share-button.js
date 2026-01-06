@@ -13,14 +13,17 @@ export function shareButton(config = {}) {
 
         async copyUrl() {
             const url = this.shareUrl;
-            
+
             // Check if Clipboard API is available (requires secure context)
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 try {
                     await navigator.clipboard.writeText(url);
                     this.onCopySuccess();
                 } catch (error) {
-                    console.error('[Share Button] Clipboard API failed:', error);
+                    console.error(
+                        '[Share Button] Clipboard API failed:',
+                        error,
+                    );
                     this.fallbackCopy(url);
                 }
             } else {
@@ -64,7 +67,7 @@ export function shareButton(config = {}) {
             setTimeout(() => {
                 this.tooltipText = this.initialTooltip;
             }, 2000);
-        }
+        },
     };
 }
 

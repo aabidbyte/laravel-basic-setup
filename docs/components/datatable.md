@@ -120,8 +120,65 @@ public string $search = '';              // Search term
 public string $sortBy = '';              // Sort column
 public string $sortDirection = 'asc';    // Sort direction
 public int $perPage = 15;                // Items per page
-public array $filters = [];                     // Filter values
 public array $selected = [];                     // Selected UUIDs
+```
+
+## Authorization
+
+DataTable actions support two visibility mechanisms that work together:
+
+### Policy-Based Authorization (`can`)
+
+Use `can()` to check Laravel Policies. **Actions without authorization are not rendered at all.**
+
+```php
+use App\Constants\Auth\PolicyAbilities;
+
+Action::make('edit', __('Edit'))
+    ->icon('pencil')
+    ->route(fn (User $user) => route('users.edit', $user->uuid))
+    ->can(PolicyAbilities::UPDATE); // Checks UserPolicy@update($authUser, $rowModel)
+```
+
+### Conditional Visibility (`show`)
+
+Use `show()` for non-permission conditions (e.g., row state):
+
+```php
+Action::make('activate', __('Activate'))
+    ->execute(fn ($user) => $user->update(['is_active' => true]))
+    ->show(fn ($user) => !$user->is_active); // Only show for inactive users
+```
+
+**Note:** When both are used, `can()` is checked first.
+
+---
+
+## Performance Best Practices
+
+### Memoization
+
+Expensive computations are cached per-request using `memoize()`:
+
+```php
+protected function getRoleOptions(): array
+{
+    return $this->memoize('filter:roles', fn () =>
+        Role::pluck('name', 'name')->toArray()
+    );
+}
+
+// Use with Filter
+Filter::make('role', __('Role'))
+    ->options($this->getRoleOptions()) // ✅ Computed once per request
+```
+
+### Avoid N+1 Patterns
+
+❌ **Bad** - Dynamic callback executed every render:
+```php
+Filter::make('role', __('Role'))
+    ->optionsCallback(fn () => Role::pluck('name', 'name')->toArray())
 ```
 
 ## Column API
@@ -482,7 +539,7 @@ Action::make('edit', __('Fast Edit'))
 
 #### Global Modal Architecture
 
-The modal system uses a global Livewire SFC component (`action-modal.blade.php`) that:
+The modal system uses a global Livewire Class component (`App\Livewire\DataTable\ActionModal`) that:
 - Uses `<x-ui.base-modal>` for consistent styling
 - Exposes `modalIsOpen` to child views via Alpine.js
 - Provides immediate loading UX with `<x-ui.loading>` component
@@ -551,6 +608,13 @@ For row clicks, the loading event is only dispatched if `rowClickOpensModal()` r
 >         ->send();
 > })
 > ```
+
+### Unified Modal Architecture
+
+All DataTable modals, whether for custom actions (view/edit) or simple confirmations (delete), are handled by the single `ActionModal` component. This ensures consistent styling, behavior, and loading states across the entire system.
+
+1. **Custom Views:** Rendered using `type='blade'` or `type='livewire'`.
+2. **Confirmations:** Rendered using `type='confirm'` with a standardized UI.
 
 
 ## Bulk Action API

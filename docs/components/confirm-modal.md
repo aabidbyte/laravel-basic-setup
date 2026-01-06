@@ -87,21 +87,19 @@ For more robust communication between components (like the Datatable), use `conf
 </div>
 ```
 
-#### Confirmation with JavaScript Closure
+#### Confirmation with JavaScript Closure (⚠️ CSP Warning)
 
-Useful for quick, inline logic.
+**Note:** Passing arrow functions (`() => {}`) directly in Blade templates is **blocked** by strict CSP. This pattern is only safe if the dispatch happens entirely within a JavaScript file (e.g., inside an Alpine component's method).
 
+**❌ UNSAFE in Blade:**
 ```blade
 <button @click="$dispatch('confirm-modal', {
-    title: 'Save Changes',
-    message: 'Do you want to save your changes?',
-    confirmAction: () => {
-        console.log('Changes saved');
-    }
-})" class="btn btn-primary">
-    Save
-</button>
+    confirmAction: () => { ... } // CSP Error!
+})">
 ```
+
+**✅ SAFE approach:**
+Use the `confirmEvent` pattern (see above) or dispatch from a registered JS component.
 
 ### Configuration Object
 

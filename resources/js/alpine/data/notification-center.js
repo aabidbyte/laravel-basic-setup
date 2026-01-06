@@ -161,7 +161,11 @@ export function notificationDropdown() {
             if (this.wasOpened) {
                 // Check if Livewire component is still mounted before calling wire methods
                 // $wire.__instance is undefined when the component has been destroyed (e.g., after navigation)
-                if (this.$wire && this.$wire.__instance && typeof this.$wire.markVisibleAsRead === 'function') {
+                if (
+                    this.$wire &&
+                    this.$wire.__instance &&
+                    typeof this.$wire.markVisibleAsRead === 'function'
+                ) {
                     try {
                         await this.$wire.markVisibleAsRead();
                     } catch (e) {

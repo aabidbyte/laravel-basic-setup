@@ -63,43 +63,66 @@ trait HasDatatableLivewireActions
      * Get row actions for a specific row
      *
      * @param  mixed  $row  Row model instance
+     * @return array<int, Action>
+     */
+    /**
+     * Get row actions for a specific row
+     *
+     * @param  mixed  $row  Row model instance
      * @return array<int, array<string, mixed>>
      */
     public function getRowActionsForRow(mixed $row): array
     {
-        return array_map(function (Action $action) use ($row) {
-            $data = $action->toArray();
+        // Use memoized actions if available, otherwise resolve them
+        $actions = $this->getResolvedRowActions();
+        $user = $this->cachedUser();
 
-            // Resolve route if it's a closure
-            if ($action->getRoute() instanceof Closure) {
-                $data['route'] = ($action->getRoute())($row);
-            } else {
-                $data['route'] = $action->getRoute();
-            }
+        return collect($actions)
+            ->filter(fn (Action $action) => $action->shouldRender($row, $user))
+            ->map(function (Action $action) use ($row) {
+                $data = $action->toArray();
 
-            // Resolve modal props if it's a closure
-            if ($action->getModalProps() instanceof Closure) {
-                $data['modalProps'] = ($action->getModalProps())($row);
-            } else {
-                $data['modalProps'] = $action->getModalProps();
-            }
+                // Resolve route
+                $route = $action->getRoute();
+                $data['route'] = $route instanceof Closure ? $route($row) : $route;
+                $data['hasRoute'] = $data['route'] !== null;
 
-            return $data;
-        }, array_filter($this->rowActions(), fn (Action $action) => $action->isVisible($row)));
+                // Resolve modal props
+                $modalProps = $action->getModalProps();
+                $data['modalProps'] = $modalProps instanceof Closure ? $modalProps($row) : $modalProps;
+
+                return $data;
+            })
+            ->values()
+            ->all();
     }
 
     /**
-     * Get bulk actions for view
+     * Get available bulk actions
      *
      * @return array<int, array<string, mixed>>
      */
     public function getBulkActions(): array
     {
+        $user = $this->cachedUser();
+
         return collect($this->bulkActions())
-            ->filter(fn (BulkAction $action) => $action->isVisible())
+            ->filter(fn (BulkAction $action) => $action->shouldRender($user))
             ->map(fn (BulkAction $action) => $action->toArray())
             ->values()
-            ->toArray();
+            ->all();
+    }
+
+    /**
+     * Get resolved row actions (memoized).
+     *
+     * @return array<int, Action>
+     */
+    protected function getResolvedRowActions(): array
+    {
+        return $this->memoize('actions:row', function () {
+            return method_exists($this, 'rowActions') ? $this->rowActions() : [];
+        });
     }
 
     /**
@@ -169,6 +192,11 @@ trait HasDatatableLivewireActions
 
         $model = $this->findModelByUuid($uuid);
         if ($model === null) {
+            return;
+        }
+
+        // Check authorization and visibility
+        if (! $action->shouldRender($model, $this->cachedUser())) {
             return;
         }
 
@@ -244,6 +272,9 @@ trait HasDatatableLivewireActions
     /**
      * Execute bulk action
      */
+    /**
+     * Execute bulk action
+     */
     public function executeBulkAction(string $actionKey): void
     {
         $action = collect($this->bulkActions())->first(fn (BulkAction $a) => $a->getKey() === $actionKey);
@@ -253,6 +284,40 @@ trait HasDatatableLivewireActions
             ($action->getExecute())($models);
             $this->clearSelection();
             $this->refreshTable();
+        }
+    }
+
+    /**
+     * Get the event listeners for the component.
+     *
+     * @return array<string, string>
+     */
+    public function getListeners(): array
+    {
+        return [
+            "datatable:action-confirmed:{$this->getId()}" => 'onActionConfirmed',
+        ];
+    }
+
+    /**
+     * Handle action confirmed event directly
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    public function onActionConfirmed(array $payload): void
+    {
+        $actionKey = $payload['actionKey'] ?? null;
+        $uuid = $payload['uuid'] ?? null;
+        $isBulk = $payload['isBulk'] ?? false;
+
+        if (! $actionKey) {
+            return;
+        }
+
+        if ($isBulk) {
+            $this->executeBulkAction($actionKey);
+        } elseif ($uuid) {
+            $this->executeAction($actionKey, $uuid);
         }
     }
 

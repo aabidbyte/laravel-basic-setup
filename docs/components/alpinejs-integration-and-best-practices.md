@@ -4,6 +4,9 @@ All components in this application use Alpine.js for interactivity. When working
 
 ### Alpine.js Best Practices
 
+> [!IMPORTANT]
+> **CSP Safety Rules Apply:** See [CSP Safety Guide](../AGENTS/csp-safety.md) for strict rules on arrow functions, template literals, and x-html.
+
 1. **Use `Alpine.data()` Pattern**: Components should use `Alpine.data()` for reusable data objects instead of global functions.
 
 2. **Avoid `@entangle` Directive**: In Livewire v3/v4, refrain from using the `@entangle` directive. Use `$wire.$entangle()` instead:

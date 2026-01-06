@@ -48,11 +48,23 @@ trait HasDatatableLivewireFilters
      */
     public function getFilters(): array
     {
-        return collect($this->getFilterDefinitions())
+        return collect($this->getResolvedFilters())
             ->filter(fn (Filter $filter) => $filter->isVisible())
             ->map(fn (Filter $filter) => $filter->toArray())
             ->values()
             ->toArray();
+    }
+
+    /**
+     * Get resolved filters (memoized).
+     *
+     * @return array<int, Filter>
+     */
+    protected function getResolvedFilters(): array
+    {
+        return $this->memoize('filters:definitions', function () {
+            return method_exists($this, 'getFilterDefinitions') ? $this->getFilterDefinitions() : [];
+        });
     }
 
     /**
@@ -62,7 +74,8 @@ trait HasDatatableLivewireFilters
      */
     public function getActiveFilters(): array
     {
-        $filterDefinitions = collect($this->getFilterDefinitions());
+        // Use memoized filters to avoid re-resolving definitions (which can trigger queries)
+        $filterDefinitions = collect($this->getResolvedFilters());
 
         return collect($this->filters)
             ->filter(fn ($value) => $value !== null && $value !== '')

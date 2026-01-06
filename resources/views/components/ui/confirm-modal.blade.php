@@ -31,50 +31,23 @@
 
         {{-- Body --}}
         @if ($slot->isEmpty())
-            <div class="flex items-start gap-4">
-                @if ($showIcon)
-                    <div class="flex-shrink-0">
-                        <x-ui.icon
-                            name="exclamation-triangle"
-                            class="h-8 w-8 text-error"
-                        ></x-ui.icon>
-                    </div>
-                @endif
-                <div class="flex-1">
-                    <h3
-                        class="text-lg font-bold"
-                        x-text="title"
-                    ></h3>
-                    <p
-                        class="py-4 text-base-content/70"
-                        x-text="message"
-                    ></p>
-                </div>
-            </div>
+            <x-ui.confirm-dialog-body
+                alpine-title="title"
+                alpine-message="message"
+                alpine-confirm-label="confirmLabel || '{{ __('ui.actions.confirm') }}'"
+                alpine-cancel-label="cancelLabel || '{{ __('ui.actions.cancel') }}'"
+                on-confirm="executeConfirm()"
+                on-cancel="closeModal()"
+            />
         @else
             {{ $slot }}
         @endif
 
-        {{-- Footer --}}
-        <x-slot:footer-actions>
-            @if (!isset($actions))
-                <x-ui.button
-                    type="button"
-                    :variant="$cancelVariant"
-                    @click="closeModal()"
-                >
-                    <span x-text="cancelLabel"></span>
-                </x-ui.button>
-                <x-ui.button
-                    type="button"
-                    :variant="$confirmVariant"
-                    @click="executeConfirm()"
-                >
-                    <span x-text="confirmLabel"></span>
-                </x-ui.button>
-            @else
+        {{-- Footer - Legacy/Slot Support --}}
+        @if (isset($actions))
+            <x-slot:footer-actions>
                 {{ $actions }}
-            @endif
-        </x-slot:footer-actions>
+            </x-slot:footer-actions>
+        @endif
     </x-ui.base-modal>
 </div>

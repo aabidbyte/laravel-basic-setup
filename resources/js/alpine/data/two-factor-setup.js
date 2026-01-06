@@ -9,7 +9,7 @@ export function twoFactorSetup(config = {}) {
         modalId: 'two-factor-setup',
         modalConfig: config.initialModalConfig || {},
         verificationModalConfig: config.verificationModalConfig || {},
-        
+
         isOpen: true,
 
         init() {
@@ -23,7 +23,7 @@ export function twoFactorSetup(config = {}) {
                 this.showVerificationStep = true;
                 this.modalConfig = this.verificationModalConfig;
             });
-            
+
             this.$wire.on('hide-verification-step', () => {
                 this.showVerificationStep = false;
                 this.modalConfig = config.initialModalConfig;
@@ -33,7 +33,7 @@ export function twoFactorSetup(config = {}) {
         closeModal() {
             this.isOpen = false;
             this.$wire.$parent.closeModal();
-        }
+        },
     };
 }
 

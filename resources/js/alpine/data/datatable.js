@@ -16,7 +16,6 @@ export function dataTable(id = null) {
          */
         init() {
             // Store listener references for cleanup
-            this._confirmListener = (e) => this.confirmAction(e.detail);
             this._scrollListener = () =>
                 this.$el.scrollIntoView({ behavior: 'smooth' });
             this._cleanUrlListener = () =>
@@ -27,10 +26,6 @@ export function dataTable(id = null) {
                 );
 
             // Register listeners
-            window.addEventListener(
-                `datatable:action-confirmed:${this.id}`,
-                this._confirmListener,
-            );
             window.addEventListener(
                 `datatable:scroll-to-top:${this.id}`,
                 this._scrollListener,
@@ -45,10 +40,6 @@ export function dataTable(id = null) {
          * Cleanup listeners on destroy
          */
         destroy() {
-            window.removeEventListener(
-                `datatable:action-confirmed:${this.id}`,
-                this._confirmListener,
-            );
             window.removeEventListener(
                 `datatable:scroll-to-top:${this.id}`,
                 this._scrollListener,
@@ -90,54 +81,41 @@ export function dataTable(id = null) {
                         this.pendingAction = { actionKey, uuid, isBulk };
 
                         const eventPayload = {
-                            title: config.title || 'Confirm Action',
-                            message:
-                                config.message ||
-                                config.content ||
-                                'Are you sure you want to proceed?',
-                            confirmLabel: config.confirmText || 'Confirm',
-                            cancelLabel: config.cancelText || 'Cancel',
-                            confirmEvent: `datatable:action-confirmed:${this.id}`,
-                            confirmData: { actionKey, uuid, isBulk },
+                            viewType: 'confirm',
+                            viewProps: {
+                                title: config.title || 'Confirm Action',
+                                content:
+                                    config.message ||
+                                    config.content ||
+                                    'Are you sure you want to proceed?',
+                                confirmLabel: config.confirmText || 'Confirm',
+                                cancelLabel: config.cancelText || 'Cancel',
+                                actionKey,
+                                uuid,
+                                isBulk,
+                            },
+                            viewTitle: config.title || 'Confirm Action',
+                            datatableId: this.id,
                         };
 
                         window.dispatchEvent(
-                            new CustomEvent('confirm-modal', {
+                            new CustomEvent('open-datatable-modal', {
                                 detail: eventPayload,
                                 bubbles: true,
                             }),
                         );
                     } else {
-                        this.confirmAction({ actionKey, uuid, isBulk });
+                        // Backend confirmation not required, execute directly
+                        if (isBulk) {
+                            wire.executeBulkAction(actionKey);
+                        } else {
+                            wire.executeAction(actionKey, uuid);
+                        }
                     }
                 })
                 .catch(() => {
                     // Silently handle error
                 });
-        },
-
-        /**
-         * Confirm and execute action
-         * Triggered via global window event listener in Blade
-         */
-        confirmAction(data) {
-            const actionData = data || this.pendingAction;
-            const wire =
-                this.$wire || this.$el.closest('[wire\\:id]')?.__livewire;
-
-            if (!actionData || !wire) {
-                return;
-            }
-
-            const { actionKey, uuid, isBulk } = actionData;
-
-            if (isBulk) {
-                wire.executeBulkAction(actionKey);
-            } else {
-                wire.executeAction(actionKey, uuid);
-            }
-
-            this.pendingAction = null;
         },
 
         /**

@@ -10,11 +10,11 @@ export function twoFactorSetupTrigger() {
             this.$wire.on('open-two-factor-setup-modal', () => {
                 this.showModal = true;
             });
-    
+
             this.$wire.on('close-two-factor-setup-modal', () => {
                 this.showModal = false;
             });
-        }
+        },
     };
 }
 

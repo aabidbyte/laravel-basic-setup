@@ -7,6 +7,7 @@ namespace App\Livewire\DataTable;
 use App\Livewire\Bases\LivewireBaseComponent;
 use App\Livewire\DataTable\Concerns\HasDatatableLivewireActions;
 use App\Livewire\DataTable\Concerns\HasDatatableLivewireFilters;
+use App\Livewire\DataTable\Concerns\HasDatatableLivewireMemoization;
 use App\Livewire\DataTable\Concerns\HasDatatableLivewirePagination;
 use App\Livewire\DataTable\Concerns\HasDatatableLivewirePreferences;
 use App\Livewire\DataTable\Concerns\HasDatatableLivewireQueryParameters;
@@ -30,6 +31,7 @@ abstract class Datatable extends LivewireBaseComponent
 {
     use HasDatatableLivewireActions;
     use HasDatatableLivewireFilters;
+    use HasDatatableLivewireMemoization;
     use HasDatatableLivewirePagination;
     use HasDatatableLivewirePreferences;
     use HasDatatableLivewireQueryParameters;
@@ -117,22 +119,31 @@ abstract class Datatable extends LivewireBaseComponent
      * Fetches a sample row to check if the rowClick action has hasModal set.
      * Returns false if table is empty or rowClick doesn't use a modal.
      */
+    /**
+     * Determine if row click action opens a modal (used for loading UX)
+     *
+     * Fetches a sample row to check if the rowClick action has hasModal set.
+     * Returns false if table is empty or rowClick doesn't use a modal.
+     */
     public function rowClickOpensModal(): bool
     {
-        if (! $this->rowsAreClickable()) {
-            return false;
-        }
+        return $this->memoize('row_click_opens_modal', function () {
+            if (! $this->rowsAreClickable()) {
+                return false;
+            }
 
-        // Check if any rows exist to test with
-        $sampleRow = $this->baseQuery()->first();
-        if (! $sampleRow) {
-            return false;
-        }
+            // Use loaded rows if available to avoid extra query
+            $sampleRow = $this->rows->first();
 
-        // Get the action from rowClick and check if it has a modal
-        $action = $this->rowClick($sampleRow->uuid);
+            if (! $sampleRow) {
+                return false;
+            }
 
-        return $action?->getModal() !== null;
+            // Get the action from rowClick and check if it has a modal
+            $action = $this->rowClick($sampleRow->uuid);
+
+            return $action?->getModal() !== null;
+        });
     }
 
     /**

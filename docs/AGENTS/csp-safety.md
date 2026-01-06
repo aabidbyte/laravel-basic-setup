@@ -12,7 +12,13 @@ We use a strict Content Security Policy that blocks `eval()` and inline scripts 
 ## The Rule
 
 > [!IMPORTANT]
-> **NO complex logic in Blade templates.** All Alpine components with logic must be extracted to separate JavaScript files and registered as data components.
+> **NO complex logic in Blade templates.** All Alpine components with logic must be extracted to separate JavaScript files.
+>
+> **Strict Prohibitions:**
+> 1. ❌ Arrow functions `() => ...`
+> 2. ❌ Template literals in attributes `:class="`...`"`
+> 3. ❌ `x-html` directive (blocked by build)
+> 4. ❌ Inline method definitions `foo() { ... }`
 
 ## What's Allowed in Blade
 
@@ -125,6 +131,71 @@ handleConfirmedAction(data) {
     }
 }
 ```
+
+### Template Literals (Backticks)
+
+Alpine's CSP parser **cannot** handle template literals in Blade attributes.
+
+**❌ CSP-UNSAFE:**
+```html
+<div :class="`bg-${color}-500 text-white`"></div>
+```
+
+**✅ CSP-SAFE:**
+```javascript
+// In JS:
+getColorClass() {
+    return `bg-${this.color}-500 text-white`;
+}
+```
+```html
+<!-- In Blade: -->
+<div :class="getColorClass()"></div>
+```
+
+### no `x-html`
+
+The `x-html` directive is prohibited in the CSP build because it requires unsafe-eval or potential XSS vectors.
+
+**❌ CSP-UNSAFE:**
+```html
+<div x-html="content"></div>
+```
+
+**✅ CSP-SAFE:**
+1. Use `x-text` for text content:
+   ```html
+   <div x-text="content"></div>
+   ```
+   ```
+2. Use `<x-ui.icon>` wrapped in `<template x-if>` for mutual exclusivity:
+   ```html
+   {{-- Proper visibility handling for components that don't pass attributes --}}
+   <template x-if="type === 'success'">
+       <x-ui.icon name="check" />
+   </template>
+   ```
+
+### Server-Side Conditional Classes (`@class`)
+
+For static or server-rendered conditional classes, prefer Blade's `@class` directive over Alpine binding. It is faster (SSR) and 100% CSP safe.
+
+**✅ RECOMMENDED:**
+```blade
+<div @class([
+    'p-4 rounded',
+    'bg-red-500' => $hasError,
+    'bg-green-500' => !$hasError
+])>
+    ...
+</div>
+```
+
+### Form Submission in Alpine
+
+When submitting forms via Alpine:
+- Avoid `this.$el.submit()` if `$el` is an input or button.
+- Use `this.$refs.inputName.form.submit()` or `document.getElementById('form-id').submit()` to ensure you are targeting the actual form element.
 
 ## Maintenance
 

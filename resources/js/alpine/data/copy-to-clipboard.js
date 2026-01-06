@@ -6,16 +6,18 @@ export function copyToClipboard(text = '') {
     return {
         copied: false,
         text: text,
-        
+
         async copy() {
             try {
                 await navigator.clipboard.writeText(this.text);
                 this.copied = true;
-                setTimeout(() => { this.copied = false; }, 2000);
+                setTimeout(() => {
+                    this.copied = false;
+                }, 2000);
             } catch (err) {
                 console.error('Copy failed:', err);
             }
-        }
+        },
     };
 }
 

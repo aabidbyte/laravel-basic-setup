@@ -30,7 +30,10 @@
 />
 
 
-<script type="text/javascript" @cspNonce>
+<script
+    type="text/javascript"
+    @cspNonce
+>
     window.notificationRealtimeConfig = @js($notificationRealtimeConfig);
 </script>
 

@@ -16,7 +16,7 @@
                 x-data="toastItem(toast, toasts, displayDuration)"
                 x-cloak
                 x-show="isVisible"
-                :class="`pointer-events-auto relative rounded-lg border ${toast.typeClasses.border} bg-base-100 text-base-content overflow-hidden`"
+                :class="getWrapperClass()"
                 role="alert"
                 @pause-auto-dismiss.window="handlePauseDismiss()"
                 @resume-auto-dismiss.window="handleResumeDismiss()"
@@ -31,23 +31,57 @@
                 {{-- Progress Bar --}}
                 <div class="absolute bottom-0 left-0 right-0 h-1 bg-base-200">
                     <div
-                        :class="`h-full ${toast.progressColor}`"
-                        :style="`width: ${progress}%`"
+                        :class="getProgressBarClass()"
+                        :style="getProgressBarStyle()"
                         style="transition: width 16ms linear;"
                     ></div>
                 </div>
 
-                <div
-                    :class="`flex w-full items-center gap-2.5 rounded-lg ${toast.typeClasses.bgOverlay} p-4 transition-all duration-300`">
+                <div :class="getContentClass()">
                     {{-- Icon --}}
                     <div
-                        :class="`shrink-0 rounded-full ${toast.typeClasses.iconBg} ${toast.typeClasses.iconText}`"
+                        :class="getIconClass()"
                         aria-hidden="true"
                     >
-                        <div
-                            x-html="toast.iconHtml"
-                            class="h-6 w-6"
-                        ></div>
+                        {{-- Success Icon --}}
+                        <template x-if="toast.type === 'success'">
+                            <x-ui.icon
+                                name="check-circle"
+                                class="h-6 w-6"
+                            />
+                        </template>
+
+                        {{-- Info Icon --}}
+                        <template x-if="toast.type === 'info'">
+                            <x-ui.icon
+                                name="information-circle"
+                                class="h-6 w-6"
+                            />
+                        </template>
+
+                        {{-- Warning Icon --}}
+                        <template x-if="toast.type === 'warning'">
+                            <x-ui.icon
+                                name="exclamation-triangle"
+                                class="h-6 w-6"
+                            />
+                        </template>
+
+                        {{-- Error Icon --}}
+                        <template x-if="toast.type === 'error'">
+                            <x-ui.icon
+                                name="x-circle"
+                                class="h-6 w-6"
+                            />
+                        </template>
+
+                        {{-- Classic/Default Icon (Bell) --}}
+                        <template x-if="!['success', 'info', 'warning', 'error'].includes(toast.type)">
+                            <x-ui.icon
+                                name="bell"
+                                class="h-6 w-6"
+                            />
+                        </template>
                     </div>
 
                     {{-- Title & Message --}}
@@ -55,7 +89,7 @@
                         <h3
                             x-cloak
                             x-show="toast.title"
-                            :class="`text-sm font-semibold ${toast.typeClasses.titleText}`"
+                            :class="getTitleClass()"
                             x-text="toast.title"
                         ></h3>
                         <p
@@ -68,7 +102,7 @@
                             x-cloak
                             x-show="toast.content"
                             class="text-pretty text-sm text-base-content/70"
-                            x-html="toast.content"
+                            x-text="toast.content"
                         ></div>
                         <div
                             x-cloak
@@ -77,7 +111,7 @@
                         >
                             <a
                                 :href="toast.link"
-                                :class="`text-sm font-medium ${toast.typeClasses.linkText} focus:outline-2 focus:outline-offset-2`"
+                                :class="getLinkClass()"
                             >
                                 <span>{{ __('ui.notifications.view') }}</span>
                             </a>

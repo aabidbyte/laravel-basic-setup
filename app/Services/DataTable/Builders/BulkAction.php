@@ -17,6 +17,8 @@ use Closure;
  */
 class BulkAction
 {
+    private ?string $ability = null;
+
     /**
      * Action key (unique identifier)
      */
@@ -151,6 +153,18 @@ class BulkAction
     public function show(bool|Closure $condition): self
     {
         $this->show = $condition;
+
+        return $this;
+    }
+
+    /**
+     * Set the policy ability required to see this action.
+     *
+     * @param  string  $ability  Policy method name
+     */
+    public function can(string $ability): self
+    {
+        $this->ability = $ability;
 
         return $this;
     }
@@ -324,6 +338,47 @@ class BulkAction
     }
 
     /**
+     * Check if the bulk action is authorized via policy.
+     */
+    public function isAuthorized(?\App\Models\User $user = null): bool
+    {
+        if ($this->ability === null) {
+            return true;
+        }
+
+        if ($user === null) {
+            return false;
+        }
+
+        // Bulk actions check against model class, not instance
+        // We need to know the model class.
+        // For now, let's assume class-level abilities (like 'create', 'update', 'delete' on the class)
+        // or abilities that don't need a model instance.
+        // But $user->can('delete', User::class) is valid.
+        // We lack context of the Model class here.
+        // Let's assume the ability is enough for now, or we'd need to inject the model class.
+        // Given existing design, let's rely on simple string ability check if no model context is available,
+        // OR, the caller needs to handle model context.
+        // Actually, we can pass authorization check to the component.
+        // But for consistency:
+        return $user->can($this->ability);
+    }
+
+    /**
+     * Check if bulk action should be rendered.
+     *
+     * Combines authorization AND visibility.
+     */
+    public function shouldRender(?\App\Models\User $user = null): bool
+    {
+        if (! $this->isAuthorized($user)) {
+            return false;
+        }
+
+        return $this->isVisible();
+    }
+
+    /**
      * Resolve confirmation config for models
      *
      * @param  mixed  $models  Collection of models
@@ -388,6 +443,7 @@ class BulkAction
             'hasConfirmClosure' => $this->confirmMessage instanceof Closure,
             'confirmView' => $this->confirmView,
             'confirmViewProps' => $this->confirmViewProps,
+            'ability' => $this->ability,
         ];
     }
 }

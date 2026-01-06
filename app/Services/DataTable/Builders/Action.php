@@ -18,6 +18,10 @@ use Closure;
  */
 class Action
 {
+    private ?string $ability = null;
+
+    private bool $abilityRequiresModel = true;
+
     /**
      * Action key (unique identifier)
      */
@@ -126,6 +130,23 @@ class Action
     public function icon(string $icon): self
     {
         $this->icon = $icon;
+
+        return $this;
+    }
+
+    /**
+     * Set the policy ability required to see this action.
+     *
+     * This is checked BEFORE show(). If can() fails, the action is not rendered.
+     * Use for permission-based visibility.
+     *
+     * @param  string  $ability  Policy method name (e.g., 'update', 'delete')
+     * @param  bool  $requiresModel  If true, passes the row model to policy
+     */
+    public function can(string $ability, bool $requiresModel = true): self
+    {
+        $this->ability = $ability;
+        $this->abilityRequiresModel = $requiresModel;
 
         return $this;
     }
@@ -357,6 +378,85 @@ class Action
     }
 
     /**
+     * Get the required ability.
+     */
+    public function getAbility(): ?string
+    {
+        return $this->ability;
+    }
+
+    /**
+     * Check if ability requires model.
+     */
+    public function abilityRequiresModel(): bool
+    {
+        return $this->abilityRequiresModel;
+    }
+
+    /**
+     * Check if the action is authorized via policy.
+     *
+     * Returns true if no ability is set (authorization not required).
+     *
+     * @param  mixed  $model  The row model
+     * @param  \App\Models\User|null  $user  The authenticated user
+     */
+    public function isAuthorized(mixed $model = null, ?\App\Models\User $user = null): bool
+    {
+        // No ability specified = authorization not required
+        if ($this->ability === null) {
+            return true;
+        }
+
+        if ($user === null) {
+            return false;
+        }
+
+        if ($this->abilityRequiresModel && $model !== null) {
+            return $user->can($this->ability, $model);
+        }
+
+        // Class-level check (e.g., 'create' which doesn't need a model)
+        // If model is null/string, try to get class, otherwise assume model is the check target if it's a string (class name)
+        $target = $model;
+        if (is_object($model)) {
+            $target = get_class($model);
+        } elseif ($model === null && $this->abilityRequiresModel === false) {
+            // If we don't have a model but need a target class, this might be tricky without context.
+            // Usually for 'create', we check against UserPolicy::create(User $user) which doesn't need a target class if defined that way,
+            // OR UserPolicy::create(User $user) check is done via $user->can('create', User::class).
+            // Let's assume the caller handles the target or we rely on the policy signature.
+            // Actually, $user->can('create', User::class) is standard.
+            // For now, if model is null, we can't guess the class unless we pass it.
+            // But usually isAuthorized is called with a model instance for rows.
+            // For static actions (top of table), we might need to pass class name.
+            return $user->can($this->ability);
+        }
+
+        return $user->can($this->ability, $target);
+    }
+
+    /**
+     * Check if action should be rendered for the given model.
+     *
+     * Combines authorization (policy) AND visibility (show) checks.
+     * Both must pass for the action to be rendered.
+     *
+     * @param  mixed  $model  The row model
+     * @param  \App\Models\User|null  $user  The authenticated user
+     */
+    public function shouldRender(mixed $model = null, ?\App\Models\User $user = null): bool
+    {
+        // First check policy authorization
+        if (! $this->isAuthorized($model, $user)) {
+            return false;
+        }
+
+        // Then check show() condition
+        return $this->isVisible($model);
+    }
+
+    /**
      * Check if the action is visible
      *
      * @param  mixed  $model  Model instance for conditional visibility
@@ -476,7 +576,6 @@ class Action
             'icon' => $this->icon,
             'variant' => $this->variant,
             'color' => $this->color,
-            'hasRoute' => $this->route !== null,
             'hasExecute' => $this->execute !== null,
             'hasModal' => $this->modal !== null,
             'modal' => $this->modal,

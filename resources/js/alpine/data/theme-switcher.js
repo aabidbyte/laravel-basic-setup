@@ -5,13 +5,13 @@
 export function themeSwitcher(initialTheme = 'light') {
     return {
         currentTheme: initialTheme,
-        
+
         toggle(event) {
             const isDark = event.target.checked;
             this.currentTheme = isDark ? 'dark' : 'light';
             this.$refs.themeInput.value = this.currentTheme;
-            this.$el.submit();
-        }
+            this.$refs.themeInput.form.submit();
+        },
     };
 }
 

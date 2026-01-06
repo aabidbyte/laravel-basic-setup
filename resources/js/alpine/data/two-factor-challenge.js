@@ -12,9 +12,9 @@ export function twoFactorChallenge(config = {}) {
             this.showRecoveryInput = !this.showRecoveryInput;
             this.code = '';
             this.recovery_code = '';
-            
+
             // Replaces $dispatch('clear-2fa-auth-code') if that was custom
-            
+
             this.$nextTick(() => {
                 if (this.showRecoveryInput) {
                     this.$refs.recovery_code?.focus();
@@ -24,7 +24,7 @@ export function twoFactorChallenge(config = {}) {
                     codeInput?.focus();
                 }
             });
-        }
+        },
     };
 }
 

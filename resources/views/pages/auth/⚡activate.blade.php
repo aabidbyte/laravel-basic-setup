@@ -5,70 +5,70 @@ use App\Services\Users\ActivationService;
 use Illuminate\Validation\Rules\Password;
 
 new class extends BasePageComponent {
-    public ?string $token = null;
-    public ?User $user = null;
-    public bool $tokenValid = false;
-    public bool $activated = false;
+public ?string $token = null;
+public ?User $user = null;
+public bool $tokenValid = false;
+public bool $activated = false;
 
-    public string $password = '';
-    public string $password_confirmation = '';
+public string $password = '';
+public string $password_confirmation = '';
 
-    /**
-     * Mount the component.
-     */
-    public function mount(string $token): void
-    {
-        $this->token = $token;
+/**
+* Mount the component.
+*/
+public function mount(string $token): void
+{
+$this->token = $token;
 
-        $activationService = app(ActivationService::class);
-        $this->user = $activationService->findUserByToken($token);
+$activationService = app(ActivationService::class);
+$this->user = $activationService->findUserByToken($token);
 
-        $this->tokenValid = $this->user !== null;
-    }
+$this->tokenValid = $this->user !== null;
+}
 
-    /**
-     * Get the validation rules.
-     *
-     * @return array<string, mixed>
-     */
+/**
+* Get the validation rules.
+*
+* @return array<string, mixed>
+    */
     protected function rules(): array
     {
-        return [
-            'password' => ['required', 'string', Password::defaults(), 'confirmed'],
-        ];
+    return [
+    'password' => ['required', 'string', Password::defaults(), 'confirmed'],
+    ];
     }
 
     /**
-     * Activate the account.
-     */
+    * Activate the account.
+    */
     public function activateAccount(): void
     {
-        if (!$this->tokenValid || !$this->user) {
-            NotificationBuilder::make()->title(__('ui.auth.activation.invalid_token'))->error()->send();
-            return;
-        }
+    if (!$this->tokenValid || !$this->user) {
+    NotificationBuilder::make()->title(__('ui.auth.activation.invalid_token'))->error()->send();
+    return;
+    }
 
-        $this->validate();
+    $this->validate();
 
-        try {
-            $activationService = app(ActivationService::class);
-            $activationService->activateWithPassword($this->user, $this->password, $this->token);
+    try {
+    $activationService = app(ActivationService::class);
+    $activationService->activateWithPassword($this->user, $this->password, $this->token);
 
-            $this->activated = true;
+    $this->activated = true;
 
-            NotificationBuilder::make()->title(__('ui.auth.activation.success'))->success()->send();
-        } catch (\Exception $e) {
-            NotificationBuilder::make()->title(__('ui.auth.activation.error'))->content($e->getMessage())->error()->send();
-        }
+    NotificationBuilder::make()->title(__('ui.auth.activation.success'))->success()->send();
+    } catch (\Exception $e) {
+    NotificationBuilder::make()->title(__('ui.auth.activation.error'))->content($e->getMessage())->error()->send();
+    }
     }
 
     /**
-     * Render the component.
-     */
+    * Render the component.
+    */
     public function render()
     {
-        return view('pages.auth.activate-content')->layout('layouts.auth', [
-            'title' => __('ui.auth.activation.title'),
-        ]);
+    return view('pages.auth.activate-content')->layout('layouts.auth', [
+    'title' => __('ui.auth.activation.title'),
+    ]);
     }
-}; ?>
+    }; ?> ?>

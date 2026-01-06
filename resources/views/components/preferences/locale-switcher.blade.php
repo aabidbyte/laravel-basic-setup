@@ -26,9 +26,14 @@
                     name="locale"
                     value="{{ $localeCode }}"
                 >
-                <button
+                <x-ui.button
+                    variant="ghost"
+                    size="sm"
+                    @class([
+                        'justify-start w-full whitespace-nowrap',
+                        $currentLocale === $localeCode ? 'btn-active' : '',
+                    ])
                     type="submit"
-                    class="btn btn-ghost btn-sm justify-start w-full {{ $currentLocale === $localeCode ? 'btn-active' : '' }}"
                 >
                     <x-ui.icon
                         name="{{ $localeData['icon']['name'] ?? 'globe-alt' }}"
@@ -36,7 +41,7 @@
                         class="h-4 w-4"
                     ></x-ui.icon>
                     <span>{{ $localeData['native_name'] ?? $localeCode }}</span>
-                </button>
+                </x-ui.button>
             </form>
         </div>
     @endforeach

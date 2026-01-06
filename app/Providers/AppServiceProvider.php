@@ -10,6 +10,7 @@ use App\Listeners\Preferences\SyncUserPreferencesOnLogin;
 use App\Observers\Notifications\DatabaseNotificationObserver;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\Kernel;
 use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Notifications\DatabaseNotification;
@@ -42,6 +43,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Model::shouldBeStrict(! isProduction());
+
         Vite::useCspNonce();
 
         /** @var Kernel $kernel */

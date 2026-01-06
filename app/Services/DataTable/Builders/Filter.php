@@ -51,6 +51,11 @@ class Filter
     private ?Closure $optionsCallback = null;
 
     /**
+     * Resolved options (cached after first resolution).
+     */
+    private ?array $resolvedOptions = null;
+
+    /**
      * Relationship configuration
      *
      * @var array{name: string, column: string}|null
@@ -254,6 +259,10 @@ class Filter
      */
     public function getOptions(): array
     {
+        if ($this->resolvedOptions !== null) {
+            return $this->resolvedOptions;
+        }
+
         $options = [];
 
         if ($this->options !== null) {
@@ -263,7 +272,17 @@ class Filter
         }
 
         // Always prepend an empty option as the first option using centralized helper
-        return prepend_empty_option($options, $this->placeholder);
+        $this->resolvedOptions = prepend_empty_option($options, $this->placeholder);
+
+        return $this->resolvedOptions;
+    }
+
+    /**
+     * Clear resolved options (for testing).
+     */
+    public function clearResolvedOptions(): void
+    {
+        $this->resolvedOptions = null;
     }
 
     /**

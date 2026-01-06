@@ -58,10 +58,10 @@ new class extends LivewireBaseComponent {
         modalStateId: '{{ $modalStateId }}',
         initialModalConfig: @js($modalConfig),
         verificationModalConfig: @js([
-            'title' => __('ui.settings.two_factor.setup.title_verify'),
-            'description' => __('ui.settings.two_factor.setup.description_verify'),
-            'buttonText' => __('ui.actions.continue'),
-        ])
+    'title' => __('ui.settings.two_factor.setup.title_verify'),
+    'description' => __('ui.settings.two_factor.setup.description_verify'),
+    'buttonText' => __('ui.actions.continue'),
+])
     })"
     @close-modal.window="if ($event.detail === modalId) { closeModal(); }"
 >
