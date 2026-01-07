@@ -119,12 +119,197 @@ export function notificationCenter() {
 
             this.pendingDeleteId = null;
         },
+
+        /**
+         * Mark notification as read after a delay (CSP-safe)
+         * Used by x-intersect for viewport-based auto mark-as-read
+         * @param {string} notificationId - ID of notification to mark as read
+         * @param {number} delayMs - Delay in milliseconds (default: 3000)
+         */
+        delayedMarkAsRead(notificationId, delayMs = 3000) {
+            setTimeout(() => {
+                if (this.$wire) {
+                    this.$wire.markAsRead(notificationId);
+                }
+            }, delayMs);
+        },
     };
 }
 
 /**
- * Notification Dropdown Alpine.js Data Component
- * Manages notification dropdown state and updates
+ * Notification Dropdown Trigger Alpine.js Data Component
+ * Manages the static trigger button with badge (always visible)
+ * @param {number} initialCount - Initial unread count from server
+ */
+export function notificationDropdownTrigger(initialCount = 0) {
+    return {
+        isOpen: false,
+        wasOpened: false,
+        unreadCount: initialCount,
+        _countUpdateListener: null,
+        _notificationChangedListener: null,
+        // Track pending changes that haven't been confirmed by server yet
+        _pendingDelta: 0,
+        _lastServerCount: initialCount,
+
+        init() {
+            // Listen for accurate count from the content component (source of truth)
+            this._countUpdateListener = (e) => {
+                if (typeof e.detail?.count === 'number') {
+                    // Server count is source of truth - reset pending delta
+                    this._lastServerCount = e.detail.count;
+                    this._pendingDelta = 0;
+                    this.unreadCount = e.detail.count;
+                }
+            };
+            window.addEventListener(
+                'notification-dropdown:count-updated',
+                this._countUpdateListener,
+            );
+
+            // Listen for notification changes for optimistic updates
+            // When content isn't mounted, this provides real-time feedback
+            this._notificationChangedListener = (e) => {
+                const action = e.detail?.action;
+                if (action === 'created') {
+                    // Optimistically increment
+                    this._pendingDelta++;
+                    this.unreadCount =
+                        this._lastServerCount + this._pendingDelta;
+                } else if (action === 'deleted' || action === 'forceDeleted') {
+                    // Optimistically decrement
+                    this._pendingDelta--;
+                    this.unreadCount = Math.max(
+                        0,
+                        this._lastServerCount + this._pendingDelta,
+                    );
+                } else if (action === 'updated') {
+                    // Notification was updated (e.g., marked as read)
+                    // Decrement if we have unread notifications
+                    if (this.unreadCount > 0) {
+                        this._pendingDelta--;
+                        this.unreadCount = Math.max(
+                            0,
+                            this._lastServerCount + this._pendingDelta,
+                        );
+                    }
+                }
+            };
+            window.addEventListener(
+                'notifications-changed',
+                this._notificationChangedListener,
+            );
+        },
+
+        async close() {
+            if (this.wasOpened) {
+                // Dispatch event to content component to mark as read
+                window.dispatchEvent(
+                    new CustomEvent('notification-dropdown:close'),
+                );
+                this.wasOpened = false;
+            }
+            this.isOpen = false;
+        },
+
+        open() {
+            this.isOpen = true;
+            this.wasOpened = true;
+        },
+
+        toggle() {
+            if (this.isOpen) {
+                this.close();
+            } else {
+                this.open();
+            }
+        },
+
+        destroy() {
+            if (this._countUpdateListener) {
+                window.removeEventListener(
+                    'notification-dropdown:count-updated',
+                    this._countUpdateListener,
+                );
+                this._countUpdateListener = null;
+            }
+            if (this._notificationChangedListener) {
+                window.removeEventListener(
+                    'notifications-changed',
+                    this._notificationChangedListener,
+                );
+                this._notificationChangedListener = null;
+            }
+        },
+    };
+}
+
+/**
+ * Notification Dropdown Content Alpine.js Data Component
+ * Manages the Livewire content component (lazy loaded)
+ * @param {Object} $wire - Livewire component instance
+ */
+export function notificationDropdownContent($wire) {
+    return {
+        _closeListener: null,
+        _isDestroyed: false,
+
+        init() {
+            // Listen for close event from trigger to mark as read
+            this._closeListener = async () => {
+                // Skip if component has been destroyed (e.g., after navigation)
+                if (this._isDestroyed) {
+                    return;
+                }
+
+                // Only proceed if $wire still appears valid
+                if (
+                    !$wire ||
+                    !$wire.__instance ||
+                    typeof $wire.markVisibleAsRead !== 'function'
+                ) {
+                    return;
+                }
+
+                try {
+                    await $wire.markVisibleAsRead();
+                } catch (e) {
+                    // "Component not found" is expected after wire:navigate
+                    const errorMessage = e?.message || String(e || '');
+                    if (errorMessage.includes('Component not found')) {
+                        // Mark as destroyed to prevent future calls
+                        this._isDestroyed = true;
+                        return;
+                    }
+                    // Re-throw unexpected errors
+                    console.error(
+                        '[Notification Dropdown Content] Unexpected error:',
+                        e,
+                    );
+                }
+            };
+            window.addEventListener(
+                'notification-dropdown:close',
+                this._closeListener,
+            );
+        },
+
+        destroy() {
+            this._isDestroyed = true;
+            if (this._closeListener) {
+                window.removeEventListener(
+                    'notification-dropdown:close',
+                    this._closeListener,
+                );
+                this._closeListener = null;
+            }
+        },
+    };
+}
+
+/**
+ * Notification Dropdown Alpine.js Data Component (Legacy - kept for compatibility)
+ * @deprecated Use notificationDropdownTrigger and notificationDropdownContent instead
  */
 export function notificationDropdown() {
     return {

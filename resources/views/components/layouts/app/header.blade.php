@@ -5,11 +5,8 @@
     @endif
 </div>
 {{-- Header Actions: Desktop shows notifications, theme, and locale; mobile shows in user menu --}}
-<div class="flex-none flex items-center gap-2">
-    <livewire:notifications.dropdown
-        lazy
-        wire:key="notifications-dropdown-desktop"
-    ></livewire:notifications.dropdown>
+<div class="flex items-center gap-2">
+    <x-notifications.dropdown-trigger></x-notifications.dropdown-trigger>
     <div class="hidden lg:flex items-center gap-2">
         <x-preferences.theme-switcher></x-preferences.theme-switcher>
         <x-preferences.locale-switcher></x-preferences.locale-switcher>

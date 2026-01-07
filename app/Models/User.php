@@ -29,6 +29,7 @@ class User extends BaseUserModel
         'name',
         'username',
         'email',
+        'email_verified_at',
         'password',
         'team_id',
         'created_by_user_id',
@@ -134,6 +135,15 @@ class User extends BaseUserModel
     public function hasMailSettings(): bool
     {
         return $this->mailSettings()->active()->exists();
+    }
+
+    /**
+     * Get the entity's notifications.
+     * Override to use our custom Notification model with resolving accessors.
+     */
+    public function notifications(): MorphMany
+    {
+        return $this->morphMany(Notification::class, 'notifiable')->latest();
     }
 
     /**

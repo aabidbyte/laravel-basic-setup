@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Models\Notification;
 use App\Models\User;
-use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Str;
 
 use function Pest\Laravel\actingAs;
@@ -13,7 +13,7 @@ test('notification center shows load more button when there are more than 10 not
     $user = User::factory()->create();
 
     for ($i = 0; $i < 11; $i++) {
-        DatabaseNotification::query()->create([
+        Notification::query()->create([
             'id' => (string) Str::uuid(),
             'type' => 'App\\Notifications\\GeneralNotification',
             'notifiable_type' => User::class,
@@ -36,7 +36,7 @@ test('notification center does not show load more button when there are 10 or fe
     $user = User::factory()->create();
 
     for ($i = 0; $i < 10; $i++) {
-        DatabaseNotification::query()->create([
+        Notification::query()->create([
             'id' => (string) Str::uuid(),
             'type' => 'App\\Notifications\\GeneralNotification',
             'notifiable_type' => User::class,

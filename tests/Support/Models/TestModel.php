@@ -11,4 +11,9 @@ class TestModel extends BaseModel
     protected $table = 'test_models';
 
     protected $fillable = ['name', 'uuid'];
+
+    public function label(): string
+    {
+        return $this->name ?? 'Test Model';
+    }
 }

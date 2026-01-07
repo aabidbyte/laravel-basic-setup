@@ -11,7 +11,7 @@ it('renders confirm modal with outside click closing enabled by default', functi
         </div>
     BLADE);
 
-    expect($html)->toContain('x-on:click.self="confirmOpen = false"');
+    expect($html)->toContain('x-on:click.self="isOpen = false"');
 });
 
 it('can render confirm modal with outside click closing disabled', function () {
@@ -23,7 +23,7 @@ it('can render confirm modal with outside click closing disabled', function () {
         </div>
     BLADE);
 
-    expect($html)->not->toContain('x-on:click.self="confirmOpen = false"');
+    expect($html)->not->toContain('x-on:click.self="isOpen = false"');
 });
 
 it('can render confirm modal with backdrop transition disabled', function () {

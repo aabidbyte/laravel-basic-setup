@@ -141,42 +141,32 @@ NotificationBuilder::make()
     -   Supports click-to-navigate via link
     -   Slide animation (enters from right, exits to right)
 
-### Notification Dropdown Component
+### Notification Dropdown Component (Split Architecture)
 
-**Notification Dropdown** (`resources/views/components/notifications/⚡dropdown.blade.php`):
+The notification dropdown uses a **split architecture** for better UX during navigation:
 
--   Livewire 4 single-file component (lazy-loaded)
--   Component: `<livewire:notifications.dropdown lazy>`
--   Features:
-    -   Shows last 5 notifications (sorted by unread first, then by creation date)
-    -   Unread count badge (shows count up to 99, displays "99+" if over 99)
-    -   Badge calculation via Livewire computed property `getUnreadBadgeProperty()`
-    -   Automatically marks visible notifications as read when dropdown closes (only if opened)
-    -   Uses Alpine.js reactive state (`isOpen`, `wasOpened`) to manage dropdown state
-    -   `dropdown-open` class managed via `x-bind:class` to maintain state during Livewire updates
-    -   Refreshes in real-time when notifications change (via Alpine notifications store fan-out)
--   **State Management Pattern**:
-    ```blade
-    <div x-data="notificationDropdown($wire)" x-init="init()"
-        @click.away="
-            if (wasOpened) {
-                $wire.markVisibleAsRead();
-                wasOpened = false;
-            }
-            isOpen = false;
-        ">
-        <x-ui.dropdown x-bind:class="{ 'dropdown-open': isOpen }">
-            <x-slot:trigger>
-                <button @click="
-                    isOpen = true;
-                    wasOpened = true;
-                ">
-                    <!-- Badge shows {{ $this->unreadBadge }} -->
-                </button>
-            </x-slot:trigger>
-        </x-ui.dropdown>
-    </div>
-    ```
+1. **Static Blade Trigger** (`resources/views/components/notifications/dropdown-trigger.blade.php`):
+   - Pure Blade component that stays visible during navigation
+   - Contains bell icon button and unread badge
+   - Initial badge count injected from PHP (server-rendered)
+   - Uses `notificationDropdownTrigger` Alpine component for state
+
+2. **Lazy-Loaded Content** (`resources/views/components/notifications/⚡dropdown-content.blade.php`):
+   - Livewire 4 SFC (lazy-loaded inside the dropdown)
+   - Component: `<livewire:notifications.dropdown-content lazy>`
+   - Shows last 5 notifications (sorted by unread first, then by creation date)
+   - Marks notifications as read when dropdown closes
+   - Uses `notificationDropdownContent` Alpine component
+
+**Usage in Layout:**
+```blade
+<x-notifications.dropdown-trigger></x-notifications.dropdown-trigger>
+```
+
+**Benefits:**
+- Bell icon and badge remain visible during SPA navigation
+- Content is lazy-loaded only when needed
+- Better UX without loading placeholder flicker
 
 ### Notification Center Page
 
@@ -210,16 +200,15 @@ Channels are defined in `routes/channels.php`:
 For real-time UI refresh when the `notifications` table changes, the app broadcasts a dedicated event:
 
 -   `App\Events\Notifications\DatabaseNotificationChanged` (broadcast name: `notification.changed`)
--   Triggered via `App\Observers\Notifications\DatabaseNotificationObserver` observing `Illuminate\Notifications\DatabaseNotification`
+-   Triggered via `App\Observers\Notifications\NotificationObserver` observing `App\Models\Notification`
 
-### Persistence Behavior
+## Channels
 
-When `->persist()` is called:
-
--   **User channel**: Creates single DatabaseNotification for target user
--   **Team channel**: Creates DatabaseNotification for each team member
--   **User teams channel**: Creates DatabaseNotification for each team member in each team the user belongs to (or single notification for user if no teams)
--   **Global channel**: Creates DatabaseNotification for all users (batched inserts)
+-   **Toast channel**: Dispatches `ToastBroadcasted` event (Pusher)
+-   **User channel**: Creates single `Notification` for target user
+-   **Team channel**: Creates `Notification` for each team member
+-   **User teams channel**: Creates `Notification` for each team member in each team the user belongs to (or single notification for user if no teams)
+-   **Global channel**: Creates `Notification` for all users (batched inserts)
 -   **Session channel**: Stores notification in session as fallback (not persisted to database, as there's no user to associate with)
 
 Notifications are stored in Laravel's standard `notifications` table with:

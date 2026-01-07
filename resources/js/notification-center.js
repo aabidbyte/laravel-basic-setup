@@ -15,6 +15,8 @@ import { toastCenter, toastItem } from './alpine/data/toast-center.js';
 import {
     notificationCenter,
     notificationDropdown,
+    notificationDropdownTrigger,
+    notificationDropdownContent,
 } from './alpine/data/notification-center.js';
 
 // Module-level initialization state
@@ -46,6 +48,14 @@ function registerAlpineDataComponents() {
     window.Alpine.data('toastItem', toastItem);
     window.Alpine.data('notificationCenter', notificationCenter);
     window.Alpine.data('notificationDropdown', notificationDropdown);
+    window.Alpine.data(
+        'notificationDropdownTrigger',
+        notificationDropdownTrigger,
+    );
+    window.Alpine.data(
+        'notificationDropdownContent',
+        notificationDropdownContent,
+    );
     componentsRegistered = true;
 }
 

@@ -13,7 +13,7 @@
     <label class="swap swap-rotate">
         <input
             type="checkbox"
-            :checked="currentTheme === 'dark'"
+            @checked($currentTheme === 'dark')
             @change="toggle($event)"
         />
 

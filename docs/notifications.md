@@ -326,21 +326,23 @@ The toast center component (`<x-notifications.toast-center />`) is automatically
 
 ### Notification Dropdown
 
-The notification dropdown in the header shows:
+The notification dropdown uses a **split architecture** for better UX during SPA navigation:
 
 -   Last 5 notifications (sorted by unread first)
 -   Unread count badge (shows count up to 99, displays "99+" if over 99)
 -   Quick access to notification center
--   Automatically marks visible notifications as read when the dropdown is closed (only if it was opened)
+-   Automatically marks visible notifications as read when closed
 
-**Component:** `<livewire:notifications.dropdown lazy>`
+**Components:**
+
+1.  **Static Trigger** (`x-notifications.dropdown-trigger`): Pure Blade wrapper with bell icon and badge (stays visible during navigation)
+2.  **Lazy Content** (`livewire:notifications.dropdown-content lazy`): Livewire SFC with notification list (lazy-loaded)
 
 **Key Features:**
 
--   **Badge Calculation**: Unread count badge is calculated via Livewire computed property `getUnreadBadgeProperty()` (capped at "99+")
--   **State Management**: Uses Alpine.js reactive state (`isOpen` and `wasOpened`) to manage dropdown open/close state
--   **Auto-Mark as Read**: Notifications are automatically marked as read when the dropdown closes (via `@click.away`), but only if the dropdown was actually opened by the user
--   **Persistent State**: The `dropdown-open` class is managed via Alpine.js `x-bind:class` to maintain state during Livewire updates
+-   **No Flicker During Navigation**: Trigger button stays in DOM during `wire:navigate`
+-   **Server-Rendered Badge**: Initial count from PHP, updated via events
+-   **State Management**: Uses `notificationDropdownTrigger` and `notificationDropdownContent` Alpine components
 
 ### Realtime UI Configuration (Centralized)
 
@@ -355,7 +357,7 @@ The realtime UI (toast center, notification dropdown refresh, notification cente
 UI refreshes for the dropdown + notification center are driven by **database notification model changes**, not toast broadcasts.
 
 -   **Event**: `App\Events\Notifications\DatabaseNotificationChanged` (broadcast name: `notification.changed`)
--   **Observer**: `App\Observers\Notifications\DatabaseNotificationObserver` (hooks into `Illuminate\Notifications\DatabaseNotification`)
+-   **Observer**: `App\Observers\Notifications\NotificationObserver` (hooks into `App\Models\Notification`)
 -   **Registration**: Observer is registered in `App\Providers\AppServiceProvider`
 
 This ensures UI stays in sync when notifications are created, updated (ex: marked read), or deleted.

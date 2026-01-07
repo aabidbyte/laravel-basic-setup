@@ -47,21 +47,17 @@ new class extends BasePageComponent {
             ->take($this->visibleCount)
             ->get()
             ->map(function ($notification) {
-                $data = $notification->data;
-                $type = $data['type'] ?? 'classic';
-                $icon = $this->getNotificationIcon($type);
-
                 return [
                     'id' => $notification->id,
-                    'title' => $data['title'] ?? 'Notification',
-                    'subtitle' => $data['subtitle'] ?? null,
-                    'content' => $data['content'] ?? null,
-                    'type' => $type,
-                    'link' => $data['link'] ?? null,
-                    'isRead' => $notification->read_at !== null,
+                    'title' => $notification->resolved_title,
+                    'subtitle' => $notification->resolved_subtitle,
+                    'content' => $notification->resolved_content,
+                    'type' => $notification->notification_type,
+                    'link' => $notification->notification_link,
+                    'isRead' => $notification->is_read,
                     'readAt' => $notification->read_at,
                     'createdAt' => $notification->created_at,
-                    'icon' => $icon,
+                    'icon' => $this->getNotificationIcon($notification->notification_type),
                 ];
             });
     }
@@ -138,7 +134,6 @@ new class extends BasePageComponent {
 
 <div
     x-data="notificationCenter()"
-    x-init="init()"
     x-on:notifications-changed.window="$wire.$refresh()"
     wire:key="notification-center-{{ Auth::user()?->uuid ?? 'guest' }}"
     class="flex flex-col gap-4"
@@ -178,7 +173,7 @@ new class extends BasePageComponent {
                 @foreach ($this->notifications as $notification)
                     <div
                         wire:key="notification-{{ $notification['id'] }}"
-                        x-intersect.once="$wire.markAsRead('{{ $notification['id'] }}')"
+                        x-intersect.once="delayedMarkAsRead('{{ $notification['id'] }}')"
                         class="card bg-base-200 hover:bg-base-300 transition-colors {{ $notification['isRead'] ? 'opacity-75' : '' }}"
                     >
                         <div class="card-body">

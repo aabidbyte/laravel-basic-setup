@@ -8,6 +8,7 @@ use App\Enums\Toast\ToastAnimation;
 use App\Enums\Toast\ToastPosition;
 use App\Enums\Toast\ToastType;
 use App\Events\Notifications\ToastBroadcasted;
+use App\Models\Notification;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -19,9 +20,15 @@ use RuntimeException;
 
 class NotificationBuilder
 {
-    protected ?string $title = null;
+    /**
+     * Title can be a plain string or ['key' => 'translation.key', 'params' => [...]]
+     */
+    protected string|array|null $title = null;
 
-    protected ?string $subtitle = null;
+    /**
+     * Subtitle can be a plain string or ['key' => 'translation.key', 'params' => [...]]
+     */
+    protected string|array|null $subtitle = null;
 
     protected ?NotificationContent $content = null;
 
@@ -65,38 +72,86 @@ class NotificationBuilder
 
     /**
      * Set the notification title (required).
+     * Auto-detects translation keys: if params provided or Lang::has() is true, stores for deferred translation.
      *
-     * @param  string  $title  The notification title
+     * @param  string  $title  The notification title or translation key
+     * @param  array<string, mixed>|null  $params  Translation parameters (if provided, title is treated as a key)
      */
-    public function title(string $title): static
+    public function title(string $title, ?array $params = null): static
     {
-        $this->title = $title;
+        $this->title = $this->resolveTranslatableValue($title, $params);
 
         return $this;
     }
 
     /**
      * Set the notification subtitle (optional).
+     * Auto-detects translation keys: if params provided or Lang::has() is true, stores for deferred translation.
      *
-     * @param  string|null  $subtitle  The notification subtitle
+     * @param  string|null  $subtitle  The notification subtitle or translation key
+     * @param  array<string, mixed>|null  $params  Translation parameters (if provided, subtitle is treated as a key)
      */
-    public function subtitle(?string $subtitle): static
+    public function subtitle(?string $subtitle, ?array $params = null): static
     {
-        $this->subtitle = $subtitle;
+        $this->subtitle = $subtitle !== null ? $this->resolveTranslatableValue($subtitle, $params) : null;
 
         return $this;
     }
 
     /**
      * Set the notification content as a string.
+     * Auto-detects translation keys: if params provided or Lang::has() is true, stores for deferred translation.
      *
-     * @param  string  $content  The notification content as plain text
+     * @param  string  $content  The notification content or translation key
+     * @param  array<string, mixed>|null  $params  Translation parameters (if provided, content is treated as a key)
      */
-    public function content(string $content): static
+    public function content(string $content, ?array $params = null): static
     {
-        $this->content = NotificationContent::string($content);
+        $resolved = $this->resolveTranslatableValue($content, $params);
+        $this->content = NotificationContent::string($resolved);
 
         return $this;
+    }
+
+    /**
+     * Resolve a value to string or translatable array.
+     * If params provided, it's definitely a translation key.
+     * If no params but Lang::has() returns true, treat as translation key.
+     * Otherwise, treat as plain string.
+     *
+     * @param  array<string, mixed>|null  $params
+     * @return string|array{key: string, params: array<string, mixed>}
+     */
+    protected function resolveTranslatableValue(string $value, ?array $params): string|array
+    {
+        // If params provided, definitely a translation key
+        if ($params !== null) {
+            return ['key' => $value, 'params' => $params];
+        }
+
+        // Check if it looks like a translation key (Lang::has)
+        if (\Illuminate\Support\Facades\Lang::has($value)) {
+            return ['key' => $value, 'params' => []];
+        }
+
+        // Plain string
+        return $value;
+    }
+
+    /**
+     * Get the translated/resolved value for a field.
+     */
+    protected function resolveValue(string|array|null $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        if (is_array($value) && isset($value['key'])) {
+            return __($value['key'], $value['params'] ?? []);
+        }
+
+        return $value;
     }
 
     /**
@@ -318,17 +373,19 @@ class NotificationBuilder
      */
     public function send(): void
     {
-        if ($this->title === null || trim($this->title) === '') {
+        // Resolve title to string for validation
+        $resolvedTitle = $this->resolveValue($this->title);
+        if ($resolvedTitle === null || trim($resolvedTitle) === '') {
             throw new InvalidArgumentException('Notification title is required.');
         }
 
         // Render icon HTML server-side
         $iconHtml = $this->renderIconForType($this->type);
 
-        // Create toast payload
+        // Create toast payload with resolved values (strings for immediate display)
         $payload = new ToastPayload(
-            title: $this->title,
-            subtitle: $this->subtitle,
+            title: $resolvedTitle,
+            subtitle: $this->resolveValue($this->subtitle),
             content: $this->content?->render(),
             type: $this->type,
             position: $this->position,
@@ -514,7 +571,7 @@ class NotificationBuilder
         $notificationData['notifiable_type'] = User::class;
         $notificationData['notifiable_id'] = $user->id;
 
-        DatabaseNotification::query()->create($notificationData);
+        Notification::query()->create($notificationData);
     }
 
     /**
@@ -548,33 +605,64 @@ class NotificationBuilder
 
         foreach (array_chunk($userIds->all(), 100) as $chunk) {
             foreach ($chunk as $userId) {
-                $notificationData['id'] = (string) Str::uuid();
+                // For manual creation, we generate a UUID for the 'uuid' column
+                // The 'id' column will be auto-generated by the database
+                $notificationData['uuid'] = (string) Str::uuid();
                 $notificationData['notifiable_type'] = User::class;
                 $notificationData['notifiable_id'] = $userId;
+                unset($notificationData['id']); // Ensure we don't try to set the ID column
 
-                DatabaseNotification::query()->create($notificationData);
+                // Manually create the notification
+                Notification::query()->create($notificationData);
             }
         }
     }
 
     /**
      * Prepare notification data array from payload.
+     * Stores translatable data for deferred translation at render time.
      *
-     * @param  ToastPayload  $payload  The toast payload
+     * @param  ToastPayload  $payload  The toast payload (used for type and link)
      * @return array<string, mixed> The prepared notification data array
      */
     protected function prepareNotificationData(ToastPayload $payload): array
     {
+        $data = [
+            'type' => $payload->type->value,
+            'link' => $payload->link,
+        ];
+
+        // Store title - either as translatable array or plain string
+        if (is_array($this->title) && isset($this->title['key'])) {
+            $data['title'] = __($this->title['key'], $this->title['params'] ?? []); // For backwards compatibility
+            $data['titleKey'] = $this->title['key'];
+            $data['titleParams'] = $this->title['params'];
+        } else {
+            $data['title'] = $this->title;
+        }
+
+        // Store subtitle - either as translatable array or plain string
+        if (is_array($this->subtitle) && isset($this->subtitle['key'])) {
+            $data['subtitle'] = __($this->subtitle['key'], $this->subtitle['params'] ?? []);
+            $data['subtitleKey'] = $this->subtitle['key'];
+            $data['subtitleParams'] = $this->subtitle['params'];
+        } else {
+            $data['subtitle'] = $this->subtitle;
+        }
+
+        // Store content - use storable format for deferred rendering
+        if ($this->content) {
+            $storable = $this->content->toStorable();
+            $data['content'] = $this->content->render(); // For backwards compatibility
+            $data['contentStorable'] = $storable;
+        } else {
+            $data['content'] = null;
+        }
+
         return [
             'id' => (string) Str::uuid(),
             'type' => 'App\Notifications\GeneralNotification',
-            'data' => [
-                'title' => $payload->title,
-                'subtitle' => $payload->subtitle,
-                'content' => $payload->content,
-                'type' => $payload->type->value,
-                'link' => $payload->link,
-            ],
+            'data' => $data,
             'read_at' => null,
             'created_at' => now(),
             'updated_at' => now(),
@@ -596,11 +684,14 @@ class NotificationBuilder
 
         foreach (array_chunk($userIds->all(), 100) as $chunk) {
             foreach ($chunk as $userId) {
-                $notificationData['id'] = (string) Str::uuid();
+                // For manual creation, we generate a UUID for the 'uuid' column
+                // The 'id' column will be auto-generated by the database
+                $notificationData['uuid'] = (string) Str::uuid();
                 $notificationData['notifiable_type'] = User::class;
                 $notificationData['notifiable_id'] = $userId;
+                unset($notificationData['id']); // Ensure we don't try to set the ID column
 
-                DatabaseNotification::query()->create($notificationData);
+                Notification::query()->create($notificationData);
             }
         }
     }

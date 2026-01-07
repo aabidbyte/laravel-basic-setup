@@ -14,5 +14,5 @@ test('app layout initializes notifications store and renders notification dropdo
         ->get(route('dashboard'))
         ->assertOk()
         ->assertSee('window.notificationRealtimeConfig', false)
-        ->assertSee('notifications-dropdown-desktop', false);
+        ->assertSee('notifications-dropdown-content', false);
 });

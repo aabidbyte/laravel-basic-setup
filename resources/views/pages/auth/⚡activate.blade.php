@@ -71,4 +71,4 @@ $this->tokenValid = $this->user !== null;
     'title' => __('ui.auth.activation.title'),
     ]);
     }
-    }; ?> ?>
+    }; ?> ?> ?> ?>

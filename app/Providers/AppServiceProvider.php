@@ -7,13 +7,13 @@ use App\Constants\Auth\Roles;
 use App\Http\Middleware\Teams\TeamsPermission;
 use App\Listeners\DevEmailRedirectListener;
 use App\Listeners\Preferences\SyncUserPreferencesOnLogin;
-use App\Observers\Notifications\DatabaseNotificationObserver;
+use App\Models\Notification;
+use App\Observers\Notifications\NotificationObserver;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\Kernel;
 use Illuminate\Mail\Events\MessageSending;
-use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -59,7 +59,7 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(Login::class, SyncUserPreferencesOnLogin::class);
         Event::listen(MessageSending::class, DevEmailRedirectListener::class);
 
-        DatabaseNotification::observe(DatabaseNotificationObserver::class);
+        Notification::observe(NotificationObserver::class);
 
         // Implicitly grant "Super Admin" role all permissions
         // This works in the app by using gate-related functions like auth()->user->can() and @can()

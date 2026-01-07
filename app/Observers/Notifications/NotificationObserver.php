@@ -3,36 +3,36 @@
 namespace App\Observers\Notifications;
 
 use App\Events\Notifications\DatabaseNotificationChanged;
-use Illuminate\Notifications\DatabaseNotification;
+use App\Models\Notification;
 
-class DatabaseNotificationObserver
+class NotificationObserver
 {
-    public function created(DatabaseNotification $notification): void
+    public function created(Notification $notification): void
     {
         $this->broadcastChange($notification, 'created');
     }
 
-    public function updated(DatabaseNotification $notification): void
+    public function updated(Notification $notification): void
     {
         $this->broadcastChange($notification, 'updated');
     }
 
-    public function deleted(DatabaseNotification $notification): void
+    public function deleted(Notification $notification): void
     {
         $this->broadcastChange($notification, 'deleted');
     }
 
-    public function restored(DatabaseNotification $notification): void
+    public function restored(Notification $notification): void
     {
         $this->broadcastChange($notification, 'restored');
     }
 
-    public function forceDeleted(DatabaseNotification $notification): void
+    public function forceDeleted(Notification $notification): void
     {
         $this->broadcastChange($notification, 'forceDeleted');
     }
 
-    protected function broadcastChange(DatabaseNotification $notification, string $action): void
+    protected function broadcastChange(Notification $notification, string $action): void
     {
         $userUuid = $notification->notifiable?->uuid;
         if (! $userUuid) {

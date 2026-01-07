@@ -15,6 +15,6 @@ test('confirm modal root has alpine context for $nextTick', function () {
 
     $html = actingAs($user)->get(route('dashboard'))->getContent();
 
-    expect($html)->toContain('<div x-data')
+    expect($html)->toContain('x-data="confirmModal')
         ->and($html)->toContain('@confirm-modal.window');
 });

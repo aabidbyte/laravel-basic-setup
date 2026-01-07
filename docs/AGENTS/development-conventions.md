@@ -349,7 +349,7 @@ These structural elements are acceptable without components:
     -   **Exceptions** (acceptable uses of integer IDs):
         -   Server-side validation rules (e.g., `Rule::unique(User::class)->ignore($user->id)`)
         -   Internal database queries and subqueries that are not exposed to frontend
-        -   Laravel's `DatabaseNotification` model uses UUID as primary key (`$notification->id` is actually a UUID string)
+        -   `App\Models\Notification` model extends `BaseModel` and handles `id` (auto-inc) and `uuid` (string) correctly. It maps Laravel's `DatabaseChannel` UUID to the `uuid` column.
     -   **Route Model Binding**: All models use UUID as route key name (configured in `HasUuid` trait)
     -   **DataTable Components**: Must use `uuid` field from row data, never fall back to `id` field
     -   **API Responses**: Always return UUIDs, never integer IDs
