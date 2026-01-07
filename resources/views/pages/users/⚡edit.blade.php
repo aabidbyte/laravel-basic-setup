@@ -28,7 +28,6 @@ new class extends BasePageComponent {
     public ?string $email = null;
     public string $password = '';
     public string $password_confirmation = '';
-    public ?int $team_id = null;
     public ?string $timezone = null;
     public ?string $locale = null;
     public bool $is_active = false;
@@ -54,9 +53,8 @@ new class extends BasePageComponent {
         $this->name = $this->editUser->name;
         $this->username = $this->editUser->username;
         $this->email = $this->editUser->email;
-        $this->team_id = $this->editUser->team_id;
-        $this->timezone = $this->editUser->timezone;
-        $this->locale = $this->editUser->locale;
+        $this->timezone = $this->editUser->timezone ?? config('app.timezone');
+        $this->locale = $this->editUser->locale ?? config('app.locale');
         $this->is_active = $this->editUser->is_active;
         $this->selectedRoles = $this->editUser->roles->pluck('id')->toArray();
         $this->selectedTeams = $this->editUser->teams->pluck('id')->toArray();
@@ -99,12 +97,9 @@ new class extends BasePageComponent {
      */
     public function getLocalesProperty(): array
     {
-        return [
-            'en' => 'English',
-            'fr' => 'Français',
-            'es' => 'Español',
-            'de' => 'Deutsch',
-        ];
+        return collect(config('i18n.supported_locales'))
+            ->mapWithKeys(fn($data, $locale) => [$locale => $data['native_name']])
+            ->toArray();
     }
 
     /**
@@ -116,12 +111,11 @@ new class extends BasePageComponent {
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'username' => ['nullable', 'string', 'max:255', Rule::unique(User::class)->ignore($this->editUser->id)],
+            'username' => ['required', 'string', 'max:255', Rule::unique(User::class)->ignore($this->editUser->id)],
             'email' => ['nullable', 'email', 'max:255', Rule::unique(User::class)->ignore($this->editUser->id)],
             'password' => ['nullable', 'string', Password::defaults(), 'confirmed'],
-            'team_id' => ['nullable', 'exists:teams,id'],
-            'timezone' => ['nullable', 'string', 'timezone'],
-            'locale' => ['nullable', 'string', 'max:10'],
+            'timezone' => ['required', 'string', 'timezone'],
+            'locale' => ['required', 'string', 'max:10'],
             'is_active' => ['boolean'],
             'selectedRoles' => ['array'],
             'selectedRoles.*' => ['exists:roles,id'],
@@ -147,7 +141,6 @@ new class extends BasePageComponent {
                     'username' => $this->username,
                     'email' => $this->email,
                     'password' => $this->password ?: null,
-                    'team_id' => $this->team_id,
                     'timezone' => $this->timezone,
                     'locale' => $this->locale,
                     'is_active' => $this->is_active,
@@ -204,6 +197,7 @@ new class extends BasePageComponent {
                                 wire:model="username"
                                 name="username"
                                 :label="__('ui.users.username')"
+                                required
                             ></x-ui.input>
                         </div>
 
@@ -280,7 +274,6 @@ new class extends BasePageComponent {
                                     wire:model="timezone"
                                     class="select select-bordered w-full"
                                 >
-                                    <option value="">{{ __('ui.users.select_timezone') }}</option>
                                     @foreach ($this->timezones as $value => $label)
                                         <option value="{{ $value }}">{{ $label }}</option>
                                     @endforeach
@@ -295,7 +288,6 @@ new class extends BasePageComponent {
                                     wire:model="locale"
                                     class="select select-bordered w-full"
                                 >
-                                    <option value="">{{ __('ui.users.select_locale') }}</option>
                                     @foreach ($this->locales as $value => $label)
                                         <option value="{{ $value }}">{{ $label }}</option>
                                     @endforeach
@@ -303,20 +295,6 @@ new class extends BasePageComponent {
                             </div>
                         </div>
 
-                        <div class="form-control w-full">
-                            <label class="label">
-                                <span class="label-text">{{ __('ui.users.primary_team') }}</span>
-                            </label>
-                            <select
-                                wire:model="team_id"
-                                class="select select-bordered w-full"
-                            >
-                                <option value="">{{ __('ui.users.no_primary_team') }}</option>
-                                @foreach ($this->teams as $team)
-                                    <option value="{{ $team->id }}">{{ $team->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
                     </div>
 
                     {{-- Roles & Teams --}}

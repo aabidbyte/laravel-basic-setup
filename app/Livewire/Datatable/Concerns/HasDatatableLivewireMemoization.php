@@ -44,9 +44,9 @@ trait HasDatatableLivewireMemoization
     }
 
     /**
-     * Get the authenticated user with permissions pre-loaded (memoized).
+     * Get the authenticated user with roles and permissions pre-loaded (memoized).
      *
-     * Loads permissions once per request to avoid N+1 queries.
+     * Loads roles and their permissions once per request to avoid N+1 queries.
      */
     protected function cachedUser(): ?User
     {
@@ -54,8 +54,8 @@ trait HasDatatableLivewireMemoization
             $user = auth()->user();
 
             if ($user instanceof User) {
-                // Pre-load permissions to avoid lazy loading
-                $user->loadMissing('permissions', 'roles.permissions');
+                // Pre-load roles and their permissions to avoid lazy loading
+                $user->loadMissing('roles.permissions');
             }
 
             return $user;

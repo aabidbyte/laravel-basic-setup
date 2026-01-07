@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Constants\Auth\Permissions;
 use App\Models\Permission;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -11,15 +12,13 @@ use Livewire\Livewire;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    // Clear permission cache before each test
-    app()->make(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
-
-    // Set default team_id for tests (teams are enabled by default)
-    setPermissionsTeamId(1);
+    // Create permission and role
+    $permission = Permission::create(['name' => Permissions::VIEW_USERS]);
+    $viewerRole = Role::create(['name' => 'viewer']);
+    $viewerRole->givePermissionTo($permission);
 
     $this->user = User::factory()->create();
-    $permission = Permission::create(['name' => Permissions::VIEW_USERS]);
-    $this->user->givePermissionTo($permission);
+    $this->user->assignRole($viewerRole);
 });
 
 test('search filters results', function () {

@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Constants\Auth\Permissions;
+use App\Models\Permission;
+use App\Models\Role;
 use App\Models\User;
 use App\Services\Mail\MailpitClient;
 use App\Services\Users\UserService;
@@ -11,17 +14,15 @@ use Illuminate\Support\Facades\Mail;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    // Clear permission cache
-    app()->make(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
-    setPermissionsTeamId(1);
-
-    // Create required permissions
-    \App\Models\Permission::create(['name' => \App\Constants\Auth\Permissions::CREATE_USERS]);
-    \App\Models\Permission::create(['name' => \App\Constants\Auth\Permissions::EDIT_USERS]);
+    // Create required permissions and roles
+    $createPerm = Permission::create(['name' => Permissions::CREATE_USERS]);
+    $editPerm = Permission::create(['name' => Permissions::EDIT_USERS]);
+    $this->adminRole = Role::create(['name' => 'admin']);
+    $this->adminRole->givePermissionTo($createPerm, $editPerm);
 
     // Create admin user
     $this->admin = User::factory()->create();
-    $this->admin->givePermissionTo(\App\Constants\Auth\Permissions::CREATE_USERS);
+    $this->admin->assignRole($this->adminRole);
     $this->actingAs($this->admin);
 
     // Initialize Mailpit client

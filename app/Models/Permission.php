@@ -2,15 +2,16 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\HasUuid;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Str;
-use Spatie\Permission\Models\Permission as SpatiePermission;
+use App\Models\Base\BaseModel;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class Permission extends SpatiePermission
+/**
+ * Permission model for RBAC.
+ *
+ * Permissions are assigned to roles and checked via Gates/Policies.
+ */
+class Permission extends BaseModel
 {
-    use HasUuid;
-    use SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -19,27 +20,23 @@ class Permission extends SpatiePermission
      */
     protected $fillable = [
         'name',
-        'guard_name',
-        'uuid',
+        'display_name',
+        'description',
     ];
 
     /**
-     * Boot the model.
+     * Get the roles that have this permission.
      */
-    protected static function boot(): void
+    public function roles(): BelongsToMany
     {
-        parent::boot();
+        return $this->belongsToMany(Role::class);
+    }
 
-        static::creating(function ($model): void {
-            if (empty($model->getAttribute('uuid')) && empty($model->uuid)) {
-                $model->setAttribute('uuid', (string) Str::uuid());
-            }
-        });
-
-        static::saving(function ($model): void {
-            if (empty($model->getAttribute('uuid')) && empty($model->uuid)) {
-                $model->setAttribute('uuid', (string) Str::uuid());
-            }
-        });
+    /**
+     * Get a human-readable label for this permission.
+     */
+    public function label(): string
+    {
+        return $this->display_name ?? $this->name;
     }
 }

@@ -4,18 +4,11 @@ declare(strict_types=1);
 
 use App\Constants\Auth\Permissions;
 use App\Models\Permission;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
-
-beforeEach(function () {
-    // Clear permission cache before each test
-    app()->make(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
-
-    // Set default team_id for tests (teams are enabled by default)
-    setPermissionsTeamId(1);
-});
 
 test('unauthenticated user is redirected to login for users.index', function () {
     $response = $this->get(route('users.index'));
@@ -33,15 +26,14 @@ test('authenticated user without VIEW_USERS permission receives 403', function (
 
 test('authenticated user with VIEW_USERS permission gets 200', function () {
     $user = User::factory()->create();
+
+    // Create permission and role
     $permission = Permission::create(['name' => Permissions::VIEW_USERS]);
+    $role = Role::create(['name' => 'viewer']);
+    $role->givePermissionTo($permission);
 
-    // Set team context before giving permission (permissions are team-specific)
-    setPermissionsTeamId(1);
-    $user->givePermissionTo($permission);
-
-    // Set team_id in session for TeamsPermission middleware
-    session(['team_id' => 1]);
-    setPermissionsTeamId(session('team_id'));
+    // Assign role to user
+    $user->assignRole($role);
 
     $response = $this->actingAs($user)->get(route('users.index'));
 

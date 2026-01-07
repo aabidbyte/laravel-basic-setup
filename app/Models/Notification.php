@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Models\Base\BaseModel;
+use App\Observers\Notifications\NotificationObserver;
 use App\Services\Notifications\NotificationContent;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Notifications\DatabaseNotification as LaravelDatabaseNotification;
 use Illuminate\Support\Str;
 
+#[ObservedBy([NotificationObserver::class])]
 class Notification extends BaseModel
 {
     /**

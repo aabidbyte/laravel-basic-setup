@@ -29,7 +29,7 @@ return new class extends Migration
             $table->softDeletes();
         });
 
-        // Users table
+        // Users table (no team_id - users belong to teams via pivot)
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique()->index();
@@ -38,7 +38,6 @@ return new class extends Migration
             $table->string('email')->nullable()->unique(); // Nullable for users without email
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->foreignId('team_id')->nullable()->constrained()->cascadeOnDelete();
             $table->foreignId('created_by_user_id')->nullable(); // Track who created user (FK added after table exists)
             $table->boolean('is_active')->default(true);
             $table->timestamp('last_login_at')->nullable();
@@ -51,7 +50,6 @@ return new class extends Migration
             $table->softDeletes();
 
             $table->index('username');
-            $table->index('team_id');
             $table->index('is_active');
             $table->index('created_by_user_id');
         });
@@ -64,7 +62,7 @@ return new class extends Migration
                 ->nullOnDelete();
         });
 
-        // Team user pivot table
+        // Team user pivot table (many-to-many: users <-> teams)
         Schema::create('team_user', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique()->index();
@@ -142,111 +140,49 @@ return new class extends Migration
             $table->index('is_active');
         });
 
-        // Permission tables
-        $teams = config('permission.teams');
-        $tableNames = config('permission.table_names');
-        $columnNames = config('permission.column_names');
-        $pivotRole = $columnNames['role_pivot_key'] ?? 'role_id';
-        $pivotPermission = $columnNames['permission_pivot_key'] ?? 'permission_id';
+        // ============================================
+        // CUSTOM RBAC TABLES (replaces Spatie Permission)
+        // ============================================
 
-        throw_if(empty($tableNames), Exception::class, 'Error: config/permission.php not loaded. Run [php artisan config:clear] and try again.');
-        throw_if($teams && empty($columnNames['team_foreign_key'] ?? null), Exception::class, 'Error: team_foreign_key on config/permission.php not loaded. Run [php artisan config:clear] and try again.');
-
-        Schema::create($tableNames['permissions'], static function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->uuid('uuid')->nullable()->unique()->index();
-            $table->string('name');
-            $table->string('guard_name');
+        // Roles table
+        Schema::create('roles', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique()->index();
+            $table->string('name')->unique();
+            $table->string('display_name')->nullable();
+            $table->text('description')->nullable();
             $table->timestamps();
             $table->softDeletes();
-
-            $table->unique(['name', 'guard_name']);
         });
 
-        Schema::create($tableNames['roles'], static function (Blueprint $table) use ($teams, $columnNames) {
-            $table->bigIncrements('id');
-            $table->uuid('uuid')->nullable()->unique()->index();
-            if ($teams || config('permission.testing')) {
-                $table->unsignedBigInteger($columnNames['team_foreign_key'])->nullable();
-                $table->index($columnNames['team_foreign_key'], 'roles_team_foreign_key_index');
-            }
-            $table->string('name');
-            $table->string('guard_name');
+        // Permissions table
+        Schema::create('permissions', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique()->index();
+            $table->string('name')->unique();
+            $table->string('display_name')->nullable();
+            $table->text('description')->nullable();
             $table->timestamps();
             $table->softDeletes();
-            if ($teams || config('permission.testing')) {
-                $table->unique([$columnNames['team_foreign_key'], 'name', 'guard_name']);
-            } else {
-                $table->unique(['name', 'guard_name']);
-            }
         });
 
-        Schema::create($tableNames['model_has_permissions'], static function (Blueprint $table) use ($tableNames, $columnNames, $pivotPermission, $teams) {
-            $table->unsignedBigInteger($pivotPermission);
-
-            $table->string('model_type');
-            $table->uuid($columnNames['model_morph_key']);
-            $table->index([$columnNames['model_morph_key'], 'model_type'], 'model_has_permissions_model_id_model_type_index');
-
-            $table->foreign($pivotPermission)
-                ->references('id')
-                ->on($tableNames['permissions'])
-                ->onDelete('cascade');
-            if ($teams) {
-                $table->unsignedBigInteger($columnNames['team_foreign_key']);
-                $table->index($columnNames['team_foreign_key'], 'model_has_permissions_team_foreign_key_index');
-
-                $table->primary([$columnNames['team_foreign_key'], $pivotPermission, $columnNames['model_morph_key'], 'model_type'],
-                    'model_has_permissions_permission_model_type_primary');
-            } else {
-                $table->primary([$pivotPermission, $columnNames['model_morph_key'], 'model_type'],
-                    'model_has_permissions_permission_model_type_primary');
-            }
+        // Role-user pivot table (many-to-many: users <-> roles)
+        Schema::create('role_user', function (Blueprint $table) {
+            $table->foreignId('role_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->primary(['role_id', 'user_id']);
         });
 
-        Schema::create($tableNames['model_has_roles'], static function (Blueprint $table) use ($tableNames, $columnNames, $pivotRole, $teams) {
-            $table->unsignedBigInteger($pivotRole);
-
-            $table->string('model_type');
-            $table->uuid($columnNames['model_morph_key']);
-            $table->index([$columnNames['model_morph_key'], 'model_type'], 'model_has_roles_model_id_model_type_index');
-
-            $table->foreign($pivotRole)
-                ->references('id')
-                ->on($tableNames['roles'])
-                ->onDelete('cascade');
-            if ($teams) {
-                $table->unsignedBigInteger($columnNames['team_foreign_key']);
-                $table->index($columnNames['team_foreign_key'], 'model_has_roles_team_foreign_key_index');
-
-                $table->primary([$columnNames['team_foreign_key'], $pivotRole, $columnNames['model_morph_key'], 'model_type'],
-                    'model_has_roles_role_model_type_primary');
-            } else {
-                $table->primary([$pivotRole, $columnNames['model_morph_key'], 'model_type'],
-                    'model_has_roles_role_model_type_primary');
-            }
+        // Permission-role pivot table (many-to-many: roles <-> permissions)
+        Schema::create('permission_role', function (Blueprint $table) {
+            $table->foreignId('permission_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('role_id')->constrained()->cascadeOnDelete();
+            $table->primary(['permission_id', 'role_id']);
         });
 
-        Schema::create($tableNames['role_has_permissions'], static function (Blueprint $table) use ($tableNames, $pivotRole, $pivotPermission) {
-            $table->unsignedBigInteger($pivotPermission);
-            $table->unsignedBigInteger($pivotRole);
-
-            $table->foreign($pivotPermission)
-                ->references('id')
-                ->on($tableNames['permissions'])
-                ->onDelete('cascade');
-
-            $table->foreign($pivotRole)
-                ->references('id')
-                ->on($tableNames['roles'])
-                ->onDelete('cascade');
-
-            $table->primary([$pivotPermission, $pivotRole], 'role_has_permissions_permission_id_role_id_primary');
-        });
-
-        app('cache')
-            ->store(config('permission.cache.store') !== 'default' ? config('permission.cache.store') : null)
-            ->forget(config('permission.cache.key'));
+        // ============================================
+        // TELESCOPE TABLES
+        // ============================================
 
         // Telescope tables
         $schema = Schema::connection($this->getTelescopeConnection());
@@ -285,6 +221,10 @@ return new class extends Migration
             $table->string('tag')->primary();
             $table->uuid('uuid')->unique()->index();
         });
+
+        // ============================================
+        // DATABASE TRIGGERS (MySQL only)
+        // ============================================
 
         // Create database triggers to protect user ID 1 (MySQL only)
         if (DB::getDriverName() === 'mysql') {
@@ -353,24 +293,19 @@ return new class extends Migration
         $schema->dropIfExists('telescope_entries');
         $schema->dropIfExists('telescope_monitoring');
 
-        // Drop permission tables
-        $tableNames = config('permission.table_names');
-
-        throw_if(empty($tableNames), Exception::class, 'Error: config/permission.php not found and defaults could not be merged. Please publish the package configuration before proceeding, or drop the tables manually.');
-
-        Schema::dropIfExists($tableNames['role_has_permissions']);
-        Schema::dropIfExists($tableNames['model_has_roles']);
-        Schema::dropIfExists($tableNames['model_has_permissions']);
-        Schema::dropIfExists($tableNames['roles']);
-        Schema::dropIfExists($tableNames['permissions']);
+        // Drop RBAC tables
+        Schema::dropIfExists('permission_role');
+        Schema::dropIfExists('role_user');
+        Schema::dropIfExists('permissions');
+        Schema::dropIfExists('roles');
 
         // Drop other tables
         Schema::dropIfExists('mail_settings');
         Schema::dropIfExists('notifications');
-        Schema::dropIfExists('team_user');
-        Schema::dropIfExists('teams');
         Schema::dropIfExists('personal_access_tokens');
         Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('team_user');
         Schema::dropIfExists('users');
+        Schema::dropIfExists('teams');
     }
 };

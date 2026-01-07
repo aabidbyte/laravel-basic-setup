@@ -59,7 +59,6 @@ class UserService
                 'username' => $data['username'] ?? null,
                 'email' => $data['email'] ?? null,
                 'password' => $this->generatePassword($data['password'] ?? null, $sendActivation),
-                'team_id' => $data['team_id'] ?? null,
                 'created_by_user_id' => $creator?->id,
                 'is_active' => false, // Users are inactive by default until activated
                 'frontend_preferences' => $this->buildFrontendPreferences($data),
@@ -68,7 +67,7 @@ class UserService
             // Create the user
             $user = User::create($userData);
 
-            // Assign roles (if provided) - use syncRoles for proper team context handling
+            // Assign roles (if provided)
             if (! empty($roleIds)) {
                 $roles = Role::whereIn('id', $roleIds)->get();
                 $user->syncRoles($roles);
@@ -123,10 +122,6 @@ class UserService
                 $updateData['password'] = Hash::make($data['password']);
             }
 
-            if (isset($data['team_id'])) {
-                $updateData['team_id'] = $data['team_id'];
-            }
-
             if (isset($data['is_active'])) {
                 $updateData['is_active'] = $data['is_active'];
             }
@@ -151,7 +146,7 @@ class UserService
                 $user->update($updateData);
             }
 
-            // Update roles if provided - use syncRoles for proper team context handling
+            // Update roles if provided
             if ($roleIds !== null) {
                 $roles = Role::whereIn('id', $roleIds)->get();
                 $user->syncRoles($roles);

@@ -8,6 +8,7 @@ use App\Models\User;
 use Exception;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 
 class EssentialUserSeeder extends Seeder
@@ -22,8 +23,8 @@ class EssentialUserSeeder extends Seeder
     {
         $this->command->info('👤 Creating essential users...');
 
-        // Get default team
-        $defaultTeam = Team::where('name', 'Default Team')->first();
+        // Get default team (super team)
+        $defaultTeam = Team::where('name', config('teams.super_team_name', 'Default Team'))->first();
 
         if (! $defaultTeam) {
             throw new Exception('Essential teams must be created before users. Run EssentialTeamSeeder first.');
@@ -58,20 +59,18 @@ class EssentialUserSeeder extends Seeder
                     'name' => 'Super Administrator',
                     'password' => Hash::make($superAdminPassword),
                     'email_verified_at' => now(),
-                    'team_id' => $defaultTeam->id,
                 ],
             );
 
-            // Always update team_id and password (in case user already exists)
-            if ($superAdmin->team_id !== $defaultTeam->id) {
-                $superAdmin->update(['team_id' => $defaultTeam->id]);
-            }
+            // Always update password (in case user already exists)
             if (! Hash::check($superAdminPassword, $superAdmin->password)) {
                 $superAdmin->update(['password' => Hash::make($superAdminPassword)]);
             }
 
-            // Set team context for role assignment
-            setPermissionsTeamId($defaultTeam->id);
+            // Assign to default team via pivot table
+            if (! $superAdmin->teams()->where('teams.id', $defaultTeam->id)->exists()) {
+                $superAdmin->teams()->attach($defaultTeam->id, ['uuid' => (string) Str::uuid()]);
+            }
 
             // Assign superAdmin role
             if (! $superAdmin->hasRole(Roles::SUPER_ADMIN)) {
@@ -80,8 +79,6 @@ class EssentialUserSeeder extends Seeder
 
             $this->command->info("✅ Created SuperAdmin: {$superAdmin->email} (PROTECTED - cannot be deleted)");
         }
-
-        clearPermissionCache();
     }
 
     /**

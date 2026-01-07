@@ -2,17 +2,21 @@
 
 use App\Constants\Auth\Permissions;
 use App\Models\Permission;
+use App\Models\Role;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
 use Livewire\Livewire;
 
+uses(RefreshDatabase::class);
+
 beforeEach(function () {
-    app()->make(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
-    setPermissionsTeamId(1);
+    $permission = Permission::firstOrCreate(['name' => Permissions::VIEW_USERS]);
+    $viewerRole = Role::firstOrCreate(['name' => 'viewer']);
+    $viewerRole->givePermissionTo($permission);
 
     $this->admin = User::factory()->create();
-    $permission = Permission::firstOrCreate(['name' => Permissions::VIEW_USERS]);
-    $this->admin->givePermissionTo($permission);
+    $this->admin->assignRole($viewerRole);
 });
 
 // Note: UserTable's rowActions no longer includes a view_modal action.

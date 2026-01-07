@@ -3,29 +3,28 @@
 declare(strict_types=1);
 
 use App\Constants\Auth\Permissions;
+use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\Users\UserService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    // Clear permission cache before each test
-    app()->make(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+    // Create permissions
+    Permission::create(['name' => Permissions::CREATE_USERS]);
+    Permission::create(['name' => Permissions::EDIT_USERS]);
 
-    // Set default team_id for tests (teams are enabled by default)
-    setPermissionsTeamId(1);
-
-    // Create permissions first
-    \App\Models\Permission::create(['name' => Permissions::CREATE_USERS]);
-    \App\Models\Permission::create(['name' => Permissions::EDIT_USERS]);
+    // Create a role with permissions
+    $adminRole = Role::create(['name' => 'admin']);
+    $adminRole->givePermissionTo(Permissions::CREATE_USERS, Permissions::EDIT_USERS);
 
     // Create a super-admin user to act as the creator
     $this->admin = User::factory()->create();
-    $this->admin->givePermissionTo(Permissions::CREATE_USERS);
-    $this->admin->givePermissionTo(Permissions::EDIT_USERS);
+    $this->admin->assignRole($adminRole);
     $this->actingAs($this->admin);
 });
 
@@ -78,12 +77,9 @@ describe('UserService', function () {
         });
 
         it('assigns roles to user', function () {
-            $team = Team::factory()->create();
-            setPermissionsTeamId($team->id);
-
-            // Create roles in team context
-            $writerRole = Role::create(['name' => 'writer', 'team_id' => $team->id]);
-            $editorRole = Role::create(['name' => 'editor', 'team_id' => $team->id]);
+            // Create roles
+            $writerRole = Role::create(['name' => 'writer']);
+            $editorRole = Role::create(['name' => 'editor']);
 
             $userService = app(UserService::class);
 
@@ -91,7 +87,6 @@ describe('UserService', function () {
                 data: [
                     'name' => 'Role User',
                     'email' => 'roleuser@example.com',
-                    'team_id' => $team->id,
                 ],
                 roleIds: [$writerRole->id, $editorRole->id],
             );
@@ -170,14 +165,11 @@ describe('UserService', function () {
         });
 
         it('updates user roles', function () {
-            $team = Team::factory()->create();
-            setPermissionsTeamId($team->id);
+            // Create roles
+            $writerRole = Role::create(['name' => 'writer']);
+            $editorRole = Role::create(['name' => 'editor']);
 
-            // Create roles in team context
-            $writerRole = Role::create(['name' => 'writer', 'team_id' => $team->id]);
-            $editorRole = Role::create(['name' => 'editor', 'team_id' => $team->id]);
-
-            $user = User::factory()->create(['team_id' => $team->id]);
+            $user = User::factory()->create();
             $user->assignRole($writerRole);
 
             $userService = app(UserService::class);

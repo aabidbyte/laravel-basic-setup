@@ -15,14 +15,15 @@ function getIdentifierFromRequest(Request $request): ?string
 }
 
 /**
- * Set team ID in session for TeamsPermission middleware.
+ * Set team ID in session for team-based access control.
  *
  * This helper centralizes team session setting logic used after successful authentication.
- * It ensures the team_id is available for Spatie Permission's team-based authorization.
+ * It sets the first team as the active team for the session.
  */
 function setTeamSessionForUser(\App\Models\User $user): void
 {
-    if ($user->team_id) {
-        session(['team_id' => $user->team_id]);
+    $firstTeam = $user->teams()->orderBy('teams.id')->first();
+    if ($firstTeam) {
+        session(['team_id' => $firstTeam->id]);
     }
 }

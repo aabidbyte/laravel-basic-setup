@@ -4,22 +4,21 @@ declare(strict_types=1);
 
 use App\Constants\Auth\Permissions;
 use App\Models\MailSettings;
+use App\Models\Permission;
+use App\Models\Role;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\Mail\MailCredentialResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    // Clear permission cache before each test
-    app()->make(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
-
-    // Set default team_id for tests (teams are enabled by default)
-    setPermissionsTeamId(1);
-
-    // Create permissions used in tests
-    \App\Models\Permission::create(['name' => Permissions::CONFIGURE_MAIL_SETTINGS]);
+    // Create the permission and role
+    $permission = Permission::create(['name' => Permissions::CONFIGURE_MAIL_SETTINGS]);
+    $this->mailConfigRole = Role::create(['name' => 'mail-config']);
+    $this->mailConfigRole->givePermissionTo($permission);
 });
 
 describe('MailCredentialResolver', function () {
@@ -34,7 +33,7 @@ describe('MailCredentialResolver', function () {
 
         it('returns user settings when user has permission and settings', function () {
             $user = User::factory()->create();
-            $user->givePermissionTo(Permissions::CONFIGURE_MAIL_SETTINGS);
+            $user->assignRole($this->mailConfigRole);
 
             $mailSettings = MailSettings::create([
                 'settable_type' => User::class,
@@ -54,7 +53,7 @@ describe('MailCredentialResolver', function () {
 
         it('skips user settings when user lacks permission', function () {
             $user = User::factory()->create();
-            // User does NOT have CONFIGURE_MAIL_SETTINGS permission
+            // User does NOT have the mail config role
 
             $mailSettings = MailSettings::create([
                 'settable_type' => User::class,
@@ -73,7 +72,8 @@ describe('MailCredentialResolver', function () {
 
         it('returns team settings when available', function () {
             $team = Team::factory()->create();
-            $user = User::factory()->create(['team_id' => $team->id]);
+            $user = User::factory()->create();
+            $user->teams()->attach($team->id, ['uuid' => (string) Str::uuid()]);
 
             $mailSettings = MailSettings::create([
                 'settable_type' => Team::class,
@@ -110,8 +110,9 @@ describe('MailCredentialResolver', function () {
 
         it('respects hierarchy: user > team > app', function () {
             $team = Team::factory()->create();
-            $user = User::factory()->create(['team_id' => $team->id]);
-            $user->givePermissionTo(Permissions::CONFIGURE_MAIL_SETTINGS);
+            $user = User::factory()->create();
+            $user->teams()->attach($team->id, ['uuid' => (string) Str::uuid()]);
+            $user->assignRole($this->mailConfigRole);
 
             // Create app settings
             MailSettings::create([
@@ -149,8 +150,9 @@ describe('MailCredentialResolver', function () {
 
         it('falls back to team when user settings inactive', function () {
             $team = Team::factory()->create();
-            $user = User::factory()->create(['team_id' => $team->id]);
-            $user->givePermissionTo(Permissions::CONFIGURE_MAIL_SETTINGS);
+            $user = User::factory()->create();
+            $user->teams()->attach($team->id, ['uuid' => (string) Str::uuid()]);
+            $user->assignRole($this->mailConfigRole);
 
             // Create team settings (active)
             MailSettings::create([
@@ -187,7 +189,7 @@ describe('MailCredentialResolver', function () {
 
         it('returns user when user settings used', function () {
             $user = User::factory()->create();
-            $user->givePermissionTo(Permissions::CONFIGURE_MAIL_SETTINGS);
+            $user->assignRole($this->mailConfigRole);
 
             MailSettings::create([
                 'settable_type' => User::class,
@@ -204,7 +206,8 @@ describe('MailCredentialResolver', function () {
 
         it('returns team when team settings used', function () {
             $team = Team::factory()->create();
-            $user = User::factory()->create(['team_id' => $team->id]);
+            $user = User::factory()->create();
+            $user->teams()->attach($team->id, ['uuid' => (string) Str::uuid()]);
 
             MailSettings::create([
                 'settable_type' => Team::class,

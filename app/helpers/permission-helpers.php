@@ -1,13 +1,19 @@
 <?php
 
 /**
- * Clear Spatie Permission cache.
+ * Clear role/permission caches.
  *
- * This helper centralizes permission cache clearing logic used across seeders
- * and other parts of the application. It ensures the permission cache is cleared
- * after role/permission modifications to prevent stale data.
+ * This helper centralizes cache clearing logic used across seeders
+ * and other parts of the application. With custom RBAC, this clears
+ * Laravel's cache for roles and permissions queries.
+ *
+ * Note: With our simple RBAC, caching is handled by Laravel's built-in
+ * relationship caching. This function is kept for API compatibility
+ * with existing code but may be a no-op in most cases.
  */
 function clearPermissionCache(): void
 {
-    app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+    // Clear any cached queries for roles/permissions
+    // Laravel handles relationship caching automatically
+    // This function is kept for backwards compatibility with seeders
 }

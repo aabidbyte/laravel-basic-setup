@@ -313,7 +313,7 @@ return [
         'password' => 'Password',
         'password_confirmation' => 'Confirm Password',
         'roles' => 'Roles',
-        'teams' => 'Additional Teams',
+        'teams' => 'Teams',
         'primary_team' => 'Primary Team',
         'no_primary_team' => 'No Primary Team',
         'index' => [

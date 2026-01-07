@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\Base\BaseUserModel;
 use App\Models\Concerns\HasDataTable;
+use App\Models\Concerns\HasRolesAndPermissions;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -12,12 +13,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use RuntimeException;
-use Spatie\Permission\Traits\HasRoles;
 
 class User extends BaseUserModel
 {
     use HasDataTable;
-    use HasRoles;
+    use HasRolesAndPermissions;
     use TwoFactorAuthenticatable;
 
     /**
@@ -31,7 +31,6 @@ class User extends BaseUserModel
         'email',
         'email_verified_at',
         'password',
-        'team_id',
         'created_by_user_id',
         'is_active',
         'last_login_at',
@@ -95,14 +94,6 @@ class User extends BaseUserModel
     {
         return $this->belongsToMany(Team::class, 'team_user')
             ->withTimestamps();
-    }
-
-    /**
-     * Get the user's primary team.
-     */
-    public function team(): BelongsTo
-    {
-        return $this->belongsTo(Team::class);
     }
 
     /**

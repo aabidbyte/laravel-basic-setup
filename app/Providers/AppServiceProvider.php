@@ -4,18 +4,8 @@ namespace App\Providers;
 
 use App\Auth\PasswordBrokerManager;
 use App\Constants\Auth\Roles;
-use App\Http\Middleware\Teams\TeamsPermission;
-use App\Listeners\DevEmailRedirectListener;
-use App\Listeners\Preferences\SyncUserPreferencesOnLogin;
-use App\Models\Notification;
-use App\Observers\Notifications\NotificationObserver;
-use Illuminate\Auth\Events\Login;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Foundation\Http\Kernel;
-use Illuminate\Mail\Events\MessageSending;
-use Illuminate\Routing\Middleware\SubstituteBindings;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -47,26 +37,8 @@ class AppServiceProvider extends ServiceProvider
 
         Vite::useCspNonce();
 
-        /** @var Kernel $kernel */
-        $kernel = app()->make(Kernel::class);
-
-        $kernel->addToMiddlewarePriorityBefore(
-            TeamsPermission::class,
-            SubstituteBindings::class,
-        );
-
-        // Register event listeners
-        Event::listen(Login::class, SyncUserPreferencesOnLogin::class);
-        Event::listen(MessageSending::class, DevEmailRedirectListener::class);
-
-        Notification::observe(NotificationObserver::class);
-
-        // Implicitly grant "Super Admin" role all permissions
-        // This works in the app by using gate-related functions like auth()->user->can() and @can()
-        // Following Spatie Permissions best practices: https://spatie.be/docs/laravel-permission/v6/basic-usage/super-admin
-        Gate::before(function ($user, $ability) {
-            return $user->hasRole(Roles::SUPER_ADMIN) ? true : null;
-        });
+        // Register authorization Gates for custom RBAC
+        $this->registerPermissionGates();
 
         // Register search macros for Eloquent Builder
         $this->registerSearchMacros();
@@ -106,6 +78,32 @@ class AppServiceProvider extends ServiceProvider
                     }
                 }
             });
+        });
+    }
+
+    /**
+     * Register authorization Gates for custom RBAC.
+     *
+     * This uses Gate::before() with a fallback to hasPermissionTo()
+     * to handle all permission checks dynamically.
+     */
+    private function registerPermissionGates(): void
+    {
+        // Use Gate::before to intercept all gate checks
+        // This handles both Super Admin bypass and regular permission checks
+        Gate::before(function ($user, $ability) {
+            // Super Admin gets all permissions
+            if ($user->hasRole(Roles::SUPER_ADMIN)) {
+                return true;
+            }
+
+            // Check if user has the permission through their roles
+            if ($user->hasPermissionTo($ability)) {
+                return true;
+            }
+
+            // Return null to let other gates/policies handle it
+            return null;
         });
     }
 }

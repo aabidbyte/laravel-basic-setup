@@ -6,7 +6,8 @@ use App\Models\User;
 use App\Services\Notifications\NotificationBuilder;
 use App\Services\Users\UserService;
 
-new class extends BasePageComponent {
+new class extends BasePageComponent
+{
     public ?string $pageTitle = 'ui.pages.users.show';
 
     public ?string $pageSubtitle = null;
@@ -282,10 +283,7 @@ new class extends BasePageComponent {
                             <p class="font-medium">{{ $user->locale ?? __('ui.users.not_set') }}</p>
                         </div>
 
-                        <div>
-                            <span class="text-sm text-base-content/60">{{ __('ui.users.primary_team') }}</span>
-                            <p class="font-medium">{{ $user->team?->name ?? __('ui.users.no_primary_team') }}</p>
-                        </div>
+
                     </div>
                 </div>
 

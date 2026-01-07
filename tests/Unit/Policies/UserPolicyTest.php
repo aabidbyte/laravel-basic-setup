@@ -2,90 +2,128 @@
 
 use App\Constants\Auth\Permissions;
 use App\Constants\Auth\Roles;
-use App\Models\Team;
+use App\Models\Permission;
+use App\Models\Role;
 use App\Models\User;
 use App\Policies\UserPolicy;
-use Database\Seeders\Production\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Gate;
 use Tests\TestCase;
 
 uses(TestCase::class, RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->team = Team::factory()->create();
-    setPermissionsTeamId($this->team->id);
+    // Create all permissions
+    foreach (Permissions::all() as $permission) {
+        Permission::create(['name' => $permission]);
+    }
 
-    $this->seed(RoleAndPermissionSeeder::class);
+    // Create super admin role with all permissions
+    $superAdminRole = Role::create(['name' => Roles::SUPER_ADMIN]);
+    $superAdminRole->syncPermissions(Permission::all()->toArray());
+
     $this->policy = new UserPolicy;
 });
 
-it('allows super admin to do anything', function () {
+it('allows super admin (id=1) to do anything via before() method', function () {
     $superAdmin = User::factory()->create(['id' => 1]);
-    $superAdmin->assignRole(Roles::SUPER_ADMIN);
 
-    // Test before() method implicitly via Gate or explicitly
+    // Test before() method - ID 1 gets special treatment in policy
     expect($this->policy->before($superAdmin, 'any'))->toBeTrue();
+});
 
-    // Explicit checks should also pass due to logic flow if before() wasn't there (but before() handles it)
-    // Note: detailed policy methods might need individual checks if before() returns null
-    // But our before() returns true for ID 1.
-
+it('allows super admin role to bypass permissions via Gate::before', function () {
+    $superAdmin = User::factory()->create();
+    $superAdmin->assignRole(Roles::SUPER_ADMIN);
     $otherUser = User::factory()->create();
 
-    expect($this->policy->viewAny($superAdmin))->toBeTrue();
-    expect($this->policy->view($superAdmin, $otherUser))->toBeTrue();
-    expect($this->policy->create($superAdmin))->toBeTrue();
-    expect($this->policy->update($superAdmin, $otherUser))->toBeTrue();
-    expect($this->policy->delete($superAdmin, $otherUser))->toBeTrue();
+    $this->actingAs($superAdmin);
+
+    // Gate::before in AppServiceProvider grants all permissions to Super Admin role
+    expect($superAdmin->can('viewAny', User::class))->toBeTrue();
+    expect($superAdmin->can('view', $otherUser))->toBeTrue();
+    expect($superAdmin->can('create', User::class))->toBeTrue();
+    expect($superAdmin->can('update', $otherUser))->toBeTrue();
+    expect($superAdmin->can('delete', $otherUser))->toBeTrue();
 });
 
 it('prevents users from editing themselves', function () {
     $user = User::factory()->create();
-    $user->givePermissionTo(Permissions::EDIT_USERS);
 
+    // Add permission via role
+    $role = Role::create(['name' => 'user-manager']);
+    $role->givePermissionTo(Permissions::EDIT_USERS);
+    $user->assignRole($role);
+
+    // User with edit permission still cannot edit themselves
+    // Test directly via policy since this is policy-specific logic
     expect($this->policy->update($user, $user))->toBeFalse();
 });
 
 it('prevents users from deleting themselves', function () {
     $user = User::factory()->create();
-    $user->givePermissionTo(Permissions::DELETE_USERS);
 
+    // Add permission via role
+    $role = Role::create(['name' => 'user-manager']);
+    $role->givePermissionTo(Permissions::DELETE_USERS);
+    $user->assignRole($role);
+
+    // Test directly via policy since this is policy-specific logic
     expect($this->policy->delete($user, $user))->toBeFalse();
 });
 
-it('prevents deletion of super admin', function () {
-    $superAdmin = User::factory()->create(['id' => 1]);
+it('prevents deletion of user id 1', function () {
+    $protectedUser = User::factory()->create(['id' => 1]);
     $admin = User::factory()->create();
-    $admin->givePermissionTo(Permissions::DELETE_USERS);
 
-    expect($this->policy->delete($admin, $superAdmin))->toBeFalse();
+    // Add permission via role
+    $role = Role::create(['name' => 'user-manager']);
+    $role->givePermissionTo(Permissions::DELETE_USERS);
+    $admin->assignRole($role);
+
+    // Test directly via policy since this is policy-specific logic
+    expect($this->policy->delete($admin, $protectedUser))->toBeFalse();
 });
 
-it('authorizes viewAny based on permission', function () {
+it('policy viewAny checks permission via hasPermissionTo', function () {
     $user = User::factory()->create();
 
+    // No roles/permissions - should deny
     expect($this->policy->viewAny($user))->toBeFalse();
 
-    $user->givePermissionTo(Permissions::VIEW_USERS);
+    // Add permission via role
+    $role = Role::create(['name' => 'viewer']);
+    $role->givePermissionTo(Permissions::VIEW_USERS);
+    $user->assignRole($role);
+    $user->unsetRelation('roles');
+
     expect($this->policy->viewAny($user))->toBeTrue();
 });
 
-it('authorizes view based on permission', function () {
+it('policy view checks permission via hasPermissionTo', function () {
     $user = User::factory()->create();
     $target = User::factory()->create();
 
     expect($this->policy->view($user, $target))->toBeFalse();
 
-    $user->givePermissionTo(Permissions::VIEW_USERS);
+    // Add permission via role
+    $role = Role::create(['name' => 'viewer']);
+    $role->givePermissionTo(Permissions::VIEW_USERS);
+    $user->assignRole($role);
+    $user->unsetRelation('roles');
+
     expect($this->policy->view($user, $target))->toBeTrue();
 });
 
-it('authorizes create based on permission', function () {
+it('policy create checks permission via hasPermissionTo', function () {
     $user = User::factory()->create();
 
     expect($this->policy->create($user))->toBeFalse();
 
-    $user->givePermissionTo(Permissions::CREATE_USERS);
+    // Add permission via role
+    $role = Role::create(['name' => 'creator']);
+    $role->givePermissionTo(Permissions::CREATE_USERS);
+    $user->assignRole($role);
+    $user->unsetRelation('roles');
+
     expect($this->policy->create($user))->toBeTrue();
 });

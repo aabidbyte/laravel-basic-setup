@@ -82,16 +82,16 @@ class MailCredentialResolver
      */
     protected function resolveFromTeam(?Team $team, ?User $user = null): ?MailSettings
     {
-        // If no team provided, try to get from user's primary team
+        // If no team provided, try to get from user's first team
         if ($team === null && $user !== null) {
-            $team = $user->team;
+            $team = $user->teams()->first();
         }
 
-        // If still no team, try the current authenticated user's team
+        // If still no team, try the current authenticated user's first team
         if ($team === null) {
             /** @var User|null $authUser */
             $authUser = Auth::user();
-            $team = $authUser?->team;
+            $team = $authUser?->teams()->first();
         }
 
         if ($team === null) {

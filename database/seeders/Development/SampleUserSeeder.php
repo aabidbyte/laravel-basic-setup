@@ -8,6 +8,7 @@ use App\Models\User;
 use Exception;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class SampleUserSeeder extends Seeder
 {
@@ -24,7 +25,7 @@ class SampleUserSeeder extends Seeder
         $this->command->info('👥 Creating sample users...');
 
         // Get teams
-        $defaultTeam = Team::where('name', 'Default Team')->first();
+        $defaultTeam = Team::where('name', config('teams.super_team_name', 'Default Team'))->first();
         $team1 = Team::where('name', 'Team 1')->first();
         $team2 = Team::where('name', 'Team 2')->first();
 
@@ -56,16 +57,12 @@ class SampleUserSeeder extends Seeder
         // Create 30 additional regular users
         $this->createAdditionalUsers(30);
 
-        clearPermissionCache();
-
         $this->command->info('✅ Sample user seeding completed');
     }
 
     /**
      * Create superAdmin users from .env file (optional).
-     * All superAdmin users are assigned to the first team.
-     *
-     * @param  Team  $team  The first team to assign superAdmin users to
+     * All superAdmin users are assigned to the first team (super team).
      */
     private function createSuperAdminUsers(Team $team): void
     {
@@ -97,17 +94,13 @@ class SampleUserSeeder extends Seeder
                     'name' => 'Super Administrator',
                     'password' => Hash::make('password'),
                     'email_verified_at' => now(),
-                    'team_id' => $team->id,
                 ],
             );
 
-            // Always update team_id (in case user already exists)
-            if ($superAdmin->team_id !== $team->id) {
-                $superAdmin->update(['team_id' => $team->id]);
+            // Assign to team via pivot table
+            if (! $superAdmin->teams()->where('teams.id', $team->id)->exists()) {
+                $superAdmin->teams()->attach($team->id, ['uuid' => (string) Str::uuid()]);
             }
-
-            // Set team context for role assignment
-            setPermissionsTeamId($team->id);
 
             // Always assign superAdmin role (in case user already exists)
             if (! $superAdmin->hasRole(Roles::SUPER_ADMIN)) {
@@ -120,11 +113,6 @@ class SampleUserSeeder extends Seeder
 
     /**
      * Create an admin user for a team.
-     *
-     * @param  Team  $team  The team to assign the admin to
-     * @param  string  $email  The admin email
-     * @param  string  $name  The admin name
-     * @param  int  $index  The admin index (for username generation)
      */
     private function createAdminForTeam(Team $team, string $email, string $name, int $index): void
     {
@@ -135,17 +123,13 @@ class SampleUserSeeder extends Seeder
                 'username' => 'admin' . str($team->name)->slug() . $index,
                 'password' => Hash::make('password'),
                 'email_verified_at' => now(),
-                'team_id' => $team->id,
             ],
         );
 
-        // Always update team_id (in case user already exists)
-        if ($admin->team_id !== $team->id) {
-            $admin->update(['team_id' => $team->id]);
+        // Assign to team via pivot table
+        if (! $admin->teams()->where('teams.id', $team->id)->exists()) {
+            $admin->teams()->attach($team->id, ['uuid' => (string) Str::uuid()]);
         }
-
-        // Set team context for role assignment
-        setPermissionsTeamId($team->id);
 
         // Always assign admin role (in case user already exists)
         if (! $admin->hasRole(Roles::ADMIN)) {
@@ -157,8 +141,6 @@ class SampleUserSeeder extends Seeder
 
     /**
      * Create additional regular users for development.
-     *
-     * @param  int  $count  Number of users to create
      */
     private function createAdditionalUsers(int $count): void
     {
@@ -176,13 +158,11 @@ class SampleUserSeeder extends Seeder
             // Distribute users across teams in a round-robin fashion
             $team = $teams->get(($i - 1) % $teamCount);
 
-            // Set team context for role assignment
-            setPermissionsTeamId($team->id);
-
             // Create user using factory
-            $user = User::factory()->create([
-                'team_id' => $team->id,
-            ]);
+            $user = User::factory()->create();
+
+            // Assign to team via pivot table
+            $user->teams()->attach($team->id, ['uuid' => (string) Str::uuid()]);
 
             // Assign a regular member role (not admin)
             if (! $user->hasRole(Roles::MEMBER)) {

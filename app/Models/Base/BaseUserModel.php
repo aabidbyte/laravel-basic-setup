@@ -45,6 +45,13 @@ abstract class BaseUserModel extends Authenticatable
             }
         });
 
+        // Auto-generate username if not provided
+        static::creating(function (BaseUserModel $user) {
+            if (empty($user->username)) {
+                $user->username = static::generateUsername($user);
+            }
+        });
+
         // Handle MySQL trigger for user ID 1 updates
         // The trigger requires @laravel_user_id_1_self_edit to be set to 1
         static::updating(function (BaseUserModel $user) {
@@ -135,6 +142,41 @@ abstract class BaseUserModel extends Authenticatable
     public function scopeInactive($query)
     {
         return $query->where('is_active', false);
+    }
+
+    /**
+     * Generate a unique username from provided data
+     */
+    protected static function generateUsername(BaseUserModel $user): string
+    {
+        // Try getting base from email first, then name
+        $base = null;
+        if (! empty($user->email)) {
+            $base = explode('@', $user->email)[0];
+        } elseif (! empty($user->name)) {
+            $base = \Illuminate\Support\Str::slug($user->name);
+        }
+
+        if (empty($base)) {
+            $base = 'user';
+        }
+
+        // Clean base string (remove special characters if from email)
+        $base = \Illuminate\Support\Str::slug($base);
+        if (empty($base)) {
+            $base = 'user';
+        }
+
+        // Check for uniqueness
+        $username = $base;
+        $counter = 1;
+
+        while (static::where('username', $username)->exists()) {
+            $username = $base . $counter;
+            $counter++;
+        }
+
+        return $username;
     }
 
     /**
