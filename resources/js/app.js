@@ -16,10 +16,14 @@ import './echo';
 import anchor from '@alpinejs/anchor';
 import focus from '@alpinejs/focus';
 
+import passwordStrength from './alpine/data/password-strength';
+
 // Register Alpine plugins when initialized
 document.addEventListener('alpine:init', () => {
     window.Alpine.plugin(anchor);
     window.Alpine.plugin(focus);
+    
+    window.Alpine.data('passwordStrength', passwordStrength);
 });
 
 // Also register immediately if Alpine is already available
@@ -27,4 +31,5 @@ document.addEventListener('alpine:init', () => {
 if (window.Alpine) {
     window.Alpine.plugin(anchor);
     window.Alpine.plugin(focus);
+    window.Alpine.data('passwordStrength', passwordStrength);
 }

@@ -18,6 +18,7 @@ This documentation is organized into sections for easy navigation. Each section 
 - [Configuration Philosophy](configuration-philosophy.md)
 - [Development Conventions](development-conventions.md)
 - [Key Features](key-features.md)
+- [Authentication System](authentication-system.md)
 - [Navigation Builder System](navigation-builder-system.md)
 - [Notification Builder System](notification-builder-system.md)
 - [Mail Builder System](mail-builder-system.md)

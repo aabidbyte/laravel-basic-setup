@@ -32,6 +32,7 @@
                 required
                 autocomplete="new-password"
                 :placeholder="__('authentication.reset_password.password_placeholder')"
+                with-strength-meter
             ></x-ui.password>
 
             <x-ui.password

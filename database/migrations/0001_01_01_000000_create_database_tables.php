@@ -37,9 +37,9 @@ return new class extends Migration
             $table->string('username')->nullable()->unique();
             $table->string('email')->nullable()->unique(); // Nullable for users without email
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+            $table->string('password')->nullable();
             $table->foreignId('created_by_user_id')->nullable(); // Track who created user (FK added after table exists)
-            $table->boolean('is_active')->default(true);
+            $table->boolean('is_active')->default(false);
             $table->timestamp('last_login_at')->nullable();
             $table->text('two_factor_secret')->nullable();
             $table->text('two_factor_recovery_codes')->nullable();

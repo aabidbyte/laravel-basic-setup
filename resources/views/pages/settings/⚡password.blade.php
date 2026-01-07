@@ -69,6 +69,7 @@ new class extends BasePageComponent {
                 :label="__('settings.password.new_password_label')"
                 required
                 autocomplete="new-password"
+                with-strength-meter
             ></x-ui.password>
 
             <x-ui.password

@@ -25,9 +25,5 @@
         {{ $attributes->merge(['class' => 'input input-bordered w-full' . ($hasError ? ' input-error' : '')])->except(['label', 'error']) }}
         id="{{ $inputId }}"
     />
-    @if ($error || ($errors->has($attributes->get('name')) ?? false))
-        <div class="label">
-            <span class="label-text-alt text-error">{{ $error ?? $errors->first($attributes->get('name')) }}</span>
-        </div>
-    @endif
+    <x-ui.input-error :name="$attributes->get('name')" :error="$error" />
 </label>

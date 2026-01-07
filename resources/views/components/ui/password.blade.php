@@ -58,9 +58,9 @@
             </span>
         </button>
     </div>
-    @if ($error || ($errors->has($attributes->get('name')) ?? false))
-        <div class="label">
-            <span class="label-text-alt text-error">{{ $error ?? $errors->first($attributes->get('name')) }}</span>
-        </div>
+    <x-ui.input-error :name="$attributes->get('name')" :error="$error" />
+
+    @if($withStrengthMeter ?? false)
+        <x-ui.password-strength :target-id="$inputId" />
     @endif
 </label>

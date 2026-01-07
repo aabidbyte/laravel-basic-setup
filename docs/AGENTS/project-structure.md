@@ -39,7 +39,19 @@ app/
 │   └── *.php             # Eloquent models
 ├── Observers/            # Model observers (organized by domain)
 │   └── Notifications/    # Notification-related observers
-└── Providers/            # Service providers
+└── Providers/            # specialized service providers (Separation of Concerns)
+    ├── AccessServiceProvider.php             # Authorization Gates & Permissions
+    ├── AppServiceProvider.php                # Empty base provider
+    ├── BladeServiceProvider.php              # View composers & Blade directives
+    ├── FortifyServiceProvider.php            # Authentication configuration
+    ├── FrontendPreferencesServiceProvider.php # FrontendPreferencesService singleton
+    ├── HorizonServiceProvider.php            # Horizon dashboard access
+    ├── I18nServiceProvider.php               # Internationalization service singleton
+    ├── LogViewerServiceProvider.php          # LogViewer dashboard access
+    ├── MacroServiceProvider.php              # Global Eloquent macros
+    ├── ModelServiceProvider.php              # Eloquent Model global config
+    ├── SecurityServiceProvider.php           # Security rules, CSP, Broker overrides
+    └── TelescopeServiceProvider.php          # Telescope dashboard access
 
 resources/
 ├── views/

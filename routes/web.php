@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Preferences\PreferencesController;
 use Illuminate\Support\Facades\Route;
 
@@ -8,8 +9,8 @@ Route::post('/preferences/theme', [PreferencesController::class, 'updateTheme'])
 Route::post('/preferences/locale', [PreferencesController::class, 'updateLocale'])->name('preferences.locale');
 
 // Account activation route (public, for users activating their account)
-Route::livewire('/activate/{token}', 'pages::auth.activate')
-    ->name('auth.activate');
+Route::get('/activate/{token}', [AuthController::class, 'showActivationForm'])->name('auth.activate');
+Route::post('/activate/{token}', [AuthController::class, 'activate']);
 
 Route::middleware(['auth'])->group(function () {
     require __DIR__ . '/web/auth/dashboard.php';

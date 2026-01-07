@@ -15,4 +15,16 @@ return [
     'failed' => 'These credentials do not match our records.',
     'password' => 'The provided password is incorrect.',
     'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
+    'password_strength' => [
+        'title' => 'Strength',
+        'weak' => 'Weak',
+        'good' => 'Good',
+        'strong' => 'Strong',
+        'requirements' => [
+            'length' => '8+ characters',
+            'mixed_case' => 'Mixed case',
+            'number' => 'Number',
+            'symbol' => 'Symbol',
+        ],
+    ],
 ];

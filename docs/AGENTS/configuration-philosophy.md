@@ -41,6 +41,19 @@ The project uses **stable, environment-aware configurations** that minimize `.en
     - Default stack channel routes to all level-specific channels
     - Retention: Configurable via `LOG_DAILY_DAYS` environment variable (default: 14 days)
     - Custom factory: `App\Logging\LevelSpecificLogChannelFactory` handles exact level filtering with daily rotation
+### Service Provider Architecture
+
+The project follows an **Extreme Separation of Concerns** for service providers to keep `AppServiceProvider` clean and registrations organized:
+
+- **`AccessServiceProvider`**: Centralizes authorization logic, RBAC gates, and `Gate::before` checks.
+- **`BladeServiceProvider`**: Handles view-related registrations like Blade directives and view composers.
+- **`FrontendPreferencesServiceProvider`**: Dedicated to registering the frontend preferences service.
+- **`I18nServiceProvider`**: Dedicated to registering internationalization services.
+- **`MacroServiceProvider`**: Global Eloquent/Query builder macros (e.g., `search`).
+- **`ModelServiceProvider`**: Global Eloquent configuration like strict mode settings.
+- **`SecurityServiceProvider`**: Consolidated security settings (Password defaults, CSP nonces, Authentication overrides).
+
+This granular approach ensures that as the application grows, bootstrapping logic remains maintainable and easy to locate.
 
 ### Configuration Best Practices
 
