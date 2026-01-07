@@ -68,7 +68,9 @@ The component is fully responsive:
 
 ## Notes
 
-- Titles are handled by `BasePageComponent` via `$pageTitle` and `$pageSubtitle` properties.
+- Titles are handled by `BasePageComponent`.
+- You can override `getPageTitle(): string` in your component to provide a dynamic title (e.g. including user name).
+- If `getPageTitle()` is not overridden, it falls back to the `$pageTitle` property.
 - All actions and slots are optional.
 - For plain Blade files, wrap with `x-layouts.app`.
 - For Livewire SFCs extending `BasePageComponent`, the layout is handled by the base class.

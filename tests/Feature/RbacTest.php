@@ -18,7 +18,6 @@ uses(RefreshDatabase::class);
  * Team-based data isolation is handled by TeamScope global scope,
  * not by team-specific roles/permissions.
  */
-
 test('can create a role', function () {
     $role = Role::create(['name' => Roles::WRITER]);
 

@@ -64,14 +64,14 @@ class ActionModal extends LivewireBaseComponent
         if ($viewType === 'confirm') {
             $viewType = 'blade'; // Normalize to blade for view rendering compatibility
             $viewPath = $viewPath ?? 'components.ui.confirm-dialog-body';
-            $viewTitle = $viewTitle ?? $viewProps['title'] ?? __('ui.modals.confirm.title');
+            $viewTitle = $viewTitle ?? $viewProps['title'] ?? __('modals.confirm.title');
 
             // Inject behavior callback strings for the Blade component
             $viewProps = array_merge([
                 'title' => $viewTitle,
                 'content' => $viewProps['content'] ?? '',
-                'confirmLabel' => $viewProps['confirmLabel'] ?? __('ui.actions.confirm'),
-                'cancelLabel' => $viewProps['cancelLabel'] ?? __('ui.actions.cancel'),
+                'confirmLabel' => $viewProps['confirmLabel'] ?? __('actions.confirm'),
+                'cancelLabel' => $viewProps['cancelLabel'] ?? __('actions.cancel'),
                 'onConfirm' => '$wire.confirm()',
                 'onCancel' => '$wire.closeModal()',
                 // Explicitly preserve action keys

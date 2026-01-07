@@ -1,8 +1,8 @@
 @props([
     'title' => null,
     'content' => null,
-    'confirmLabel' => __('ui.actions.confirm'),
-    'cancelLabel' => __('ui.actions.cancel'),
+    'confirmLabel' => __('actions.confirm'),
+    'cancelLabel' => __('actions.cancel'),
     'onConfirm',
     'onCancel',
     // Alpine.js binding keys (string names of JS variables)

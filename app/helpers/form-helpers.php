@@ -20,7 +20,7 @@ function prepend_empty_option(array $options, ?string $emptyLabel = null): array
     }
 
     // Use provided label or default translation
-    $label = $emptyLabel ?? __('ui.table.select_option');
+    $label = $emptyLabel ?? __('table.select_option');
 
     // Prepend empty option to the beginning of the array
     return ['' => $label] + $options;

@@ -31,7 +31,7 @@ class SuccessfulPasswordResetLinkRequestResponse implements SuccessfulPasswordRe
      */
     public function toResponse($request): JsonResponse|RedirectResponse
     {
-        $message = __('ui.auth.forgot_password.success') ?: __('messages.auth.password_reset_link_sent');
+        $message = __('authentication.forgot_password.success') ?: __('messages.auth.password_reset_link_sent');
 
         // Send notification to guest user (via session channel)
         NotificationBuilder::make()

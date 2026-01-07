@@ -9,15 +9,15 @@
         >
             <div x-show="!showRecoveryInput">
                 <x-auth-header
-                    :title="__('ui.auth.two_factor.title')"
-                    :description="__('ui.auth.two_factor.description')"
+                    :title="__('authentication.two_factor.title')"
+                    :description="__('authentication.two_factor.description')"
                 ></x-auth-header>
             </div>
 
             <div x-show="showRecoveryInput">
                 <x-auth-header
-                    :title="__('ui.auth.two_factor.recovery_title')"
-                    :description="__('ui.auth.two_factor.recovery_description')"
+                    :title="__('authentication.two_factor.recovery_title')"
+                    :description="__('authentication.two_factor.recovery_description')"
                 ></x-auth-header>
             </div>
 
@@ -34,7 +34,7 @@
                                 for="code"
                                 class="label"
                             >
-                                <span class="label-text">{{ __('ui.settings.two_factor.setup.otp_label') }}</span>
+                                <span class="label-text">{{ __('settings.two_factor.setup.otp_label') }}</span>
                             </label>
                             <input
                                 type="text"
@@ -63,7 +63,7 @@
                             x-bind:required="showRecoveryInput"
                             autocomplete="one-time-code"
                             x-model="recovery_code"
-                            :label="__('ui.auth.two_factor.recovery_code_label')"
+                            :label="__('authentication.two_factor.recovery_code_label')"
                         ></x-ui.input>
                     </div>
 
@@ -72,21 +72,21 @@
                         variant="primary"
                         class="w-full"
                     >
-                        {{ __('ui.actions.continue') }}
+                        {{ __('actions.continue') }}
                     </x-ui.button>
                 </div>
 
                 <div class="mt-5 text-center text-sm text-base-content/70">
-                    <span>{{ __('ui.auth.two_factor.switch_to_recovery') }}</span>
+                    <span>{{ __('authentication.two_factor.switch_to_recovery') }}</span>
                     <x-ui.button
                         type="button"
                         @click="toggleInput()"
                         style="link"
                         color="primary"
                         size="sm"
-                    ><span x-show="!showRecoveryInput">{{ __('ui.auth.two_factor.use_recovery_code') }}</span><span
+                    ><span x-show="!showRecoveryInput">{{ __('authentication.two_factor.use_recovery_code') }}</span><span
                             x-show="showRecoveryInput"
-                        >{{ __('ui.auth.two_factor.use_auth_code') }}</span></x-ui.button>
+                        >{{ __('authentication.two_factor.use_auth_code') }}</span></x-ui.button>
                 </div>
             </form>
         </div>

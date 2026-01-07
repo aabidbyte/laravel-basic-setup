@@ -31,7 +31,7 @@ class PasswordResetResponse implements PasswordResetResponseContract
      */
     public function toResponse($request): JsonResponse|RedirectResponse
     {
-        $message = __('ui.auth.reset_password.success') ?: __('messages.auth.password_reset');
+        $message = __('authentication.reset_password.success') ?: __('messages.auth.password_reset');
 
         // Send notification to guest user (via session channel)
         NotificationBuilder::make()

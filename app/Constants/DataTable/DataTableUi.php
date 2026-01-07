@@ -80,15 +80,15 @@ class DataTableUi
     public const COMPONENT_FILTER_RELATIONSHIP = 'datatable.filters.relationship';
 
     // Translation keys (for DataTable-specific translations)
-    public const TRANSLATION_BULK_ACTIONS = 'ui.table.bulk_actions';
+    public const TRANSLATION_BULK_ACTIONS = 'table.bulk_actions';
 
-    public const TRANSLATION_SEARCH_PLACEHOLDER = 'ui.table.search_placeholder';
+    public const TRANSLATION_SEARCH_PLACEHOLDER = 'table.search_placeholder';
 
-    public const TRANSLATION_EMPTY_MESSAGE = 'ui.table.empty_message';
+    public const TRANSLATION_EMPTY_MESSAGE = 'table.empty_message';
 
-    public const TRANSLATION_SELECT_ALL = 'ui.table.select_all';
+    public const TRANSLATION_SELECT_ALL = 'table.select_all';
 
-    public const TRANSLATION_SELECT_PAGE = 'ui.table.select_page';
+    public const TRANSLATION_SELECT_PAGE = 'table.select_page';
 
     // Modal configuration keys
     public const MODAL_TYPE_BLADE = 'blade';

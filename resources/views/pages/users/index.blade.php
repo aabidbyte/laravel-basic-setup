@@ -1,5 +1,8 @@
 @php
     use App\Constants\Auth\Permissions;
+    
+    view()->share('pageTitle', __('pages.common.index.title', ['type' => __('types.users')]));
+    view()->share('pageSubtitle', __('pages.common.index.description', ['type_plural' => __('types.users')]));
 @endphp
 
 <x-layouts.app>
@@ -16,7 +19,7 @@
                         name="plus"
                         size="sm"
                     ></x-ui.icon>
-                    {{ __('ui.users.actions.create') }}
+                    {{ __('pages.common.create.title', ['type' => __('types.user')]) }}
                 </x-ui.button>
             @endcan
         </x-slot:topActions>

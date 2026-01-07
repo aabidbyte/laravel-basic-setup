@@ -1,8 +1,8 @@
 <x-layouts.auth>
     <div class="flex flex-col gap-6">
         <x-auth-header
-            :title="__('ui.auth.forgot_password.title')"
-            :description="__('ui.auth.forgot_password.description')"
+            :title="__('authentication.forgot_password.title')"
+            :description="__('authentication.forgot_password.description')"
         ></x-auth-header>
 
         <form
@@ -15,7 +15,7 @@
             <x-ui.input
                 type="email"
                 name="email"
-                :label="__('ui.auth.forgot_password.email_label')"
+                :label="__('authentication.forgot_password.email_label')"
                 required
                 autofocus
                 placeholder="email@example.com"
@@ -27,13 +27,13 @@
                 class="w-full"
                 data-test="email-password-reset-link-button"
             >
-                {{ __('ui.auth.forgot_password.submit') }}
+                {{ __('authentication.forgot_password.submit') }}
             </x-ui.button>
         </form>
 
         <div class="text-center text-sm text-base-content/70">
-            <span>{{ __('ui.auth.forgot_password.back_to_login') }}</span>
-            <x-ui.link href="{{ route('login') }}">{{ __('ui.auth.forgot_password.log_in') }}</x-ui.link>
+            <span>{{ __('authentication.forgot_password.back_to_login') }}</span>
+            <x-ui.link href="{{ route('login') }}">{{ __('authentication.forgot_password.log_in') }}</x-ui.link>
         </div>
     </div>
 </x-layouts.auth>

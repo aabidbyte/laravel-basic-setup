@@ -3,7 +3,7 @@
 use App\Livewire\Bases\BasePageComponent;
 
 new class extends BasePageComponent {
-    public ?string $pageTitle = 'ui.pages.dashboard';
+    public ?string $pageTitle = 'pages.dashboard';
 
     protected string $placeholderType = 'card';
 }; ?>

@@ -7,9 +7,9 @@ use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
 new class extends BasePageComponent {
-    public ?string $pageTitle = 'ui.pages.settings.password';
+    public ?string $pageTitle = 'pages.settings.password';
 
-    public ?string $pageSubtitle = 'ui.settings.password.description';
+    public ?string $pageSubtitle = 'settings.password.description';
 
     protected string $placeholderType = 'form';
 
@@ -43,7 +43,7 @@ new class extends BasePageComponent {
 
         $this->reset('current_password', 'password', 'password_confirmation');
 
-        NotificationBuilder::make()->title(__('ui.settings.password.save_success'))->success()->send();
+        NotificationBuilder::make()->title('settings.password.save_success')->success()->send();
 
         $this->dispatch('password-updated');
     }
@@ -58,7 +58,7 @@ new class extends BasePageComponent {
             <x-ui.password
                 wire:model="current_password"
                 name="current_password"
-                :label="__('ui.settings.password.current_password_label')"
+                :label="__('settings.password.current_password_label')"
                 required
                 autocomplete="current-password"
             ></x-ui.password>
@@ -66,7 +66,7 @@ new class extends BasePageComponent {
             <x-ui.password
                 wire:model="password"
                 name="password"
-                :label="__('ui.settings.password.new_password_label')"
+                :label="__('settings.password.new_password_label')"
                 required
                 autocomplete="new-password"
             ></x-ui.password>
@@ -74,7 +74,7 @@ new class extends BasePageComponent {
             <x-ui.password
                 wire:model="password_confirmation"
                 name="password_confirmation"
-                :label="__('ui.settings.password.confirm_password_label')"
+                :label="__('settings.password.confirm_password_label')"
                 required
                 autocomplete="new-password"
             ></x-ui.password>
@@ -86,7 +86,7 @@ new class extends BasePageComponent {
                     class="w-full"
                     data-test="update-password-button"
                 >
-                    {{ __('ui.actions.save') }}
+                    {{ __('actions.save') }}
                 </x-ui.button>
 
             </div>

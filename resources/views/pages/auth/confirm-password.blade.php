@@ -1,8 +1,8 @@
 <x-layouts.auth>
     <div class="flex flex-col gap-6">
         <x-auth-header
-            :title="__('ui.auth.confirm_password.title')"
-            :description="__('ui.auth.confirm_password.description')"
+            :title="__('authentication.confirm_password.title')"
+            :description="__('authentication.confirm_password.description')"
         ></x-auth-header>
 
         <form
@@ -14,10 +14,10 @@
 
             <x-ui.password
                 name="password"
-                :label="__('ui.auth.confirm_password.password_label')"
+                :label="__('authentication.confirm_password.password_label')"
                 required
                 autocomplete="current-password"
-                :placeholder="__('ui.auth.confirm_password.password_placeholder')"
+                :placeholder="__('authentication.confirm_password.password_placeholder')"
             ></x-ui.password>
 
             <x-ui.button
@@ -26,7 +26,7 @@
                 class="w-full"
                 data-test="confirm-password-button"
             >
-                {{ __('ui.actions.confirm') }}
+                {{ __('actions.confirm') }}
             </x-ui.button>
         </form>
     </div>

@@ -47,7 +47,7 @@
                 type="submit"
                 class="w-full"
             >
-                {{ __('ui.actions.logout') }}
+                {{ __('actions.logout') }}
             </x-ui.button>
         </form>
     </div>

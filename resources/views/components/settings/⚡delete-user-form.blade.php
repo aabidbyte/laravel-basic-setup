@@ -26,7 +26,7 @@ new class extends LivewireBaseComponent {
         // Since no user context is available, it will default to current session
         // This uses the current session ID dynamically (new session created after invalidation)
         // The notification will be delivered to the browser even after user deletion
-        NotificationBuilder::make()->title(__('ui.settings.delete_account.success'))->info()->send();
+        NotificationBuilder::make()->title('settings.delete_account.success')->info()->send();
 
         $this->redirect('/', navigate: true);
     }
@@ -34,8 +34,8 @@ new class extends LivewireBaseComponent {
 
 <section class="mt-10 space-y-6">
     <div class="relative mb-5">
-        <h2 class="text-xl font-bold text-base-content">{{ __('ui.settings.delete_account.title') }}</h2>
-        <p class="mt-1 text-sm text-base-content/70">{{ __('ui.settings.delete_account.description') }}</p>
+        <h2 class="text-xl font-bold text-base-content">{{ __('settings.delete_account.title') }}</h2>
+        <p class="mt-1 text-sm text-base-content/70">{{ __('settings.delete_account.description') }}</p>
     </div>
 
     <div x-data="{ deleteAccountModalOpen: false }">
@@ -45,7 +45,7 @@ new class extends LivewireBaseComponent {
             @click="deleteAccountModalOpen = true"
             data-test="delete-user-button"
         >
-            {{ __('ui.settings.delete_account.button') }}
+            {{ __('settings.delete_account.button') }}
         </x-ui.button>
 
         <x-ui.confirm-modal
@@ -63,9 +63,9 @@ new class extends LivewireBaseComponent {
                     ></x-ui.icon>
                 </div>
                 <div class="flex-1">
-                    <h3 class="text-lg font-bold">{{ __('ui.settings.delete_account.modal_title') }}</h3>
+                    <h3 class="text-lg font-bold">{{ __('settings.delete_account.modal_title') }}</h3>
                     <p class="text-base-content/70 mb-6 mt-2">
-                        {{ __('ui.settings.delete_account.modal_description') }}
+                        {{ __('settings.delete_account.modal_description') }}
                     </p>
                     <form
                         id="delete-user-form"
@@ -76,7 +76,7 @@ new class extends LivewireBaseComponent {
                         <x-ui.password
                             wire:model="password"
                             name="password"
-                            :label="__('ui.settings.delete_account.password_label')"
+                            :label="__('settings.delete_account.password_label')"
                         ></x-ui.password>
                     </form>
                 </div>
@@ -89,14 +89,14 @@ new class extends LivewireBaseComponent {
                     form="delete-user-form"
                     data-test="confirm-delete-user-button"
                 >
-                    {{ __('ui.settings.delete_account.button') }}
+                    {{ __('settings.delete_account.button') }}
                 </x-ui.button>
                 <x-ui.button
                     type="button"
                     variant="ghost"
                     @click="deleteAccountModalOpen = false"
                 >
-                    {{ __('ui.actions.cancel') }}
+                    {{ __('actions.cancel') }}
                 </x-ui.button>
             </x-slot:actions>
         </x-ui.confirm-modal>

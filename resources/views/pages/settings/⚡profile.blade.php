@@ -7,9 +7,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 new class extends BasePageComponent {
-    public ?string $pageTitle = 'ui.pages.settings.profile';
+    public ?string $pageTitle = 'pages.settings.profile';
 
-    public ?string $pageSubtitle = 'ui.settings.profile.description';
+    public ?string $pageSubtitle = 'settings.profile.description';
 
     protected string $placeholderType = 'form';
 
@@ -49,7 +49,7 @@ new class extends BasePageComponent {
 
         $user->save();
 
-        NotificationBuilder::make()->title('ui.settings.profile.save_success')->success()->persist()->send();
+        NotificationBuilder::make()->title('settings.profile.save_success')->success()->persist()->send();
 
         $this->dispatch('profile-updated', name: $user->name);
     }
@@ -69,7 +69,7 @@ new class extends BasePageComponent {
 
         $user->sendEmailVerificationNotification();
 
-        NotificationBuilder::make()->title(__('ui.settings.profile.verification_sent'))->info()->send();
+        NotificationBuilder::make()->title('settings.profile.verification_sent')->info()->send();
     }
 }; ?>
 
@@ -83,7 +83,7 @@ new class extends BasePageComponent {
                 type="text"
                 wire:model="name"
                 name="name"
-                :label="__('ui.settings.profile.name_label')"
+                :label="__('settings.profile.name_label')"
                 required
                 autofocus
                 autocomplete="name"
@@ -93,7 +93,7 @@ new class extends BasePageComponent {
                 type="email"
                 wire:model="email"
                 name="email"
-                :label="__('ui.settings.profile.email_label')"
+                :label="__('settings.profile.email_label')"
                 required
                 autocomplete="email"
             ></x-ui.input>
@@ -101,14 +101,14 @@ new class extends BasePageComponent {
             @if (Auth::user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !Auth::user()->hasVerifiedEmail())
                 <div class="alert alert-info mt-4">
                     <span class="text-sm">
-                        {{ __('ui.settings.profile.email_unverified') }}
+                        {{ __('settings.profile.email_unverified') }}
                         <x-ui.button
                             type="button"
                             wire:click.prevent="resendVerificationNotification"
                             style="link"
                             color="primary"
                             size="sm"
-                        >{{ __('ui.settings.profile.resend_verification') }}</x-ui.button>
+                        >{{ __('settings.profile.resend_verification') }}</x-ui.button>
                     </span>
                 </div>
             @endif
@@ -120,7 +120,7 @@ new class extends BasePageComponent {
                     class="w-full"
                     data-test="update-profile-button"
                 >
-                    {{ __('ui.actions.save') }}
+                    {{ __('actions.save') }}
                 </x-ui.button>
 
             </div>

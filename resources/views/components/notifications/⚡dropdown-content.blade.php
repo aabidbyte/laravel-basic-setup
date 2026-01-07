@@ -163,7 +163,7 @@ new class extends LivewireBaseComponent {
     wire:key="notification-dropdown-content-{{ Auth::user()?->uuid ?? 'guest' }}"
 >
     <div class="menu-title">
-        <span>{{ __('ui.notifications.dropdown.title') }}</span>
+        <span>{{ __('notifications.dropdown.title') }}</span>
     </div>
 
     @forelse($this->formattedNotifications as $notification)
@@ -232,7 +232,7 @@ new class extends LivewireBaseComponent {
         </div>
     @empty
         <div class="text-center py-4 text-sm opacity-60">
-            {{ __('ui.notifications.empty') }}
+            {{ __('notifications.empty') }}
         </div>
     @endforelse
 
@@ -243,6 +243,6 @@ new class extends LivewireBaseComponent {
         wire:navigate
         class="text-center"
     >
-        {{ __('ui.notifications.view_all') }}
+        {{ __('notifications.view_all') }}
     </x-ui.button>
 </div>

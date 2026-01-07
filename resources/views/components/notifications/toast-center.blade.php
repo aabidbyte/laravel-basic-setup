@@ -113,7 +113,7 @@
                                 :href="toast.link"
                                 :class="getLinkClass()"
                             >
-                                <span>{{ __('ui.notifications.view') }}</span>
+                                <span>{{ __('notifications.view') }}</span>
                             </a>
                         </div>
                     </div>
@@ -123,7 +123,7 @@
                         @click.stop="dismiss()"
                         type="button"
                         class="ml-auto shrink-0 text-base-content/40 hover:text-base-content/60 focus:outline-2 focus:outline-offset-2 focus:outline-base-content"
-                        aria-label="{{ __('ui.notifications.dismiss') }}"
+                        aria-label="{{ __('notifications.dismiss') }}"
                     >
                         <x-ui.icon
                             name="x-mark"

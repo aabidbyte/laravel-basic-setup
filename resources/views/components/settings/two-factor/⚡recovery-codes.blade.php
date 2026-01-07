@@ -27,7 +27,7 @@ new class extends LivewireBaseComponent {
 
         $this->loadRecoveryCodes();
 
-        NotificationBuilder::make()->title(__('ui.settings.two_factor.recovery.regenerated'))->success()->send();
+        NotificationBuilder::make()->title('settings.two_factor.recovery.regenerated')->success()->send();
     }
 
     /**
@@ -41,7 +41,7 @@ new class extends LivewireBaseComponent {
             try {
                 $this->recoveryCodes = json_decode(decrypt($user->two_factor_recovery_codes), true);
             } catch (Exception) {
-                NotificationBuilder::make()->title(__('ui.settings.two_factor.recovery.load_error'))->error()->send();
+                NotificationBuilder::make()->title('settings.two_factor.recovery.load_error')->error()->send();
 
                 $this->recoveryCodes = [];
             }
@@ -69,10 +69,10 @@ new class extends LivewireBaseComponent {
                     d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                 />
             </svg>
-            <h3 class="text-lg font-bold text-base-content">{{ __('ui.settings.two_factor.recovery.title') }}</h3>
+            <h3 class="text-lg font-bold text-base-content">{{ __('settings.two_factor.recovery.title') }}</h3>
         </div>
         <p class="text-sm text-base-content/70 mb-4">
-            {{ __('ui.settings.two_factor.recovery.description') }}
+            {{ __('settings.two_factor.recovery.description') }}
         </p>
 
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -84,7 +84,7 @@ new class extends LivewireBaseComponent {
                 aria-expanded="false"
                 aria-controls="recovery-codes-section"
             >
-                {{ __('ui.settings.two_factor.recovery.view_button') }}
+                {{ __('settings.two_factor.recovery.view_button') }}
             </x-ui.button>
 
             <x-ui.button
@@ -95,7 +95,7 @@ new class extends LivewireBaseComponent {
                 aria-expanded="true"
                 aria-controls="recovery-codes-section"
             >
-                {{ __('ui.settings.two_factor.recovery.hide_button') }}
+                {{ __('settings.two_factor.recovery.hide_button') }}
             </x-ui.button>
 
             @if (filled($recoveryCodes))
@@ -105,7 +105,7 @@ new class extends LivewireBaseComponent {
                     wire:click="regenerateRecoveryCodes"
                     variant="outline"
                 >
-                    {{ __('ui.settings.two_factor.recovery.regenerate_button') }}
+                    {{ __('settings.two_factor.recovery.regenerate_button') }}
                 </x-ui.button>
             @endif
         </div>
@@ -139,7 +139,7 @@ new class extends LivewireBaseComponent {
                     </div>
                 </div>
                 <p class="text-xs text-base-content/70 mt-2">
-                    {{ __('ui.settings.two_factor.recovery.warning') }}
+                    {{ __('settings.two_factor.recovery.warning') }}
                 </p>
             @endif
         </div>

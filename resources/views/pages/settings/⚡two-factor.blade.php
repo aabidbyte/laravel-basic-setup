@@ -14,9 +14,9 @@ use Livewire\Attributes\Validate;
 use Symfony\Component\HttpFoundation\Response;
 
 new class extends BasePageComponent {
-    public ?string $pageTitle = 'ui.pages.settings.two_factor';
+    public ?string $pageTitle = 'pages.settings.two_factor';
 
-    public ?string $pageSubtitle = 'ui.settings.two_factor.description';
+    public ?string $pageSubtitle = 'settings.two_factor.description';
 
     protected string $placeholderType = 'form';
 
@@ -118,7 +118,7 @@ new class extends BasePageComponent {
 
         $this->twoFactorEnabled = true;
 
-        NotificationBuilder::make()->title(__('ui.settings.two_factor.enabled_success'))->success()->send();
+        NotificationBuilder::make()->title('settings.two_factor.enabled_success')->success()->send();
     }
 
     /**
@@ -143,7 +143,7 @@ new class extends BasePageComponent {
 
         $this->twoFactorEnabled = false;
 
-        NotificationBuilder::make()->title(__('ui.settings.two_factor.disabled_success'))->info()->send();
+        NotificationBuilder::make()->title('settings.two_factor.disabled_success')->info()->send();
     }
 
     /**
@@ -169,16 +169,16 @@ new class extends BasePageComponent {
     {
         if ($this->twoFactorEnabled) {
             return [
-                'title' => __('ui.settings.two_factor.setup.title_enabled'),
-                'description' => __('ui.settings.two_factor.setup.description_enabled'),
-                'buttonText' => __('ui.actions.close'),
+                'title' => __('settings.two_factor.setup.title_enabled'),
+                'description' => __('settings.two_factor.setup.description_enabled'),
+                'buttonText' => __('actions.close'),
             ];
         }
 
         return [
-            'title' => __('ui.settings.two_factor.setup.title_setup'),
-            'description' => __('ui.settings.two_factor.setup.description_setup'),
-            'buttonText' => __('ui.actions.continue'),
+            'title' => __('settings.two_factor.setup.title_setup'),
+            'description' => __('settings.two_factor.setup.description_setup'),
+            'buttonText' => __('actions.continue'),
         ];
     }
 
@@ -188,9 +188,9 @@ new class extends BasePageComponent {
     public function getVerificationModalConfigProperty(): array
     {
         return [
-            'title' => __('ui.settings.two_factor.setup.title_verify'),
-            'description' => __('ui.settings.two_factor.setup.description_verify'),
-            'buttonText' => __('ui.actions.continue'),
+            'title' => __('settings.two_factor.setup.title_verify'),
+            'description' => __('settings.two_factor.setup.description_verify'),
+            'buttonText' => __('actions.continue'),
         ];
     }
 }; ?>
@@ -208,11 +208,11 @@ new class extends BasePageComponent {
                             <x-ui.badge
                                 color="success"
                                 size="lg"
-                            >{{ __('ui.settings.two_factor.enabled') }}</x-ui.badge>
+                            >{{ __('settings.two_factor.enabled') }}</x-ui.badge>
                         </div>
 
                         <p class="text-base-content/70">
-                            {{ __('ui.settings.two_factor.enabled_description') }}
+                            {{ __('settings.two_factor.enabled_description') }}
                         </p>
 
                         <livewire:settings.two-factor.recovery-codes
@@ -224,7 +224,7 @@ new class extends BasePageComponent {
                                 wire:click="disable"
                                 variant="error"
                             >
-                                {{ __('ui.settings.two_factor.disable_button') }}
+                                {{ __('settings.two_factor.disable_button') }}
                             </x-ui.button>
                         </div>
                     </div>
@@ -236,11 +236,11 @@ new class extends BasePageComponent {
                             <x-ui.badge
                                 color="error"
                                 size="lg"
-                            >{{ __('ui.settings.two_factor.disabled') }}</x-ui.badge>
+                            >{{ __('settings.two_factor.disabled') }}</x-ui.badge>
                         </div>
 
                         <p class="text-base-content/70">
-                            {{ __('ui.settings.two_factor.disabled_description') }}
+                            {{ __('settings.two_factor.disabled_description') }}
                         </p>
 
                         <div class="card-actions">
@@ -249,7 +249,7 @@ new class extends BasePageComponent {
                                 wire:click="enable"
                                 variant="primary"
                             >
-                                {{ __('ui.settings.two_factor.enable_button') }}
+                                {{ __('settings.two_factor.enable_button') }}
                             </x-ui.button>
                         </div>
                     </div>

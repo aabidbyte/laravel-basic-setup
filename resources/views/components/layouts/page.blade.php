@@ -22,7 +22,7 @@
 ])
 
 @php
-    $backLabel = $backLabel ?? __('ui.actions.back');
+    $backLabel = $backLabel ?? __('actions.back');
 @endphp
 
 <div class="flex flex-col gap-4 sm:gap-6">

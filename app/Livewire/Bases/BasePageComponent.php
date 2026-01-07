@@ -16,7 +16,7 @@ abstract class BasePageComponent extends LivewireBaseComponent
 
     public ?string $pageSubtitle = null;
 
-    public function boot(): void
+    public function rendering($view, $data = []): void
     {
         $this->sharePageTitle();
         $this->sharePageSubtitle();

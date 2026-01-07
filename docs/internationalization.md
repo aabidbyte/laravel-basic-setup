@@ -77,60 +77,69 @@ The `config/app.php` file sources locale settings from `config/i18n.php`:
 ## Translation Key Conventions
 
 ### Semantic Keys (Default)
-
-**Always use semantic keys by default.** Semantic keys are organized by namespace and module:
-
-```php
-// UI elements
-__('ui.navigation.dashboard')
-__('ui.auth.login.title')
-__('ui.settings.profile.name_label')
-
-// System messages
-__('messages.notifications.success')
-__('messages.errors.validation_failed')
-```
-
-**Key Structure:**
-
--   `ui.*` - User interface elements (buttons, labels, navigation, forms)
--   `messages.*` - System messages, notifications, alerts, errors
-
-**Organization:**
-
--   Keys are organized by module/feature (e.g., `ui.auth.*`, `ui.settings.*`)
--   Use descriptive, hierarchical keys (e.g., `ui.settings.profile.email_label`)
-
-### JSON String Keys (Optional)
-
-JSON string keys should **only** be used for very small UI labels when semantic keys are impractical. This is not the default approach.
-
-## Translation File Structure
-
-### Directory Structure
-
-```
-lang/
-├── en_US/              # Default locale (source of truth)
-│   ├── ui.php          # UI translations
-│   ├── messages.php    # System messages
-│   ├── extracted.php   # Newly discovered translations (temporary)
-│   ├── validation.php  # Laravel validation (protected)
-│   ├── auth.php        # Laravel auth (protected)
-│   ├── pagination.php  # Laravel pagination (protected)
-│   └── passwords.php   # Laravel passwords (protected)
-└── fr_FR/              # French locale
-    ├── ui.php
-    ├── messages.php
-    └── ... (same structure)
-```
-
-### File Organization
-
--   **`ui.php`**: All user interface translations organized by module
--   **`messages.php`**: System messages, notifications, alerts
--   **`extracted.php`**: Newly discovered translations that need to be organized (temporary)
--   **Protected files**: `validation.php`, `auth.php`, `pagination.php`, `passwords.php` (never pruned)
+ 
+ **Always use semantic keys by default.** Semantic keys are now organized by dedicated files (namespaces) for better modularity:
+ 
+ ```php
+ // UI elements
+ __('navigation.dashboard')
+ __('authentication.login.title')
+ __('settings.profile.name_label')
+ 
+ // Generic Pages
+ __('pages.common.create.title', ['type' => __('types.user')])
+ 
+ // Specific Resource
+ __('users.name')
+ 
+ // System messages
+ __('notifications.success')
+ ```
+ 
+ **Key Structure:**
+ 
+ -   `navigation.*` - Navigation items
+ -   `actions.*` - Common buttons and actions
+ -   `authentication.*` - Auth related labels (login, register...)
+ -   `settings.*` - Settings pages
+ -   `pages.*` - Generic page titles/descriptions
+ -   `users.*`, `types.*`, etc. - Resource specific labels
+ 
+ ### JSON String Keys (Optional)
+ 
+ JSON string keys should **only** be used for very small UI labels when semantic keys are impractical. This is not the default approach.
+ 
+ ## Translation File Structure
+ 
+ ### Directory Structure
+ 
+ ```
+ lang/
+ ├── en_US/              # Default locale (source of truth)
+ │   ├── actions.php     # Common actions (Save, Edit...)
+ │   ├── authentication.php # Auth translations
+ │   ├── common.php      # Common UI terms
+ │   ├── messages.php    # System messages
+ │   ├── navigation.php  # Navigation items
+ │   ├── pages.php       # Page titles/descriptions
+ │   ├── settings.php    # Settings
+ │   ├── types.php       # Entity types (User, Team...)
+ │   ├── users.php       # User resource labels
+ │   ├── ...             # Other modules (modals, table, notifications...)
+ │   └── extracted.php   # Newly discovered translations (temporary)
+ └── fr_FR/              # French locale
+     ├── actions.php
+     ├── ... (same structure)
+ ```
+ 
+ ### File Organization
+ 
+ -   **`pages.php`**: Generic page translations (Common CRUD patterns)
+ -   **`users.php`**: Resource-specific field labels and customized messages
+ -   **`types.php`**: Entity type names (Singular/Plural)
+ -   **`actions.php`**: Shared button/link text
+ -   **`extracted.php`**: Newly discovered translations that need to be organized (temporary)
+ -   **Protected files**: `validation.php`, `auth.php`, `pagination.php`, `passwords.php` (never pruned)
 
 ## RTL Support
 
@@ -184,8 +193,19 @@ php artisan lang:sync --write
 
 1. **Scans codebase**: Finds all translation keys used in PHP and Blade files
 2. **Syncs locales**: Uses default locale (`en_US`) as source of truth
-3. **Adds missing keys**: Adds any missing keys to other locales (with default locale values)
+3. **Adds missing keys**: Adds any missing keys to other locales.
+    - New keys are added with value: `"TRANSLATION_NEEDED: Please see context at path/to/file.php:123"`
+    - Updates existing keys that contain raw file paths to the new context format
 4. **Prunes unused keys** (optional): Removes keys not found in codebase (respects protected files)
+
+### Detection Capabilities
+
+The command detects translation keys in various formats:
+
+-   **Standard calls**: `__('key')`, `@lang('key')`, `trans('key')`
+-   **Parameterized calls**: `__('key', ['params' => ...])`
+-   **Notification Builder**: `->title('key')` and `->subtitle('key')` (automatically detected as keys)
+
 
 ### Safety Features
 

@@ -19,15 +19,15 @@ class SideBarMenuService
     public function getTopMenus(): array
     {
         return NavigationBuilder::make()
-            ->title(__('ui.navigation.platform'))
+            ->title(__('navigation.platform'))
             ->items(
                 NavigationItem::make()
-                    ->title(__('ui.navigation.dashboard'))
+                    ->title(__('navigation.dashboard'))
                     ->route('dashboard')
                     ->icon('home'),
 
                 NavigationItem::make()
-                    ->title(__('ui.navigation.users'))
+                    ->title(__('navigation.users'))
                     ->route('users.index')
                     ->icon('users')
                     ->activeRoutes('users.*')
@@ -44,16 +44,16 @@ class SideBarMenuService
     public function getBottomMenus(): array
     {
         return NavigationBuilder::make()
-            ->title(__('ui.navigation.resources'))
+            ->title(__('navigation.resources'))
             ->items(
                 NavigationItem::make()
-                    ->title(__('ui.navigation.repository'))
+                    ->title(__('navigation.repository'))
                     ->url('https://github.com/laravel/livewire-starter-kit')
                     ->external()
                     ->icon('folder'),
 
                 NavigationItem::make()
-                    ->title(__('ui.navigation.documentation'))
+                    ->title(__('navigation.documentation'))
                     ->url('https://laravel.com/docs/starter-kits#livewire')
                     ->external()
                     ->icon('book-open'),
@@ -69,10 +69,10 @@ class SideBarMenuService
     public function getUserMenus(): array
     {
         return NavigationBuilder::make()
-            ->title(__('ui.navigation.user'))
+            ->title(__('navigation.user'))
             ->items(
                 NavigationItem::make()
-                    ->title(__('ui.navigation.settings'))
+                    ->title(__('navigation.settings'))
                     ->route('profile.edit'),
             )
             ->toArray();

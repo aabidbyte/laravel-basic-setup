@@ -53,7 +53,7 @@
                                         name="users"
                                         size="lg"
                                     ></x-ui.icon>
-                                    <p>{{ __('ui.table.no_results') }}</p>
+                                    <p>{{ __('table.no_results') }}</p>
                                 </div>
                             </td>
                         </tr>

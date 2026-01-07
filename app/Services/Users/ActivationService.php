@@ -243,8 +243,8 @@ class ActivationService
 
         // Also send a toast notification
         NotificationBuilder::make()
-            ->title(__('messages.notifications.user_activated.toast_title'))
-            ->subtitle(__('messages.notifications.user_activated.toast_subtitle', ['name' => $activatedUser->name]))
+            ->title('messages.notifications.user_activated.toast_title')
+            ->subtitle('messages.notifications.user_activated.toast_subtitle', ['name' => $activatedUser->name])
             ->success()
             ->toUser($recipient)
             ->link(route('users.show', $activatedUser->uuid))

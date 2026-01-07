@@ -170,17 +170,23 @@ class LangSyncCommand extends Command
         // Get comment ranges to exclude matches within comments
         $commentRanges = $this->getCommentRanges($content);
 
-        // Pattern 1: __('key') or __('namespace.key')
-        $this->scanPattern($content, $lines, "/__\s*\(\s*['\"]([^'\"]+)['\"]\s*\)/", $relativePath, $commentRanges);
+        // Pattern 1: __('key') or __('namespace.key') - allow parameters
+        $this->scanPattern($content, $lines, "/__\s*\(\s*['\"]([^'\"]+)['\"]/", $relativePath, $commentRanges);
 
-        // Pattern 2: @lang('key')
-        $this->scanPattern($content, $lines, "/@lang\s*\(\s*['\"]([^'\"]+)['\"]\s*\)/", $relativePath, $commentRanges);
+        // Pattern 2: @lang('key') - allow parameters
+        $this->scanPattern($content, $lines, "/@lang\s*\(\s*['\"]([^'\"]+)['\"]/", $relativePath, $commentRanges);
 
-        // Pattern 3: trans('key')
-        $this->scanPattern($content, $lines, "/trans\s*\(\s*['\"]([^'\"]+)['\"]\s*\)/", $relativePath, $commentRanges);
+        // Pattern 3: trans('key') - allow parameters
+        $this->scanPattern($content, $lines, "/trans\s*\(\s*['\"]([^'\"]+)['\"]/", $relativePath, $commentRanges);
 
-        // Pattern 4: :label="__('key')" (Blade attributes)
-        $this->scanPattern($content, $lines, "/:\w+\s*=\s*__\s*\(\s*['\"]([^'\"]+)['\"]\s*\)/", $relativePath, $commentRanges);
+        // Pattern 4: :label="__('key')" (Blade attributes) - allow parameters
+        $this->scanPattern($content, $lines, "/:\w+\s*=\s*__\s*\(\s*['\"]([^'\"]+)['\"]/", $relativePath, $commentRanges);
+
+        // Pattern 5: ->title('key') (NotificationBuilder)
+        $this->scanPattern($content, $lines, "/->title\s*\(\s*['\"]([^'\"]+)['\"]/", $relativePath, $commentRanges);
+
+        // Pattern 6: ->subtitle('key') (NotificationBuilder)
+        $this->scanPattern($content, $lines, "/->subtitle\s*\(\s*['\"]([^'\"]+)['\"]/", $relativePath, $commentRanges);
     }
 
     /**
@@ -509,8 +515,8 @@ class LangSyncCommand extends Command
 
             if ($isSimpleKey) {
                 // Simple key - set directly
-                if (! isset($updated[$keyWithoutNamespace])) {
-                    $updated[$keyWithoutNamespace] = $locationValue;
+                if (! isset($updated[$keyWithoutNamespace]) || $this->isRawLocationValue($updated[$keyWithoutNamespace])) {
+                    $updated[$keyWithoutNamespace] = "TRANSLATION_NEEDED: Please see context at {$locationValue}";
                     $this->stats['keys_added']++;
                 }
             } else {
@@ -520,14 +526,14 @@ class LangSyncCommand extends Command
 
                 foreach ($keyParts as $i => $keyPart) {
                     if (empty($keyPart) && $i < count($keyParts) - 1) {
-                        // Skip empty intermediate keys (shouldn't happen, but handle gracefully)
+                        // Skip empty intermediate keys
                         continue;
                     }
 
                     if ($i === count($keyParts) - 1) {
-                        // Last key - set the value
-                        if (! isset($current[$keyPart])) {
-                            $current[$keyPart] = $locationValue;
+                        // Last key - set the value if missing or if it's a raw location placeholder
+                        if (! isset($current[$keyPart]) || $this->isRawLocationValue($current[$keyPart])) {
+                            $current[$keyPart] = "TRANSLATION_NEEDED: Please see context at {$locationValue}";
                             $this->stats['keys_added']++;
                         }
                     } else {
@@ -542,6 +548,19 @@ class LangSyncCommand extends Command
         }
 
         return $updated;
+    }
+
+    /**
+     * Check if a value appears to be a raw location reference.
+     */
+    protected function isRawLocationValue(mixed $value): bool
+    {
+        if (! is_string($value)) {
+            return false;
+        }
+
+        // Check for common file extensions and line number pattern: .php:123 or .blade.php:123
+        return preg_match('/\.php:\d+/', $value) === 1 || preg_match('/\.blade\.php:\d+/', $value) === 1;
     }
 
     /**
@@ -767,7 +786,21 @@ class LangSyncCommand extends Command
      */
     protected function writeTranslationFile(string $filePath, array $translations): void
     {
-        $content = "<?php\n\nreturn [\n";
+        $content = "<?php\n\n";
+
+        // Add header for extracted file
+        if (str_contains($filePath, "/{$this->extractedFile}.php")) {
+            $content .= "/*\n";
+            $content .= "|--------------------------------------------------------------------------\n";
+            $content .= "| Extracted Translations\n";
+            $content .= "|--------------------------------------------------------------------------\n";
+            $content .= "|\n";
+            $content .= "| Keys found here should be moved to appropriate files with semantic keys.\n";
+            $content .= "|\n";
+            $content .= "*/\n\n";
+        }
+
+        $content .= "return [\n";
         $content .= $this->arrayToPhpString($translations, 1);
         $content .= "];\n";
 

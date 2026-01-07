@@ -2,7 +2,7 @@
     <div class="mt-4 flex flex-col gap-6">
         <div class="alert">
             <span class="text-base-content/70">
-                {{ __('ui.auth.verify_email.message') }}
+                {{ __('authentication.verify_email.message') }}
             </span>
         </div>
 
@@ -17,7 +17,7 @@
                     variant="primary"
                     class="w-full"
                 >
-                    {{ __('ui.auth.verify_email.resend_button') }}
+                    {{ __('authentication.verify_email.resend_button') }}
                 </x-ui.button>
             </form>
 
@@ -32,7 +32,7 @@
                     class="text-sm"
                     data-test="logout-button"
                 >
-                    {{ __('ui.actions.logout') }}
+                    {{ __('actions.logout') }}
                 </x-ui.button>
             </form>
         </div>

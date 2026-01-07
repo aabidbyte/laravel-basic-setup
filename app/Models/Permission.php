@@ -12,7 +12,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  */
 class Permission extends BaseModel
 {
-
     /**
      * The attributes that are mass assignable.
      *

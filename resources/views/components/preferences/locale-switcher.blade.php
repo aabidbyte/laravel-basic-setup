@@ -10,7 +10,7 @@
                 pack="{{ $localeMetadata['icon']['pack'] ?? 'heroicons' }}"
                 class="h-5 w-5"
             ></x-ui.icon>
-            <span class="sr-only">{{ __('ui.preferences.locale') }}</span>
+            <span class="sr-only">{{ __('preferences.locale') }}</span>
         </div>
     </x-slot:trigger>
 

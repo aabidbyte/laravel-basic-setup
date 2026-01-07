@@ -9,7 +9,7 @@
             <x-ui.search
                 wire:model.live.debounce.300ms="search"
                 type="text"
-                placeholder="{{ __('ui.table.search_placeholder') }}"
+                placeholder="{{ __('table.search_placeholder') }}"
             ></x-ui.search>
         </div>
 
@@ -17,7 +17,7 @@
         @if ($this->hasSelection)
             <div class="flex items-center gap-4">
                 <span class="text-sm font-medium text-base-content/70">{{ $this->selectedCount }}
-                    {{ __('ui.table.selected') }}</span>
+                    {{ __('table.selected') }}</span>
 
                 <x-ui.dropdown
                     placement="bottom-start"
@@ -32,7 +32,7 @@
                             size="sm"
                             class="gap-2"
                         >
-                            {{ __('ui.table.bulk_actions') }}
+                            {{ __('table.bulk_actions') }}
                             <x-ui.icon
                                 name="chevron-down"
                                 size="sm"
@@ -98,7 +98,7 @@
                         name="x-mark"
                         size="sm"
                     ></x-ui.icon>
-                    {{ __('ui.actions.clear_selection') }}
+                    {{ __('actions.clear_selection') }}
                 </x-ui.button>
             </div>
         @else
@@ -114,7 +114,7 @@
                         name="funnel"
                         size="sm"
                     ></x-ui.icon>
-                    {{ __('ui.table.filters') }}
+                    {{ __('table.filters') }}
                     @if (count($this->getActiveFilters()) > 0)
                         <x-ui.badge
                             variant="primary"
@@ -129,7 +129,7 @@
     {{-- Active Filters Badges --}}
     @if (count($this->getActiveFilters()) > 0)
         <div class="flex flex-wrap gap-2 items-center">
-            <span class="text-sm text-base-content/70">{{ __('ui.table.active_filters') }}:</span>
+            <span class="text-sm text-base-content/70">{{ __('table.active_filters') }}:</span>
             @foreach ($this->getActiveFilters() as $filter)
                 <x-ui.badge
                     size="sm"
@@ -158,7 +158,7 @@
                 variant="link"
                 size="sm"
             >
-                {{ __('ui.actions.clear_all') }}
+                {{ __('actions.clear_all') }}
             </x-ui.button>
         </div>
     @endif
@@ -172,7 +172,7 @@
 >
     <div class="card card-border">
         <div class="card-body">
-            <h3 class="card-title text-lg mb-4">{{ __('ui.table.filters') }}</h3>
+            <h3 class="card-title text-lg mb-4">{{ __('table.filters') }}</h3>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 @foreach ($this->getFilters() as $filter)
@@ -195,7 +195,7 @@
                     style="ghost"
                     size="sm"
                 >
-                    {{ __('ui.actions.clear_filters') }}
+                    {{ __('actions.clear_filters') }}
                 </x-ui.button>
             </div>
         </div>

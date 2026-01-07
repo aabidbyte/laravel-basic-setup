@@ -1,8 +1,8 @@
 <x-layouts.auth>
     <div class="flex flex-col gap-6">
         <x-auth-header
-            :title="__('ui.auth.register.title')"
-            :description="__('ui.auth.register.description')"
+            :title="__('authentication.register.title')"
+            :description="__('authentication.register.description')"
         ></x-auth-header>
 
         <x-ui.form
@@ -14,18 +14,18 @@
             <x-ui.input
                 type="text"
                 name="name"
-                :label="__('ui.auth.register.name_label')"
+                :label="__('authentication.register.name_label')"
                 :value="old('name')"
                 required
                 autofocus
                 autocomplete="name"
-                :placeholder="__('ui.auth.register.name_placeholder')"
+                :placeholder="__('authentication.register.name_placeholder')"
             ></x-ui.input>
 
             <x-ui.input
                 type="email"
                 name="email"
-                :label="__('ui.auth.register.email_label')"
+                :label="__('authentication.register.email_label')"
                 :value="old('email')"
                 required
                 autocomplete="email"
@@ -34,18 +34,18 @@
 
             <x-ui.password
                 name="password"
-                :label="__('ui.auth.register.password_label')"
+                :label="__('authentication.register.password_label')"
                 required
                 autocomplete="new-password"
-                :placeholder="__('ui.auth.register.password_placeholder')"
+                :placeholder="__('authentication.register.password_placeholder')"
             ></x-ui.password>
 
             <x-ui.password
                 name="password_confirmation"
-                :label="__('ui.auth.register.confirm_password_label')"
+                :label="__('authentication.register.confirm_password_label')"
                 required
                 autocomplete="new-password"
-                :placeholder="__('ui.auth.register.confirm_password_placeholder')"
+                :placeholder="__('authentication.register.confirm_password_placeholder')"
             ></x-ui.password>
 
             <x-ui.button
@@ -54,13 +54,13 @@
                 class="w-full"
                 data-test="register-user-button"
             >
-                {{ __('ui.auth.register.submit') }}
+                {{ __('authentication.register.submit') }}
             </x-ui.button>
         </x-ui.form>
 
         <div class="text-center text-sm text-base-content/70">
-            <span>{{ __('ui.auth.register.has_account') }}</span>
-            <x-ui.link href="{{ route('login') }}">{{ __('ui.auth.register.log_in') }}</x-ui.link>
+            <span>{{ __('authentication.register.has_account') }}</span>
+            <x-ui.link href="{{ route('login') }}">{{ __('authentication.register.log_in') }}</x-ui.link>
         </div>
     </div>
 </x-layouts.auth>

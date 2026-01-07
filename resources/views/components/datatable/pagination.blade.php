@@ -13,7 +13,7 @@
         class="flex items-center gap-2"
     >
         <div class="flex items-center gap-2">
-            <x-ui.tooltip text="{{ __('ui.table.per_page') }}">
+            <x-ui.tooltip text="{{ __('table.per_page') }}">
                 <x-ui.select
                     wire:model.live="perPage"
                     :label="null"

@@ -9,7 +9,7 @@
     <x-ui.base-modal
         open-state="modalIsOpen"
         use-parent-state="true"
-        :title="$modalType === 'confirm' ? null : ($modalTitle ?? __('ui.table.action_modal_title'))"
+        :title="$modalType === 'confirm' ? null : ($modalTitle ?? __('table.action_modal_title'))"
         on-close="$wire.closeModal()"
         :show-close-button="$modalType !== 'confirm'"
     >

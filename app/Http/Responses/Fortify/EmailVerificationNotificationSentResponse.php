@@ -20,12 +20,12 @@ class EmailVerificationNotificationSentResponse implements EmailVerificationNoti
     {
         // Send notification to guest user (via session channel)
         NotificationBuilder::make()
-            ->title(__('ui.auth.verify_email.resend_success'))
+            ->title('authentication.verify_email.resend_success')
             ->info()
             ->send();
 
         return $request->wantsJson()
-            ? response()->json(['message' => __('ui.auth.verify_email.resend_success')])
+            ? response()->json(['message' => __('authentication.verify_email.resend_success')])
             : redirect()->back();
     }
 }

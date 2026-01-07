@@ -13,9 +13,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
 new class extends BasePageComponent {
-    public ?string $pageTitle = 'ui.pages.users.create';
-
-    public ?string $pageSubtitle = 'ui.users.create.description';
+    public ?string $pageSubtitle = null;
 
     protected string $placeholderType = 'form';
 
@@ -45,6 +43,12 @@ new class extends BasePageComponent {
         $this->authorize(Permissions::CREATE_USERS);
         $this->timezone = config('app.timezone');
         $this->locale = config('app.locale');
+        $this->pageSubtitle = __('pages.common.create.description', ['type' => __('types.user')]);
+    }
+
+    public function getPageTitle(): string
+    {
+        return __('pages.common.create.title', ['type' => __('types.user')]);
     }
 
     /**
@@ -84,9 +88,7 @@ new class extends BasePageComponent {
      */
     public function getLocalesProperty(): array
     {
-        return collect(config('i18n.supported_locales'))
-            ->mapWithKeys(fn($data, $locale) => [$locale => $data['native_name']])
-            ->toArray();
+        return collect(config('i18n.supported_locales'))->mapWithKeys(fn($data, $locale) => [$locale => $data['native_name']])->toArray();
     }
 
     /**
@@ -146,14 +148,14 @@ new class extends BasePageComponent {
             );
 
             NotificationBuilder::make()
-                ->title(__('ui.users.create.success', ['name' => $user->name]))
+                ->title('pages.common.create.success', ['name' => $user->name])
                 ->success()
                 ->persist()
                 ->send();
 
             $this->redirect(route('users.index'), navigate: true);
         } catch (\Exception $e) {
-            NotificationBuilder::make()->title(__('ui.users.create.error'))->content($e->getMessage())->error()->send();
+            NotificationBuilder::make()->title('pages.common.create.error', ['type' => __('types.user')])->content($e->getMessage())->error()->send();
         }
     }
 
@@ -176,7 +178,7 @@ new class extends BasePageComponent {
             <x-ui.title
                 level="2"
                 class="mb-6"
-            >{{ __('ui.users.create.title') }}</x-ui.title>
+            >{{ $this->getPageTitle() }}</x-ui.title>
 
             <x-ui.form
                 wire:submit="createUser"
@@ -187,14 +189,14 @@ new class extends BasePageComponent {
                     <x-ui.title
                         level="3"
                         class="text-base-content/70"
-                    >{{ __('ui.users.create.basic_info') }}</x-ui.title>
+                    >{{ __('users.create.basic_info') }}</x-ui.title>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <x-ui.input
                             type="text"
                             wire:model="name"
                             name="name"
-                            :label="__('ui.users.name')"
+                            :label="__('users.name')"
                             required
                             autofocus
                         ></x-ui.input>
@@ -203,7 +205,7 @@ new class extends BasePageComponent {
                             type="text"
                             wire:model="username"
                             name="username"
-                            :label="__('ui.users.username')"
+                            :label="__('users.username')"
                             required
                         ></x-ui.input>
                     </div>
@@ -212,7 +214,7 @@ new class extends BasePageComponent {
                         type="email"
                         wire:model="email"
                         name="email"
-                        :label="__('ui.users.email')"
+                        :label="__('users.email')"
                         :required="$sendActivation"
                     ></x-ui.input>
                 </div>
@@ -223,7 +225,7 @@ new class extends BasePageComponent {
                     <x-ui.title
                         level="3"
                         class="text-base-content/70"
-                    >{{ __('ui.users.create.activation') }}</x-ui.title>
+                    >{{ __('users.create.activation') }}</x-ui.title>
 
                     <div class="form-control">
                         <label class="label cursor-pointer justify-start gap-4">
@@ -232,10 +234,10 @@ new class extends BasePageComponent {
                                 wire:model.live="sendActivation"
                                 class="toggle toggle-primary"
                             >
-                            <span class="label-text">{{ __('ui.users.create.send_activation_email') }}</span>
+                            <span class="label-text">{{ __('users.create.send_activation_email') }}</span>
                         </label>
                         <span class="text-sm text-base-content/60 ml-14">
-                            {{ __('ui.users.create.activation_hint') }}
+                            {{ __('users.create.activation_hint') }}
                         </span>
                     </div>
 
@@ -245,7 +247,7 @@ new class extends BasePageComponent {
                                 type="password"
                                 wire:model="password"
                                 name="password"
-                                :label="__('ui.users.password')"
+                                :label="__('users.password')"
                                 required
                                 autocomplete="new-password"
                             ></x-ui.input>
@@ -254,7 +256,7 @@ new class extends BasePageComponent {
                                 type="password"
                                 wire:model="password_confirmation"
                                 name="password_confirmation"
-                                :label="__('ui.users.password_confirmation')"
+                                :label="__('users.password_confirmation')"
                                 required
                                 autocomplete="new-password"
                             ></x-ui.input>
@@ -268,12 +270,12 @@ new class extends BasePageComponent {
                     <x-ui.title
                         level="3"
                         class="text-base-content/70"
-                    >{{ __('ui.users.create.preferences') }}</x-ui.title>
+                    >{{ __('users.create.preferences') }}</x-ui.title>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="form-control w-full">
                             <label class="label">
-                                <span class="label-text">{{ __('ui.users.timezone') }}</span>
+                                <span class="label-text">{{ __('users.timezone') }}</span>
                             </label>
                             <select
                                 wire:model="timezone"
@@ -287,7 +289,7 @@ new class extends BasePageComponent {
 
                         <div class="form-control w-full">
                             <label class="label">
-                                <span class="label-text">{{ __('ui.users.locale') }}</span>
+                                <span class="label-text">{{ __('users.locale') }}</span>
                             </label>
                             <select
                                 wire:model="locale"
@@ -308,13 +310,13 @@ new class extends BasePageComponent {
                     <x-ui.title
                         level="3"
                         class="text-base-content/70"
-                    >{{ __('ui.users.create.roles_teams') }}</x-ui.title>
+                    >{{ __('users.create.roles_teams') }}</x-ui.title>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {{-- Roles --}}
                         <div class="space-y-2">
                             <label class="label">
-                                <span class="label-text font-medium">{{ __('ui.users.roles') }}</span>
+                                <span class="label-text font-medium">{{ __('users.roles') }}</span>
                             </label>
                             <div class="space-y-2 max-h-48 overflow-y-auto p-2 border border-base-300 rounded-lg">
                                 @foreach ($this->roles as $role)
@@ -334,7 +336,7 @@ new class extends BasePageComponent {
                         {{-- Teams --}}
                         <div class="space-y-2">
                             <label class="label">
-                                <span class="label-text font-medium">{{ __('ui.users.teams') }}</span>
+                                <span class="label-text font-medium">{{ __('users.teams') }}</span>
                             </label>
                             <div class="space-y-2 max-h-48 overflow-y-auto p-2 border border-base-300 rounded-lg">
                                 @foreach ($this->teams as $team)
@@ -360,7 +362,7 @@ new class extends BasePageComponent {
                         href="{{ route('users.index') }}"
                         style="ghost"
                         wire:navigate
-                    >{{ __('ui.actions.cancel') }}</x-ui.button>
+                    >{{ __('actions.cancel') }}</x-ui.button>
                     <x-ui.button
                         type="submit"
                         variant="primary"
@@ -370,7 +372,7 @@ new class extends BasePageComponent {
                             wire:target="createUser"
                             size="sm"
                         ></x-ui.loading>
-                        {{ __('ui.users.create.submit') }}
+                        {{ __('pages.common.create.submit', ['type' => __('types.user')]) }}
                     </x-ui.button>
                 </div>
             </x-ui.form>

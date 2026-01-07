@@ -45,7 +45,7 @@
                         variant="error"
                         size="xs"
                         class="absolute -top-1 -right-1 w-4 h-4 justify-center"
-                        x-bind:aria-label="'{{ __('ui.notifications.unread') }}: ' + unreadCount"
+                        x-bind:aria-label="'{{ __('notifications.unread') }}: ' + unreadCount"
                         x-text="unreadCount > 99 ? '99+' : unreadCount"
                     ></x-ui.badge>
                 </template>

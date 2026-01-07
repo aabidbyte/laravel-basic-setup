@@ -6,10 +6,10 @@
 <div
     x-data="confirmModal({
         modalId: '{{ $id }}',
-        title: @js(__('ui.modals.confirm.title')),
-        message: @js(__('ui.modals.confirm.message')),
-        confirmLabel: @js(__('ui.actions.confirm')),
-        cancelLabel: @js(__('ui.actions.cancel'))
+        title: @js(__('modals.confirm.title')),
+        message: @js(__('modals.confirm.message')),
+        confirmLabel: @js(__('actions.confirm')),
+        cancelLabel: @js(__('actions.cancel'))
     })"
     @confirm-modal.window="handleConfirmModal($event)"
     @confirm-modal-execute.window="executeConfirm()"
@@ -34,8 +34,8 @@
             <x-ui.confirm-dialog-body
                 alpine-title="title"
                 alpine-message="message"
-                alpine-confirm-label="confirmLabel || '{{ __('ui.actions.confirm') }}'"
-                alpine-cancel-label="cancelLabel || '{{ __('ui.actions.cancel') }}'"
+                alpine-confirm-label="confirmLabel || '{{ __('actions.confirm') }}'"
+                alpine-cancel-label="cancelLabel || '{{ __('actions.cancel') }}'"
                 on-confirm="executeConfirm()"
                 on-cancel="closeModal()"
             />

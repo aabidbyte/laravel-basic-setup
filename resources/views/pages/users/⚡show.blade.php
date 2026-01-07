@@ -6,9 +6,8 @@ use App\Models\User;
 use App\Services\Notifications\NotificationBuilder;
 use App\Services\Users\UserService;
 
-new class extends BasePageComponent
-{
-    public ?string $pageTitle = 'ui.pages.users.show';
+new class extends BasePageComponent {
+    public ?string $pageTitle = null;
 
     public ?string $pageSubtitle = null;
 
@@ -30,8 +29,12 @@ new class extends BasePageComponent
         $this->authorize(Permissions::VIEW_USERS);
 
         $this->user = $user;
-        $this->pageTitle = $this->user->name;
-        $this->pageSubtitle = __('ui.users.show.subtitle');
+        $this->pageSubtitle = __('pages.common.show.subtitle', ['type' => __('types.user')]);
+    }
+
+    public function getPageTitle(): string
+    {
+        return __('pages.common.show.title', ['name' => $this->user->name, 'type' => __('types.user')]);
     }
 
     /**
@@ -46,9 +49,9 @@ new class extends BasePageComponent
             $this->activationLink = $userService->generateActivationLink($this->user);
             $this->showActivationModal = true;
 
-            NotificationBuilder::make()->title(__('ui.users.show.activation_link_generated'))->success()->send();
+            NotificationBuilder::make()->title('users.show.activation_link_generated')->success()->send();
         } catch (\Exception $e) {
-            NotificationBuilder::make()->title(__('ui.users.show.activation_link_error'))->content($e->getMessage())->error()->send();
+            NotificationBuilder::make()->title('users.show.activation_link_error')->content($e->getMessage())->error()->send();
         }
     }
 
@@ -64,12 +67,12 @@ new class extends BasePageComponent
             $this->user = $this->user->fresh();
 
             NotificationBuilder::make()
-                ->title(__('ui.users.show.user_activated', ['name' => $this->user->name]))
+                ->title('pages.common.messages.activated', ['name' => $this->user->name])
                 ->success()
                 ->persist()
                 ->send();
         } catch (\Exception $e) {
-            NotificationBuilder::make()->title(__('ui.users.show.activation_error'))->content($e->getMessage())->error()->send();
+            NotificationBuilder::make()->title('users.show.activation_error')->content($e->getMessage())->error()->send();
         }
     }
 
@@ -85,12 +88,12 @@ new class extends BasePageComponent
             $this->user = $this->user->fresh();
 
             NotificationBuilder::make()
-                ->title(__('ui.users.show.user_deactivated', ['name' => $this->user->name]))
+                ->title('pages.common.messages.deactivated', ['name' => $this->user->name])
                 ->warning()
                 ->persist()
                 ->send();
         } catch (\Exception $e) {
-            NotificationBuilder::make()->title(__('ui.users.show.deactivation_error'))->content($e->getMessage())->error()->send();
+            NotificationBuilder::make()->title('users.show.deactivation_error')->content($e->getMessage())->error()->send();
         }
     }
 
@@ -117,7 +120,7 @@ new class extends BasePageComponent
                         ></x-ui.avatar>
                         <div>
                             <x-ui.title level="2">{{ $user->name }}</x-ui.title>
-                            <p class="text-base-content/60">{{ $user->email ?? __('ui.users.no_email') }}</p>
+                            <p class="text-base-content/60">{{ $user->email ?? __('users.no_email') }}</p>
                         </div>
                     </div>
                     <div class="flex flex-wrap gap-2">
@@ -132,7 +135,7 @@ new class extends BasePageComponent
                                     name="pencil"
                                     size="sm"
                                 ></x-ui.icon>
-                                {{ __('ui.actions.edit') }}
+                                {{ __('actions.edit') }}
                             </x-ui.button>
                         @endcan
 
@@ -147,14 +150,14 @@ new class extends BasePageComponent
                                         name="link"
                                         size="sm"
                                     ></x-ui.icon>
-                                    {{ __('ui.users.show.generate_link') }}
+                                    {{ __('users.show.generate_link') }}
                                 </x-ui.button>
                             @endcan
 
                             @can(Permissions::EDIT_USERS)
                                 <x-ui.button
                                     wire:click="activateUser"
-                                    wire:confirm="{{ __('ui.users.show.confirm_activate') }}"
+                                    wire:confirm="{{ __('users.show.confirm_activate') }}"
                                     color="success"
                                     size="sm"
                                 >
@@ -162,14 +165,14 @@ new class extends BasePageComponent
                                         name="check"
                                         size="sm"
                                     ></x-ui.icon>
-                                    {{ __('ui.actions.activate') }}
+                                    {{ __('actions.activate') }}
                                 </x-ui.button>
                             @endcan
                         @else
                             @can(Permissions::EDIT_USERS)
                                 <x-ui.button
                                     wire:click="deactivateUser"
-                                    wire:confirm="{{ __('ui.users.show.confirm_deactivate') }}"
+                                    wire:confirm="{{ __('users.show.confirm_deactivate') }}"
                                     color="warning"
                                     size="sm"
                                 >
@@ -177,7 +180,7 @@ new class extends BasePageComponent
                                         name="x-mark"
                                         size="sm"
                                     ></x-ui.icon>
-                                    {{ __('ui.actions.deactivate') }}
+                                    {{ __('actions.deactivate') }}
                                 </x-ui.button>
                             @endcan
                         @endif
@@ -190,7 +193,7 @@ new class extends BasePageComponent
                         :variant="$user->is_active ? 'success' : 'error'"
                         size="lg"
                     >
-                        {{ $user->is_active ? __('ui.users.active') : __('ui.users.inactive') }}
+                        {{ $user->is_active ? __('users.active') : __('users.inactive') }}
                     </x-ui.badge>
                 </div>
 
@@ -201,21 +204,21 @@ new class extends BasePageComponent
                         <x-ui.title
                             level="3"
                             class="text-base-content/70 border-b pb-2"
-                        >{{ __('ui.users.personal_info') }}</x-ui.title>
+                        >{{ __('users.personal_info') }}</x-ui.title>
 
                         <div class="space-y-3">
                             <div>
-                                <span class="text-sm text-base-content/60">{{ __('ui.users.name') }}</span>
+                                <span class="text-sm text-base-content/60">{{ __('users.name') }}</span>
                                 <p class="font-medium">{{ $user->name }}</p>
                             </div>
 
                             <div>
-                                <span class="text-sm text-base-content/60">{{ __('ui.users.email') }}</span>
+                                <span class="text-sm text-base-content/60">{{ __('users.email') }}</span>
                                 <p class="font-medium">{{ $user->email ?? '—' }}</p>
                             </div>
 
                             <div>
-                                <span class="text-sm text-base-content/60">{{ __('ui.users.username') }}</span>
+                                <span class="text-sm text-base-content/60">{{ __('users.username') }}</span>
                                 <p class="font-medium">{{ $user->username ?? '—' }}</p>
                             </div>
                         </div>
@@ -226,16 +229,16 @@ new class extends BasePageComponent
                         <x-ui.title
                             level="3"
                             class="text-base-content/70 border-b pb-2"
-                        >{{ __('ui.users.account_info') }}</x-ui.title>
+                        >{{ __('users.account_info') }}</x-ui.title>
 
                         <div class="space-y-3">
                             <div>
-                                <span class="text-sm text-base-content/60">{{ __('ui.users.uuid') }}</span>
+                                <span class="text-sm text-base-content/60">{{ __('users.uuid') }}</span>
                                 <p class="font-mono text-sm">{{ $user->uuid }}</p>
                             </div>
 
                             <div>
-                                <span class="text-sm text-base-content/60">{{ __('ui.users.created_at') }}</span>
+                                <span class="text-sm text-base-content/60">{{ __('users.created_at') }}</span>
                                 <p class="font-medium">
                                     {{ $user->created_at->diffForHumans() }}
                                     <span
@@ -246,7 +249,7 @@ new class extends BasePageComponent
                             @if ($user->last_login_at)
                                 <div>
                                     <span
-                                        class="text-sm text-base-content/60">{{ __('ui.users.last_login_at') }}</span>
+                                        class="text-sm text-base-content/60">{{ __('users.last_login_at') }}</span>
                                     <p class="font-medium">
                                         {{ $user->last_login_at->diffForHumans() }}
                                         <span
@@ -257,7 +260,7 @@ new class extends BasePageComponent
 
                             @if ($user->createdBy)
                                 <div>
-                                    <span class="text-sm text-base-content/60">{{ __('ui.users.created_by') }}</span>
+                                    <span class="text-sm text-base-content/60">{{ __('users.created_by') }}</span>
                                     <p class="font-medium">{{ $user->createdBy->name }}</p>
                                 </div>
                             @endif
@@ -270,17 +273,17 @@ new class extends BasePageComponent
                     <x-ui.title
                         level="3"
                         class="text-base-content/70 border-b pb-2"
-                    >{{ __('ui.users.preferences') }}</x-ui.title>
+                    >{{ __('users.preferences') }}</x-ui.title>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                            <span class="text-sm text-base-content/60">{{ __('ui.users.timezone') }}</span>
-                            <p class="font-medium">{{ $user->timezone ?? __('ui.users.not_set') }}</p>
+                            <span class="text-sm text-base-content/60">{{ __('users.timezone') }}</span>
+                            <p class="font-medium">{{ $user->timezone ?? __('users.not_set') }}</p>
                         </div>
 
                         <div>
-                            <span class="text-sm text-base-content/60">{{ __('ui.users.locale') }}</span>
-                            <p class="font-medium">{{ $user->locale ?? __('ui.users.not_set') }}</p>
+                            <span class="text-sm text-base-content/60">{{ __('users.locale') }}</span>
+                            <p class="font-medium">{{ $user->locale ?? __('users.not_set') }}</p>
                         </div>
 
 
@@ -293,7 +296,7 @@ new class extends BasePageComponent
                         <x-ui.title
                             level="3"
                             class="text-base-content/70 border-b pb-2"
-                        >{{ __('ui.users.roles') }}</x-ui.title>
+                        >{{ __('users.roles') }}</x-ui.title>
                         <div class="flex flex-wrap gap-2">
                             @foreach ($user->roles as $role)
                                 <x-ui.badge
@@ -311,7 +314,7 @@ new class extends BasePageComponent
                         <x-ui.title
                             level="3"
                             class="text-base-content/70 border-b pb-2"
-                        >{{ __('ui.users.teams') }}</x-ui.title>
+                        >{{ __('users.teams') }}</x-ui.title>
                         <div class="flex flex-wrap gap-2">
                             @foreach ($user->teams as $team)
                                 <x-ui.badge
@@ -334,7 +337,7 @@ new class extends BasePageComponent
                             name="arrow-left"
                             size="sm"
                         ></x-ui.icon>
-                        {{ __('ui.actions.back_to_list') }}
+                        {{ __('actions.back_to_list') }}
                     </x-ui.button>
                 </div>
             </div>
@@ -343,12 +346,12 @@ new class extends BasePageComponent
         {{-- Activation Link Modal --}}
         @if ($showActivationModal && $activationLink)
             <x-ui.base-modal
-                title="{{ __('ui.users.show.activation_link_title') }}"
+                title="{{ __('users.show.activation_link_title') }}"
                 open
                 @close="$wire.closeActivationModal()"
             >
                 <div class="space-y-4">
-                    <p class="text-base-content/70">{{ __('ui.users.show.activation_link_description') }}</p>
+                    <p class="text-base-content/70">{{ __('users.show.activation_link_description') }}</p>
 
                     <div
                         x-data="copyToClipboard('{{ $activationLink }}')"
@@ -377,7 +380,7 @@ new class extends BasePageComponent
                                 size="sm"
                             ></x-ui.icon>
                             <span
-                                x-text="copied ? '{{ __('ui.actions.copied') }}' : '{{ __('ui.actions.copy') }}'"></span>
+                                x-text="copied ? '{{ __('actions.copied') }}' : '{{ __('actions.copy') }}'"></span>
                         </x-ui.button>
                     </div>
 
@@ -386,7 +389,7 @@ new class extends BasePageComponent
                             name="exclamation-triangle"
                             size="sm"
                         ></x-ui.icon>
-                        <span>{{ __('ui.users.show.activation_link_warning', ['days' => 7]) }}</span>
+                        <span>{{ __('users.show.activation_link_warning', ['days' => 7]) }}</span>
                     </div>
                 </div>
 
@@ -394,7 +397,7 @@ new class extends BasePageComponent
                     <x-ui.button
                         wire:click="closeActivationModal"
                         style="ghost"
-                    >{{ __('ui.actions.close') }}</x-ui.button>
+                    >{{ __('actions.close') }}</x-ui.button>
                 </x-slot:actions>
             </x-ui.base-modal>
         @endif
@@ -404,7 +407,7 @@ new class extends BasePageComponent
                 name="exclamation-triangle"
                 size="sm"
             ></x-ui.icon>
-            <span>{{ __('ui.users.user_not_found') }}</span>
+            <span>{{ __('users.user_not_found') }}</span>
         </div>
     @endif
 </section>

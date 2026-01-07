@@ -57,6 +57,21 @@ resources/views/
 -   Automatically selects channel type based on channel name (public for session channels, private for others)
 -   Event name: `toast.received`
 
+### Translation Support
+
+The builder supports passing translation keys directly to `title()` and `subtitle()`.
+- The `lang:sync` command automatically detects these methods.
+- You do NOT need to wrap keys in `__()` unless you need complex logic.
+- You can pass parameters as the second argument.
+
+```php
+// Detected by lang:sync automatically
+NotificationBuilder::make()
+    ->title('ui.messages.success')
+    ->subtitle('ui.messages.details', ['count' => 5])
+    ->send();
+```
+
 ### Usage Examples
 
 ```php

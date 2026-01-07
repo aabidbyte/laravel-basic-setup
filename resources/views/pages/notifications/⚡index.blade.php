@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 
 new class extends BasePageComponent {
-    public ?string $pageTitle = 'ui.pages.notifications';
+    public ?string $pageTitle = 'pages.notifications';
 
     protected string $placeholderType = 'list';
 
@@ -146,15 +146,15 @@ new class extends BasePageComponent {
                     size="sm"
                     wire:click="markAllAsRead"
                 >
-                    {{ __('ui.notifications.mark_all_read') }}
+                    {{ __('notifications.mark_all_read') }}
                 </x-ui.button>
             @endif
             <x-ui.button
                 variant="error"
                 size="sm"
-                @click="openConfirmClearAll('{{ addslashes(__('ui.notifications.clear_all')) }}', '{{ addslashes(__('ui.modals.confirm.message')) }}')"
+                @click="openConfirmClearAll('{{ addslashes(__('notifications.clear_all')) }}', '{{ addslashes(__('modals.confirm.message')) }}')"
             >
-                {{ __('ui.notifications.clear_all') }} ({{ $this->totalCount }})
+                {{ __('notifications.clear_all') }} ({{ $this->totalCount }})
             </x-ui.button>
         </div>
     @endif
@@ -167,7 +167,7 @@ new class extends BasePageComponent {
             @if ($this->notifications->isEmpty())
                 <x-ui.empty-state
                     icon="bell"
-                    :description="__('ui.notifications.empty')"
+                    :description="__('notifications.empty')"
                 ></x-ui.empty-state>
             @else
                 @foreach ($this->notifications as $notification)
@@ -206,7 +206,7 @@ new class extends BasePageComponent {
                                             href="{{ $notification['link'] }}"
                                             class="text-sm mt-2 inline-block"
                                             underline
-                                        >{{ __('ui.notifications.view') }}</x-ui.link>
+                                        >{{ __('notifications.view') }}</x-ui.link>
                                     @endif
                                     <p class="text-xs opacity-60 mt-2">
                                         {{ $notification['createdAt']->diffForHumans() }}</p>
@@ -216,13 +216,13 @@ new class extends BasePageComponent {
                                         <x-ui.badge
                                             variant="primary"
                                             size="sm"
-                                        >{{ __('ui.notifications.unread') }}</x-ui.badge>
+                                        >{{ __('notifications.unread') }}</x-ui.badge>
                                     @endif
                                     <x-ui.button
                                         variant="ghost"
                                         color="error"
                                         size="sm"
-                                        @click.stop="openConfirmDelete('{{ $notification['id'] }}', '{{ addslashes(__('ui.notifications.delete')) }}', '{{ addslashes(__('ui.modals.confirm.message')) }}')"
+                                        @click.stop="openConfirmDelete('{{ $notification['id'] }}', '{{ addslashes(__('notifications.delete')) }}', '{{ addslashes(__('modals.confirm.message')) }}')"
                                     >
                                         <x-ui.icon
                                             name="trash"
@@ -246,7 +246,7 @@ new class extends BasePageComponent {
                     variant="ghost"
                     size="sm"
                 >
-                    {{ __('ui.notifications.see_previous') }} ({{ $this->remainingCount }})
+                    {{ __('notifications.see_previous') }} ({{ $this->remainingCount }})
                 </x-ui.button>
             </div>
         @endif

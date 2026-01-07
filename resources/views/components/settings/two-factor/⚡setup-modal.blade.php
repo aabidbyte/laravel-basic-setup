@@ -33,7 +33,7 @@ new class extends LivewireBaseComponent {
 
         $confirmTwoFactorAuthentication(Auth::user(), $this->code);
 
-        NotificationBuilder::make()->title(__('ui.settings.two_factor.enabled_success'))->success()->send();
+        NotificationBuilder::make()->title('settings.two_factor.enabled_success')->success()->send();
 
         $this->dispatch('two-factor-confirmed');
 
@@ -58,9 +58,9 @@ new class extends LivewireBaseComponent {
         modalStateId: '{{ $modalStateId }}',
         initialModalConfig: @js($modalConfig),
         verificationModalConfig: @js([
-    'title' => __('ui.settings.two_factor.setup.title_verify'),
-    'description' => __('ui.settings.two_factor.setup.description_verify'),
-    'buttonText' => __('ui.actions.continue'),
+    'title' => __('settings.two_factor.setup.title_verify'),
+    'description' => __('settings.two_factor.setup.description_verify'),
+    'buttonText' => __('actions.continue'),
 ])
     })"
     @close-modal.window="if ($event.detail === modalId) { closeModal(); }"
@@ -99,7 +99,7 @@ new class extends LivewireBaseComponent {
             <div class="space-y-4">
                 <div class="form-control">
                     <label class="label">
-                        <span class="label-text">{{ __('ui.settings.two_factor.setup.otp_label') }}</span>
+                        <span class="label-text">{{ __('settings.two_factor.setup.otp_label') }}</span>
                     </label>
                     <input
                         type="text"
@@ -124,7 +124,7 @@ new class extends LivewireBaseComponent {
                         wire:click="resetVerification"
                         class="flex-1"
                     >
-                        {{ __('ui.actions.back') }}
+                        {{ __('actions.back') }}
                     </x-ui.button>
                     <x-ui.button
                         type="button"
@@ -133,7 +133,7 @@ new class extends LivewireBaseComponent {
                         x-bind:disabled="!$wire.code || $wire.code.length < 6"
                         class="flex-1"
                     >
-                        {{ __('ui.actions.confirm') }}
+                        {{ __('actions.confirm') }}
                     </x-ui.button>
                 </div>
             </div>
@@ -161,7 +161,7 @@ new class extends LivewireBaseComponent {
                     @endempty
                 </div>
 
-                <div class="divider">{{ __('ui.settings.two_factor.setup.manual_code_label') }}</div>
+                <div class="divider">{{ __('settings.two_factor.setup.manual_code_label') }}</div>
 
                 <div class="join w-full">
                     <input
@@ -216,7 +216,7 @@ new class extends LivewireBaseComponent {
                 variant="primary"
                 wire:click="$parent.showVerificationIfNecessary"
             >
-                <span x-text="modalConfig.buttonText || @js(__('ui.actions.continue'))"></span>
+                <span x-text="modalConfig.buttonText || @js(__('actions.continue'))"></span>
             </x-ui.button>
         </x-slot:footer-actions>
     </x-ui.base-modal>

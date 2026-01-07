@@ -8,8 +8,8 @@
 @php
     // Generate URL if not provided
     $shareUrl = $url ?? request()->fullUrl();
-    $tooltipText = $tooltipText ?? __('ui.table.share_page');
-    $copiedText = __('ui.table.url_copied');
+    $tooltipText = $tooltipText ?? __('table.share_page');
+    $copiedText = __('table.url_copied');
 @endphp
 
 <div
@@ -17,7 +17,7 @@
         url: @js($shareUrl),
         initialTooltip: @js($tooltipText),
         copiedText: @js($copiedText),
-        copyFailedText: @js(__('ui.table.copy_failed') ?? 'Copy failed')
+        copyFailedText: @js(__('table.copy_failed') ?? 'Copy failed')
     })"
     class="relative"
 >

@@ -132,11 +132,22 @@ return [
     */
 
     'namespaces' => [
-        'ui',
         'messages',
         'auth',
         'pagination',
         'emails',
+        'navigation',
+        'types',
+        'actions',
+        'authentication',
+        'settings',
+        'preferences',
+        'notifications',
+        'common',
+        'modals',
+        'table',
+        'users',
+        'pages',
     ],
 
     /*

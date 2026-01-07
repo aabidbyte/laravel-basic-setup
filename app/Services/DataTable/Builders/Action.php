@@ -543,10 +543,10 @@ class Action
             if (is_array($result)) {
                 return [
                     'type' => 'config',
-                    'title' => $result['title'] ?? __('ui.actions.confirm'),
+                    'title' => $result['title'] ?? __('actions.confirm'),
                     'content' => $result['content'] ?? '',
-                    'confirmText' => $result['confirmText'] ?? __('ui.actions.confirm'),
-                    'cancelText' => $result['cancelText'] ?? __('ui.actions.cancel'),
+                    'confirmText' => $result['confirmText'] ?? __('actions.confirm'),
+                    'cancelText' => $result['cancelText'] ?? __('actions.cancel'),
                 ];
             }
 
@@ -559,7 +559,7 @@ class Action
 
         return [
             'type' => 'message',
-            'message' => $this->confirmMessage ?? __('ui.actions.confirm_action'),
+            'message' => $this->confirmMessage ?? __('actions.confirm_action'),
         ];
     }
 

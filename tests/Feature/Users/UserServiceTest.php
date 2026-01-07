@@ -9,7 +9,6 @@ use App\Models\Team;
 use App\Models\User;
 use App\Services\Users\UserService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Str;
 
 uses(RefreshDatabase::class);
 
