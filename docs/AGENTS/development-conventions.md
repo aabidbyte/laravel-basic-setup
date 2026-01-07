@@ -58,6 +58,15 @@
 -   **Helper Functions**: **Do NOT use `function_exists()` checks in helper files** - Helper files are autoloaded via Composer and will only be loaded once, so function existence checks are unnecessary
 -   **I18nService**: **Always use `I18nService` for locale-related code** - Do not directly access `config('i18n.*')` in helper functions or other code. Use `I18nService` methods to centralize all locale-related logic (`getSupportedLocales()`, `getDefaultLocale()`, `getValidLocale()`, `getLocaleMetadata()`, etc.)
 -   **View Composers**: **Use View Composers instead of `@inject` for global data** - Register View Composers in service providers to share data globally with all views. This is more efficient and cleaner than using `@inject` directives in every template.
+ 
+ ### Internationalization (i18n)
+ 
+ -   **Namespaces**: **Always use granular namespaces** (e.g., `pages.*`, `users.*`, `actions.*`) instead of the monolithic `ui.*` prefix.
+ -   **Generic Pattern**: **Prefer generic keys for CRUD operations**. Use `pages.common.*` combined with `types.*` entities to avoid redundancy.
+     -   *Correct*: `__('pages.common.create.title', ['type' => __('types.user')])`
+     -   *Incorrect*: `__('users.create_new_user')` (unless highly specific)
+ -   **Hardcoded Strings**: **No hardcoded user-facing strings**. Always use `__('namespace.key')`.
+ -   **Sync**: Run `php artisan lang:sync` after adding new keys.
 
 ### Constants and Code Reusability
 
@@ -251,12 +260,13 @@ it('tests something', function () {
 -   **BasePageComponent**: **ALL full-page Livewire components MUST extend `App\Livewire\BasePageComponent`**
     -   Provides automatic page title and subtitle management via `$pageTitle` and `$pageSubtitle` properties
     -   Automatically shares title and subtitle with layout views via `View::share()` in `boot()` method (runs automatically)
-    -   **Required**: Every component MUST define `public ?string $pageTitle = 'ui.pages.example';` property
-    -   **Optional**: Components can define `public string $pageSubtitle = 'ui.pages.example.description';` property for subtitle text
-    -   **Translations**: Use translation keys (e.g., `'ui.pages.dashboard'`) - keys containing dots are automatically translated via `__()`
+    -   **Required**: Every component MUST define `public ?string $pageTitle = 'pages.example';` property
+    -   **Optional**: Components can define `public string $pageSubtitle = 'pages.example.description';` property for subtitle text
+    -   **Translations**: Use namespaced translation keys (e.g., `'pages.dashboard'`) - keys containing dots are automatically translated via `__()`. Avoid the legacy `ui.` prefix.
+    -   **Generic Pattern**: For CRUD pages, use generic keys from `pages.common` combined with `types` (e.g., `'pages.common.create.title'` with parameters).
     -   **Plain Strings**: Can also use plain strings (e.g., `'Dashboard'`) if translation is not needed
     -   **Seamless**: No need to call `parent::mount()` - title and subtitle sharing happens automatically via `boot()` lifecycle hook
-    -   Example: `new class extends BasePageComponent { public ?string $pageTitle = 'ui.pages.dashboard'; public string $pageSubtitle = 'ui.pages.dashboard.description'; }`
+    -   **Example**: `new class extends BasePageComponent { public ?string $pageTitle = 'pages.dashboard'; public string $pageSubtitle = 'pages.dashboard.description'; }`
     -   **Rule**: Never extend `Livewire\Component` directly for full-page components - always use `BasePageComponent`
 -   **Naming**: Use descriptive names (e.g., `isRegisteredForDiscounts`, not `discount()`)
 -   **DataTable Components**:
@@ -264,6 +274,16 @@ it('tests something', function () {
     -   **Naming**: Must suffix with `Table` (e.g., `UserTable.php`)
     -   **Structure**: Must extend `App\Livewire\DataTableComponent` and provide configuration via methods.
     -   **Usage**: Use `<livewire:tables.user-table />` syntax.
+-   **Plain Blade Pages**:
+    -   **Title/Subtitle**: MUST use `setPageTitle()` helper at the top of the Blade file to set `$pageTitle` and `$pageSubtitle`.
+    -   **Reason**: Abstraction over `view()->share()` for cleaner code.
+    -   **Example**:
+        ```blade
+        @php
+            setPageTitle(__('pages.dashboard'), __('pages.dashboard.description'));
+        @endphp
+        <x-layouts.app>...</x-layouts.app>
+        ```
 
 ### Component-First UI Development
 

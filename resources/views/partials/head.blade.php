@@ -12,7 +12,7 @@
     content="{{ csrf_token() }}"
 />
 
-<title>{{ $pageTitle }}</title>
+<title>{{ $pageTitle }} - {{ config('app.name') }}</title>
 
 <link
     rel="icon"
@@ -28,7 +28,6 @@
     rel="apple-touch-icon"
     href="/apple-touch-icon.png"
 />
-
 
 <script
     type="text/javascript"

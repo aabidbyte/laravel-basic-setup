@@ -28,9 +28,9 @@ return [
             'error' => 'Failed to update :type',
         ],
         'messages' => [
-             'deleted' => ':name deleted successfully',
-             'activated' => ':name activated successfully',
-             'deactivated' => ':name deactivated successfully',
+            'deleted' => ':name deleted successfully',
+            'activated' => ':name activated successfully',
+            'deactivated' => ':name deactivated successfully',
         ],
     ],
     'users' => [

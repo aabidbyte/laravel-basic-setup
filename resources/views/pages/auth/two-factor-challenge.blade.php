@@ -84,7 +84,8 @@
                         style="link"
                         color="primary"
                         size="sm"
-                    ><span x-show="!showRecoveryInput">{{ __('authentication.two_factor.use_recovery_code') }}</span><span
+                    ><span
+                            x-show="!showRecoveryInput">{{ __('authentication.two_factor.use_recovery_code') }}</span><span
                             x-show="showRecoveryInput"
                         >{{ __('authentication.two_factor.use_auth_code') }}</span></x-ui.button>
                 </div>

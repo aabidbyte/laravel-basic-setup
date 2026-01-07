@@ -152,10 +152,14 @@ new class extends BasePageComponent {
 
             $this->redirect(route('users.show', $user->uuid), navigate: true);
         } catch (\Exception $e) {
-            NotificationBuilder::make()->title('pages.common.edit.error', ['type' => __('types.user')])->content($e->getMessage())->error()->send();
+            NotificationBuilder::make()
+                ->title('pages.common.edit.error', ['type' => __('types.user')])
+                ->content($e->getMessage())
+                ->error()
+                ->send();
         }
     }
-    
+
     public function getPageTitle(): string
     {
         return __('pages.common.edit.title', ['type' => __('types.user')]);

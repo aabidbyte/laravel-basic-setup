@@ -155,7 +155,11 @@ new class extends BasePageComponent {
 
             $this->redirect(route('users.index'), navigate: true);
         } catch (\Exception $e) {
-            NotificationBuilder::make()->title('pages.common.create.error', ['type' => __('types.user')])->content($e->getMessage())->error()->send();
+            NotificationBuilder::make()
+                ->title('pages.common.create.error', ['type' => __('types.user')])
+                ->content($e->getMessage())
+                ->error()
+                ->send();
         }
     }
 

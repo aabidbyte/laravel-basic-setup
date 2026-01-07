@@ -8,7 +8,13 @@ The `x-layouts.page` component provides a unified layout structure for all CRUD 
 ## Usage
 
 ### Plain Blade Files
+To set the page title and subtitle for plain Blade files (which don't extend `BasePageComponent`), use the `setPageTitle()` helper at the top of the file.
+
 ```blade
+@php
+    setPageTitle(__('pages.users.index.title'), __('pages.users.index.description'));
+@endphp
+
 <x-layouts.app>
     <x-layouts.page backHref="{{ route('users.index') }}" :showBottomBar="true">
         <x-slot:topActions>

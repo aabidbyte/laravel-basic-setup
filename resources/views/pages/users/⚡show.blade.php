@@ -248,8 +248,7 @@ new class extends BasePageComponent {
 
                             @if ($user->last_login_at)
                                 <div>
-                                    <span
-                                        class="text-sm text-base-content/60">{{ __('users.last_login_at') }}</span>
+                                    <span class="text-sm text-base-content/60">{{ __('users.last_login_at') }}</span>
                                     <p class="font-medium">
                                         {{ $user->last_login_at->diffForHumans() }}
                                         <span
@@ -379,8 +378,7 @@ new class extends BasePageComponent {
                                 name="check"
                                 size="sm"
                             ></x-ui.icon>
-                            <span
-                                x-text="copied ? '{{ __('actions.copied') }}' : '{{ __('actions.copy') }}'"></span>
+                            <span x-text="copied ? '{{ __('actions.copied') }}' : '{{ __('actions.copy') }}'"></span>
                         </x-ui.button>
                     </div>
 

@@ -59,19 +59,7 @@
         // We only need basic classes on the wrapper, positioning is handled by Alpine Anchor
         // We derive the Alpine anchor placement from the props
         $alpinePlacement = match ($placement) {
-            'start'
-                => 'bottom-start', // dropdown-start aligns right edge (RTL) but usually means left in LTR? DaisyUI dropdown-start aligns to the start side.
-            // dropdown-start aligns right edge (RTL) but usually means left in LTR? DaisyUI dropdown-start aligns to the start side.
-            // dropdown-start aligns right edge (RTL) but usually means left in LTR? DaisyUI dropdown-start aligns to the start side.
-            // dropdown-start aligns right edge (RTL) but usually means left in LTR? DaisyUI dropdown-start aligns to the start side.
-            // dropdown-start aligns right edge (RTL) but usually means left in LTR? DaisyUI dropdown-start aligns to the start side.
-            // dropdown-start aligns right edge (RTL) but usually means left in LTR? DaisyUI dropdown-start aligns to the start side.
-            // dropdown-start aligns right edge (RTL) but usually means left in LTR? DaisyUI dropdown-start aligns to the start side.
-            // dropdown-start aligns right edge (RTL) but usually means left in LTR? DaisyUI dropdown-start aligns to the start side.
-            // dropdown-start aligns right edge (RTL) but usually means left in LTR? DaisyUI dropdown-start aligns to the start side.
-            // dropdown-start aligns right edge (RTL) but usually means left in LTR? DaisyUI dropdown-start aligns to the start side.
-            // dropdown-start aligns right edge (RTL) but usually means left in LTR? DaisyUI dropdown-start aligns to the start side.
-            // DaisyUI: dropdown-end => right aligned to trigger (right:0). Anchor: bottom-end.
+            'start' => 'bottom-start',
             'end' => 'bottom-end',
             'center' => 'bottom',
             'top' => 'top',

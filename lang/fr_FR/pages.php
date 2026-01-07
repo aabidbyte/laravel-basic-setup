@@ -28,9 +28,9 @@ return [
             'error' => 'Échec de la mise à jour :type',
         ],
         'messages' => [
-             'deleted' => ':name supprimé avec succès',
-             'activated' => ':name activé avec succès',
-             'deactivated' => ':name désactivé avec succès',
+            'deleted' => ':name supprimé avec succès',
+            'activated' => ':name activé avec succès',
+            'deactivated' => ':name désactivé avec succès',
         ],
     ],
     'users' => [

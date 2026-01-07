@@ -42,7 +42,6 @@ return [
         'roles_teams' => 'Rôles et équipes',
     ],
     'show' => [
-
         'activation_link_generated' => 'Lien d\'activation généré avec succès',
         'activation_link_error' => 'Échec de la génération du lien d\'activation',
         'activation_error' => 'Échec de l\'activation de l\'utilisateur',

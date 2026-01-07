@@ -1,8 +1,10 @@
 @php
     use App\Constants\Auth\Permissions;
-    
-    view()->share('pageTitle', __('pages.common.index.title', ['type' => __('types.users')]));
-    view()->share('pageSubtitle', __('pages.common.index.description', ['type_plural' => __('types.users')]));
+
+    setPageTitle(
+        __('pages.common.index.title', ['type' => __('types.users')]),
+        __('pages.common.index.description', ['type_plural' => __('types.users')]),
+    );
 @endphp
 
 <x-layouts.app>
