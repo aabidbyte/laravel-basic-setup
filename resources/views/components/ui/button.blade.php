@@ -14,6 +14,7 @@
     'size' => 'md',
     'type' => null,
     'text' => null,
+    'href' => null,
     'circle' => false,
 ])
 

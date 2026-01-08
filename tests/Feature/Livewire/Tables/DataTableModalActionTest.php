@@ -44,7 +44,7 @@ it('returns confirmation config for row action', function () {
         ->assertReturned([
             'required' => true,
             'type' => 'message',
-            'message' => __('ui.actions.confirm_delete'),
+            'message' => __('actions.confirm_delete'),
         ]);
 });
 
@@ -59,7 +59,7 @@ it('returns confirmation config for bulk action', function () {
         ->assertReturned([
             'required' => true,
             'type' => 'message',
-            'message' => __('ui.actions.confirm_bulk_delete'),
+            'message' => __('actions.confirm_bulk_delete'),
         ]);
 });
 

@@ -59,6 +59,7 @@ class EssentialUserSeeder extends Seeder
                     'name' => 'Super Administrator',
                     'password' => Hash::make($superAdminPassword),
                     'email_verified_at' => now(),
+                    'is_active' => true,
                 ],
             );
 

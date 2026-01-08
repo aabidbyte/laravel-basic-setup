@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -51,7 +52,7 @@ class AuthController extends Controller
         $activationService = app(\App\Services\Users\ActivationService::class);
         $user = $activationService->findUserByToken($token);
 
-        if (!$user) {
+        if (! $user) {
             \App\Services\Notifications\NotificationBuilder::make()
                 ->title('authentication.activation.invalid_token')
                 ->error()
@@ -73,7 +74,7 @@ class AuthController extends Controller
                 ->send();
 
             return redirect()->route('login')->with('activated', true);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             \App\Services\Notifications\NotificationBuilder::make()
                 ->title('authentication.activation.error')
                 ->content($e->getMessage())

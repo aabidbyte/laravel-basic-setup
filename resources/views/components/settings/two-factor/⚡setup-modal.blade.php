@@ -67,7 +67,7 @@ new class extends LivewireBaseComponent {
 >
     <x-ui.base-modal
         id="two-factor-setup"
-        :title="modalConfig . title || ''"
+        :title="__('settings.two_factor.setup.title_setup')"
         max-width="md"
         :auto-open="true"
         open-state="isOpen"

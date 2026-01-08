@@ -13,6 +13,11 @@ return [
     */
 
     'failed' => 'These credentials do not match our records.',
+    'failed_title' => 'Login Failed',
+    'failed_subtitle' => 'The credentials you entered do not match our records. Please check and try again.',
+    'inactive' => 'Your account is not active.',
+    'inactive_title' => 'Account Inactive',
+    'inactive_subtitle' => 'Your account has been deactivated. Please contact support for assistance.',
     'password' => 'The provided password is incorrect.',
     'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
     'password_strength' => [

@@ -6,8 +6,8 @@ test('new users can register', function () {
     $response = $this->post(route('register.store'), [
         'name' => 'John Doe',
         'email' => 'test@example.com',
-        'password' => 'password',
-        'password_confirmation' => 'password',
+        'password' => 'Password123!',
+        'password_confirmation' => 'Password123!',
     ]);
 
     $response->assertSessionHasNoErrors()
@@ -20,8 +20,8 @@ test('creates team and attaches user on registration', function () {
     $response = $this->post(route('register.store'), [
         'name' => 'Jane Doe',
         'email' => 'jane@example.com',
-        'password' => 'password',
-        'password_confirmation' => 'password',
+        'password' => 'Password123!',
+        'password_confirmation' => 'Password123!',
     ]);
 
     $response->assertSessionHasNoErrors();

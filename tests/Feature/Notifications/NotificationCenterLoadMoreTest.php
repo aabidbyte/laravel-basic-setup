@@ -28,7 +28,7 @@ test('notification center shows load more button when there are more than 10 not
     actingAs($user)
         ->get(route('notifications.index'))
         ->assertOk()
-        ->assertSee(__('ui.notifications.see_previous'));
+        ->assertSee(__('notifications.see_previous'));
 });
 
 test('notification center does not show load more button when there are 10 or fewer notifications', function () {
@@ -51,5 +51,5 @@ test('notification center does not show load more button when there are 10 or fe
     actingAs($user)
         ->get(route('notifications.index'))
         ->assertOk()
-        ->assertDontSee(__('ui.notifications.see_previous'));
+        ->assertDontSee(__('notifications.see_previous'));
 });

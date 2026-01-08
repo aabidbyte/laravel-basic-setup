@@ -2,4 +2,6 @@
 
 return [
     'saved' => 'Enregistré.',
+    'unknown' => '',
+    'none' => '',
 ];

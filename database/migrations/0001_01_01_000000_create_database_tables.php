@@ -45,6 +45,7 @@ return new class extends Migration
             $table->text('two_factor_recovery_codes')->nullable();
             $table->timestamp('two_factor_confirmed_at')->nullable();
             $table->json('frontend_preferences')->nullable(); // Stores timezone, locale, and other preferences
+            $table->json('notification_preferences')->nullable(); // Email, browser, and per-type notification settings
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();
@@ -138,6 +139,16 @@ return new class extends Migration
             // Indexes for common lookups
             $table->index(['settable_type', 'settable_id']);
             $table->index('is_active');
+        });
+
+        // Sessions table (for session management - view/revoke active sessions)
+        Schema::create('sessions', function (Blueprint $table) {
+            $table->string('id')->primary();
+            $table->foreignId('user_id')->nullable()->index();
+            $table->string('ip_address', 45)->nullable();
+            $table->text('user_agent')->nullable();
+            $table->longText('payload');
+            $table->integer('last_activity')->index();
         });
 
         // ============================================
@@ -300,6 +311,7 @@ return new class extends Migration
         Schema::dropIfExists('roles');
 
         // Drop other tables
+        Schema::dropIfExists('sessions');
         Schema::dropIfExists('mail_settings');
         Schema::dropIfExists('notifications');
         Schema::dropIfExists('personal_access_tokens');

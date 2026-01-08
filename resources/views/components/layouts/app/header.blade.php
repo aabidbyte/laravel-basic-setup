@@ -4,13 +4,9 @@
         <p class="text-sm text-base-content/70 mt-1">{{ $pageSubtitle }}</p>
     @endif
 </div>
-{{-- Header Actions: Desktop shows notifications, theme, and locale; mobile shows in user menu --}}
+{{-- Header Actions --}}
 <div class="flex items-center gap-2">
     <x-notifications.dropdown-trigger></x-notifications.dropdown-trigger>
-    <div class="hidden lg:flex items-center gap-2">
-        <x-preferences.theme-switcher></x-preferences.theme-switcher>
-        <x-preferences.locale-switcher></x-preferences.locale-switcher>
-    </div>
 
     <x-layouts.app.user-menus></x-layouts.app.user-menus>
 </div>

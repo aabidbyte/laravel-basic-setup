@@ -94,6 +94,7 @@ class SampleUserSeeder extends Seeder
                     'name' => 'Super Administrator',
                     'password' => Hash::make('password'),
                     'email_verified_at' => now(),
+                    'is_active' => true,
                 ],
             );
 
@@ -123,6 +124,7 @@ class SampleUserSeeder extends Seeder
                 'username' => 'admin' . str($team->name)->slug() . $index,
                 'password' => Hash::make('password'),
                 'email_verified_at' => now(),
+                'is_active' => true,
             ],
         );
 

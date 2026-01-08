@@ -91,13 +91,16 @@ class FortifyServiceProvider extends ServiceProvider
 
             $user = User::findByIdentifier($identifier)->first();
 
+            // User not found or password incorrect
             if (! $user || ! Hash::check($password, $user->password)) {
                 return null;
             }
 
-            // Check if user is active
+            // Check if user is active - throw specific exception with notification
             if (! $user->isActive()) {
-                return null;
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'identifier' => [__('auth.inactive')],
+                ]);
             }
 
             setTeamSessionForUser($user);

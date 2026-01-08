@@ -35,6 +35,7 @@ class User extends BaseUserModel
         'is_active',
         'last_login_at',
         'frontend_preferences',
+        'notification_preferences',
     ];
 
     /**
@@ -60,6 +61,7 @@ class User extends BaseUserModel
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'frontend_preferences' => 'array',
+            'notification_preferences' => 'array',
             'is_active' => 'boolean',
             'last_login_at' => 'datetime',
         ];
@@ -171,6 +173,26 @@ class User extends BaseUserModel
         $preferences = $this->frontend_preferences ?? [];
         $preferences['locale'] = $value;
         $this->frontend_preferences = $preferences;
+    }
+
+    /**
+     * Get the user's notification preferences.
+     *
+     * @return array<string, mixed>
+     */
+    public function getNotificationPreferencesAttribute(): array
+    {
+        return $this->attributes['notification_preferences'] ?? [];
+    }
+
+    /**
+     * Set the user's notification preferences.
+     *
+     * @param  array<string, mixed>  $value
+     */
+    public function setNotificationPreferencesAttribute(array $value): void
+    {
+        $this->attributes['notification_preferences'] = json_encode($value);
     }
 
     /**

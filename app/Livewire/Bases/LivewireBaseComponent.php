@@ -46,4 +46,13 @@ abstract class LivewireBaseComponent extends Component
             'class' => $this->placeholderClass,
         ]);
     }
+
+    /**
+     * Handle toJSON method call.
+     * This seems to be triggered by some frontend serialization logic.
+     */
+    public function toJSON(): array
+    {
+        return [];
+    }
 }

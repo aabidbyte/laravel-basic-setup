@@ -17,16 +17,6 @@
         <span>{{ Auth::user()->name }}</span>
     </div>
 
-    {{-- Mobile/Tablet: Show notifications, theme, and locale in user menu --}}
-    <div class="lg:hidden flex flex-row items-center gap-2 self-center">
-        <div>
-            <x-preferences.theme-switcher></x-preferences.theme-switcher>
-        </div>
-        <div>
-            <x-preferences.locale-switcher></x-preferences.locale-switcher>
-        </div>
-    </div>
-
     {{-- User menu items --}}
     <div class="menu-items">
         @foreach ($sideBarUserMenus as $group)
