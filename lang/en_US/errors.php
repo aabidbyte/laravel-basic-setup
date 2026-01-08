@@ -49,4 +49,67 @@ return [
     '502' => 'Bad Gateway',
     '503' => 'Service Unavailable',
     '504' => 'Gateway Timeout',
+
+    // Error management views
+    'management' => [
+        'title' => 'Error Logs',
+        'description' => 'View and manage application errors',
+        'empty' => 'No errors found',
+        'empty_description' => 'No errors have been recorded yet.',
+
+        // Table columns
+        'reference_id' => 'Reference ID',
+        'exception' => 'Exception',
+        'message' => 'Message',
+        'url' => 'URL',
+        'user' => 'User',
+        'status' => 'Status',
+        'created_at' => 'Created',
+        'guest' => 'Guest',
+
+        // Status badges
+        'resolved' => 'Resolved',
+        'unresolved' => 'Unresolved',
+
+        // Filters
+        'all_status' => 'All Status',
+        'all_exceptions' => 'All Exception Types',
+        'date_range' => 'Date Range',
+        'today' => 'Today',
+        'last_7_days' => 'Last 7 days',
+        'last_30_days' => 'Last 30 days',
+
+        // Detail view
+        'exception_info' => 'Exception Info',
+        'request_info' => 'Request Info',
+        'context' => 'Context',
+        'stack_trace' => 'Stack Trace',
+        'resolution' => 'Resolution',
+        'resolved_at' => 'Resolved at',
+        'resolved_by' => 'Resolved by',
+        'resolution_notes' => 'Notes',
+        'file_line' => 'File',
+        'ip_address' => 'IP Address',
+        'user_agent' => 'User Agent',
+        'method' => 'Method',
+        'no_context' => 'No context available',
+        'no_stack_trace' => 'No stack trace available',
+
+        // Resolve modal
+        'resolve_title' => 'Resolve Error',
+        'resolve_notes_placeholder' => 'What fixed this error? (optional)',
+        'resolve_confirm' => 'Mark as Resolved',
+        'resolve_success' => 'Error marked as resolved',
+
+        // Actions
+        'resolve_selected' => 'Resolve Selected',
+        'delete_selected' => 'Delete Selected',
+        'confirm_resolve' => 'Mark this error as resolved?',
+        'confirm_bulk_resolve' => 'Mark all selected errors as resolved?',
+        'confirm_delete' => 'Delete this error? This cannot be undone.',
+        'confirm_bulk_delete' => 'Delete all selected errors? This cannot be undone.',
+        'deleted_successfully' => 'Error deleted successfully',
+        'bulk_resolved_successfully' => ':count errors marked as resolved',
+        'bulk_deleted_successfully' => ':count errors deleted',
+    ],
 ];

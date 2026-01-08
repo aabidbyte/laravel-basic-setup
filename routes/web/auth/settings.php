@@ -54,3 +54,6 @@ Route::livewire('settings/two-factor-legacy', 'pages::settings.two-factor')
         ),
     )
     ->name('two-factor.show');
+
+// Error Logs management routes
+require __DIR__ . '/error-logs.php';

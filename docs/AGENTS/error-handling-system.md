@@ -164,6 +164,43 @@ php artisan test --filter=ErrorHandler
 php artisan test --filter=ErrorHandler -v
 ```
 
+## Admin Interface
+
+The error handling system includes a web-based admin interface for managing error logs.
+
+### Routes
+
+| Route | Name | Description |
+|-------|------|-------------|
+| `GET /admin/errors` | `admin.errors.index` | List all error logs with DataTable |
+| `GET /admin/errors/{errorLog}` | `admin.errors.show` | View error details |
+
+### Features
+
+- **DataTable with Filters**: Search by reference ID/message, filter by status/date/exception type
+- **Bulk Actions**: Resolve or delete multiple errors at once
+- **Detail View**: Full error information with collapsible context and stack trace
+- **Resolve with Notes**: Add resolution notes when marking errors as resolved
+- **Copy Reference ID**: One-click copy for support communication
+
+### Permissions
+
+| Permission | Description |
+|------------|-------------|
+| `view error logs` | Access error log list and details |
+| `resolve error logs` | Mark errors as resolved |
+| `delete error logs` | Delete error logs |
+
+### Files
+
+| File | Purpose |
+|------|---------|
+| [ErrorLogTable.php](file:///Users/hop/Packages/laravel-basic-setup/app/Livewire/Tables/ErrorLogTable.php) | DataTable component |
+| [ErrorLogPolicy.php](file:///Users/hop/Packages/laravel-basic-setup/app/Policies/ErrorLogPolicy.php) | Authorization policy |
+| [index.blade.php](file:///Users/hop/Packages/laravel-basic-setup/resources/views/pages/error-logs/index.blade.php) | Index page |
+| [show.blade.php](file:///Users/hop/Packages/laravel-basic-setup/resources/views/pages/error-logs/⚡show.blade.php) | Detail page (Livewire SFC) |
+| [error-logs.php](file:///Users/hop/Packages/laravel-basic-setup/routes/web/auth/error-logs.php) | Route definitions |
+
 ## Best Practices
 
 1. **Never expose stack traces in production** - The system automatically shows user-friendly messages
@@ -171,3 +208,4 @@ php artisan test --filter=ErrorHandler -v
 3. **Monitor Slack/Email channels** - Enable in production for immediate awareness
 4. **Prune regularly** - Schedule the prune command to prevent database bloat
 5. **Check rate limiting** - Adjust `ERROR_HANDLING_MAX_PER_MINUTE` if you get too many/few notifications
+

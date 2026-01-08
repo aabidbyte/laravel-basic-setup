@@ -74,6 +74,13 @@ class Permissions
     // Mail settings permissions
     public const CONFIGURE_MAIL_SETTINGS = 'configure mail settings';
 
+    // Error log permissions
+    public const VIEW_ERROR_LOGS = 'view error logs';
+
+    public const RESOLVE_ERROR_LOGS = 'resolve error logs';
+
+    public const DELETE_ERROR_LOGS = 'delete error logs';
+
     /**
      * Get all permission constants as an array.
      *
@@ -111,6 +118,9 @@ class Permissions
             self::DELETE_USERS,
             self::GENERATE_ACTIVATION_LINKS,
             self::CONFIGURE_MAIL_SETTINGS,
+            self::VIEW_ERROR_LOGS,
+            self::RESOLVE_ERROR_LOGS,
+            self::DELETE_ERROR_LOGS,
         ];
     }
 }

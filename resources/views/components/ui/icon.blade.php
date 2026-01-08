@@ -2,4 +2,6 @@
 
 @inject('mapper', \App\Services\IconPackMapper::class)
 
-{!! $mapper->renderIcon($name, $pack, $class, $size) !!}
+<span {{ $attributes->except(['class', 'name', 'pack', 'size']) }}>
+    {!! $mapper->renderIcon($name, $pack, $class, $size) !!}
+</span>

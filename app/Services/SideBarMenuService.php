@@ -32,6 +32,13 @@ class SideBarMenuService
                     ->icon('users')
                     ->activeRoutes('users.*')
                     ->show(Auth::user()?->can(Permissions::VIEW_USERS) ?? false),
+
+                NavigationItem::make()
+                    ->title(__('errors.management.title'))
+                    ->route('admin.errors.index')
+                    ->icon('exclamation-triangle')
+                    ->activeRoutes('admin.errors.*')
+                    ->show(Auth::user()?->can(Permissions::VIEW_ERROR_LOGS) ?? false),
             )
             ->toArray();
     }

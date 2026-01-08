@@ -6,7 +6,8 @@ use App\Models\User;
 use App\Services\Notifications\NotificationBuilder;
 use App\Services\Users\UserService;
 
-new class extends BasePageComponent {
+new class extends BasePageComponent
+{
     public ?string $pageTitle = null;
 
     public ?string $pageSubtitle = null;
@@ -352,34 +353,19 @@ new class extends BasePageComponent {
                 <div class="space-y-4">
                     <p class="text-base-content/70">{{ __('users.show.activation_link_description') }}</p>
 
-                    <div
-                        x-data="copyToClipboard('{{ $activationLink }}')"
-                        class="flex items-center gap-2"
-                    >
+                    <div class="flex items-center gap-2">
                         <x-ui.input
                             type="text"
-                            x-bind:value="'{{ $activationLink }}'"
+                            value="{{ $activationLink }}"
                             readonly
                             class="font-mono text-sm"
                         ></x-ui.input>
-                        <x-ui.button
-                            @click="copy()"
-                            color="primary"
+                        <x-ui.copy-button
+                            :text="$activationLink"
                             size="sm"
-                        >
-                            <x-ui.icon
-                                x-show="!copied"
-                                name="clipboard"
-                                size="sm"
-                            ></x-ui.icon>
-                            <x-ui.icon
-                                x-show="copied"
-                                x-cloak
-                                name="check"
-                                size="sm"
-                            ></x-ui.icon>
-                            <span x-text="copied ? '{{ __('actions.copied') }}' : '{{ __('actions.copy') }}'"></span>
-                        </x-ui.button>
+                            variant="primary"
+                            showText
+                        ></x-ui.copy-button>
                     </div>
 
                     <div class="alert alert-warning">
