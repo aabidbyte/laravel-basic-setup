@@ -5,26 +5,26 @@
     $shareUrl = $this->getShareUrl($paginator->currentPage());
 @endphp
 
-@if ($paginator->hasPages())
+<nav
+    role="navigation"
+    aria-label="{{ __('pagination.pagination_navigation') }}"
+    class="flex items-center gap-2"
+>
+    {{-- Per-Page Selector (always visible) --}}
+    <div class="flex items-center gap-2">
+        <x-ui.tooltip text="{{ __('table.per_page') }}">
+            <x-ui.select
+                wire:model.live="perPage"
+                :label="null"
+                class="select-sm"
+                :options="['12' => '12', '25' => '25', '50' => '50', '100' => '100', '200' => '200']"
+                :prependEmpty="false"
+            >
+            </x-ui.select>
+        </x-ui.tooltip>
+    </div>
 
-    <nav
-        role="navigation"
-        aria-label="{{ __('pagination.pagination_navigation') }}"
-        class="flex items-center gap-2"
-    >
-        <div class="flex items-center gap-2">
-            <x-ui.tooltip text="{{ __('table.per_page') }}">
-                <x-ui.select
-                    wire:model.live="perPage"
-                    :label="null"
-                    class="select-sm"
-                    :options="['12' => '12', '25' => '25', '50' => '50', '100' => '100', '200' => '200']"
-                    :prependEmpty="false"
-                >
-                </x-ui.select>
-            </x-ui.tooltip>
-        </div>
-
+    @if ($paginator->hasPages())
         <div class="flex gap-2 items-center justify-between sm:hidden">
 
             @if ($paginator->onFirstPage())
@@ -252,5 +252,13 @@
                 ></x-ui.share-button>
             </div>
         </div>
-    </nav>
-@endif
+    @else
+        {{-- Single page: Just show record count --}}
+        <div class="flex items-center gap-2">
+            <p class="text-sm text-base-content/70">
+                <span class="font-medium">{{ $paginator->total() }}</span>
+                {!! __('pagination.results') !!}
+            </p>
+        </div>
+    @endif
+</nav>

@@ -1,6 +1,7 @@
 <?php
 
 use App\Support\Csp\LaravelViteNonceGenerator;
+use Spatie\Csp\Presets\BunnyFonts;
 
 // use Spatie\Csp\Directive;
 // use Spatie\Csp\Keyword;
@@ -12,6 +13,7 @@ return [
      */
     'presets' => [
         // Using our comprehensive standalone preset (replaces Basic)
+        BunnyFonts::class,
         App\Support\Csp\MyCspPreset::class,
     ],
 

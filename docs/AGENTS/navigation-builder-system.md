@@ -39,6 +39,26 @@ app/Services/
     -   `getUserMenus()`: Returns array of NavigationBuilder for user dropdown
 -   **Note**: Logout is handled as a static form in the sidebar components, not through NavigationItem
 
+### Nested/Collapsible Menus
+ 
+ To create a collapsible group, use the `items()` method on a `NavigationItem`. The nested items will be rendered inside a `<details>`/`<summary>` structure.
+ 
+ ```php
+ NavigationItem::make()
+     ->title(__('navigation.administration'))
+     ->icon('cog')
+     ->items(
+         NavigationItem::make()
+             ->title(__('navigation.users'))
+             ->route('users.index')
+             ->activeRoutes('users.*'),
+ 
+         NavigationItem::make()
+             ->title(__('navigation.roles'))
+             ->url('#'),
+     )
+ ```
+
 ### Usage Example
 
 ```php

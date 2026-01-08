@@ -31,13 +31,11 @@ class HorizonServiceProvider extends HorizonApplicationServiceProvider
         Gate::define('viewHorizon', function ($user = null) {
             // Super Admin has automatic access via Gate::before() in AppServiceProvider
             // Explicitly checking here for clarity and documentation
-            if ($user && $user->hasRole(Roles::SUPER_ADMIN)) {
+            if ($user?->hasRole(Roles::SUPER_ADMIN)) {
                 return true;
             }
 
-            return in_array(optional($user)->email, [
-                //
-            ], true);
+            return false;
         });
     }
 }

@@ -68,22 +68,42 @@ abstract class Datatable extends LivewireBaseComponent
     abstract protected function columns(): array;
 
     /**
-     * Mount the component and load query string parameters and preferences.
-     * Query string parameters take precedence over saved preferences.
+     * Track whether preferences have been initialized this request.
      */
-    public function mount(): void
+    protected bool $preferencesInitialized = false;
+
+    /**
+     * Boot the component on every request lifecycle.
+     * Loads preferences and query string parameters on initial mount only.
+     * Unlike mount(), boot() is called every lifecycle and is rarely overridden.
+     */
+    public function boot(): void
     {
-        // Load query string parameters first (they take precedence)
+        // Only load preferences on initial mount (when dehydrated state is empty)
+        // Livewire's boot() is called on every request, but we only want to load once.
+        if (! $this->preferencesInitialized) {
+            $this->initializePreferences();
+            $this->preferencesInitialized = true;
+        }
+    }
+
+    /**
+     * Initialize preferences and query string parameters.
+     * This is extracted to allow child classes to call it if needed.
+     */
+    protected function initializePreferences(): void
+    {
+        // 1. Load saved preferences first (defaults)
+        $this->loadPreferences();
+
+        // 2. Load query string parameters (overrides)
         $this->loadQueryStringParameters();
 
-        // If any query string parameters were loaded, save them as preferences
+        // 3. If any query string parameters were loaded, save the merged state as preferences
         if (! empty($this->queryStringLoaded)) {
             $this->savePreferences();
             // Clean URL after processing query parameters
             $this->cleanUrlQueryParameters();
-        } else {
-            // Only load saved preferences if no query string parameters were provided
-            $this->loadPreferences();
         }
     }
 

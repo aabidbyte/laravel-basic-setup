@@ -45,7 +45,7 @@ trait HasDatatableLivewirePreferences
         }
 
         if (! ($this->queryStringLoaded[DataTableConstants::QUERY_PARAM_PER_PAGE] ?? false)) {
-            $perPage = $preferencesService->getDatatablePreference($identifier, 'perPage', 15, $request);
+            $perPage = $preferencesService->getDatatablePreference($identifier, 'perPage', $this->perPage, $request);
             if ($perPage > 0) {
                 $this->perPage = $perPage;
             }

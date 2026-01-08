@@ -25,6 +25,8 @@ class MyCspPreset implements Preset
         $this->configureBaseDirectives($policy);
         $this->configureScriptsAndStyles($policy);
         $this->configureConnectSources($policy);
+        $this->configureHorizonSources($policy);
+        $this->configureTelescopeSources($policy);
     }
 
     /**
@@ -136,5 +138,39 @@ class MyCspPreset implements Preset
                 $policy->add(Directive::CONNECT, "{$protocol}://{$host}:{$port}");
             }
         }
+    }
+
+    /**
+     * Configure CSP sources for Laravel Horizon.
+     *
+     * Horizon's dashboard uses JavaScript eval() for its UI functionality,
+     * which requires 'unsafe-eval' in the script-src directive.
+     */
+    protected function configureHorizonSources(Policy $policy): void
+    {
+        $horizonPath = config('horizon.path', 'horizon');
+
+        if (! request()->is($horizonPath . '*')) {
+            return;
+        }
+
+        $policy->add(Directive::SCRIPT, Keyword::UNSAFE_EVAL);
+    }
+
+    /**
+     * Configure CSP sources for Laravel Telescope.
+     *
+     * Telescope's dashboard uses JavaScript eval() for its UI functionality,
+     * which requires 'unsafe-eval' in the script-src directive.
+     */
+    protected function configureTelescopeSources(Policy $policy): void
+    {
+        $telescopePath = config('telescope.path', 'telescope');
+
+        if (! request()->is($telescopePath . '*')) {
+            return;
+        }
+
+        $policy->add(Directive::SCRIPT, Keyword::UNSAFE_EVAL);
     }
 }
