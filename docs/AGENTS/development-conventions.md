@@ -83,6 +83,10 @@
     -   `App\Constants\Permissions` - Permission name constants
     -   `App\Constants\Roles` - Role name constants
 
+##### Smart Pagination
+- **Standard**: The DataTable pagination component now handles "smart" display (showing relevant page windows) internally.
+- **Implementation**: Simply use `{{ $rows->links('components.datatable.pagination') }}`. No manual `onEachSide()` call is required.
+
 #### Avoiding Duplication
 
 -   **Extract repeated patterns** into helper functions, closures, or methods
@@ -327,10 +331,10 @@ These structural elements are acceptable without components:
 
     ```php
     // Full-page component (in pages/ directory)
-    Route::livewire('settings/profile', 'pages::settings.profile')->name('profile.edit');
+    Route::livewire('settings/account', 'pages::settings.account')->name('settings.account');
 
     // Nested component (in components/ directory)
-    <livewire:settings.delete-user-form />
+    <livewire:settings.two-factor.setup-modal />
     ```
 
 ### Livewire Event Parameters

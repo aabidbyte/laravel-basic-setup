@@ -6,7 +6,8 @@ use App\Services\I18nService;
 use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Support\Facades\Auth;
 
-new class extends BasePageComponent {
+new class extends BasePageComponent
+{
     public ?string $pageTitle = 'settings.tabs.preferences';
 
     public ?string $pageSubtitle = 'settings.preferences.description';
@@ -87,6 +88,8 @@ new class extends BasePageComponent {
             $user->timezone = $this->timezone;
             $user->save();
         }
+
+        $this->redirect(route('settings.preferences'), navigate: false);
 
         NotificationBuilder::make()->title('settings.preferences.save_success')->success()->send();
     }

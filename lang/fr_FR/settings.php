@@ -59,15 +59,6 @@ return [
         'light' => 'Clair',
         'dark' => 'Sombre',
     ],
-    'delete_account' => [
-        'title' => 'Supprimer le compte',
-        'description' => 'Supprimez votre compte et toutes ses ressources',
-        'button' => 'Supprimer le compte',
-        'modal_title' => 'Êtes-vous sûr de vouloir supprimer votre compte ?',
-        'modal_description' => 'Une fois votre compte supprimé, toutes ses ressources et données seront définitivement supprimées. Veuillez entrer votre mot de passe pour confirmer que vous souhaitez supprimer définitivement votre compte.',
-        'password_label' => 'Mot de passe',
-        'success' => 'Votre compte a été supprimé.',
-    ],
     'tabs' => [
         'account' => '',
         'security' => '',

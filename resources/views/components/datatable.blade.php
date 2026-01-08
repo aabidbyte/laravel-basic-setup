@@ -38,9 +38,8 @@
                 {{-- Table Header --}}
                 {!! $this->renderTableHeader() !!}
 
-                {{-- Table Body --}}
-                <tbody>
-                    @forelse ($rows as $row)
+                <tbody x-ref="tbody">
+                    @forelse ($rows->take($this->visibleRows) as $row)
                         {!! $this->renderTableRow($row) !!}
                     @empty
                         <tr wire:key="empty-row-{{ $datatableId }}">
@@ -60,6 +59,16 @@
                     @endforelse
                 </tbody>
             </table>
+            
+            {{-- Load More Trigger --}}
+            @if ($rows->count() > $this->visibleRows)
+                <div
+                    x-data="infiniteScroll"
+                    class="h-8 flex items-center justify-center p-4"
+                >
+                    <x-ui.loading size="sm" />
+                </div>
+            @endif
         </div>
 
         {{-- Bottom Pagination --}}

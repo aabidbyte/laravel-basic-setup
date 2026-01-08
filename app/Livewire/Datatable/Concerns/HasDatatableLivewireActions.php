@@ -326,7 +326,10 @@ trait HasDatatableLivewireActions
      */
     public function renderRowActions(mixed $row): string
     {
-        return view('components.datatable.actions', ['row' => $row])->render();
+        return view('components.datatable.actions', [
+            'row' => $row,
+            'datatable' => $this,
+        ])->render();
     }
 
     /**

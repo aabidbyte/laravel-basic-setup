@@ -30,7 +30,6 @@
 
 ### Settings Components (`resources/views/components/settings/`)
 
--   **Delete User Form** (`⚡delete-user-form.blade.php`) - User account deletion with confirmation modal
 -   **Two-Factor Setup Modal** (`two-factor/⚡setup-modal.blade.php`) - 2FA setup and verification modal
 -   **Two-Factor Recovery Codes** (`two-factor/⚡recovery-codes.blade.php`) - 2FA recovery codes display
 

@@ -4,14 +4,14 @@
         <th class="w-12">
             <x-ui.checkbox
                 wire:click="toggleSelectAll()"
-                :checked="$this->isAllSelected"
-                wire:key="select-all-checkbox-{{ $this->isAllSelected ? '1' : '0' }}"
+                :checked="$datatable->isAllSelected"
+                wire:key="select-all-checkbox-{{ $datatable->isAllSelected ? '1' : '0' }}"
                 size="sm"
             />
         </th>
 
         {{-- Column Headers --}}
-        @foreach ($this->getColumns() as $column)
+        @foreach ($datatable->getColumns() as $column)
             @php
                 $columnStyles = $column['width'] ? "width: {$column['width']}; max-width: {$column['width']};" : '';
                 $columnClasses = [
@@ -31,9 +31,9 @@
                 >
                     <div class="flex items-center gap-2 justify-between">
                         <span class="truncate">{{ $column['label'] }}</span>
-                        @if ($this->sortBy === $column['field'])
+                        @if ($datatable->sortBy === $column['field'])
                             <x-ui.icon
-                                :name="$this->sortDirection === 'asc' ? 'chevron-up' : 'chevron-down'"
+                                :name="$datatable->sortDirection === 'asc' ? 'chevron-up' : 'chevron-down'"
                                 size="xs"
                             ></x-ui.icon>
                         @endif
@@ -52,6 +52,6 @@
         @endforeach
 
         {{-- Actions Column --}}
-        <th></th>
+        <th class="sticky right-0 bg-base-100 z-20 text-end">{{ __('table.actions') }}</th>
     </tr>
 </thead>

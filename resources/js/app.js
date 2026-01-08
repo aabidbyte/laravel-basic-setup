@@ -17,6 +17,7 @@ import anchor from '@alpinejs/anchor';
 import focus from '@alpinejs/focus';
 
 import passwordStrength from './alpine/data/password-strength';
+import infiniteScroll from './alpine/data/infinite-scroll';
 
 // Register Alpine plugins when initialized
 document.addEventListener('alpine:init', () => {
@@ -24,6 +25,7 @@ document.addEventListener('alpine:init', () => {
     window.Alpine.plugin(focus);
     
     window.Alpine.data('passwordStrength', passwordStrength);
+    window.Alpine.data('infiniteScroll', infiniteScroll);
 });
 
 // Also register immediately if Alpine is already available
@@ -32,4 +34,5 @@ if (window.Alpine) {
     window.Alpine.plugin(anchor);
     window.Alpine.plugin(focus);
     window.Alpine.data('passwordStrength', passwordStrength);
+    window.Alpine.data('infiniteScroll', infiniteScroll);
 }

@@ -1,0 +1,9 @@
+/* Sticky Actions Column Styles for Zebra Striping */
+@layer components {
+    .table-zebra tbody tr:nth-child(even) .sticky-action-cell {
+        @apply bg-base-200;
+    }
+    .table-zebra tbody tr:nth-child(odd) .sticky-action-cell {
+        @apply bg-base-100;
+    }
+}

@@ -18,7 +18,7 @@
                     wire:model.live="perPage"
                     :label="null"
                     class="select-sm"
-                    :options="['10' => '10', '15' => '15', '25' => '25', '50' => '50', '100' => '100']"
+                    :options="['12' => '12', '25' => '25', '50' => '50', '100' => '100', '200' => '200']"
                     :prependEmpty="false"
                 >
                 </x-ui.select>
@@ -102,36 +102,89 @@
                         </x-ui.button>
                     @endif
 
-                    {{-- Pagination Elements --}}
-                    @foreach ($elements as $element)
-                        {{-- "Three Dots" Separator --}}
-                        @if (is_string($element))
-                            <span aria-disabled="true">
-                                <span class="btn btn-sm btn-ghost btn-disabled rounded-none">{{ $element }}</span>
-                            </span>
-                        @endif
+                    {{-- Custom Smart Pagination Logic --}}
+                    @php
+                        $currentPage = $paginator->currentPage();
+                        $lastPage = $paginator->lastPage();
+                        $distanceToEnd = $lastPage - $currentPage;
+                    @endphp
 
-                        {{-- Array Of Links --}}
-                        @if (is_array($element))
-                            @foreach ($element as $page => $url)
-                                @if ($page == $paginator->currentPage())
-                                    <span aria-current="page">
-                                        <span class="btn btn-sm btn-active rounded-none">{{ $page }}</span>
-                                    </span>
-                                @else
-                                    <x-ui.button
-                                        wire:click="gotoPage({{ $page }}, '{{ $paginator->getPageName() }}')"
-                                        style="ghost"
-                                        size="sm"
-                                        class="rounded-none"
-                                        aria-label="{{ __('pagination.go_to_page', ['page' => $page]) }}"
-                                    >
-                                        {{ $page }}
-                                    </x-ui.button>
-                                @endif
-                            @endforeach
-                        @endif
-                    @endforeach
+                    @if ($distanceToEnd <= 3)
+                        {{-- Rule: Always show last 4 pages (e.g., 24, 25, 26, 27) --}}
+                        @php $start = max(1, $lastPage - 3); @endphp
+                        @for ($i = $start; $i <= $lastPage; $i++)
+                            @if ($i == $currentPage)
+                                <span aria-current="page">
+                                    <span class="btn btn-sm btn-active rounded-none">{{ $i }}</span>
+                                </span>
+                            @else
+                                <x-ui.button
+                                    wire:click="gotoPage({{ $i }}, '{{ $paginator->getPageName() }}')"
+                                    style="ghost"
+                                    size="sm"
+                                    class="rounded-none"
+                                    aria-label="{{ __('pagination.go_to_page', ['page' => $i]) }}"
+                                >
+                                    {{ $i }}
+                                </x-ui.button>
+                            @endif
+                        @endfor
+                    @elseif ($distanceToEnd == 4)
+                        {{-- Rule: Near end (e.g. page 23), show current through to end (23, 24, 25, 26, 27) --}}
+                        @for ($i = $currentPage; $i <= $lastPage; $i++)
+                            @if ($i == $currentPage)
+                                <span aria-current="page">
+                                    <span class="btn btn-sm btn-active rounded-none">{{ $i }}</span>
+                                </span>
+                            @else
+                                <x-ui.button
+                                    wire:click="gotoPage({{ $i }}, '{{ $paginator->getPageName() }}')"
+                                    style="ghost"
+                                    size="sm"
+                                    class="rounded-none"
+                                    aria-label="{{ __('pagination.go_to_page', ['page' => $i]) }}"
+                                >
+                                    {{ $i }}
+                                </x-ui.button>
+                            @endif
+                        @endfor
+                    @else
+                        {{-- Rule: Standard smart pattern (e.g. 1 2 3 ... 26 27 or 22 23 24 ... 26 27) --}}
+                        @php $windowEnd = $currentPage + 2; @endphp
+                        @for ($i = $currentPage; $i <= $windowEnd; $i++)
+                            @if ($i == $currentPage)
+                                <span aria-current="page">
+                                    <span class="btn btn-sm btn-active rounded-none">{{ $i }}</span>
+                                </span>
+                            @else
+                                <x-ui.button
+                                    wire:click="gotoPage({{ $i }}, '{{ $paginator->getPageName() }}')"
+                                    style="ghost"
+                                    size="sm"
+                                    class="rounded-none"
+                                    aria-label="{{ __('pagination.go_to_page', ['page' => $i]) }}"
+                                >
+                                    {{ $i }}
+                                </x-ui.button>
+                            @endif
+                        @endfor
+
+                        <span aria-disabled="true">
+                            <span class="btn btn-sm btn-ghost btn-disabled rounded-none">...</span>
+                        </span>
+
+                        @for ($i = $lastPage - 1; $i <= $lastPage; $i++)
+                            <x-ui.button
+                                wire:click="gotoPage({{ $i }}, '{{ $paginator->getPageName() }}')"
+                                style="ghost"
+                                size="sm"
+                                class="rounded-none"
+                                aria-label="{{ __('pagination.go_to_page', ['page' => $i]) }}"
+                            >
+                                {{ $i }}
+                            </x-ui.button>
+                        @endfor
+                    @endif
 
                     {{-- Next Page Link --}}
                     @if ($paginator->hasMorePages())
@@ -169,7 +222,7 @@
                         <input
                             type="number"
                             wire:model.blur="gotoPageInput"
-                            wire:keydown.enter="gotoPage(gotoPageInput)"
+                            wire:keydown.enter="performGotoPage"
                             class="input input-sm input-bordered w-16 text-center"
                             min="1"
                             max="{{ $paginator->lastPage() }}"
@@ -178,7 +231,7 @@
                         />
                         <x-ui.tooltip text="{{ __('pagination.go_to_page_label') }}">
                             <x-ui.button
-                                wire:click="gotoPage(gotoPageInput)"
+                                wire:click="performGotoPage"
                                 style="ghost"
                                 size="sm"
                                 aria-label="{{ __('pagination.go_to_page', ['page' => 'X']) }}"

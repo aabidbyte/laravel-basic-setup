@@ -1,10 +1,10 @@
 <tr
     wire:key="row-{{ $row->uuid }}"
-    @if ($this->rowsAreClickable()) @click="@if ($this->rowClickOpensModal())window.dispatchEvent(new CustomEvent('datatable-modal-loading')); @endif$wire.handleRowClick('{{ $row->uuid }}')"
+    @if ($datatable->rowsAreClickable()) @click="@if ($datatable->rowClickOpensModal())window.dispatchEvent(new CustomEvent('datatable-modal-loading')); @endif$wire.handleRowClick('{{ $row->uuid }}')"
     @endif
     @class([
-        'bg-base-200' => $this->isSelected($row->uuid),
-        'cursor-pointer' => $this->rowsAreClickable(),
+        'bg-base-200' => $datatable->isSelected($row->uuid),
+        'cursor-pointer' => $datatable->rowsAreClickable(),
         'transition-colors hover:bg-base-200/50',
     ])>
     {{-- Selection Checkbox --}}
@@ -18,7 +18,7 @@
     </td>
 
     {{-- Data Columns --}}
-    @foreach ($this->getColumns() as $column)
+    @foreach ($datatable->getColumns() as $column)
         <td
             style="{{ $column['width'] ? "width: {$column['width']}; max-width: {$column['width']};" : '' }}"
             @class([
@@ -27,12 +27,12 @@
                 'truncate' => (bool) $column['width'],
             ])
         >
-            {!! $this->renderColumn($column, $row) !!}
+            {!! $datatable->renderColumn($column, $row) !!}
         </td>
     @endforeach
 
     {{-- Actions Dropdown --}}
-    <td @click.stop>
-        {!! $this->renderRowActions($row) !!}
+    <td @click.stop class="sticky right-0 z-10 sticky-action-cell text-end">
+        {!! $datatable->renderRowActions($row) !!}
     </td>
 </tr>

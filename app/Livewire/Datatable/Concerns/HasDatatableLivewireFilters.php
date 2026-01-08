@@ -127,6 +127,8 @@ trait HasDatatableLivewireFilters
      */
     public function renderFilters(): string
     {
-        return view('components.datatable.filters')->render();
+        return view('components.datatable.filters', [
+            'datatable' => $this,
+        ])->render();
     }
 }

@@ -34,7 +34,9 @@ trait HasDatatableLivewireRendering
      */
     public function renderTableHeader(): string
     {
-        return view('components.datatable.header')->render();
+        return view('components.datatable.header', [
+            'datatable' => $this,
+        ])->render();
     }
 
     /**
@@ -42,7 +44,10 @@ trait HasDatatableLivewireRendering
      */
     public function renderTableRow(mixed $row): string
     {
-        return view('components.datatable.row', ['row' => $row])->render();
+        return view('components.datatable.row', [
+            'row' => $row,
+            'datatable' => $this,
+        ])->render();
     }
 
     /**

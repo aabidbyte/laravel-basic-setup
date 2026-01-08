@@ -80,7 +80,7 @@ class SideBarMenuService
             ->items(
                 NavigationItem::make()
                     ->title(__('navigation.settings'))
-                    ->route('profile.edit'),
+                    ->route('settings.account'),
             )
             ->toArray();
     }

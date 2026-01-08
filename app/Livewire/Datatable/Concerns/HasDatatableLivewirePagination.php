@@ -32,7 +32,10 @@ trait HasDatatableLivewirePagination
     /**
      * Items per page
      */
-    public int $perPage = 15;
+    /**
+     * Items per page
+     */
+    public int $perPage = 12;
 
     /**
      * Go to page input value
@@ -52,6 +55,18 @@ trait HasDatatableLivewirePagination
      */
     public function updatedPerPage(): void
     {
+        $this->savePreferences();
         $this->refreshTable();
+    }
+
+    /**
+     * Perform go to page action using the input value
+     */
+    public function performGotoPage(): void
+    {
+        if ($this->gotoPageInput && $this->gotoPageInput >= 1 && $this->gotoPageInput <= $this->rows->lastPage()) {
+            $this->gotoPage((int) $this->gotoPageInput);
+            $this->gotoPageInput = null;
+        }
     }
 }

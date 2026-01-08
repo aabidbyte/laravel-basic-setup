@@ -17,7 +17,7 @@
         </x-ui.button>
     </x-slot:trigger>
 
-    @foreach ($this->getRowActionsForRow($row) as $action)
+    @foreach ($datatable->getRowActionsForRow($row) as $action)
         @php
             $colorClass = match ($action['color'] ?? null) {
                 'error' => 'text-error hover:bg-error/10',

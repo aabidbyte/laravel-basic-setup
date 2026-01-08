@@ -17,4 +17,4 @@
 15. **Use Page Layout for CRUD views** - All CRUD views (index, create, edit, show) MUST use `x-layouts.page` component for consistent structure with back button and action slots. See `docs/components/page-layout.md`
 16. **Responsive design required** - ALL layouts and views MUST be responsive, supporting mobile, tablet, and desktop devices using Tailwind's responsive prefixes (sm:, md:, lg:, xl:). Use mobile-first approach.
 17. **Update this file** when adding new patterns, conventions, or features
-
+18. **Route organization required** - All routes must follow the domain-based structure in `routes/web/` with proper separation: `public/` (no auth), `auth/` (requires login), `dev/` (local only). See `docs/AGENTS/routes.md` for full conventions.

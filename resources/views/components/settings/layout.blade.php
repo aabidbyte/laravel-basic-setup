@@ -10,7 +10,7 @@
                 <a
                     href="{{ route('settings.account') }}"
                     wire:navigate
-                    @class(['active' => request()->routeIs('settings.account', 'profile.edit')])
+                    @class(['active' => request()->routeIs('settings.account')])
                 >
                     <x-ui.icon name="user" class="h-4 w-4"></x-ui.icon>
                     {{ __('settings.tabs.account') }}
@@ -22,7 +22,7 @@
                 <a
                     href="{{ route('settings.security') }}"
                     wire:navigate
-                    @class(['active' => request()->routeIs('settings.security', 'two-factor.show', 'user-password.edit')])
+                    @class(['active' => request()->routeIs('settings.security')])
                 >
                     <x-ui.icon name="shield-check" class="h-4 w-4"></x-ui.icon>
                     {{ __('settings.tabs.security') }}

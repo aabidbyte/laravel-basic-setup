@@ -29,7 +29,7 @@ test('can set route and get route name', function () {
 });
 
 test('can set route with parameters', function () {
-    $item = NavigationItem::make()->route('profile.edit', ['id' => 1]);
+    $item = NavigationItem::make()->route('settings.account', ['id' => 1]);
 
     expect($item->getRouteParameters())->toBe(['id' => 1]);
 });

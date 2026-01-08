@@ -183,11 +183,25 @@ abstract class Datatable extends LivewireBaseComponent
     }
 
     /**
+     * Number of rows currently visible (for "Load More" behavior)
+     */
+    public int $visibleRows = 20;
+
+    /**
+     * Load more rows
+     */
+    public function loadMore(): void
+    {
+        $this->visibleRows += 20;
+    }
+
+    /**
      * Refresh the table by clearing the cache and scrolling to top
      */
     public function refreshTable(): void
     {
         unset($this->rows);
+        $this->visibleRows = 20;
         $this->dispatch("datatable:scroll-to-top:{$this->getId()}");
     }
 

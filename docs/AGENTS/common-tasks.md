@@ -4,10 +4,10 @@
 
 ```bash
 # Full-page component (creates in pages/ directory)
-php artisan make:livewire pages.settings.profile --test --pest
+php artisan make:livewire pages.example-page --test --pest
 
 # Nested/reusable component (creates in components/ directory)
-php artisan make:livewire settings.delete-user-form --test --pest
+php artisan make:livewire ui.example-component --test --pest
 
 # Multi-file component
 php artisan make:livewire pages.example --mfc --test --pest
@@ -24,7 +24,7 @@ php artisan livewire:convert pages.example
 -   **Translations**: Use translation keys like `'ui.pages.dashboard'` - they are automatically translated
 -   **No `parent::mount()` needed** - title and subtitle sharing happens automatically via `boot()` lifecycle hook
 -   Full-page components are created in `resources/views/pages/` and use `pages::` namespace in routes
--   Nested/reusable Livewire components are created in `resources/views/components/` and are referenced directly (e.g., `livewire:settings.delete-user-form`)
+-   Nested/reusable Livewire components are created in `resources/views/components/` and are referenced directly (e.g., `livewire:ui.example-component`)
 -   All single-file components use `.blade.php` extension
 -   See `docs/livewire-4/index.md` for complete documentation
 
@@ -299,7 +299,7 @@ The system includes first-class RTL support:
 
 ### DataTable Component
 
-The application uses a Livewire-based DataTable component system. See `docs/components/datatable.md` for complete documentation.
+The application uses a Livewire-based DataTable component system. See `docs/components/datatable/index.md` for complete documentation.
 
 **Key Points**:
 

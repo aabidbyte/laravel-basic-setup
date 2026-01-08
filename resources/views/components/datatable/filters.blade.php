@@ -14,9 +14,9 @@
         </div>
 
         {{-- Bulk Actions Dropdown --}}
-        @if ($this->hasSelection)
+        @if ($datatable->hasSelection)
             <div class="flex items-center gap-4">
-                <span class="text-sm font-medium text-base-content/70">{{ $this->selectedCount }}
+                <span class="text-sm font-medium text-base-content/70">{{ $datatable->selectedCount }}
                     {{ __('table.selected') }}</span>
 
                 <x-ui.dropdown
@@ -40,7 +40,7 @@
                         </x-ui.button>
                     </x-slot:trigger>
 
-                    @foreach ($this->getBulkActions() as $action)
+                    @foreach ($datatable->getBulkActions() as $action)
                         @php
                             $colorClass = match ($action['color'] ?? null) {
                                 'error' => 'text-error hover:bg-error/10',
@@ -115,11 +115,11 @@
                         size="sm"
                     ></x-ui.icon>
                     {{ __('table.filters') }}
-                    @if (count($this->getActiveFilters()) > 0)
+                    @if (count($datatable->getActiveFilters()) > 0)
                         <x-ui.badge
                             variant="primary"
                             size="sm"
-                        >{{ count($this->getActiveFilters()) }}</x-ui.badge>
+                        >{{ count($datatable->getActiveFilters()) }}</x-ui.badge>
                     @endif
                 </x-ui.button>
             </div>
@@ -127,10 +127,10 @@
     </div>
 
     {{-- Active Filters Badges --}}
-    @if (count($this->getActiveFilters()) > 0)
+    @if (count($datatable->getActiveFilters()) > 0)
         <div class="flex flex-wrap gap-2 items-center">
             <span class="text-sm text-base-content/70">{{ __('table.active_filters') }}:</span>
-            @foreach ($this->getActiveFilters() as $filter)
+            @foreach ($datatable->getActiveFilters() as $filter)
                 <x-ui.badge
                     size="sm"
                     variant="secondary"
@@ -175,7 +175,7 @@
             <h3 class="card-title text-lg mb-4">{{ __('table.filters') }}</h3>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                @foreach ($this->getFilters() as $filter)
+                @foreach ($datatable->getFilters() as $filter)
                     @if ($filter['type'] === 'select')
                         <x-ui.select
                             wire:model.live="filters.{{ $filter['key'] }}"

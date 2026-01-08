@@ -354,51 +354,47 @@ All modals in the project use `<x-ui.base-modal>` directly with Alpine.js state 
 </div>
 ```
 
-#### Modal with External State Control
-
-```blade
-<div x-data="{ deleteAccountModalOpen: false }">
-    <button @click="deleteAccountModalOpen = true" class="btn">Delete Account</button>
-    
-    <x-ui.base-modal id="delete-modal" open-state="deleteAccountModalOpen" title="Confirm Deletion">
-        <p>Are you sure you want to delete your account?</p>
-        
-        <x-slot:actions>
-            <button @click="deleteAccountModalOpen = false" class="btn btn-ghost">Cancel</button>
-            <button @click="deleteAccount()" class="btn btn-error">Delete</button>
-        </x-slot:actions>
-    </x-ui.base-modal>
-</div>
-```
-
-#### Auto-Open Modal
-
-```blade
-@if ($showModal)
-    <x-ui.base-modal id="auto-modal" :auto-open="true" title="Auto Opened">
-        <p>This modal opens automatically when rendered</p>
-    </x-ui.base-modal>
-@endif
-```
-
-### Current Usage in Project
-
-1. **Two-Factor Setup Modal** (`resources/views/components/settings/two-factor/⚡setup-modal.blade.php`)
-    - Uses `autoOpen="true"` to automatically open when component renders
-    - Includes form for OTP verification
-    - Uses `actions` slot for Continue button
-
-2. **Delete User Confirmation Modal** (`resources/views/components/settings/⚡delete-user-form.blade.php`)
-    - Uses Alpine.js state (`deleteAccountModalOpen`) to control visibility
-    - Contains password confirmation form
-    - Uses `actions` slot for Cancel and Delete buttons
-
-3. **Confirm Modal** (`resources/views/components/ui/confirm-modal.blade.php`)
-    - Wraps `<x-ui.base-modal>` for confirmation dialogs
-    - Supports external state control via `open-state` prop
-    - Can be triggered via Alpine.js events or direct state management
-
-## History
+356: 
+357: #### Modal with External State Control
+358: 
+359: ```blade
+360: <div x-data="{ reportModalOpen: false }">
+361:     <button @click="reportModalOpen = true" class="btn">Generate Report</button>
+362:     
+363:     <x-ui.base-modal id="report-modal" open-state="reportModalOpen" title="Confirm Generation">
+364:         <p>Are you sure you want to generate the monthly report?</p>
+365:         
+366:         <x-slot:actions>
+367:             <button @click="reportModalOpen = false" class="btn btn-ghost">Cancel</button>
+368:             <button @click="generateReport()" class="btn btn-primary">Generate</button>
+369:         </x-slot:actions>
+370:     </x-ui.base-modal>
+371: </div>
+372: ```
+373: 
+374: #### Auto-Open Modal
+375: 
+376: ```blade
+377: @if ($showModal)
+378:     <x-ui.base-modal id="auto-modal" :auto-open="true" title="Auto Opened">
+379:         <p>This modal opens automatically when rendered</p>
+380:     </x-ui.base-modal>
+381: @endif
+382: ```
+383: 
+384: ### Current Usage in Project
+385: 
+386: 1. **Two-Factor Setup Modal** (`resources/views/components/settings/two-factor/⚡setup-modal.blade.php`)
+387:     - Uses `autoOpen="true"` to automatically open when component renders
+388:     - Includes form for OTP verification
+389:     - Uses `actions` slot for Continue button
+390: 
+391: 2. **Confirm Modal** (`resources/views/components/ui/confirm-modal.blade.php`)
+392:     - Wraps `<x-ui.base-modal>` for confirmation dialogs
+393:     - Supports external state control via `open-state` prop
+394:     - Can be triggered via Alpine.js events or direct state management
+395: 
+396: ## History
 
 ### Class-Based + Theme-Aware Conversion (2025-12-23)
 

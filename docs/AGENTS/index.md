@@ -29,5 +29,6 @@ This documentation is organized into sections for easy navigation. Each section 
 - [Environment Configuration](environment-configuration.md)
 - [Security Considerations](security-considerations.md)
 - [Common Tasks](common-tasks.md)
+- [Routes](routes.md)
 - [Intelephense Helper](intelephense-helper.md)
 - [Notes for AI Agents](notes-for-ai-agents.md)

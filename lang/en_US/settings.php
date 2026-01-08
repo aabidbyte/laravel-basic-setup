@@ -129,13 +129,4 @@ return [
         'light' => 'Light',
         'dark' => 'Dark',
     ],
-    'delete_account' => [
-        'title' => 'TRANSLATION_NEEDED: Please see context at resources/views/components/settings/⚡delete-user-form.blade.php:37',
-        'description' => 'TRANSLATION_NEEDED: Please see context at resources/views/components/settings/⚡delete-user-form.blade.php:38',
-        'button' => 'TRANSLATION_NEEDED: Please see context at resources/views/components/settings/⚡delete-user-form.blade.php:48, resources/views/components/settings/⚡delete-user-form.blade.php:92',
-        'modal_title' => 'TRANSLATION_NEEDED: Please see context at resources/views/components/settings/⚡delete-user-form.blade.php:66',
-        'modal_description' => 'TRANSLATION_NEEDED: Please see context at resources/views/components/settings/⚡delete-user-form.blade.php:68',
-        'password_label' => 'TRANSLATION_NEEDED: Please see context at resources/views/components/settings/⚡delete-user-form.blade.php:79',
-        'success' => 'TRANSLATION_NEEDED: Please see context at resources/views/components/settings/⚡delete-user-form.blade.php:29',
-    ],
 ];

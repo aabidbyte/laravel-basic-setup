@@ -62,9 +62,21 @@ resources/
 │   └── partials/         # Reusable partials
 
 routes/
-├── web.php              # Web routes (uses Route::livewire() for pages)
+├── web.php              # Main router (requires subdirectory files)
 ├── api.php              # API routes
-└── channels.php         # Broadcasting channels
+├── channels.php         # Broadcasting channels
+└── web/
+    ├── auth/            # Authenticated routes
+    │   ├── admin.php    # Admin-level routes
+    │   ├── dashboard.php
+    │   ├── notifications.php
+    │   ├── settings.php
+    │   └── users.php
+    ├── dev/             # Development-only routes
+    │   └── development.php
+    └── public/          # Public routes (no auth)
+        ├── activation.php
+        └── preferences.php
 
 tests/
 ├── Feature/             # Feature tests (Pest)
