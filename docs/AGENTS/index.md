@@ -22,6 +22,7 @@ This documentation is organized into sections for easy navigation. Each section 
 - [Navigation Builder System](navigation-builder-system.md)
 - [Notification Builder System](notification-builder-system.md)
 - [Mail Builder System](mail-builder-system.md)
+- [Error Handling System](error-handling-system.md)
 - [Important Patterns](important-patterns.md)
 - [CSP Safety Guide (Alpine.js)](csp-safety.md)
 - [Development Workflow](development-workflow.md)

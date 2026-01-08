@@ -152,4 +152,3 @@ test('BasePageComponent updates shared subtitle when pageSubtitle property is up
 
     expect(View::shared('pageSubtitle'))->toBe('Updated Subtitle');
 });
-

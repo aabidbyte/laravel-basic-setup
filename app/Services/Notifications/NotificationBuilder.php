@@ -52,6 +52,8 @@ class NotificationBuilder
 
     protected bool $enableSound = false;
 
+    protected bool $sticky = false;
+
     /**
      * Create a new notification builder instance.
      */
@@ -230,6 +232,18 @@ class NotificationBuilder
     }
 
     /**
+     * Make the toast sticky (won't auto-dismiss, user must click X).
+     *
+     * Useful for error messages that require user acknowledgment.
+     */
+    public function sticky(): static
+    {
+        $this->sticky = true;
+
+        return $this;
+    }
+
+    /**
      * Set the toast position.
      *
      * @param  ToastPosition  $position  The toast position on the screen
@@ -393,6 +407,7 @@ class NotificationBuilder
             link: $this->link,
             iconHtml: $iconHtml,
             enableSound: $this->getEnableNotificationSound(),
+            sticky: $this->sticky,
         );
 
         // Handle user teams (multiple teams)

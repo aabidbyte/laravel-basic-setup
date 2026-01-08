@@ -20,6 +20,7 @@ class ToastPayload
         public ?string $link = null,
         public ?string $iconHtml = null,
         public bool $enableSound = true,
+        public bool $sticky = false,
     ) {}
 
     /**
@@ -39,6 +40,8 @@ class ToastPayload
             'link' => $this->link,
             'iconHtml' => $this->iconHtml,
             'enableSound' => $this->enableSound,
+            'sticky' => $this->sticky,
         ];
     }
 }
+

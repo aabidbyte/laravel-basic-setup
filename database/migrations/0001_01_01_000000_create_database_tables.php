@@ -234,6 +234,32 @@ return new class extends Migration
         });
 
         // ============================================
+        // ERROR LOGS TABLE (for ticketing system)
+        // ============================================
+
+        Schema::create('error_logs', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique()->index();
+            $table->string('reference_id')->unique()->index(); // ERR-20260108-ABC123
+            $table->string('exception_class');
+            $table->text('message');
+            $table->longText('stack_trace');
+            $table->string('url', 2048)->nullable();
+            $table->string('method', 10)->nullable(); // GET, POST, etc.
+            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+            $table->string('ip', 45)->nullable();
+            $table->text('user_agent')->nullable();
+            $table->json('context')->nullable(); // Request data, headers, etc.
+            $table->json('resolved_data')->nullable(); // For future ticketing (assignee, notes)
+            $table->timestamp('resolved_at')->nullable();
+            $table->timestamps();
+            $table->softDeletes();
+
+            $table->index('exception_class');
+            $table->index('created_at');
+        });
+
+        // ============================================
         // DATABASE TRIGGERS (MySQL only)
         // ============================================
 
@@ -309,6 +335,9 @@ return new class extends Migration
         Schema::dropIfExists('role_user');
         Schema::dropIfExists('permissions');
         Schema::dropIfExists('roles');
+
+        // Drop error logs table
+        Schema::dropIfExists('error_logs');
 
         // Drop other tables
         Schema::dropIfExists('sessions');

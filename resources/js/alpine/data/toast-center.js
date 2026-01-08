@@ -110,6 +110,7 @@ function sanitizeToastData(data) {
         link: data.link || null,
         enableSound: data.enableSound !== undefined ? data.enableSound : true,
         iconHtml: data.iconHtml || null,
+        sticky: data.sticky || false,
     };
 }
 
@@ -199,6 +200,7 @@ export function toastCenter() {
                 typeClasses: typeConfig,
                 progressColor: typeConfig.progressColor,
                 enableSound: sanitized.enableSound,
+                sticky: sanitized.sticky,
                 timeout: null,
                 progressInterval: null,
             };
@@ -265,8 +267,11 @@ export function toastItem(toast, toasts, displayDuration) {
             // Show toast after Alpine finishes rendering
             this.$nextTick(() => {
                 this.isVisible = true;
-                this.startProgress();
-                this._scheduleDismiss();
+                // Only start progress and schedule dismiss for non-sticky toasts
+                if (!toast.sticky) {
+                    this.startProgress();
+                    this._scheduleDismiss();
+                }
             });
         },
 
