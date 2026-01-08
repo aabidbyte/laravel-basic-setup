@@ -206,3 +206,32 @@ When adding new components:
 4. Update `vite.config.js` if it's a NEW bundle (not common).
 5. Run `npm run build` to verify bundles.
 
+## wire:navigate and CSP
+
+When using Livewire's `wire:navigate` (SPA-style navigation), a nonce-based CSP strategy doesn't work because:
+1. Each server response generates a NEW nonce.
+2. The browser's CSP policy retains the OLD nonce from the initial page load.
+3. New scripts/styles from navigated pages are blocked.
+
+**Our Solution:**
+We use `unsafe-inline` for scripts and styles in `MyCspPreset`, which allows:
+- Livewire's wire:navigate to inject new content correctly
+- Alpine.js attribute bindings (via `SCRIPT_ATTR` and `STYLE_ATTR` directives)
+- Dynamic style updates from Alpine
+
+This is a conscious trade-off documented in `app/Support/Csp/MyCspPreset.php`.
+
+## Troubleshooting
+
+### Modal Stuck Open
+If modals get stuck open after navigation:
+1. Ensure Alpine components are properly cleaned up via `destroy()` method
+2. Check that event listeners are removed on component destruction
+3. Verify the modal's `openState` is correctly synchronized with Livewire
+
+### CSP Violation Errors in Console
+If you see `script-src` or `style-src` violations:
+1. Check that you're not using arrow functions in Blade templates
+2. Verify template literals are not used in Alpine attributes
+3. Ensure all complex logic is in registered Alpine components
+
