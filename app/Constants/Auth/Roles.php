@@ -10,27 +10,11 @@ namespace App\Constants\Auth;
  */
 class Roles
 {
-    public const SUPER_ADMIN = 'Super Admin';
+    public const SUPER_ADMIN = 'super_admin';
 
     public const ADMIN = 'admin';
 
-    public const WRITER = 'writer';
-
-    public const EDITOR = 'editor';
-
-    public const MODERATOR = 'moderator';
-
-    public const READER = 'reader';
-
-    public const REVIEWER = 'reviewer';
-
-    public const MANAGER = 'manager';
-
-    public const VIEWER = 'viewer';
-
-    public const MEMBER = 'Member';
-
-    public const ACTIVE_MEMBER = 'ActiveMember';
+    public const MEMBER = 'member';
 
     /**
      * Get all role constants as an array.
@@ -42,15 +26,7 @@ class Roles
         return [
             self::SUPER_ADMIN,
             self::ADMIN,
-            self::WRITER,
-            self::EDITOR,
-            self::MODERATOR,
-            self::READER,
-            self::REVIEWER,
-            self::MANAGER,
-            self::VIEWER,
             self::MEMBER,
-            self::ACTIVE_MEMBER,
         ];
     }
 }

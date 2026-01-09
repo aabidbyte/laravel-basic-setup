@@ -45,5 +45,17 @@ return [
             'created_at' => 'Created At',
         ],
     ],
+    'roles' => [
+        'name' => 'Name',
+        'display_name' => 'Display Name',
+        'description' => 'Description',
+        'permissions_count' => 'Permissions',
+        'users_count' => 'Users',
+    ],
+    'teams' => [
+        'name' => 'Name',
+        'description' => 'Description',
+        'members_count' => 'Members',
+    ],
     'copy_failed' => 'TRANSLATION_NEEDED: Please see context at resources/views/components/ui/share-button.blade.php:20',
 ];

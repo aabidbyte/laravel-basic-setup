@@ -16,6 +16,8 @@ Route::middleware(['auth'])->group(function () {
     require __DIR__ . '/web/auth/dashboard.php';
     require __DIR__ . '/web/auth/notifications.php';
     require __DIR__ . '/web/auth/users.php';
+    require __DIR__ . '/web/auth/roles.php';
+    require __DIR__ . '/web/auth/teams.php';
     require __DIR__ . '/web/auth/settings.php';
     require __DIR__ . '/web/auth/admin.php';
 });

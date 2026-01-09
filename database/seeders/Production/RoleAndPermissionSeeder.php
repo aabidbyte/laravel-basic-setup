@@ -48,15 +48,20 @@ class RoleAndPermissionSeeder extends Seeder
      */
     private function createRoles(): void
     {
-        $roleNames = Roles::all();
+        $roles = [
+            Roles::SUPER_ADMIN => 'Super Admin',
+            Roles::ADMIN => 'Admin',
+            Roles::MEMBER => 'Member',
+        ];
 
-        foreach ($roleNames as $roleName) {
+        foreach ($roles as $roleName => $displayName) {
             Role::firstOrCreate(
                 ['name' => $roleName],
+                ['display_name' => $displayName]
             );
         }
 
-        $this->command->info('✅ Created ' . count($roleNames) . ' roles');
+        $this->command->info('✅ Created ' . count($roles) . ' roles');
     }
 
     /**

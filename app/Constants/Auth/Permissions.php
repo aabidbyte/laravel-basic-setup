@@ -81,6 +81,24 @@ class Permissions
 
     public const DELETE_ERROR_LOGS = 'delete error logs';
 
+    // Role permissions
+    public const VIEW_ROLES = 'view roles';
+
+    public const CREATE_ROLES = 'create roles';
+
+    public const EDIT_ROLES = 'edit roles';
+
+    public const DELETE_ROLES = 'delete roles';
+
+    // Team permissions
+    public const VIEW_TEAMS = 'view teams';
+
+    public const CREATE_TEAMS = 'create teams';
+
+    public const EDIT_TEAMS = 'edit teams';
+
+    public const DELETE_TEAMS = 'delete teams';
+
     /**
      * Get all permission constants as an array.
      *
@@ -121,6 +139,14 @@ class Permissions
             self::VIEW_ERROR_LOGS,
             self::RESOLVE_ERROR_LOGS,
             self::DELETE_ERROR_LOGS,
+            self::VIEW_ROLES,
+            self::CREATE_ROLES,
+            self::EDIT_ROLES,
+            self::DELETE_ROLES,
+            self::VIEW_TEAMS,
+            self::CREATE_TEAMS,
+            self::EDIT_TEAMS,
+            self::DELETE_TEAMS,
         ];
     }
 }

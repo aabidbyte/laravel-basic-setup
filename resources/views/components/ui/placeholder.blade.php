@@ -24,6 +24,16 @@
             {{-- Table skeleton --}}
             <div class="card bg-base-100 shadow-xl">
                 <div class="card-body p-4">
+                    {{-- Search and action bar --}}
+                    <div class="flex items-center justify-between gap-4 mb-4">
+                        {{-- Search input skeleton --}}
+                        <div class="flex items-center gap-2 flex-1 max-w-md">
+                            <div class="skeleton h-10 w-10 rounded-lg shrink-0"></div>
+                            <div class="skeleton h-10 flex-1 rounded-lg"></div>
+                        </div>
+                        {{-- Action button skeleton --}}
+                        <div class="skeleton h-10 w-36 rounded-lg"></div>
+                    </div>
                     {{-- Table header --}}
                     <div class="flex gap-4 border-b border-base-300 pb-3">
                         <div class="skeleton h-4 w-8"></div>

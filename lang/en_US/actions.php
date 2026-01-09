@@ -27,4 +27,7 @@ return [
     'back_to_list' => 'Back to List',
     'copied' => 'Copied',
     'copy' => 'Copy',
+    'detach' => 'Detach',
+    'detached_successfully' => ':user detached from :role successfully',
+    'confirm_detach_user' => 'Are you sure you want to remove this user?',
 ];

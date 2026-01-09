@@ -70,7 +70,9 @@ routes/
     │   ├── admin.php    # Admin-level routes
     │   ├── dashboard.php
     │   ├── notifications.php
+    │   ├── roles.php    # Role management routes
     │   ├── settings.php
+    │   ├── teams.php    # Team management routes
     │   └── users.php
     ├── dev/             # Development-only routes
     │   └── development.php

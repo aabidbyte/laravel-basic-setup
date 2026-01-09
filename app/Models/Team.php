@@ -20,6 +20,7 @@ class Team extends BaseModel
      */
     protected $fillable = [
         'name',
+        'description',
     ];
 
     /**
