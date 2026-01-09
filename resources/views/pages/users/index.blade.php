@@ -11,16 +11,12 @@
     <x-layouts.page backHref="{{ route('dashboard') }}">
         <x-slot:topActions>
             @can(Permissions::CREATE_USERS)
-                <x-ui.button
-                    href="{{ route('users.create') }}"
-                    wire:navigate
-                    color="primary"
-                    class="gap-2"
-                >
-                    <x-ui.icon
-                        name="plus"
-                        size="sm"
-                    ></x-ui.icon>
+                <x-ui.button href="{{ route('users.create') }}"
+                             wire:navigate
+                             color="primary"
+                             class="gap-2">
+                    <x-ui.icon name="plus"
+                               size="sm"></x-ui.icon>
                     {{ __('pages.common.create.title', ['type' => __('types.user')]) }}
                 </x-ui.button>
             @endcan

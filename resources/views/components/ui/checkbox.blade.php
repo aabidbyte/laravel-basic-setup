@@ -32,20 +32,18 @@
 
 <div class="form-control w-fit">
     <label class="label cursor-pointer justify-start gap-3">
-        <input
-            type="checkbox"
-            id="{{ $id }}"
-            {{ $attributes->merge(['class' => trim("checkbox {$colorClass} {$sizeClass}")]) }}
-            @if ($value !== null) value="{{ $value }}" @endif
-            @if ($checked) checked @endif
-        />
+        <input type="checkbox"
+               id="{{ $id }}"
+               {{ $attributes->merge(['class' => trim("checkbox {$colorClass} {$sizeClass}")]) }}
+               @if ($value !== null) value="{{ $value }}" @endif
+               @if ($checked) checked @endif />
         @if ($label)
             <span class="label-text">{{ $label }}</span>
         @endif
     </label>
     @if ($description)
-        <div class="pl-9 -mt-1">
-            <span class="text-xs text-base-content/60">{{ $description }}</span>
+        <div class="-mt-1 pl-9">
+            <span class="text-base-content/60 text-xs">{{ $description }}</span>
         </div>
     @endif
 </div>

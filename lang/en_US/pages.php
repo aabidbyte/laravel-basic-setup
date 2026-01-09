@@ -45,4 +45,19 @@ return [
         'password' => 'Password Settings',
         'two_factor' => 'Two-Factor Authentication',
     ],
+    'trash' => [
+        'index' => [
+            'title' => 'Trashed :type',
+            'description' => 'View and manage soft-deleted items',
+        ],
+        'show' => [
+            'title' => ':name (Trashed)',
+            'description' => 'View trashed item details',
+            'item_details' => 'Item Details',
+            'metadata' => 'Metadata',
+            'not_found' => 'Trashed item not found.',
+            'confirm_mismatch' => 'The name you typed does not match.',
+        ],
+        'badge' => 'Trashed',
+    ],
 ];

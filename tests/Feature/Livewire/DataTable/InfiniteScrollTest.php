@@ -29,10 +29,10 @@ test('it initializes with visibleRows set to 20', function () {
 test('loadMore increments visibleRows by 20', function () {
     $component = Livewire::actingAs($this->user)
         ->test('tables.user-table');
-        
+
     $component->call('loadMore')
         ->assertSet('visibleRows', 40);
-        
+
     $component->call('loadMore')
         ->assertSet('visibleRows', 60);
 });
@@ -40,10 +40,10 @@ test('loadMore increments visibleRows by 20', function () {
 test('refreshing table resets visibleRows to 20', function () {
     $component = Livewire::actingAs($this->user)
         ->test('tables.user-table');
-        
+
     $component->call('loadMore')
         ->assertSet('visibleRows', 40);
-        
+
     // Trigger a refresh via search (which calls applyChanges -> refreshTable)
     $component->set('search', 'foo')
         ->assertSet('visibleRows', 20);
@@ -52,10 +52,10 @@ test('refreshing table resets visibleRows to 20', function () {
 test('sorting resets visibleRows to 20', function () {
     $component = Livewire::actingAs($this->user)
         ->test('tables.user-table');
-        
+
     $component->call('loadMore')
         ->assertSet('visibleRows', 40);
-        
+
     // Trigger sort
     $component->call('sort', 'name')
         ->assertSet('visibleRows', 20);
@@ -77,12 +77,12 @@ test('performGotoPage validation ignores invalid pages', function () {
 
     $component = Livewire::actingAs($this->user)
         ->test('tables.user-table');
-        
+
     $component->set('gotoPageInput', 5) // Invalid page
         ->call('performGotoPage')
         ->assertSet('paginators.page', 1)
         ->assertSet('gotoPageInput', 5); // Should remain set as feedback/unchanged
-        
+
     $component->set('gotoPageInput', 0) // Invalid page
         ->call('performGotoPage')
         ->assertSet('paginators.page', 1);

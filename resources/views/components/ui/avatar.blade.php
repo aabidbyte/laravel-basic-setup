@@ -53,13 +53,11 @@
 
 <div class="avatar {{ $placeholder && !$imageSrc ? 'placeholder' : '' }} {{ $class }}">
     <div
-        class="{{ $containerSize }} {{ $shapeClass }} {{ $imageSrc ? '' : 'bg-primary text-primary-content' }} flex items-center justify-center">
+         class="{{ $containerSize }} {{ $shapeClass }} {{ $imageSrc ? '' : 'bg-primary text-primary-content' }} flex items-center justify-center">
         @if ($imageSrc)
-            <img
-                src="{{ $imageSrc }}"
-                alt="{{ $displayName ?? 'Avatar' }}"
-                class="{{ $shapeClass }} object-cover w-full h-full"
-            />
+            <img src="{{ $imageSrc }}"
+                 alt="{{ $displayName ?? 'Avatar' }}"
+                 class="{{ $shapeClass }} h-full w-full object-cover" />
         @else
             <span>{{ $initials }}</span>
         @endif

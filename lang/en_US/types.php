@@ -7,4 +7,6 @@ return [
     'roles' => 'Roles',
     'team' => 'Team',
     'teams' => 'Teams',
+    'error_log' => 'Error Log',
+    'error_logs' => 'Error Logs',
 ];

@@ -52,5 +52,5 @@
     </{{ $tag }}>
 
     @if ($subtitle)
-        <p class="text-base-content/60 text-sm mt-1">{{ $subtitle }}</p>
+        <p class="text-base-content/60 mt-1 text-sm">{{ $subtitle }}</p>
     @endif

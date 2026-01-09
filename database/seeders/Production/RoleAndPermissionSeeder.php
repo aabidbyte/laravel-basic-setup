@@ -34,7 +34,7 @@ class RoleAndPermissionSeeder extends Seeder
      */
     private function createPermissions(): void
     {
-        $matrix = new PermissionMatrix();
+        $matrix = new PermissionMatrix;
         $count = 0;
 
         foreach ($matrix->getMatrix() as $entity => $actions) {
@@ -48,7 +48,7 @@ class RoleAndPermissionSeeder extends Seeder
                     [
                         'display_name' => $displayName,
                         'description' => $description,
-                    ]
+                    ],
                 );
                 $count++;
             }
@@ -115,7 +115,7 @@ class RoleAndPermissionSeeder extends Seeder
         foreach ($roles as $roleName => $displayName) {
             Role::firstOrCreate(
                 ['name' => $roleName],
-                ['display_name' => $displayName]
+                ['display_name' => $displayName],
             );
         }
 

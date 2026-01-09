@@ -18,15 +18,11 @@
 
 <div class="card bg-base-200 {{ $class }}">
     <div class="card-body text-center">
-        <x-ui.icon
-            :name="$icon"
-            class="{{ $iconSize }} mx-auto {{ $iconClass }}"
-        ></x-ui.icon>
+        <x-ui.icon :name="$icon"
+                   class="{{ $iconSize }} {{ $iconClass }} mx-auto"></x-ui.icon>
         @if ($title)
-            <x-ui.title
-                level="4"
-                class="text-base-content/70"
-            >{{ $title }}</x-ui.title>
+            <x-ui.title level="4"
+                        class="text-base-content/70">{{ $title }}</x-ui.title>
         @endif
         @if ($description)
             <p class="text-base-content/60">{{ $description }}</p>

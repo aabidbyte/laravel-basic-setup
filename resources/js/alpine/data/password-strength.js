@@ -49,11 +49,11 @@ export default function passwordStrength(targetId, translations = {}) {
             if (this.score <= 3) return 'bg-warning';
             return 'bg-success';
         },
-        
+
         get textColor() {
             if (this.score <= 2) return 'text-error';
             if (this.score <= 3) return 'text-warning';
             return 'text-success';
-        }
+        },
     };
 }

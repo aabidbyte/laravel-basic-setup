@@ -35,10 +35,8 @@
     }
 @endphp
 
-<a
-    href="{{ $href }}"
-    @if ($navigate) wire:navigate @endif
-    {{ $attributes->merge(['class' => trim($classes)]) }}
->
+<a href="{{ $href }}"
+   @if ($navigate) wire:navigate @endif
+   {{ $attributes->merge(['class' => trim($classes)]) }}>
     {{ $slot }}
 </a>

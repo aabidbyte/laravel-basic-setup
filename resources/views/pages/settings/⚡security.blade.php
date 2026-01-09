@@ -104,9 +104,9 @@ new class extends BasePageComponent {
         $browser = __('common.unknown');
         if (str_contains($userAgent, 'Firefox')) {
             $browser = 'Firefox';
-        } elseif (str_contains($userAgent, 'Chrome') && ! str_contains($userAgent, 'Edg')) {
+        } elseif (str_contains($userAgent, 'Chrome') && !str_contains($userAgent, 'Edg')) {
             $browser = 'Chrome';
-        } elseif (str_contains($userAgent, 'Safari') && ! str_contains($userAgent, 'Chrome')) {
+        } elseif (str_contains($userAgent, 'Safari') && !str_contains($userAgent, 'Chrome')) {
             $browser = 'Safari';
         } elseif (str_contains($userAgent, 'Edg')) {
             $browser = 'Edge';
@@ -148,11 +148,7 @@ new class extends BasePageComponent {
             return;
         }
 
-        DB::connection(config('session.connection'))
-            ->table(config('session.table', 'sessions'))
-            ->where('id', $sessionId)
-            ->where('user_id', Auth::id())
-            ->delete();
+        DB::connection(config('session.connection'))->table(config('session.table', 'sessions'))->where('id', $sessionId)->where('user_id', Auth::id())->delete();
 
         NotificationBuilder::make()->title('settings.security.session_revoked')->success()->send();
 
@@ -190,7 +186,7 @@ new class extends BasePageComponent {
 
         $enableTwoFactorAuthentication($user);
 
-        if (! $this->requiresConfirmation) {
+        if (!$this->requiresConfirmation) {
             $this->twoFactorEnabled = $user->hasEnabledTwoFactorAuthentication();
         }
 
@@ -284,7 +280,7 @@ new class extends BasePageComponent {
 
         $this->dispatch('close-two-factor-setup-modal');
 
-        if (! $this->requiresConfirmation) {
+        if (!$this->requiresConfirmation) {
             $this->twoFactorEnabled = Auth::user()->hasEnabledTwoFactorAuthentication();
         }
     }
@@ -316,16 +312,14 @@ new class extends BasePageComponent {
             {{-- Two-Factor Authentication Section --}}
             @if (Laravel\Fortify\Features::enabled(Laravel\Fortify\Features::twoFactorAuthentication()))
                 <div>
-                    <h2 class="text-lg font-semibold text-base-content mb-4">{{ __('settings.two_factor.title') }}</h2>
+                    <h2 class="text-base-content mb-4 text-lg font-semibold">{{ __('settings.two_factor.title') }}</h2>
 
                     @if ($twoFactorEnabled)
                         <div class="card bg-base-200">
                             <div class="card-body">
                                 <div class="flex items-center gap-3">
-                                    <x-ui.badge
-                                        color="success"
-                                        size="lg"
-                                    >{{ __('settings.two_factor.enabled') }}</x-ui.badge>
+                                    <x-ui.badge color="success"
+                                                size="lg">{{ __('settings.two_factor.enabled') }}</x-ui.badge>
                                 </div>
 
                                 <p class="text-base-content/70">
@@ -333,14 +327,12 @@ new class extends BasePageComponent {
                                 </p>
 
                                 <livewire:settings.two-factor.recovery-codes
-                                    :$requiresConfirmation></livewire:settings.two-factor.recovery-codes>
+                                                                             :$requiresConfirmation></livewire:settings.two-factor.recovery-codes>
 
                                 <div class="card-actions mt-4">
-                                    <x-ui.button
-                                        type="button"
-                                        wire:click="disableTwoFactor"
-                                        variant="error"
-                                    >
+                                    <x-ui.button type="button"
+                                                 wire:click="disableTwoFactor"
+                                                 variant="error">
                                         {{ __('settings.two_factor.disable_button') }}
                                     </x-ui.button>
                                 </div>
@@ -350,10 +342,8 @@ new class extends BasePageComponent {
                         <div class="card bg-base-200">
                             <div class="card-body">
                                 <div class="flex items-center gap-3">
-                                    <x-ui.badge
-                                        color="error"
-                                        size="lg"
-                                    >{{ __('settings.two_factor.disabled') }}</x-ui.badge>
+                                    <x-ui.badge color="error"
+                                                size="lg">{{ __('settings.two_factor.disabled') }}</x-ui.badge>
                                 </div>
 
                                 <p class="text-base-content/70">
@@ -361,11 +351,9 @@ new class extends BasePageComponent {
                                 </p>
 
                                 <div class="card-actions mt-4">
-                                    <x-ui.button
-                                        type="button"
-                                        wire:click="enableTwoFactor"
-                                        variant="primary"
-                                    >
+                                    <x-ui.button type="button"
+                                                 wire:click="enableTwoFactor"
+                                                 variant="primary">
                                         {{ __('settings.two_factor.enable_button') }}
                                     </x-ui.button>
                                 </div>
@@ -375,17 +363,13 @@ new class extends BasePageComponent {
                 </div>
 
                 {{-- Two-Factor Setup Modal --}}
-                <div
-                    x-data="twoFactorSetupTrigger()"
-                    x-show="showModal"
-                    style="display: none;"
-                >
-                    <livewire:settings.two-factor.setup-modal
-                        :modal-config="$this->modalConfig"
-                        :qr-code-svg="$qrCodeSvg"
-                        :manual-setup-key="$manualSetupKey"
-                        lazy
-                    />
+                <div x-data="twoFactorSetupTrigger()"
+                     x-show="showModal"
+                     style="display: none;">
+                    <livewire:settings.two-factor.setup-modal :modal-config="$this->modalConfig"
+                                                              :qr-code-svg="$qrCodeSvg"
+                                                              :manual-setup-key="$manualSetupKey"
+                                                              lazy />
                 </div>
             @endif
 
@@ -393,8 +377,9 @@ new class extends BasePageComponent {
 
             {{-- Active Sessions Section --}}
             <div>
-                <h2 class="text-lg font-semibold text-base-content mb-2">{{ __('settings.security.sessions_title') }}</h2>
-                <p class="text-sm text-base-content/70 mb-4">{{ __('settings.security.sessions_description') }}</p>
+                <h2 class="text-base-content mb-2 text-lg font-semibold">{{ __('settings.security.sessions_title') }}
+                </h2>
+                <p class="text-base-content/70 mb-4 text-sm">{{ __('settings.security.sessions_description') }}</p>
 
                 @if (config('session.driver') === 'database')
                     <div class="space-y-3">
@@ -403,42 +388,36 @@ new class extends BasePageComponent {
                                 'card bg-base-200',
                                 'border-2 border-primary' => $session['is_current'],
                             ])>
-                                <div class="card-body py-3 px-4">
+                                <div class="card-body px-4 py-3">
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center gap-3">
-                                            <x-ui.icon
-                                                name="computer-desktop"
-                                                class="h-6 w-6 text-base-content/70"
-                                            ></x-ui.icon>
+                                            <x-ui.icon name="computer-desktop"
+                                                       class="text-base-content/70 h-6 w-6"></x-ui.icon>
                                             <div>
                                                 <div class="font-medium">
-                                                    {{ $session['user_agent']['browser'] }} on {{ $session['user_agent']['platform'] }}
+                                                    {{ $session['user_agent']['browser'] }} on
+                                                    {{ $session['user_agent']['platform'] }}
                                                     @if ($session['is_current'])
-                                                        <x-ui.badge
-                                                            color="primary"
-                                                            size="sm"
-                                                            class="ml-2"
-                                                        >{{ __('settings.security.current_session') }}</x-ui.badge>
+                                                        <x-ui.badge color="primary"
+                                                                    size="sm"
+                                                                    class="ml-2">{{ __('settings.security.current_session') }}</x-ui.badge>
                                                     @endif
                                                 </div>
-                                                <div class="text-sm text-base-content/70">
-                                                    {{ $session['ip_address'] ?? __('common.unknown') }} • {{ $session['last_activity'] }}
+                                                <div class="text-base-content/70 text-sm">
+                                                    {{ $session['ip_address'] ?? __('common.unknown') }} •
+                                                    {{ $session['last_activity'] }}
                                                 </div>
                                             </div>
                                         </div>
 
-                                        @if (! $session['is_current'])
-                                            <x-ui.button
-                                                type="button"
-                                                wire:click="revokeSession('{{ $session['id'] }}')"
-                                                wire:confirm="{{ __('settings.security.revoke_confirm') }}"
-                                                variant="ghost"
-                                                size="sm"
-                                            >
-                                                <x-ui.icon
-                                                    name="x-mark"
-                                                    class="h-4 w-4"
-                                                ></x-ui.icon>
+                                        @if (!$session['is_current'])
+                                            <x-ui.button type="button"
+                                                         wire:click="revokeSession('{{ $session['id'] }}')"
+                                                         wire:confirm="{{ __('settings.security.revoke_confirm') }}"
+                                                         variant="ghost"
+                                                         size="sm">
+                                                <x-ui.icon name="x-mark"
+                                                           class="h-4 w-4"></x-ui.icon>
                                             </x-ui.button>
                                         @endif
                                     </div>
@@ -446,32 +425,26 @@ new class extends BasePageComponent {
                             </div>
                         @empty
                             <div class="alert">
-                                <x-ui.icon
-                                    name="information-circle"
-                                    class="h-5 w-5"
-                                ></x-ui.icon>
+                                <x-ui.icon name="information-circle"
+                                           class="h-5 w-5"></x-ui.icon>
                                 <span>{{ __('settings.security.no_sessions') }}</span>
                             </div>
                         @endforelse
 
                         @if ($this->sessions->count() > 1)
-                            <x-ui.button
-                                type="button"
-                                wire:click="revokeAllOtherSessions"
-                                wire:confirm="{{ __('settings.security.revoke_all_confirm') }}"
-                                variant="error"
-                                class="mt-4"
-                            >
+                            <x-ui.button type="button"
+                                         wire:click="revokeAllOtherSessions"
+                                         wire:confirm="{{ __('settings.security.revoke_all_confirm') }}"
+                                         variant="error"
+                                         class="mt-4">
                                 {{ __('settings.security.revoke_all_button') }}
                             </x-ui.button>
                         @endif
                     </div>
                 @else
                     <div class="alert alert-warning">
-                        <x-ui.icon
-                            name="exclamation-triangle"
-                            class="h-5 w-5"
-                        ></x-ui.icon>
+                        <x-ui.icon name="exclamation-triangle"
+                                   class="h-5 w-5"></x-ui.icon>
                         <span>{{ __('settings.security.sessions_unavailable') }}</span>
                     </div>
                 @endif

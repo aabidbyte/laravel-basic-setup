@@ -198,10 +198,10 @@ test('super admin role bypass works via Gate::before', function () {
 });
 
 test('permission matrix generates correct permission names', function () {
-    $matrix = new \App\Services\Auth\PermissionMatrix();
-    
+    $matrix = new \App\Services\Auth\PermissionMatrix;
+
     $permissionNames = $matrix->getAllPermissionNames();
-    
+
     expect($permissionNames)->toBeArray()
         ->and($permissionNames)->toContain('view users')
         ->and($permissionNames)->toContain('edit roles')
@@ -209,10 +209,10 @@ test('permission matrix generates correct permission names', function () {
 });
 
 test('permission matrix returns correct actions for entity', function () {
-    $matrix = new \App\Services\Auth\PermissionMatrix();
-    
+    $matrix = new \App\Services\Auth\PermissionMatrix;
+
     $userActions = $matrix->getActionsForEntity('users');
-    
+
     expect($userActions)->toBeArray()
         ->and($userActions)->toContain('view')
         ->and($userActions)->toContain('create')
@@ -222,14 +222,14 @@ test('permission matrix returns correct actions for entity', function () {
 });
 
 test('permission matrix correctly identifies entity-action support', function () {
-    $matrix = new \App\Services\Auth\PermissionMatrix();
-    
+    $matrix = new \App\Services\Auth\PermissionMatrix;
+
     // Users support activate
     expect($matrix->entitySupportsAction('users', 'activate'))->toBeTrue();
-    
+
     // Roles do NOT support activate
     expect($matrix->entitySupportsAction('roles', 'activate'))->toBeFalse();
-    
+
     // Telescope only supports access
     expect($matrix->entitySupportsAction('telescope', 'access'))->toBeTrue();
     expect($matrix->entitySupportsAction('telescope', 'edit'))->toBeFalse();

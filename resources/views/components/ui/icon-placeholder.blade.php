@@ -13,8 +13,7 @@
     $sizeClass = $sizeClasses[$size] ?? $sizeClasses['sm'];
 @endphp
 
-<div class="inline-flex items-center justify-center {{ $sizeClass }} {{ $attributes->get('class') }}">
+<div class="{{ $sizeClass }} {{ $attributes->get('class') }} inline-flex items-center justify-center">
     <span
-        class="loading loading-spinner {{ $size === 'xs' ? 'loading-xs' : ($size === 'sm' ? 'loading-sm' : ($size === 'md' ? 'loading-md' : ($size === 'lg' ? 'loading-lg' : 'loading-xl'))) }} text-base-content/30"
-    ></span>
+          class="loading loading-spinner {{ $size === 'xs' ? 'loading-xs' : ($size === 'sm' ? 'loading-sm' : ($size === 'md' ? 'loading-md' : ($size === 'lg' ? 'loading-lg' : 'loading-xl'))) }} text-base-content/30"></span>
 </div>

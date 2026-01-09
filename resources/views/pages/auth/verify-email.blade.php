@@ -7,31 +7,23 @@
         </div>
 
         <div class="flex flex-col items-center justify-between space-y-3">
-            <form
-                method="POST"
-                action="{{ route('verification.send') }}"
-            >
+            <form method="POST"
+                  action="{{ route('verification.send') }}">
                 @csrf
-                <x-ui.button
-                    type="submit"
-                    variant="primary"
-                    class="w-full"
-                >
+                <x-ui.button type="submit"
+                             variant="primary"
+                             class="w-full">
                     {{ __('authentication.verify_email.resend_button') }}
                 </x-ui.button>
             </form>
 
-            <form
-                method="POST"
-                action="{{ route('logout') }}"
-            >
+            <form method="POST"
+                  action="{{ route('logout') }}">
                 @csrf
-                <x-ui.button
-                    type="submit"
-                    variant="ghost"
-                    class="text-sm"
-                    data-test="logout-button"
-                >
+                <x-ui.button type="submit"
+                             variant="ghost"
+                             class="text-sm"
+                             data-test="logout-button">
                     {{ __('actions.logout') }}
                 </x-ui.button>
             </form>

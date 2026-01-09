@@ -8,8 +8,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
-new class extends BasePageComponent
-{
+new class extends BasePageComponent {
     public ?string $pageTitle = 'settings.tabs.account';
 
     public ?string $pageSubtitle = 'settings.account.description';
@@ -115,51 +114,41 @@ new class extends BasePageComponent
         <div class="space-y-8">
             {{-- Profile Section --}}
             <div>
-                <h2 class="text-lg font-semibold text-base-content mb-4">{{ __('settings.profile.title') }}</h2>
-                <x-ui.form
-                    wire:submit="updateProfileInformation"
-                    class="w-full"
-                >
-                    <x-ui.input
-                        type="text"
-                        wire:model="name"
-                        name="name"
-                        :label="__('settings.profile.name_label')"
-                        required
-                        autofocus
-                        autocomplete="name"
-                    ></x-ui.input>
+                <h2 class="text-base-content mb-4 text-lg font-semibold">{{ __('settings.profile.title') }}</h2>
+                <x-ui.form wire:submit="updateProfileInformation"
+                           class="w-full">
+                    <x-ui.input type="text"
+                                wire:model="name"
+                                name="name"
+                                :label="__('settings.profile.name_label')"
+                                required
+                                autofocus
+                                autocomplete="name"></x-ui.input>
 
-                    <x-ui.input
-                        type="email"
-                        wire:model="email"
-                        name="email"
-                        :label="__('settings.profile.email_label')"
-                        required
-                        autocomplete="email"
-                    ></x-ui.input>
+                    <x-ui.input type="email"
+                                wire:model="email"
+                                name="email"
+                                :label="__('settings.profile.email_label')"
+                                required
+                                autocomplete="email"></x-ui.input>
 
                     @if (Auth::user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !Auth::user()->hasVerifiedEmail())
                         <div class="alert alert-info mt-4">
                             <span class="text-sm">
                                 {{ __('settings.profile.email_unverified') }}
-                                <x-ui.button
-                                    type="button"
-                                    wire:click.prevent="resendVerificationNotification"
-                                    style="link"
-                                    color="primary"
-                                    size="sm"
-                                >{{ __('settings.profile.resend_verification') }}</x-ui.button>
+                                <x-ui.button type="button"
+                                             wire:click.prevent="resendVerificationNotification"
+                                             style="link"
+                                             color="primary"
+                                             size="sm">{{ __('settings.profile.resend_verification') }}</x-ui.button>
                             </span>
                         </div>
                     @endif
 
-                    <div class="flex items-center gap-4 mt-4">
-                        <x-ui.button
-                            type="submit"
-                            variant="primary"
-                            data-test="update-profile-button"
-                        >
+                    <div class="mt-4 flex items-center gap-4">
+                        <x-ui.button type="submit"
+                                     variant="primary"
+                                     data-test="update-profile-button">
                             {{ __('actions.save') }}
                         </x-ui.button>
                     </div>
@@ -170,42 +159,32 @@ new class extends BasePageComponent
 
             {{-- Password Section --}}
             <div>
-                <h2 class="text-lg font-semibold text-base-content mb-4">{{ __('settings.password.title') }}</h2>
-                <x-ui.form
-                    wire:submit="updatePassword"
-                    class="w-full"
-                >
-                    <x-ui.password
-                        wire:model="current_password"
-                        name="current_password"
-                        :label="__('settings.password.current_password_label')"
-                        required
-                        autocomplete="current-password"
-                    ></x-ui.password>
+                <h2 class="text-base-content mb-4 text-lg font-semibold">{{ __('settings.password.title') }}</h2>
+                <x-ui.form wire:submit="updatePassword"
+                           class="w-full">
+                    <x-ui.password wire:model="current_password"
+                                   name="current_password"
+                                   :label="__('settings.password.current_password_label')"
+                                   required
+                                   autocomplete="current-password"></x-ui.password>
 
-                    <x-ui.password
-                        wire:model="password"
-                        name="password"
-                        :label="__('settings.password.new_password_label')"
-                        required
-                        autocomplete="new-password"
-                        with-strength-meter
-                    ></x-ui.password>
+                    <x-ui.password wire:model="password"
+                                   name="password"
+                                   :label="__('settings.password.new_password_label')"
+                                   required
+                                   autocomplete="new-password"
+                                   with-strength-meter></x-ui.password>
 
-                    <x-ui.password
-                        wire:model="password_confirmation"
-                        name="password_confirmation"
-                        :label="__('settings.password.confirm_password_label')"
-                        required
-                        autocomplete="new-password"
-                    ></x-ui.password>
+                    <x-ui.password wire:model="password_confirmation"
+                                   name="password_confirmation"
+                                   :label="__('settings.password.confirm_password_label')"
+                                   required
+                                   autocomplete="new-password"></x-ui.password>
 
-                    <div class="flex items-center gap-4 mt-4">
-                        <x-ui.button
-                            type="submit"
-                            variant="primary"
-                            data-test="update-password-button"
-                        >
+                    <div class="mt-4 flex items-center gap-4">
+                        <x-ui.button type="submit"
+                                     variant="primary"
+                                     data-test="update-password-button">
                             {{ __('actions.save') }}
                         </x-ui.button>
                     </div>

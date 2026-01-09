@@ -21,46 +21,33 @@
             @endisset
         </div>
     @endif
-    <div
-        class="relative overflow-visible"
-        x-data="passwordVisibility()"
-    >
-        <input
-            type="password"
-            x-bind:type="showPassword ? 'text' : 'password'"
-            {{ $attributes->merge(['class' => 'input input-bordered w-full pr-10' . ($hasError ? ' input-error' : '')])->except(['label', 'error', 'type']) }}
-            id="{{ $inputId }}"
-        />
-        <button
-            type="button"
-            @click.stop="toggle()"
-            class="absolute right-2 top-1/2 -translate-y-1/2 btn btn-ghost btn-sm btn-circle p-0 h-8 w-8 min-h-0 z-10"
-            :aria-label="showPassword ? 'Hide password' : 'Show password'"
-            tabindex="0"
-        >
-            <span
-                x-show="!showPassword"
-                x-cloak
-            >
-                <x-ui.icon
-                    name="eye"
-                    class="h-5 w-5"
-                ></x-ui.icon>
+    <div class="relative overflow-visible"
+         x-data="passwordVisibility()">
+        <input type="password"
+               x-bind:type="showPassword ? 'text' : 'password'"
+               {{ $attributes->merge(['class' => 'input input-bordered w-full pr-10' . ($hasError ? ' input-error' : '')])->except(['label', 'error', 'type']) }}
+               id="{{ $inputId }}" />
+        <button type="button"
+                @click.stop="toggle()"
+                class="btn btn-ghost btn-sm btn-circle absolute right-2 top-1/2 z-10 h-8 min-h-0 w-8 -translate-y-1/2 p-0"
+                :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                tabindex="0">
+            <span x-show="!showPassword"
+                  x-cloak>
+                <x-ui.icon name="eye"
+                           class="h-5 w-5"></x-ui.icon>
             </span>
-            <span
-                x-show="showPassword"
-                x-cloak
-            >
-                <x-ui.icon
-                    name="eye-slash"
-                    class="h-5 w-5"
-                ></x-ui.icon>
+            <span x-show="showPassword"
+                  x-cloak>
+                <x-ui.icon name="eye-slash"
+                           class="h-5 w-5"></x-ui.icon>
             </span>
         </button>
     </div>
-    <x-ui.input-error :name="$attributes->get('name')" :error="$error" />
+    <x-ui.input-error :name="$attributes->get('name')"
+                      :error="$error" />
 
-    @if($withStrengthMeter ?? false)
+    @if ($withStrengthMeter ?? false)
         <x-ui.password-strength :target-id="$inputId" />
     @endif
 </label>

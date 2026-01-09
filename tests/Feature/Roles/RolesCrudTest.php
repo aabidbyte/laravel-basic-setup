@@ -14,7 +14,7 @@ uses(RefreshDatabase::class);
 test('unauthenticated user cannot access roles pages', function () {
     $this->get(route('roles.index'))->assertRedirect(route('login'));
     $this->get(route('roles.create'))->assertRedirect(route('login'));
-    
+
     $role = Role::create(['name' => 'test-role']);
     $this->get(route('roles.edit', $role->uuid))->assertRedirect(route('login'));
     $this->get(route('roles.show', $role->uuid))->assertRedirect(route('login'));

@@ -1,15 +1,11 @@
-<x-ui.dropdown
-    placement="end"
-    menu
-    menuSize="sm"
-    contentClass="sidebar-user-menus"
->
+<x-ui.dropdown placement="end"
+               menu
+               menuSize="sm"
+               contentClass="sidebar-user-menus">
     <x-slot:trigger>
         <div class="btn btn-ghost btn-circle">
-            <x-ui.avatar
-                :user="Auth::user()"
-                size="sm"
-            ></x-ui.avatar>
+            <x-ui.avatar :user="Auth::user()"
+                         size="sm"></x-ui.avatar>
         </div>
     </x-slot:trigger>
 
@@ -28,15 +24,11 @@
 
     <div class="divider my-1"></div>
     <div class="mx-auto">
-        <form
-            method="POST"
-            action="{{ route('logout') }}"
-        >
+        <form method="POST"
+              action="{{ route('logout') }}">
             @csrf
-            <x-ui.button
-                type="submit"
-                class="w-full"
-            >
+            <x-ui.button type="submit"
+                         class="w-full">
                 {{ __('actions.logout') }}
             </x-ui.button>
         </form>

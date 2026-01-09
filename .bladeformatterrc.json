@@ -1,8 +1,52 @@
 {
   "indentSize": 4,
+
+  "wrapAttributes": "force-aligned",
   "wrapLineLength": 120,
-  "endWithNewline": true,
-  "sortTailwindcssClasses": false,
-  "wrapAttributes": "force-expand-multiline",
-  "forceIndentationOnHtmlElements": true
+  "wrapAttributesMinAttrs": 1,
+
+  "indentInnerHtml": true,
+
+  "endWithNewLine": true,
+  "endOfLine": "LF",
+  "useTabs": false,
+
+  "sortTailwindcssClasses": true,
+  "sortHtmlAttributes": "none",
+
+  "noMultipleEmptyLines": true,
+
+  "noPhpSyntaxCheck": false,
+  "noSingleQuote": false,
+  "noTrailingCommaPhp": false,
+
+  "extraLiners": [
+    "@extends",
+    "@section",
+    "@endsection",
+    "@yield",
+    "@push",
+    "@endpush",
+    "@stack",
+    "@include",
+    "@includeIf",
+    "@includeWhen",
+    "@each",
+    "@component",
+    "@endcomponent",
+    "@slot",
+    "@endslot",
+    "@livewire",
+    "@php",
+    "@endphp",
+    "@once",
+    "@endonce"
+  ],
+
+  "componentPrefix": [
+    "x-",
+    "livewire:"
+  ],
+
+  "phpVersion": "8.4"
 }

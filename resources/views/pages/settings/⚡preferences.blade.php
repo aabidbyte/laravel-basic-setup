@@ -6,8 +6,7 @@ use App\Services\I18nService;
 use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Support\Facades\Auth;
 
-new class extends BasePageComponent
-{
+new class extends BasePageComponent {
     public ?string $pageTitle = 'settings.tabs.preferences';
 
     public ?string $pageSubtitle = 'settings.preferences.description';
@@ -50,9 +49,7 @@ new class extends BasePageComponent
      */
     public function getLocalesProperty(I18nService $i18nService): array
     {
-        return collect($i18nService->getSupportedLocales())
-            ->mapWithKeys(fn ($data, $code) => [$code => $data['native_name'] ?? $code])
-            ->toArray();
+        return collect($i18nService->getSupportedLocales())->mapWithKeys(fn($data, $code) => [$code => $data['native_name'] ?? $code])->toArray();
     }
 
     /**
@@ -97,10 +94,8 @@ new class extends BasePageComponent
 
 <section class="w-full">
     <x-settings.layout>
-        <x-ui.form
-            wire:submit="savePreferences"
-            class="w-full space-y-6"
-        >
+        <x-ui.form wire:submit="savePreferences"
+                   class="w-full space-y-6">
             {{-- Theme Selection --}}
             <div class="form-control w-full">
                 <label class="label">
@@ -108,25 +103,19 @@ new class extends BasePageComponent
                 </label>
                 <div class="flex gap-4">
                     @foreach ($this->themes as $value => $label)
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input
-                                type="radio"
-                                wire:model="theme"
-                                name="theme"
-                                value="{{ $value }}"
-                                class="radio radio-primary"
-                            />
+                        <label class="flex cursor-pointer items-center gap-2">
+                            <input type="radio"
+                                   wire:model="theme"
+                                   name="theme"
+                                   value="{{ $value }}"
+                                   class="radio radio-primary" />
                             <span class="flex items-center gap-2">
                                 @if ($value === 'light')
-                                    <x-ui.icon
-                                        name="sun"
-                                        class="h-5 w-5"
-                                    ></x-ui.icon>
+                                    <x-ui.icon name="sun"
+                                               class="h-5 w-5"></x-ui.icon>
                                 @else
-                                    <x-ui.icon
-                                        name="moon"
-                                        class="h-5 w-5"
-                                    ></x-ui.icon>
+                                    <x-ui.icon name="moon"
+                                               class="h-5 w-5"></x-ui.icon>
                                 @endif
                                 {{ $label }}
                             </span>
@@ -145,10 +134,8 @@ new class extends BasePageComponent
                 <label class="label">
                     <span class="label-text font-medium">{{ __('settings.preferences.locale_label') }}</span>
                 </label>
-                <select
-                    wire:model="locale"
-                    class="select select-bordered w-full"
-                >
+                <select wire:model="locale"
+                        class="select select-bordered w-full">
                     @foreach ($this->locales as $code => $name)
                         <option value="{{ $code }}">{{ $name }}</option>
                     @endforeach
@@ -165,10 +152,8 @@ new class extends BasePageComponent
                 <label class="label">
                     <span class="label-text font-medium">{{ __('settings.preferences.timezone_label') }}</span>
                 </label>
-                <select
-                    wire:model="timezone"
-                    class="select select-bordered w-full"
-                >
+                <select wire:model="timezone"
+                        class="select select-bordered w-full">
                     @foreach ($this->timezones as $tz)
                         <option value="{{ $tz }}">{{ $tz }}</option>
                     @endforeach
@@ -186,11 +171,9 @@ new class extends BasePageComponent
             </div>
 
             <div class="flex items-center gap-4 pt-4">
-                <x-ui.button
-                    type="submit"
-                    variant="primary"
-                    data-test="save-preferences-button"
-                >
+                <x-ui.button type="submit"
+                             variant="primary"
+                             data-test="save-preferences-button">
                     {{ __('actions.save') }}
                 </x-ui.button>
             </div>

@@ -32,11 +32,10 @@
             @endisset
         </div>
     @endif
-    <select
-        {{ $attributes->merge(['class' => 'select select-bordered w-full' . ($hasError ? ' select-error' : '')])->except(['label', 'error', 'options', 'selected', 'placeholder', 'prependEmpty']) }}
-        id="{{ $selectId }}"
-    >
+    <select {{ $attributes->merge(['class' => 'select select-bordered w-full' . ($hasError ? ' select-error' : '')])->except(['label', 'error', 'options', 'selected', 'placeholder', 'prependEmpty']) }}
+            id="{{ $selectId }}">
         {!! render_select_options($options, $selected) !!}
     </select>
-    <x-ui.input-error :name="$attributes->get('name')" :error="$error" />
+    <x-ui.input-error :name="$attributes->get('name')"
+                      :error="$error" />
 </label>

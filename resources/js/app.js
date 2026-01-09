@@ -23,7 +23,7 @@ import InfiniteScroll from './alpine/data/infinite-scroll';
 document.addEventListener('alpine:init', () => {
     window.Alpine.plugin(anchor);
     window.Alpine.plugin(focus);
-    
+
     window.Alpine.data('passwordStrength', passwordStrength);
     window.Alpine.data('infiniteScroll', InfiniteScroll);
 });

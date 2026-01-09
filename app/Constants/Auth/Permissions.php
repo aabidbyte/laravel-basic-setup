@@ -35,6 +35,10 @@ class Permissions
 
     public const GENERATE_ACTIVATION_USERS = 'generate_activation users';
 
+    public const RESTORE_USERS = 'restore users';
+
+    public const FORCE_DELETE_USERS = 'force_delete users';
+
     // Role permissions
     public const VIEW_ROLES = 'view roles';
 
@@ -44,6 +48,10 @@ class Permissions
 
     public const DELETE_ROLES = 'delete roles';
 
+    public const RESTORE_ROLES = 'restore roles';
+
+    public const FORCE_DELETE_ROLES = 'force_delete roles';
+
     // Team permissions
     public const VIEW_TEAMS = 'view teams';
 
@@ -52,6 +60,10 @@ class Permissions
     public const EDIT_TEAMS = 'edit teams';
 
     public const DELETE_TEAMS = 'delete teams';
+
+    public const RESTORE_TEAMS = 'restore teams';
+
+    public const FORCE_DELETE_TEAMS = 'force_delete teams';
 
     // Document permissions
     public const VIEW_DOCUMENTS = 'view documents';
@@ -103,6 +115,10 @@ class Permissions
 
     public const EXPORT_ERROR_LOGS = 'export error_logs';
 
+    public const RESTORE_ERROR_LOGS = 'restore error_logs';
+
+    public const FORCE_DELETE_ERROR_LOGS = 'force_delete error_logs';
+
     // System access permissions
     public const ACCESS_TELESCOPE = 'access telescope';
 
@@ -120,7 +136,7 @@ class Permissions
      */
     public static function all(): array
     {
-        return (new PermissionMatrix())->getAllPermissionNames();
+        return (new PermissionMatrix)->getAllPermissionNames();
     }
 
     /**
@@ -130,7 +146,7 @@ class Permissions
      */
     public static function byEntity(): array
     {
-        return (new PermissionMatrix())->getPermissionsByEntity();
+        return (new PermissionMatrix)->getPermissionsByEntity();
     }
 
     /**
@@ -141,11 +157,11 @@ class Permissions
      */
     public static function forEntity(string $entity): array
     {
-        $matrix = new PermissionMatrix();
+        $matrix = new PermissionMatrix;
 
         return array_map(
             fn (string $action) => $matrix->getPermissionName($entity, $action),
-            $matrix->getActionsForEntity($entity)
+            $matrix->getActionsForEntity($entity),
         );
     }
 
@@ -157,6 +173,6 @@ class Permissions
      */
     public static function make(string $entity, string $action): string
     {
-        return (new PermissionMatrix())->getPermissionName($entity, $action);
+        return (new PermissionMatrix)->getPermissionName($entity, $action);
     }
 }

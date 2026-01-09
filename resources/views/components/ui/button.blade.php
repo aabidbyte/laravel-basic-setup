@@ -88,17 +88,13 @@ $circleClass = $circle ? 'btn-circle' : '';
 @endphp
 
 @if ($href ?? false)
-    <a
-        href="{{ $href }}"
-        {{ $attributes->merge(['class' => trim("btn {$btnClasses}")])->except(['variant', 'style', 'color', 'size', 'type', 'text', 'href']) }}
-    >
+    <a href="{{ $href }}"
+       {{ $attributes->merge(['class' => trim("btn {$btnClasses}")])->except(['variant', 'style', 'color', 'size', 'type', 'text', 'href']) }}>
         {{ $text ?? $slot }}
     </a>
 @else
-    <button
-        type="{{ $type }}"
-        {{ $attributes->merge(['class' => trim("btn {$btnClasses}")])->except(['variant', 'style', 'color', 'size', 'type', 'text']) }}
-    >
+    <button type="{{ $type }}"
+            {{ $attributes->merge(['class' => trim("btn {$btnClasses}")])->except(['variant', 'style', 'color', 'size', 'type', 'text']) }}>
         {{ $text ?? $slot }}
     </button>
 @endif

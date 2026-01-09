@@ -15,10 +15,8 @@
     $positionClass = $positionClasses[$position] ?? 'tooltip-top';
 @endphp
 
-<div
-    class="tooltip {{ $positionClass }}"
-    data-tip="{{ $text }}"
-    {{ $attributes->except(['text', 'position', 'open']) }}
->
+<div class="tooltip {{ $positionClass }}"
+     data-tip="{{ $text }}"
+     {{ $attributes->except(['text', 'position', 'open']) }}>
     {{ $slot }}
 </div>

@@ -1,10 +1,7 @@
 @php
     use App\Constants\Auth\Permissions;
 
-    setPageTitle(
-        __('errors.management.title'),
-        __('errors.management.description'),
-    );
+    setPageTitle(__('errors.management.title'), __('errors.management.description'));
 @endphp
 
 <x-layouts.app>

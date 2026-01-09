@@ -2,12 +2,10 @@
     <tr>
         {{-- Select All Checkbox --}}
         <th class="w-12">
-            <x-ui.checkbox
-                wire:click="toggleSelectAll()"
-                :checked="$datatable->isAllSelected"
-                wire:key="select-all-checkbox-{{ $datatable->isAllSelected ? '1' : '0' }}"
-                size="sm"
-            />
+            <x-ui.checkbox wire:click="toggleSelectAll()"
+                           :checked="$datatable->isAllSelected"
+                           wire:key="select-all-checkbox-{{ $datatable->isAllSelected ? '1' : '0' }}"
+                           size="sm" />
         </th>
 
         {{-- Column Headers --}}
@@ -21,29 +19,23 @@
             @endphp
 
             @if ($column['sortable'])
-                <th
-                    wire:click="sort('{{ $column['field'] }}')"
+                <th wire:click="sort('{{ $column['field'] }}')"
                     style="{{ $columnStyles }}"
                     @class([
                         'cursor-pointer select-none hover:bg-base-200',
                         ...$columnClasses,
-                    ])
-                >
-                    <div class="flex items-center gap-2 justify-between">
+                    ])>
+                    <div class="flex items-center justify-between gap-2">
                         <span class="truncate">{{ $column['label'] }}</span>
                         @if ($datatable->sortBy === $column['field'])
-                            <x-ui.icon
-                                :name="$datatable->sortDirection === 'asc' ? 'chevron-up' : 'chevron-down'"
-                                size="xs"
-                            ></x-ui.icon>
+                            <x-ui.icon :name="$datatable->sortDirection === 'asc' ? 'chevron-up' : 'chevron-down'"
+                                       size="xs"></x-ui.icon>
                         @endif
                     </div>
                 </th>
             @else
-                <th
-                    style="{{ $columnStyles }}"
-                    @class($columnClasses)
-                >
+                <th style="{{ $columnStyles }}"
+                    @class($columnClasses)>
                     <div class="flex items-center gap-2">
                         <span class="truncate">{{ $column['label'] }}</span>
                     </div>
@@ -52,6 +44,6 @@
         @endforeach
 
         {{-- Actions Column --}}
-        <th class="sticky right-0 bg-base-100 z-20 text-end">{{ __('table.actions') }}</th>
+        <th class="bg-base-100 sticky right-0 z-20 text-end">{{ __('table.actions') }}</th>
     </tr>
 </thead>

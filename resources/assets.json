@@ -18,7 +18,8 @@
             "resources/js/datatable.js",
             "resources/js/alpine/data/action-modal.js",
             "resources/js/alpine/data/two-factor-setup.js",
-            "resources/js/alpine/data/two-factor-setup-trigger.js"
+            "resources/js/alpine/data/two-factor-setup-trigger.js",
+            "resources/js/alpine/data/type-confirm-modal.js"
         ],
         "auth": [
             "resources/js/alpine/data/two-factor-challenge.js"

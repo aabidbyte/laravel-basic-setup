@@ -6,37 +6,29 @@
     Child views can use: @click="modalIsOpen = false" to close modal
 --}}
 <div x-data="actionModal()">
-    <x-ui.base-modal
-        open-state="modalIsOpen"
-        use-parent-state="true"
-        :title="$modalType === 'confirm' ? null : ($modalTitle ?? __('table.action_modal_title'))"
-        on-close="$wire.closeModal()"
-        :show-close-button="$modalType !== 'confirm'"
-    >
+    <x-ui.base-modal open-state="modalIsOpen"
+                     use-parent-state="true"
+                     :title="$modalType === 'confirm' ? null : ($modalTitle ?? __('table.action_modal_title'))"
+                     on-close="$wire.closeModal()"
+                     :show-close-button="$modalType !== 'confirm'">
 
         {{-- Loading State --}}
-        <div
-            x-show="isLoading"
-            x-cloak
-        >
+        <div x-show="isLoading"
+             x-cloak>
             <x-ui.loading></x-ui.loading>
         </div>
 
         {{-- Content (always rendered by Blade, visibility toggled by Alpine) --}}
-        <div
-            x-show="!isLoading"
-            x-cloak
-            wire:loading.class="opacity-50"
-        >
+        <div x-show="!isLoading"
+             x-cloak
+             wire:loading.class="opacity-50">
             @if ($isOpen && $modalView)
                 @if ($modalType === 'blade')
                     @include($modalView, $modalProps)
                 @else
-                    <livewire:is
-                        :component="$modalView"
-                        v-bind="$modalProps"
-                        :key="'modal-' . $modalView . '-' . uniqid()"
-                    />
+                    <livewire:is :component="$modalView"
+                                 v-bind="$modalProps"
+                                 :key="'modal-' . $modalView . '-' . uniqid()" />
                 @endif
             @endif
         </div>

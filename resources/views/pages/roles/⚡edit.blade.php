@@ -32,13 +32,13 @@ new class extends BasePageComponent {
     public function mount(Role $role): void
     {
         $this->authorize(Permissions::EDIT_ROLES);
-        
+
         $this->roleUuid = $role->uuid;
         $this->name = $role->name;
         $this->display_name = $role->display_name;
         $this->description = $role->description;
         $this->selectedPermissions = $role->permissions->pluck('id')->toArray();
-        
+
         $this->pageSubtitle = __('pages.common.edit.description', ['type' => __('types.role')]);
     }
 
@@ -92,7 +92,7 @@ new class extends BasePageComponent {
 
         $role = $this->getRole();
 
-        if (! $role) {
+        if (!$role) {
             NotificationBuilder::make()
                 ->title('pages.common.not_found', ['type' => __('types.role')])
                 ->error()
@@ -127,84 +127,62 @@ new class extends BasePageComponent {
     }
 }; ?>
 
-<section class="w-full max-w-4xl mx-auto">
+<section class="mx-auto w-full max-w-4xl">
     <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
-            <x-ui.title
-                level="2"
-                class="mb-6"
-            >{{ $this->getPageTitle() }}</x-ui.title>
+            <x-ui.title level="2"
+                        class="mb-6">{{ $this->getPageTitle() }}</x-ui.title>
 
-            <x-ui.form
-                wire:submit="updateRole"
-                class="space-y-6"
-            >
+            <x-ui.form wire:submit="updateRole"
+                       class="space-y-6">
                 {{-- Basic Information --}}
                 <div class="space-y-4">
-                    <x-ui.title
-                        level="3"
-                        class="text-base-content/70"
-                    >{{ __('roles.edit.basic_info') }}</x-ui.title>
+                    <x-ui.title level="3"
+                                class="text-base-content/70">{{ __('roles.edit.basic_info') }}</x-ui.title>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <x-ui.input
-                            type="text"
-                            wire:model="name"
-                            name="name"
-                            :label="__('roles.name')"
-                            required
-                            autofocus
-                        ></x-ui.input>
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <x-ui.input type="text"
+                                    wire:model="name"
+                                    name="name"
+                                    :label="__('roles.name')"
+                                    required
+                                    autofocus></x-ui.input>
 
-                        <x-ui.input
-                            type="text"
-                            wire:model="display_name"
-                            name="display_name"
-                            :label="__('roles.display_name')"
-                        ></x-ui.input>
+                        <x-ui.input type="text"
+                                    wire:model="display_name"
+                                    name="display_name"
+                                    :label="__('roles.display_name')"></x-ui.input>
                     </div>
 
-                    <x-ui.input
-                        type="textarea"
-                        wire:model="description"
-                        name="description"
-                        :label="__('roles.description')"
-                        rows="3"
-                    ></x-ui.input>
+                    <x-ui.input type="textarea"
+                                wire:model="description"
+                                name="description"
+                                :label="__('roles.description')"
+                                rows="3"></x-ui.input>
                 </div>
 
                 {{-- Permissions --}}
                 <div class="divider"></div>
                 <div class="space-y-4">
-                    <x-ui.title
-                        level="3"
-                        class="text-base-content/70"
-                    >{{ __('roles.permissions') }}</x-ui.title>
+                    <x-ui.title level="3"
+                                class="text-base-content/70">{{ __('roles.permissions') }}</x-ui.title>
 
-                    <x-ui.permission-matrix
-                        :permissions="$this->permissions"
-                        :selectedPermissions="$selectedPermissions"
-                        wireModel="selectedPermissions"
-                    ></x-ui.permission-matrix>
+                    <x-ui.permission-matrix :permissions="$this->permissions"
+                                            :selectedPermissions="$selectedPermissions"
+                                            wireModel="selectedPermissions"></x-ui.permission-matrix>
                 </div>
 
                 {{-- Submit --}}
                 <div class="divider"></div>
                 <div class="flex justify-end gap-4">
-                    <x-ui.button
-                        href="{{ route('roles.show', $roleUuid) }}"
-                        style="ghost"
-                        wire:navigate
-                    >{{ __('actions.cancel') }}</x-ui.button>
-                    <x-ui.button
-                        type="submit"
-                        variant="primary"
-                    >
-                        <x-ui.loading
-                            wire:loading
-                            wire:target="updateRole"
-                            size="sm"
-                        ></x-ui.loading>
+                    <x-ui.button href="{{ route('roles.show', $roleUuid) }}"
+                                 style="ghost"
+                                 wire:navigate>{{ __('actions.cancel') }}</x-ui.button>
+                    <x-ui.button type="submit"
+                                 variant="primary">
+                        <x-ui.loading wire:loading
+                                      wire:target="updateRole"
+                                      size="sm"></x-ui.loading>
                         {{ __('pages.common.edit.submit', ['type' => __('types.role')]) }}
                     </x-ui.button>
                 </div>

@@ -118,17 +118,19 @@ new class extends BasePageComponent {
         ];
 
         // Only update password if provided
-        if (! empty($this->password)) {
+        if (!empty($this->password)) {
             $data['password'] = $this->password;
         }
 
         if ($settings) {
             $settings->update($data);
         } else {
-            $user->mailSettings()->create(array_merge($data, [
-                'settable_type' => get_class($user),
-                'settable_id' => $user->id,
-            ]));
+            $user->mailSettings()->create(
+                array_merge($data, [
+                    'settable_type' => get_class($user),
+                    'settable_id' => $user->id,
+                ]),
+            );
             $this->hasExistingSettings = true;
         }
 
@@ -151,18 +153,15 @@ new class extends BasePageComponent {
                 'host' => $this->host,
                 'port' => $this->port,
                 'username' => $this->username,
-                'password' => $this->password ?: (MailSettings::getForUser(Auth::user())?->password ?? ''),
+                'password' => $this->password ?: MailSettings::getForUser(Auth::user())?->password ?? '',
                 'encryption' => $this->encryption ?: null,
             ];
 
             // For SMTP, try to connect
-            if ($this->provider === 'smtp' && ! empty($this->host)) {
-                $transport = new \Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport(
-                    $this->host,
-                    $this->port ?? 587
-                );
+            if ($this->provider === 'smtp' && !empty($this->host)) {
+                $transport = new \Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport($this->host, $this->port ?? 587);
 
-                if (! empty($this->username)) {
+                if (!empty($this->username)) {
                     $transport->setUsername($this->username);
                     $transport->setPassword($config['password']);
                 }
@@ -174,11 +173,7 @@ new class extends BasePageComponent {
 
             NotificationBuilder::make()->title('settings.mail.test_success')->success()->send();
         } catch (\Exception $e) {
-            NotificationBuilder::make()
-                ->title('settings.mail.test_failed')
-                ->subtitle($e->getMessage())
-                ->error()
-                ->send();
+            NotificationBuilder::make()->title('settings.mail.test_failed')->subtitle($e->getMessage())->error()->send();
         }
     }
 
@@ -207,19 +202,15 @@ new class extends BasePageComponent {
 
 <section class="w-full">
     <x-settings.layout>
-        <x-ui.form
-            wire:submit="saveSettings"
-            class="w-full space-y-6"
-        >
+        <x-ui.form wire:submit="saveSettings"
+                   class="w-full space-y-6">
             {{-- Provider Selection --}}
             <div class="form-control w-full">
                 <label class="label">
                     <span class="label-text font-medium">{{ __('settings.mail.provider_label') }}</span>
                 </label>
-                <select
-                    wire:model.live="provider"
-                    class="select select-bordered w-full"
-                >
+                <select wire:model.live="provider"
+                        class="select select-bordered w-full">
                     @foreach ($this->providers as $value => $label)
                         <option value="{{ $value }}">{{ $label }}</option>
                     @endforeach
@@ -228,52 +219,42 @@ new class extends BasePageComponent {
 
             {{-- SMTP Settings (only shown for SMTP provider) --}}
             @if ($provider === 'smtp')
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <x-ui.input
-                        type="text"
-                        wire:model="host"
-                        name="host"
-                        :label="__('settings.mail.host_label')"
-                        placeholder="smtp.example.com"
-                        required
-                    ></x-ui.input>
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <x-ui.input type="text"
+                                wire:model="host"
+                                name="host"
+                                :label="__('settings.mail.host_label')"
+                                placeholder="smtp.example.com"
+                                required></x-ui.input>
 
-                    <x-ui.input
-                        type="number"
-                        wire:model="port"
-                        name="port"
-                        :label="__('settings.mail.port_label')"
-                        placeholder="587"
-                        min="1"
-                        max="65535"
-                        required
-                    ></x-ui.input>
+                    <x-ui.input type="number"
+                                wire:model="port"
+                                name="port"
+                                :label="__('settings.mail.port_label')"
+                                placeholder="587"
+                                min="1"
+                                max="65535"
+                                required></x-ui.input>
 
-                    <x-ui.input
-                        type="text"
-                        wire:model="username"
-                        name="username"
-                        :label="__('settings.mail.username_label')"
-                        autocomplete="username"
-                    ></x-ui.input>
+                    <x-ui.input type="text"
+                                wire:model="username"
+                                name="username"
+                                :label="__('settings.mail.username_label')"
+                                autocomplete="username"></x-ui.input>
 
-                    <x-ui.password
-                        wire:model="password"
-                        name="password"
-                        :label="__('settings.mail.password_label')"
-                        :placeholder="$hasExistingSettings ? __('settings.mail.password_placeholder') : ''"
-                        autocomplete="new-password"
-                    ></x-ui.password>
+                    <x-ui.password wire:model="password"
+                                   name="password"
+                                   :label="__('settings.mail.password_label')"
+                                   :placeholder="$hasExistingSettings ? __('settings.mail.password_placeholder') : ''"
+                                   autocomplete="new-password"></x-ui.password>
                 </div>
 
                 <div class="form-control w-full">
                     <label class="label">
                         <span class="label-text font-medium">{{ __('settings.mail.encryption_label') }}</span>
                     </label>
-                    <select
-                        wire:model="encryption"
-                        class="select select-bordered w-full"
-                    >
+                    <select wire:model="encryption"
+                            class="select select-bordered w-full">
                         @foreach ($this->encryptionOptions as $value => $label)
                             <option value="{{ $value }}">{{ $label }}</option>
                         @endforeach
@@ -284,71 +265,57 @@ new class extends BasePageComponent {
             <div class="divider"></div>
 
             {{-- From Address Settings --}}
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <x-ui.input
-                    type="email"
-                    wire:model="fromAddress"
-                    name="fromAddress"
-                    :label="__('settings.mail.from_address_label')"
-                    placeholder="noreply@example.com"
-                    required
-                ></x-ui.input>
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <x-ui.input type="email"
+                            wire:model="fromAddress"
+                            name="fromAddress"
+                            :label="__('settings.mail.from_address_label')"
+                            placeholder="noreply@example.com"
+                            required></x-ui.input>
 
-                <x-ui.input
-                    type="text"
-                    wire:model="fromName"
-                    name="fromName"
-                    :label="__('settings.mail.from_name_label')"
-                    :placeholder="config('app.name')"
-                    required
-                ></x-ui.input>
+                <x-ui.input type="text"
+                            wire:model="fromName"
+                            name="fromName"
+                            :label="__('settings.mail.from_name_label')"
+                            :placeholder="config('app.name')"
+                            required></x-ui.input>
             </div>
 
             {{-- Active Toggle --}}
             <div class="form-control">
                 <label class="label cursor-pointer justify-start gap-4">
-                    <input
-                        type="checkbox"
-                        wire:model="isActive"
-                        class="toggle toggle-primary"
-                    />
+                    <input type="checkbox"
+                           wire:model="isActive"
+                           class="toggle toggle-primary" />
                     <div>
                         <span class="label-text font-medium">{{ __('settings.mail.active_label') }}</span>
-                        <p class="text-sm text-base-content/70">{{ __('settings.mail.active_help') }}</p>
+                        <p class="text-base-content/70 text-sm">{{ __('settings.mail.active_help') }}</p>
                     </div>
                 </label>
             </div>
 
             {{-- Actions --}}
             <div class="flex flex-wrap items-center gap-4 pt-4">
-                <x-ui.button
-                    type="submit"
-                    variant="primary"
-                    data-test="save-mail-settings-button"
-                >
+                <x-ui.button type="submit"
+                             variant="primary"
+                             data-test="save-mail-settings-button">
                     {{ __('actions.save') }}
                 </x-ui.button>
 
-                <x-ui.button
-                    type="button"
-                    wire:click="testConnection"
-                    variant="secondary"
-                >
-                    <x-ui.icon
-                        name="paper-airplane"
-                        class="h-4 w-4"
-                    ></x-ui.icon>
+                <x-ui.button type="button"
+                             wire:click="testConnection"
+                             variant="secondary">
+                    <x-ui.icon name="paper-airplane"
+                               class="h-4 w-4"></x-ui.icon>
                     {{ __('settings.mail.test_button') }}
                 </x-ui.button>
 
                 @if ($hasExistingSettings)
-                    <x-ui.button
-                        type="button"
-                        wire:click="deleteSettings"
-                        wire:confirm="{{ __('settings.mail.delete_confirm') }}"
-                        variant="error"
-                        style="outline"
-                    >
+                    <x-ui.button type="button"
+                                 wire:click="deleteSettings"
+                                 wire:confirm="{{ __('settings.mail.delete_confirm') }}"
+                                 variant="error"
+                                 style="outline">
                         {{ __('actions.delete') }}
                     </x-ui.button>
                 @endif

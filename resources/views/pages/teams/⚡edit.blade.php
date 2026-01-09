@@ -27,11 +27,11 @@ new class extends BasePageComponent {
     public function mount(Team $team): void
     {
         $this->authorize(Permissions::EDIT_TEAMS);
-        
+
         $this->teamUuid = $team->uuid;
         $this->name = $team->name;
         $this->description = $team->description;
-        
+
         $this->pageSubtitle = __('pages.common.edit.description', ['type' => __('types.team')]);
     }
 
@@ -72,7 +72,7 @@ new class extends BasePageComponent {
 
         $team = $this->getTeam();
 
-        if (! $team) {
+        if (!$team) {
             NotificationBuilder::make()
                 ->title('pages.common.not_found', ['type' => __('types.team')])
                 ->error()
@@ -104,60 +104,44 @@ new class extends BasePageComponent {
     }
 }; ?>
 
-<section class="w-full max-w-4xl mx-auto">
+<section class="mx-auto w-full max-w-4xl">
     <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
-            <x-ui.title
-                level="2"
-                class="mb-6"
-            >{{ $this->getPageTitle() }}</x-ui.title>
+            <x-ui.title level="2"
+                        class="mb-6">{{ $this->getPageTitle() }}</x-ui.title>
 
-            <x-ui.form
-                wire:submit="updateTeam"
-                class="space-y-6"
-            >
+            <x-ui.form wire:submit="updateTeam"
+                       class="space-y-6">
                 {{-- Basic Information --}}
                 <div class="space-y-4">
-                    <x-ui.title
-                        level="3"
-                        class="text-base-content/70"
-                    >{{ __('teams.edit.basic_info') }}</x-ui.title>
+                    <x-ui.title level="3"
+                                class="text-base-content/70">{{ __('teams.edit.basic_info') }}</x-ui.title>
 
-                    <x-ui.input
-                        type="text"
-                        wire:model="name"
-                        name="name"
-                        :label="__('teams.name')"
-                        required
-                        autofocus
-                    ></x-ui.input>
+                    <x-ui.input type="text"
+                                wire:model="name"
+                                name="name"
+                                :label="__('teams.name')"
+                                required
+                                autofocus></x-ui.input>
 
-                    <x-ui.input
-                        type="textarea"
-                        wire:model="description"
-                        name="description"
-                        :label="__('teams.description')"
-                        rows="3"
-                    ></x-ui.input>
+                    <x-ui.input type="textarea"
+                                wire:model="description"
+                                name="description"
+                                :label="__('teams.description')"
+                                rows="3"></x-ui.input>
                 </div>
 
                 {{-- Submit --}}
                 <div class="divider"></div>
                 <div class="flex justify-end gap-4">
-                    <x-ui.button
-                        href="{{ route('teams.show', $teamUuid) }}"
-                        style="ghost"
-                        wire:navigate
-                    >{{ __('actions.cancel') }}</x-ui.button>
-                    <x-ui.button
-                        type="submit"
-                        variant="primary"
-                    >
-                        <x-ui.loading
-                            wire:loading
-                            wire:target="updateTeam"
-                            size="sm"
-                        ></x-ui.loading>
+                    <x-ui.button href="{{ route('teams.show', $teamUuid) }}"
+                                 style="ghost"
+                                 wire:navigate>{{ __('actions.cancel') }}</x-ui.button>
+                    <x-ui.button type="submit"
+                                 variant="primary">
+                        <x-ui.loading wire:loading
+                                      wire:target="updateTeam"
+                                      size="sm"></x-ui.loading>
                         {{ __('pages.common.edit.submit', ['type' => __('types.team')]) }}
                     </x-ui.button>
                 </div>

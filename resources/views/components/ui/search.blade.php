@@ -22,17 +22,14 @@
         </div>
     @endif
     <div class="relative">
-        <div class="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none z-10">
-            <x-ui.icon
-                name="magnifying-glass"
-                size="sm"
-                class="text-base-content opacity-50"
-            />
+        <div class="pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center pl-2">
+            <x-ui.icon name="magnifying-glass"
+                       size="sm"
+                       class="text-base-content opacity-50" />
         </div>
-        <input
-            {{ $attributes->merge(['class' => 'input input-bordered w-full pl-10' . ($hasError ? ' input-error' : '')])->except(['label', 'error']) }}
-            id="{{ $inputId }}"
-        />
+        <input {{ $attributes->merge(['class' => 'input input-bordered w-full pl-10' . ($hasError ? ' input-error' : '')])->except(['label', 'error']) }}
+               id="{{ $inputId }}" />
     </div>
-    <x-ui.input-error :name="$attributes->get('name')" :error="$error" />
+    <x-ui.input-error :name="$attributes->get('name')"
+                      :error="$error" />
 </label>

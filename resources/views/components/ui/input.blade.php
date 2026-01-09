@@ -21,9 +21,8 @@
             @endisset
         </div>
     @endif
-    <input
-        {{ $attributes->merge(['class' => 'input input-bordered w-full' . ($hasError ? ' input-error' : '')])->except(['label', 'error']) }}
-        id="{{ $inputId }}"
-    />
-    <x-ui.input-error :name="$attributes->get('name')" :error="$error" />
+    <input {{ $attributes->merge(['class' => 'input input-bordered w-full' . ($hasError ? ' input-error' : '')])->except(['label', 'error']) }}
+           id="{{ $inputId }}" />
+    <x-ui.input-error :name="$attributes->get('name')"
+                      :error="$error" />
 </label>

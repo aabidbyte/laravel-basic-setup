@@ -157,11 +157,9 @@ new class extends LivewireBaseComponent {
     }
 }; ?>
 
-<div
-    x-data="notificationDropdownContent($wire)"
-    x-on:notifications-changed.window="$wire.$refresh()"
-    wire:key="notification-dropdown-content-{{ Auth::user()?->uuid ?? 'guest' }}"
->
+<div x-data="notificationDropdownContent($wire)"
+     x-on:notifications-changed.window="$wire.$refresh()"
+     wire:key="notification-dropdown-content-{{ Auth::user()?->uuid ?? 'guest' }}">
     <div class="menu-title">
         <span>{{ __('notifications.dropdown.title') }}</span>
     </div>
@@ -170,79 +168,63 @@ new class extends LivewireBaseComponent {
         <div>
             @if ($notification['hasLink'])
                 @if ($notification['markAsReadAction'])
-                    <a
-                        href="{{ $notification['link'] }}"
-                        class="{{ $notification['wrapperClass'] }}"
-                        wire:navigate
-                        wire:click="{{ $notification['markAsReadAction'] }}"
-                    >
-                        <x-notifications.notification-item
-                            :iconName="$notification['iconName']"
-                            :iconClass="$notification['iconClass']"
-                            :title="$notification['title']"
-                            :subtitle="$notification['subtitle']"
-                            :createdAt="$notification['createdAt']"
-                            :isRead="$notification['isRead']"
-                        ></x-notifications.notification-item>
+                    <a href="{{ $notification['link'] }}"
+                       class="{{ $notification['wrapperClass'] }}"
+                       wire:navigate
+                       wire:click="{{ $notification['markAsReadAction'] }}">
+                        <x-notifications.notification-item :iconName="$notification['iconName']"
+                                                           :iconClass="$notification['iconClass']"
+                                                           :title="$notification['title']"
+                                                           :subtitle="$notification['subtitle']"
+                                                           :createdAt="$notification['createdAt']"
+                                                           :isRead="$notification['isRead']"></x-notifications.notification-item>
                     </a>
                 @else
-                    <a
-                        href="{{ $notification['link'] }}"
-                        class="{{ $notification['wrapperClass'] }}"
-                        wire:navigate
-                    >
-                        <x-notifications.notification-item
-                            :iconName="$notification['iconName']"
-                            :iconClass="$notification['iconClass']"
-                            :title="$notification['title']"
-                            :subtitle="$notification['subtitle']"
-                            :createdAt="$notification['createdAt']"
-                            :isRead="$notification['isRead']"
-                        ></x-notifications.notification-item>
+                    <a href="{{ $notification['link'] }}"
+                       class="{{ $notification['wrapperClass'] }}"
+                       wire:navigate>
+                        <x-notifications.notification-item :iconName="$notification['iconName']"
+                                                           :iconClass="$notification['iconClass']"
+                                                           :title="$notification['title']"
+                                                           :subtitle="$notification['subtitle']"
+                                                           :createdAt="$notification['createdAt']"
+                                                           :isRead="$notification['isRead']"></x-notifications.notification-item>
                     </a>
                 @endif
             @else
                 @if ($notification['markAsReadAction'])
-                    <div
-                        class="{{ $notification['wrapperClass'] }}"
-                        wire:click="{{ $notification['markAsReadAction'] }}"
-                    >
-                        <x-notifications.notification-item
-                            :iconName="$notification['iconName']"
-                            :iconClass="$notification['iconClass']"
-                            :title="$notification['title']"
-                            :subtitle="$notification['subtitle']"
-                            :createdAt="$notification['createdAt']"
-                            :isRead="$notification['isRead']"
-                        ></x-notifications.notification-item>
+                    <div class="{{ $notification['wrapperClass'] }}"
+                         wire:click="{{ $notification['markAsReadAction'] }}">
+                        <x-notifications.notification-item :iconName="$notification['iconName']"
+                                                           :iconClass="$notification['iconClass']"
+                                                           :title="$notification['title']"
+                                                           :subtitle="$notification['subtitle']"
+                                                           :createdAt="$notification['createdAt']"
+                                                           :isRead="$notification['isRead']"></x-notifications.notification-item>
                     </div>
                 @else
                     <div class="{{ $notification['wrapperClass'] }}">
-                        <x-notifications.notification-item
-                            :iconName="$notification['iconName']"
-                            :iconClass="$notification['iconClass']"
-                            :title="$notification['title']"
-                            :subtitle="$notification['subtitle']"
-                            :createdAt="$notification['createdAt']"
-                            :isRead="$notification['isRead']"
-                        ></x-notifications.notification-item>
+                        <x-notifications.notification-item :iconName="$notification['iconName']"
+                                                           :iconClass="$notification['iconClass']"
+                                                           :title="$notification['title']"
+                                                           :subtitle="$notification['subtitle']"
+                                                           :createdAt="$notification['createdAt']"
+                                                           :isRead="$notification['isRead']"></x-notifications.notification-item>
                     </div>
                 @endif
             @endif
         </div>
     @empty
-        <div class="text-center py-4 text-sm opacity-60">
+        <div class="py-4 text-center text-sm opacity-60">
             {{ __('notifications.empty') }}
         </div>
     @endforelse
 
     <div class="divider my-1"></div>
 
-    <x-ui.button
-        href="{{ route('notifications.index') }}"
-        wire:navigate
-        class="text-center"
-    >
+    <x-ui.button href="{{ route('notifications.index') }}"
+                 wire:navigate
+                 class="text-center">
         {{ __('notifications.view_all') }}
     </x-ui.button>
 </div>

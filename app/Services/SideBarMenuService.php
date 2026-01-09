@@ -99,6 +99,37 @@ class SideBarMenuService
                             ->icon('exclamation-triangle')
                             ->show(Auth::user()?->can(Permissions::VIEW_ERROR_LOGS) ?? false),
                     ),
+
+                // Trashed items group (collapsible)
+                NavigationItem::make()
+                    ->title(__('navigation.trashed'))
+                    ->icon('trash')
+                    ->show($this->hasAnyTrashPermission())
+                    ->items(
+                        NavigationItem::make()
+                            ->title(__('types.users'))
+                            ->route('trash.index', ['entityType' => 'users'])
+                            ->active(fn () => request()->route('entityType') === 'users' && request()->routeIs('trash.*'))
+                            ->show(Auth::user()?->can(Permissions::VIEW_USERS) ?? false),
+
+                        NavigationItem::make()
+                            ->title(__('types.roles'))
+                            ->route('trash.index', ['entityType' => 'roles'])
+                            ->active(fn () => request()->route('entityType') === 'roles' && request()->routeIs('trash.*'))
+                            ->show(Auth::user()?->can(Permissions::VIEW_ROLES) ?? false),
+
+                        NavigationItem::make()
+                            ->title(__('types.teams'))
+                            ->route('trash.index', ['entityType' => 'teams'])
+                            ->active(fn () => request()->route('entityType') === 'teams' && request()->routeIs('trash.*'))
+                            ->show(Auth::user()?->can(Permissions::VIEW_TEAMS) ?? false),
+
+                        NavigationItem::make()
+                            ->title(__('types.error_logs'))
+                            ->route('trash.index', ['entityType' => 'error-logs'])
+                            ->active(fn () => request()->route('entityType') === 'error-logs' && request()->routeIs('trash.*'))
+                            ->show(Auth::user()?->can(Permissions::VIEW_ERROR_LOGS) ?? false),
+                    ),
             )
             ->toArray();
     }
@@ -118,5 +149,21 @@ class SideBarMenuService
                     ->route('settings.account'),
             )
             ->toArray();
+    }
+
+    /**
+     * Check if the current user has any trash-related permissions.
+     */
+    protected function hasAnyTrashPermission(): bool
+    {
+        $user = Auth::user();
+        if (! $user) {
+            return false;
+        }
+
+        return $user->can(Permissions::VIEW_USERS)
+            || $user->can(Permissions::VIEW_ROLES)
+            || $user->can(Permissions::VIEW_TEAMS)
+            || $user->can(Permissions::VIEW_ERROR_LOGS);
     }
 }

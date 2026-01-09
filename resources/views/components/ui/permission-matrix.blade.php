@@ -31,14 +31,14 @@
 @endphp
 
 <div class="permission-matrix-container overflow-x-auto">
-    <table class="table table-zebra table-compact w-full">
+    <table class="table-zebra table-compact table w-full">
         <thead>
             <tr>
                 <th class="bg-base-200 sticky left-0 z-10 min-w-48">
                     {{ __('permissions.entities.users') ? __('permissions.matrix.title') : 'Permission Matrix' }}
                 </th>
                 @foreach ($allActions as $action)
-                    <th class="text-center bg-base-200 px-2 min-w-20">
+                    <th class="bg-base-200 min-w-20 px-2 text-center">
                         <div class="flex flex-col items-center gap-1">
                             <span class="text-xs font-medium">
                                 {{ PermissionAction::getLabel($action) }}
@@ -51,7 +51,7 @@
         <tbody>
             @foreach ($matrixData as $entity => $supportedActions)
                 <tr class="hover">
-                    <td class="font-medium bg-base-100 sticky left-0 z-10">
+                    <td class="bg-base-100 sticky left-0 z-10 font-medium">
                         <div class="flex items-center gap-2">
                             <span>{{ PermissionEntity::getLabel($entity) }}</span>
                         </div>
@@ -64,35 +64,27 @@
                             $permissionId = $permission?->id;
                             $isChecked = $permissionId && in_array($permissionId, $selectedPermissions, false);
                         @endphp
-                        <td class="text-center px-2">
+                        <td class="px-2 text-center">
                             @if ($isSupported && $permission)
                                 @if ($readonly)
                                     @if ($isChecked)
-                                        <x-ui.icon
-                                            name="check-circle"
-                                            class="w-5 h-5 text-success"
-                                        ></x-ui.icon>
+                                        <x-ui.icon name="check-circle"
+                                                   class="text-success h-5 w-5"></x-ui.icon>
                                     @else
-                                        <x-ui.icon
-                                            name="x-circle"
-                                            class="w-5 h-5 text-base-content/30"
-                                        ></x-ui.icon>
+                                        <x-ui.icon name="x-circle"
+                                                   class="text-base-content/30 h-5 w-5"></x-ui.icon>
                                     @endif
                                 @else
-                                    <input
-                                        type="checkbox"
-                                        class="checkbox checkbox-sm checkbox-primary"
-                                        value="{{ $permissionId }}"
-                                        @if ($wireModel) wire:model="{{ $wireModel }}" @endif
-                                        @if ($isChecked) checked @endif
-                                        title="{{ $permission->display_name ?? $permissionName }}"
-                                    />
+                                    <input type="checkbox"
+                                           class="checkbox checkbox-sm checkbox-primary"
+                                           value="{{ $permissionId }}"
+                                           @if ($wireModel) wire:model="{{ $wireModel }}" @endif
+                                           @if ($isChecked) checked @endif
+                                           title="{{ $permission->display_name ?? $permissionName }}" />
                                 @endif
                             @else
-                                <span
-                                    class="inline-block w-5 h-5 text-base-content/20"
-                                    title="{{ __('Not applicable') }}"
-                                >
+                                <span class="text-base-content/20 inline-block h-5 w-5"
+                                      title="{{ __('Not applicable') }}">
                                     —
                                 </span>
                             @endif

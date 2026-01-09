@@ -27,20 +27,16 @@
 
 <div class="flex flex-col gap-4 sm:gap-6">
     {{-- Top Row: Back Button + Actions --}}
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <div>
             @if ($backHref)
-                <x-ui.button
-                    href="{{ $backHref }}"
-                    wire:navigate
-                    variant="ghost"
-                    size="sm"
-                    class="gap-2"
-                >
-                    <x-ui.icon
-                        name="arrow-left"
-                        size="sm"
-                    ></x-ui.icon>
+                <x-ui.button href="{{ $backHref }}"
+                             wire:navigate
+                             variant="ghost"
+                             size="sm"
+                             class="gap-2">
+                    <x-ui.icon name="arrow-left"
+                               size="sm"></x-ui.icon>
                     <span class="hidden sm:inline">{{ $backLabel }}</span>
                 </x-ui.button>
             @endif
@@ -61,22 +57,18 @@
     {{-- Bottom Row: Back Button + Actions (Optional) --}}
     @if ($showBottomBar || isset($bottomActions) || isset($bottomLeft))
         <div
-            class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 pt-4 border-t border-base-300">
+             class="border-base-300 flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <div>
                 @if (isset($bottomLeft))
                     {{ $bottomLeft }}
                 @elseif($backHref)
-                    <x-ui.button
-                        href="{{ $backHref }}"
-                        wire:navigate
-                        variant="ghost"
-                        size="sm"
-                        class="gap-2"
-                    >
-                        <x-ui.icon
-                            name="arrow-left"
-                            size="sm"
-                        ></x-ui.icon>
+                    <x-ui.button href="{{ $backHref }}"
+                                 wire:navigate
+                                 variant="ghost"
+                                 size="sm"
+                                 class="gap-2">
+                        <x-ui.icon name="arrow-left"
+                                   size="sm"></x-ui.icon>
                         <span class="hidden sm:inline">{{ $backLabel }}</span>
                     </x-ui.button>
                 @endif

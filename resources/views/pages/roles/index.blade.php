@@ -11,16 +11,12 @@
     <x-layouts.page backHref="{{ route('dashboard') }}">
         <x-slot:topActions>
             @can(Permissions::CREATE_ROLES)
-                <x-ui.button
-                    href="{{ route('roles.create') }}"
-                    wire:navigate
-                    color="primary"
-                    class="gap-2"
-                >
-                    <x-ui.icon
-                        name="plus"
-                        size="sm"
-                    ></x-ui.icon>
+                <x-ui.button href="{{ route('roles.create') }}"
+                             wire:navigate
+                             color="primary"
+                             class="gap-2">
+                    <x-ui.icon name="plus"
+                               size="sm"></x-ui.icon>
                     {{ __('pages.common.create.title', ['type' => __('types.role')]) }}
                 </x-ui.button>
             @endcan

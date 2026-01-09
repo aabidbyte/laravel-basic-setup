@@ -19,22 +19,16 @@
         {{-- Table with Loading Overlay --}}
         <div class="relative overflow-x-auto">
             {{-- Loading Overlay - uses wire:loading.flex to ensure display:flex when shown --}}
-            <div
-                wire:loading.flex.delay.shortest
-                wire:target="sort, search, filters, perPage, gotoPage, previousPage, nextPage, toggleSelectAll, selected"
-                class="absolute inset-0 bg-base-100/50 z-50 items-center justify-center backdrop-blur-[1px] hidden"
-            >
-                <x-ui.loading
-                    size="md"
-                    :centered="false"
-                ></x-ui.loading>
+            <div wire:loading.flex.delay.shortest
+                 wire:target="sort, search, filters, perPage, gotoPage, previousPage, nextPage, toggleSelectAll, selected"
+                 class="bg-base-100/50 absolute inset-0 z-50 hidden items-center justify-center backdrop-blur-[1px]">
+                <x-ui.loading size="md"
+                              :centered="false"></x-ui.loading>
             </div>
 
-            <table
-                class="table table-zebra"
-                wire:loading.class="opacity-50"
-                wire:target="sort, search, filters, perPage, gotoPage, previousPage, nextPage"
-            >
+            <table class="table-zebra table"
+                   wire:loading.class="opacity-50"
+                   wire:target="sort, search, filters, perPage, gotoPage, previousPage, nextPage">
                 {{-- Table Header --}}
                 {!! $this->renderTableHeader() !!}
 
@@ -43,15 +37,11 @@
                         {!! $this->renderTableRow($row) !!}
                     @empty
                         <tr wire:key="empty-row-{{ $datatableId }}">
-                            <td
-                                colspan="{{ $countColumns + 2 }}"
-                                class="text-center py-12"
-                            >
-                                <div class="flex flex-col items-center gap-2 text-base-content/50">
-                                    <x-ui.icon
-                                        name="users"
-                                        size="lg"
-                                    ></x-ui.icon>
+                            <td colspan="{{ $countColumns + 2 }}"
+                                class="py-12 text-center">
+                                <div class="text-base-content/50 flex flex-col items-center gap-2">
+                                    <x-ui.icon name="users"
+                                               size="lg"></x-ui.icon>
                                     <p>{{ __('table.no_results') }}</p>
                                 </div>
                             </td>
@@ -59,13 +49,11 @@
                     @endforelse
                 </tbody>
             </table>
-            
+
             {{-- Load More Trigger --}}
             @if ($rows->count() > $this->visibleRows)
-                <div
-                    x-data="infiniteScroll"
-                    class="h-8 flex items-center justify-center p-4"
-                >
+                <div x-data="infiniteScroll"
+                     class="flex h-8 items-center justify-center p-4">
                     <x-ui.loading size="sm" />
                 </div>
             @endif

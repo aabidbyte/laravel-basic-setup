@@ -6,9 +6,7 @@
 @props(['title', 'description'])
 
 <div class="flex w-full flex-col text-center">
-    <x-ui.title
-        level="1"
-        class="text-base-content"
-    >{{ $title }}</x-ui.title>
-    <p class="mt-2 text-sm text-base-content/70">{{ $description }}</p>
+    <x-ui.title level="1"
+                class="text-base-content">{{ $title }}</x-ui.title>
+    <p class="text-base-content/70 mt-2 text-sm">{{ $description }}</p>
 </div>

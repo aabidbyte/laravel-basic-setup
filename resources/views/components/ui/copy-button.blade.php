@@ -27,35 +27,25 @@
     $copiedText = $copiedText ?? __('actions.copied');
 @endphp
 
-<div
-    x-data="copyToClipboard({ text: @js($text) })"
-    {{ $attributes->only('class') }}
->
-    <x-ui.button
-        @click="copy()"
-        size="{{ $size }}"
-        variant="{{ $variant }}"
-        type="button"
-    >
-        <x-ui.icon
-            x-show="!copied && !error"
-            name="clipboard"
-            size="sm"
-        ></x-ui.icon>
-        <x-ui.icon
-            x-show="copied"
-            x-cloak
-            name="check"
-            size="sm"
-            class="text-success"
-        ></x-ui.icon>
-        <x-ui.icon
-            x-show="error"
-            x-cloak
-            name="x-mark"
-            size="sm"
-            class="text-error"
-        ></x-ui.icon>
+<div x-data="copyToClipboard({ text: @js($text) })"
+     {{ $attributes->only('class') }}>
+    <x-ui.button @click="copy()"
+                 size="{{ $size }}"
+                 variant="{{ $variant }}"
+                 type="button">
+        <x-ui.icon x-show="!copied && !error"
+                   name="clipboard"
+                   size="sm"></x-ui.icon>
+        <x-ui.icon x-show="copied"
+                   x-cloak
+                   name="check"
+                   size="sm"
+                   class="text-success"></x-ui.icon>
+        <x-ui.icon x-show="error"
+                   x-cloak
+                   name="x-mark"
+                   size="sm"
+                   class="text-error"></x-ui.icon>
         @if ($showText)
             <span x-text="copied ? @js($copiedText) : @js($copyText)"></span>
         @endif

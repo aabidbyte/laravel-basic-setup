@@ -9,9 +9,13 @@
  */
 export function copyToClipboard(config = {}) {
     // Support both simple string and config object
-    const text = typeof config === 'string' ? config : (config.text || '');
-    const copiedText = typeof config === 'object' ? (config.copiedText || 'Copied!') : 'Copied!';
-    const errorText = typeof config === 'object' ? (config.errorText || 'Copy failed') : 'Copy failed';
+    const text = typeof config === 'string' ? config : config.text || '';
+    const copiedText =
+        typeof config === 'object' ? config.copiedText || 'Copied!' : 'Copied!';
+    const errorText =
+        typeof config === 'object'
+            ? config.errorText || 'Copy failed'
+            : 'Copy failed';
 
     return {
         copied: false,
@@ -27,7 +31,10 @@ export function copyToClipboard(config = {}) {
                     await navigator.clipboard.writeText(textToCopy);
                     this.onCopySuccess();
                 } catch (err) {
-                    console.error('[copyToClipboard] Clipboard API failed:', err);
+                    console.error(
+                        '[copyToClipboard] Clipboard API failed:',
+                        err,
+                    );
                     this.fallbackCopy(textToCopy);
                 }
             } else {

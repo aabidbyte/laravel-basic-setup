@@ -64,26 +64,25 @@ new class extends BasePageComponent {
 
 <section class="w-full">
     <x-settings.layout>
-        <x-ui.form
-            wire:submit="savePreferences"
-            class="w-full space-y-6"
-        >
+        <x-ui.form wire:submit="savePreferences"
+                   class="w-full space-y-6">
             {{-- Notification Channels --}}
             <div>
-                <h3 class="text-base font-semibold text-base-content mb-4">{{ __('settings.notifications.channels_title') }}</h3>
+                <h3 class="text-base-content mb-4 text-base font-semibold">
+                    {{ __('settings.notifications.channels_title') }}</h3>
 
                 <div class="space-y-4">
                     {{-- Email Notifications --}}
                     <div class="form-control">
                         <label class="label cursor-pointer justify-start gap-4">
-                            <input
-                                type="checkbox"
-                                wire:model="emailNotifications"
-                                class="toggle toggle-primary"
-                            />
+                            <input type="checkbox"
+                                   wire:model="emailNotifications"
+                                   class="toggle toggle-primary" />
                             <div>
-                                <span class="label-text font-medium">{{ __('settings.notifications.email_label') }}</span>
-                                <p class="text-sm text-base-content/70">{{ __('settings.notifications.email_help') }}</p>
+                                <span
+                                      class="label-text font-medium">{{ __('settings.notifications.email_label') }}</span>
+                                <p class="text-base-content/70 text-sm">{{ __('settings.notifications.email_help') }}
+                                </p>
                             </div>
                         </label>
                     </div>
@@ -91,14 +90,14 @@ new class extends BasePageComponent {
                     {{-- Browser Notifications --}}
                     <div class="form-control">
                         <label class="label cursor-pointer justify-start gap-4">
-                            <input
-                                type="checkbox"
-                                wire:model="browserNotifications"
-                                class="toggle toggle-primary"
-                            />
+                            <input type="checkbox"
+                                   wire:model="browserNotifications"
+                                   class="toggle toggle-primary" />
                             <div>
-                                <span class="label-text font-medium">{{ __('settings.notifications.browser_label') }}</span>
-                                <p class="text-sm text-base-content/70">{{ __('settings.notifications.browser_help') }}</p>
+                                <span
+                                      class="label-text font-medium">{{ __('settings.notifications.browser_label') }}</span>
+                                <p class="text-base-content/70 text-sm">{{ __('settings.notifications.browser_help') }}
+                                </p>
                             </div>
                         </label>
                     </div>
@@ -109,20 +108,21 @@ new class extends BasePageComponent {
 
             {{-- Notification Types --}}
             <div>
-                <h3 class="text-base font-semibold text-base-content mb-4">{{ __('settings.notifications.types_title') }}</h3>
+                <h3 class="text-base-content mb-4 text-base font-semibold">
+                    {{ __('settings.notifications.types_title') }}</h3>
 
                 <div class="space-y-4">
                     {{-- System Notifications --}}
                     <div class="form-control">
                         <label class="label cursor-pointer justify-start gap-4">
-                            <input
-                                type="checkbox"
-                                wire:model="systemNotifications"
-                                class="toggle toggle-secondary"
-                            />
+                            <input type="checkbox"
+                                   wire:model="systemNotifications"
+                                   class="toggle toggle-secondary" />
                             <div>
-                                <span class="label-text font-medium">{{ __('settings.notifications.system_label') }}</span>
-                                <p class="text-sm text-base-content/70">{{ __('settings.notifications.system_help') }}</p>
+                                <span
+                                      class="label-text font-medium">{{ __('settings.notifications.system_label') }}</span>
+                                <p class="text-base-content/70 text-sm">{{ __('settings.notifications.system_help') }}
+                                </p>
                             </div>
                         </label>
                     </div>
@@ -130,14 +130,14 @@ new class extends BasePageComponent {
                     {{-- Security Notifications --}}
                     <div class="form-control">
                         <label class="label cursor-pointer justify-start gap-4">
-                            <input
-                                type="checkbox"
-                                wire:model="securityNotifications"
-                                class="toggle toggle-secondary"
-                            />
+                            <input type="checkbox"
+                                   wire:model="securityNotifications"
+                                   class="toggle toggle-secondary" />
                             <div>
-                                <span class="label-text font-medium">{{ __('settings.notifications.security_label') }}</span>
-                                <p class="text-sm text-base-content/70">{{ __('settings.notifications.security_help') }}</p>
+                                <span
+                                      class="label-text font-medium">{{ __('settings.notifications.security_label') }}</span>
+                                <p class="text-base-content/70 text-sm">{{ __('settings.notifications.security_help') }}
+                                </p>
                             </div>
                         </label>
                     </div>
@@ -145,14 +145,14 @@ new class extends BasePageComponent {
                     {{-- Team Notifications --}}
                     <div class="form-control">
                         <label class="label cursor-pointer justify-start gap-4">
-                            <input
-                                type="checkbox"
-                                wire:model="teamNotifications"
-                                class="toggle toggle-secondary"
-                            />
+                            <input type="checkbox"
+                                   wire:model="teamNotifications"
+                                   class="toggle toggle-secondary" />
                             <div>
-                                <span class="label-text font-medium">{{ __('settings.notifications.team_label') }}</span>
-                                <p class="text-sm text-base-content/70">{{ __('settings.notifications.team_help') }}</p>
+                                <span
+                                      class="label-text font-medium">{{ __('settings.notifications.team_label') }}</span>
+                                <p class="text-base-content/70 text-sm">{{ __('settings.notifications.team_help') }}
+                                </p>
                             </div>
                         </label>
                     </div>
@@ -160,11 +160,9 @@ new class extends BasePageComponent {
             </div>
 
             <div class="flex items-center gap-4 pt-4">
-                <x-ui.button
-                    type="submit"
-                    variant="primary"
-                    data-test="save-notifications-button"
-                >
+                <x-ui.button type="submit"
+                             variant="primary"
+                             data-test="save-notifications-button">
                     {{ __('actions.save') }}
                 </x-ui.button>
             </div>

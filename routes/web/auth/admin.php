@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-
 /**
  * Admin Routes
  *
@@ -10,4 +8,4 @@ use Illuminate\Support\Facades\Route;
  */
 
 // Error Logs management
-require __DIR__ . '/error-logs.php';
+require __DIR__ . '/admin/error-logs.php';

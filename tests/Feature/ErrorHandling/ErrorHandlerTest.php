@@ -19,7 +19,7 @@ uses(RefreshDatabase::class);
  */
 describe('ErrorHandler', function () {
     test('generates reference ID in correct format', function () {
-        $handler = new ErrorHandler();
+        $handler = new ErrorHandler;
         $referenceId = $handler->generateReferenceId();
 
         // Format: ERR-YYYYMMDD-XXXXXX
@@ -27,7 +27,7 @@ describe('ErrorHandler', function () {
     });
 
     test('generates unique reference IDs', function () {
-        $handler = new ErrorHandler();
+        $handler = new ErrorHandler;
 
         $ids = [];
         for ($i = 0; $i < 100; $i++) {
@@ -43,7 +43,7 @@ describe('ErrorHandler', function () {
         $exception = new \Exception('Test error message');
         $request = Request::create('/test-url', 'GET');
 
-        $handler = new ErrorHandler();
+        $handler = new ErrorHandler;
         // Use report() instead of handle() to avoid exception re-throw in dev mode
         $handler->report($exception, $request);
 
@@ -65,7 +65,7 @@ describe('ErrorHandler', function () {
         ]);
         $request = Request::create('/test-url', 'POST');
 
-        $handler = new ErrorHandler();
+        $handler = new ErrorHandler;
         $handler->report($exception, $request);
 
         expect(ErrorLog::count())->toBe(0);
@@ -77,7 +77,7 @@ describe('ErrorHandler', function () {
         $exception = new \Illuminate\Auth\AuthenticationException('Unauthenticated.');
         $request = Request::create('/test-url', 'GET');
 
-        $handler = new ErrorHandler();
+        $handler = new ErrorHandler;
         $handler->report($exception, $request);
 
         expect(ErrorLog::count())->toBe(0);
@@ -93,7 +93,7 @@ describe('ErrorHandler', function () {
         $exception = new \Exception('Test error');
         $request = Request::create('/test-url', 'GET');
 
-        $handler = new ErrorHandler();
+        $handler = new ErrorHandler;
         // Generate reference ID first (normally done by handle())
         $refMethod = new ReflectionMethod($handler, 'generateReferenceId');
         $refMethod->setAccessible(true);
@@ -121,7 +121,7 @@ describe('ErrorHandler', function () {
             'name' => 'John Doe',
         ]);
 
-        $handler = new ErrorHandler();
+        $handler = new ErrorHandler;
         // Set the reference ID via reflection
         $refIdProp = new ReflectionProperty($handler, 'referenceId');
         $refIdProp->setAccessible(true);
@@ -147,7 +147,7 @@ describe('ErrorHandler', function () {
         $request = Request::create('/test-url', 'GET');
         $request->headers->set('Accept', 'application/json');
 
-        $handler = new ErrorHandler();
+        $handler = new ErrorHandler;
         $response = $handler->handle($exception, $request);
 
         expect($response->getStatusCode())->toBe(500);
@@ -268,7 +268,7 @@ describe('PruneErrorLogsCommand', function () {
 
 describe('Error Channels', function () {
     test('toast channel creates notification', function () {
-        $channel = new ToastChannel();
+        $channel = new ToastChannel;
         $exception = new \Exception('Test error');
         $context = [
             'reference_id' => 'ERR-20260108-TEST01',
@@ -281,7 +281,7 @@ describe('Error Channels', function () {
     });
 
     test('database channel stores error log', function () {
-        $channel = new DatabaseChannel();
+        $channel = new DatabaseChannel;
         $exception = new \Exception('Test error');
         $context = [
             'reference_id' => 'ERR-20260108-TEST01',
@@ -298,7 +298,7 @@ describe('Error Channels', function () {
     });
 
     test('log channel logs to configured channel', function () {
-        $channel = new LogChannel();
+        $channel = new LogChannel;
         $exception = new \Exception('Test error');
         $context = [
             'reference_id' => 'ERR-20260108-TEST01',

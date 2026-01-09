@@ -12,11 +12,9 @@
     $formAction = $action ? 'action="' . $action . '"' : '';
 @endphp
 
-<form
-    method="{{ $isGet ? 'GET' : 'POST' }}"
-    {!! $formAction !!}
-    {{ $attributes->merge(['class' => trim('space-y-6 ' . $class)])->except(['method', 'action']) }}
->
+<form method="{{ $isGet ? 'GET' : 'POST' }}"
+      {!! $formAction !!}
+      {{ $attributes->merge(['class' => trim('space-y-6 ' . $class)])->except(['method', 'action']) }}>
     @if ($needsMethodSpoofing)
         @method($formMethod)
     @endif

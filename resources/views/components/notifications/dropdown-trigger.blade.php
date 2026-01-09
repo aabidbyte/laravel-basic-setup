@@ -16,46 +16,34 @@
     $initialUnreadCount = $user ? $user->unreadNotifications()->count() : 0;
 @endphp
 
-<div
-    x-data="notificationDropdownTrigger(@js($initialUnreadCount))"
-    @click.away="close()"
-    class="relative"
->
-    <x-ui.dropdown
-        placement="end"
-        menu
-        menuSize="sm"
-        contentClass="w-80 max-h-96 overflow-y-auto"
-        x-bind:class="{ 'dropdown-open': isOpen }"
-    >
+<div x-data="notificationDropdownTrigger(@js($initialUnreadCount))"
+     @click.away="close()"
+     class="relative">
+    <x-ui.dropdown placement="end"
+                   menu
+                   menuSize="sm"
+                   contentClass="w-80 max-h-96 overflow-y-auto"
+                   x-bind:class="{ 'dropdown-open': isOpen }">
         <x-slot:trigger>
-            <button
-                x-ref="trigger"
-                class="btn btn-ghost btn-circle relative"
-                type="button"
-                @click="toggle()"
-            >
-                <x-ui.icon
-                    name="bell"
-                    class="h-5 w-5"
-                ></x-ui.icon>
+            <button x-ref="trigger"
+                    class="btn btn-ghost btn-circle relative"
+                    type="button"
+                    @click="toggle()">
+                <x-ui.icon name="bell"
+                           class="h-5 w-5"></x-ui.icon>
                 {{-- Badge managed by Alpine, visible when count > 0 --}}
                 <template x-if="unreadCount > 0">
-                    <x-ui.badge
-                        variant="error"
-                        size="xs"
-                        class="absolute -top-1 -right-1 w-4 h-4 justify-center"
-                        x-bind:aria-label="'{{ __('notifications.unread') }}: ' + unreadCount"
-                        x-text="unreadCount > 99 ? '99+' : unreadCount"
-                    ></x-ui.badge>
+                    <x-ui.badge variant="error"
+                                size="xs"
+                                class="absolute -right-1 -top-1 h-4 w-4 justify-center"
+                                x-bind:aria-label="'{{ __('notifications.unread') }}: ' + unreadCount"
+                                x-text="unreadCount > 99 ? '99+' : unreadCount"></x-ui.badge>
                 </template>
             </button>
         </x-slot:trigger>
 
         {{-- Lazy-loaded content component --}}
-        <livewire:notifications.dropdown-content
-            lazy
-            wire:key="notifications-dropdown-content"
-        ></livewire:notifications.dropdown-content>
+        <livewire:notifications.dropdown-content lazy
+                                                 wire:key="notifications-dropdown-content"></livewire:notifications.dropdown-content>
     </x-ui.dropdown>
 </div>

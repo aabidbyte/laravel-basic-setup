@@ -11,16 +11,12 @@
     <x-layouts.page backHref="{{ route('dashboard') }}">
         <x-slot:topActions>
             @can(Permissions::CREATE_TEAMS)
-                <x-ui.button
-                    href="{{ route('teams.create') }}"
-                    wire:navigate
-                    color="primary"
-                    class="gap-2"
-                >
-                    <x-ui.icon
-                        name="plus"
-                        size="sm"
-                    ></x-ui.icon>
+                <x-ui.button href="{{ route('teams.create') }}"
+                             wire:navigate
+                             color="primary"
+                             class="gap-2">
+                    <x-ui.icon name="plus"
+                               size="sm"></x-ui.icon>
                     {{ __('pages.common.create.title', ['type' => __('types.team')]) }}
                 </x-ui.button>
             @endcan

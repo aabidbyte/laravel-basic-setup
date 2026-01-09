@@ -57,5 +57,15 @@ return [
         'description' => 'Description',
         'members_count' => 'Members',
     ],
+    'error_logs' => [
+        'type' => 'Type',
+        'message' => 'Message',
+        'file' => 'File',
+        'line' => 'Line',
+        'created_at' => 'Occurred At',
+    ],
+    'trash' => [
+        'deleted_at' => 'Deleted At',
+    ],
     'copy_failed' => 'TRANSLATION_NEEDED: Please see context at resources/views/components/ui/share-button.blade.php:20',
 ];

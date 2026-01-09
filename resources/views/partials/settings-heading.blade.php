@@ -1,5 +1,5 @@
 <div class="relative mb-6 w-full">
-    <h1 class="text-3xl font-bold text-base-content">{{ __('settings.title') }}</h1>
-    <p class="mt-2 mb-6 text-lg text-base-content/70">{{ __('settings.description') }}</p>
+    <h1 class="text-base-content text-3xl font-bold">{{ __('settings.title') }}</h1>
+    <p class="text-base-content/70 mb-6 mt-2 text-lg">{{ __('settings.description') }}</p>
     <div class="divider"></div>
 </div>
