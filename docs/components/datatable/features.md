@@ -41,6 +41,33 @@ Selection state is fully managed by Livewire and automatically:
 - **New**: Bulk actions are now consolidated into a premium dropdown menu in the header, appearing only when items are selected
 - **New**: Added a "Clear Selection" button in the header for quick reset
 
+### Conditional UI Rendering
+
+The DataTable component intelligently renders UI elements only when needed:
+
+| Feature | Method | UI Elements Hidden When False |
+|---------|--------|-------------------------------|
+| Filters | `hasFilters()` | Filter button, filter panel, active filter badges |
+| Bulk Actions | `hasBulkActions()` | Checkbox column in header and rows |
+| Row Actions | `hasRowActions()` | Actions column in header and rows |
+
+This is automatic - simply define (or omit) `getFilterDefinitions()`, `bulkActions()`, or `rowActions()` in your datatable class.
+
+**Example: Minimal DataTable with no extra UI**:
+```php
+class MinimalTable extends Datatable
+{
+    protected function baseQuery(): Builder { return Model::query(); }
+    
+    protected function columns(): array
+    {
+        return [Column::make('Name', 'name')];
+    }
+    // No filters, bulk actions, or row actions defined
+    // → No checkboxes, no filter button, no actions column
+}
+```
+
 ## Alpine.js Integration
 
 The DataTable component uses Alpine.js for UI-only state management (filter panel, modals). All selection logic is handled by Livewire.

@@ -4,6 +4,7 @@ return [
     'saved' => 'Saved.',
     'unknown' => 'Unknown',
     'none' => 'None',
+    'not_applicable' => 'Not applicable',
     'type_confirm' => [
         'title' => 'Confirm Permanent Deletion',
         'description' => 'This action cannot be undone. To confirm, type the name of the item below:',

@@ -513,10 +513,15 @@ class LangSyncCommand extends Command
                 || ! str_contains($keyWithoutNamespace, '.')
                 || (str_ends_with($keyWithoutNamespace, '.') && substr_count($keyWithoutNamespace, '.') === 1);
 
+            // Determine the appropriate value based on whether the key is dynamic
+            $valueToSet = $this->isDynamicKey($fullKey)
+                ? $this->getDynamicKeyValue($fullKey, $locationValue)
+                : "TRANSLATION_NEEDED: Please see context at {$locationValue}";
+
             if ($isSimpleKey) {
                 // Simple key - set directly
                 if (! isset($updated[$keyWithoutNamespace]) || $this->isRawLocationValue($updated[$keyWithoutNamespace])) {
-                    $updated[$keyWithoutNamespace] = "TRANSLATION_NEEDED: Please see context at {$locationValue}";
+                    $updated[$keyWithoutNamespace] = $valueToSet;
                     $this->stats['keys_added']++;
                 }
             } else {
@@ -533,7 +538,7 @@ class LangSyncCommand extends Command
                     if ($i === count($keyParts) - 1) {
                         // Last key - set the value if missing or if it's a raw location placeholder
                         if (! isset($current[$keyPart]) || $this->isRawLocationValue($current[$keyPart])) {
-                            $current[$keyPart] = "TRANSLATION_NEEDED: Please see context at {$locationValue}";
+                            $current[$keyPart] = $valueToSet;
                             $this->stats['keys_added']++;
                         }
                     } else {
@@ -561,6 +566,30 @@ class LangSyncCommand extends Command
 
         // Check for common file extensions and line number pattern: .php:123 or .blade.php:123
         return preg_match('/\.php:\d+/', $value) === 1 || preg_match('/\.blade\.php:\d+/', $value) === 1;
+    }
+
+    /**
+     * Check if a translation key contains dynamic PHP variable interpolation.
+     *
+     * Detects patterns like:
+     * - "permissions.actions.{$action}" (curly brace interpolation)
+     * - "permissions.actions.$action" (direct variable)
+     */
+    protected function isDynamicKey(string $key): bool
+    {
+        // Match {$var}, {$var->prop}, {$var['key']}, or direct $var patterns
+        return preg_match('/\{\$[a-zA-Z_]|\$[a-zA-Z_]/', $key) === 1;
+    }
+
+    /**
+     * Get the value for a dynamic translation key with AI-agent instructions.
+     */
+    protected function getDynamicKeyValue(string $key, string $locationValue): string
+    {
+        return "DYNAMIC_KEY: This key is dynamically constructed using PHP variables. "
+            . "The variable portion should be resolved to all possible values from the source class/constants. "
+            . "See source at {$locationValue} to find the values (e.g., from a constants class). "
+            . "Create individual translation entries for each resolved key instead of this pattern.";
     }
 
     /**

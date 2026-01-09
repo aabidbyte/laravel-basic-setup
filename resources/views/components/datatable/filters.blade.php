@@ -79,9 +79,9 @@
                     {{ __('actions.clear_selection') }}
                 </x-ui.button>
             </div>
-        @else
+        @elseif ($datatable->hasFilters())
+            {{-- Filter Toggle Button - only render if filters are defined --}}
             <div class="flex items-center gap-2">
-                {{-- Filter Toggle Button --}}
                 <x-ui.button @click="toggleFilters()"
                              type="button"
                              style="ghost"
@@ -128,7 +128,8 @@
     @endif
 </div>
 
-{{-- Filters Panel --}}
+{{-- Filters Panel - only render if filters are defined --}}
+@if ($datatable->hasFilters())
 <div x-show="openFilters"
      x-collapse
      class="mb-6">
@@ -159,3 +160,4 @@
         </div>
     </div>
 </div>
+@endif

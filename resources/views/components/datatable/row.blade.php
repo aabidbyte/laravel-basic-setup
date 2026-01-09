@@ -6,13 +6,15 @@
         'cursor-pointer' => $datatable->rowsAreClickable(),
         'transition-colors hover:bg-base-200/50',
     ])>
-    {{-- Selection Checkbox --}}
-    <td @click.stop>
-        <x-ui.checkbox wire:model.live="selected"
-                       value="{{ $row->uuid }}"
-                       wire:key="checkbox-{{ $row->uuid }}"
-                       size="sm" />
-    </td>
+    {{-- Selection Checkbox - only render if bulk actions are defined --}}
+    @if ($datatable->hasBulkActions())
+        <td @click.stop>
+            <x-ui.checkbox wire:model.live="selected"
+                           value="{{ $row->uuid }}"
+                           wire:key="checkbox-{{ $row->uuid }}"
+                           size="sm" />
+        </td>
+    @endif
 
     {{-- Data Columns --}}
     @foreach ($datatable->getColumns() as $column)
@@ -26,9 +28,12 @@
         </td>
     @endforeach
 
-    {{-- Actions Dropdown --}}
-    <td @click.stop
-        class="sticky-action-cell sticky right-0 z-10 text-end">
-        {!! $datatable->renderRowActions($row) !!}
-    </td>
+    {{-- Actions Dropdown - only render if row actions are defined --}}
+    @if ($datatable->hasRowActions())
+        <td @click.stop
+            class="sticky-action-cell sticky right-0 z-10 text-end">
+            {!! $datatable->renderRowActions($row) !!}
+        </td>
+    @endif
 </tr>
+

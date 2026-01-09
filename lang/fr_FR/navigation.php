@@ -17,4 +17,5 @@ return [
     'error_handler' => 'Gestion des erreurs',
     'user' => 'Utilisateur',
     'settings' => 'Paramètres',
+    'trashed' => 'Corbeille',
 ];

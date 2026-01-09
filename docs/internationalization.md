@@ -206,6 +206,20 @@ The command detects translation keys in various formats:
 -   **Parameterized calls**: `__('key', ['params' => ...])`
 -   **Notification Builder**: `->title('key')` and `->subtitle('key')` (automatically detected as keys)
 
+### Dynamic Key Detection
+
+When the command detects translation keys containing PHP variable interpolation (e.g., `"permissions.actions.{$action}"`), it adds a special `DYNAMIC_KEY` instruction instead of `TRANSLATION_NEEDED`:
+
+```php
+'permissions.actions.{$action}' => 'DYNAMIC_KEY: This key is dynamically constructed using PHP variables. The variable portion should be resolved to all possible values from the source class/constants. See source at app/Constants/Auth/PermissionAction.php:109 to find the values (e.g., from a constants class). Create individual translation entries for each resolved key instead of this pattern.',
+```
+
+**For AI agents**: When you encounter a `DYNAMIC_KEY` entry:
+1. Navigate to the source file mentioned in the instruction
+2. Find all possible values for the variable (e.g., from a constants class like `PermissionAction::all()`)
+3. Create individual translation entries for each resolved key (e.g., `permissions.actions.view`, `permissions.actions.create`, etc.)
+4. Remove the dynamic pattern entry after resolving
+
 
 ### Safety Features
 

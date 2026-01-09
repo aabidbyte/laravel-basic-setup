@@ -167,6 +167,33 @@ abstract class Datatable extends LivewireBaseComponent
     }
 
     /**
+     * Check if this datatable has filters defined.
+     * Used by templates to conditionally render filter UI.
+     */
+    public function hasFilters(): bool
+    {
+        return $this->memoize('has_filters', fn () => count($this->getFilterDefinitions()) > 0);
+    }
+
+    /**
+     * Check if this datatable has bulk actions defined.
+     * Used by templates to conditionally render selection checkboxes.
+     */
+    public function hasBulkActions(): bool
+    {
+        return $this->memoize('has_bulk_actions', fn () => count($this->bulkActions()) > 0);
+    }
+
+    /**
+     * Check if this datatable has row actions defined.
+     * Used by templates to conditionally render the actions column.
+     */
+    public function hasRowActions(): bool
+    {
+        return $this->memoize('has_row_actions', fn () => count($this->rowActions()) > 0);
+    }
+
+    /**
      * Get paginated rows
      */
     #[Computed]

@@ -41,4 +41,5 @@ return [
     'force_deleted_successfully' => ':name has been permanently deleted',
     'bulk_restored_successfully' => ':count items have been restored',
     'bulk_force_deleted_successfully' => ':count items have been permanently deleted',
+    'error' => 'TRANSLATION_NEEDED: Please see context at app/Livewire/Tables/RoleTable.php:92',
 ];

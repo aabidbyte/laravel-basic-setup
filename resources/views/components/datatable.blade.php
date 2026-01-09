@@ -5,6 +5,11 @@
     $rows = $this->rows;
     $columns = $this->getColumns();
     $countColumns = count($columns);
+    
+    // Calculate extra columns for checkbox and actions
+    $extraColumns = 0;
+    if ($this->hasBulkActions()) $extraColumns++;
+    if ($this->hasRowActions()) $extraColumns++;
 @endphp
 
 <div>
@@ -37,7 +42,7 @@
                         {!! $this->renderTableRow($row) !!}
                     @empty
                         <tr wire:key="empty-row-{{ $datatableId }}">
-                            <td colspan="{{ $countColumns + 2 }}"
+                            <td colspan="{{ $countColumns + $extraColumns }}"
                                 class="py-12 text-center">
                                 <div class="text-base-content/50 flex flex-col items-center gap-2">
                                     <x-ui.icon name="users"
@@ -65,3 +70,4 @@
         {{-- Modal is now global: see components/datatable/action-modal.blade.php --}}
     </div>
 </div>
+

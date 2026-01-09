@@ -1,12 +1,14 @@
 <thead>
     <tr>
-        {{-- Select All Checkbox --}}
-        <th class="w-12">
-            <x-ui.checkbox wire:click="toggleSelectAll()"
-                           :checked="$datatable->isAllSelected"
-                           wire:key="select-all-checkbox-{{ $datatable->isAllSelected ? '1' : '0' }}"
-                           size="sm" />
-        </th>
+        {{-- Select All Checkbox - only render if bulk actions are defined --}}
+        @if ($datatable->hasBulkActions())
+            <th class="w-12">
+                <x-ui.checkbox wire:click="toggleSelectAll()"
+                               :checked="$datatable->isAllSelected"
+                               wire:key="select-all-checkbox-{{ $datatable->isAllSelected ? '1' : '0' }}"
+                               size="sm" />
+            </th>
+        @endif
 
         {{-- Column Headers --}}
         @foreach ($datatable->getColumns() as $column)
@@ -43,7 +45,10 @@
             @endif
         @endforeach
 
-        {{-- Actions Column --}}
-        <th class="bg-base-100 sticky right-0 z-20 text-end">{{ __('table.actions') }}</th>
+        {{-- Actions Column - only render if row actions are defined --}}
+        @if ($datatable->hasRowActions())
+            <th class="bg-base-100 sticky right-0 z-20 text-end">{{ __('table.actions') }}</th>
+        @endif
     </tr>
 </thead>
+

@@ -32,6 +32,7 @@ return [
             'activated' => ':name activated successfully',
             'deactivated' => ':name deactivated successfully',
         ],
+        'not_found' => 'The requested :type was not found.',
     ],
     'users' => [
         'index' => 'Users',

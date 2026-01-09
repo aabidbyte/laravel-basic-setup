@@ -32,6 +32,7 @@ return [
             'activated' => ':name activé avec succès',
             'deactivated' => ':name désactivé avec succès',
         ],
+        'not_found' => 'Le :type demandé n\'a pas été trouvé.',
     ],
     'users' => [
         'index' => 'Utilisateurs',
@@ -45,5 +46,20 @@ return [
         'profile' => 'Paramètres du profil',
         'password' => 'Paramètres du mot de passe',
         'two_factor' => 'Authentification à deux facteurs',
+    ],
+    'trash' => [
+        'index' => [
+            'title' => ':type supprimés',
+            'description' => 'Voir et gérer les éléments supprimés',
+        ],
+        'show' => [
+            'title' => ':name (Supprimé)',
+            'description' => 'Voir les détails de l\'élément supprimé',
+            'item_details' => 'Détails de l\'élément',
+            'metadata' => 'Métadonnées',
+            'not_found' => 'Élément supprimé non trouvé.',
+            'confirm_mismatch' => 'Le nom saisi ne correspond pas.',
+        ],
+        'badge' => 'Supprimé',
     ],
 ];
