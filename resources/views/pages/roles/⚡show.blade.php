@@ -94,17 +94,15 @@ new class extends BasePageComponent {
 
                     @if ($role->name === \App\Constants\Auth\Roles::SUPER_ADMIN)
                         <div class="alert alert-info">
-                            <x-ui.icon name="shield-check" class="w-6 h-6" />
+                            <x-ui.icon name="shield-check" class="w-6 h-6"></x-ui.icon>
                             <span>{{ __('roles.super_admin_all_permissions') }}</span>
                         </div>
-                    @elseif ($role->permissions->count() > 0)
-                        <div class="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
-                            @foreach ($role->permissions as $permission)
-                                <span class="badge badge-primary badge-sm">{{ $permission->label() }}</span>
-                            @endforeach
-                        </div>
                     @else
-                        <p class="text-base-content/60 italic">{{ __('roles.no_permissions') }}</p>
+                        <x-ui.permission-matrix
+                            :permissions="\App\Models\Permission::all()"
+                            :selectedPermissions="$role->permissions->pluck('id')->toArray()"
+                            :readonly="true"
+                        ></x-ui.permission-matrix>
                     @endif
                 </div>
             </div>

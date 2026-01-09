@@ -181,24 +181,11 @@ new class extends BasePageComponent {
                         class="text-base-content/70"
                     >{{ __('roles.permissions') }}</x-ui.title>
 
-                    <div class="space-y-2 max-h-64 overflow-y-auto p-2 border border-base-300 rounded-lg">
-                        @foreach ($this->permissions as $permission)
-                            <label class="flex items-center gap-3 cursor-pointer hover:bg-base-200 p-2 rounded">
-                                <input
-                                    type="checkbox"
-                                    wire:model="selectedPermissions"
-                                    value="{{ $permission->id }}"
-                                    class="checkbox checkbox-sm checkbox-primary"
-                                >
-                                <div class="flex flex-col">
-                                    <span class="label-text font-medium">{{ $permission->label() }}</span>
-                                    @if ($permission->description)
-                                        <span class="text-xs text-base-content/60">{{ $permission->description }}</span>
-                                    @endif
-                                </div>
-                            </label>
-                        @endforeach
-                    </div>
+                    <x-ui.permission-matrix
+                        :permissions="$this->permissions"
+                        :selectedPermissions="$selectedPermissions"
+                        wireModel="selectedPermissions"
+                    ></x-ui.permission-matrix>
                 </div>
 
                 {{-- Submit --}}

@@ -43,7 +43,7 @@ new class extends BasePageComponent
      */
     public function generateActivationLink(): void
     {
-        $this->authorize(Permissions::GENERATE_ACTIVATION_LINKS);
+        $this->authorize(Permissions::GENERATE_ACTIVATION_USERS);
 
         try {
             $userService = app(UserService::class);
@@ -141,7 +141,7 @@ new class extends BasePageComponent
                         @endcan
 
                         @if (!$user->is_active)
-                            @can(Permissions::GENERATE_ACTIVATION_LINKS)
+                            @can(Permissions::GENERATE_ACTIVATION_USERS)
                                 <x-ui.button
                                     wire:click="generateActivationLink"
                                     color="secondary"

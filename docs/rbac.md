@@ -1,6 +1,6 @@
 # Custom Role-Based Access Control (RBAC) System
 
-This application uses a custom, lightweight RBAC system built on top of Laravel's native Authorization features (Gates & Policies). It replaces the `spatie/laravel-permission` package.
+This application uses a custom, lightweight RBAC system built on top of Laravel's native Authorization features (Gates & Policies).
 
 ## Overview
 
@@ -9,22 +9,61 @@ This application uses a custom, lightweight RBAC system built on top of Laravel'
 - **Users**: Have many roles. Get permissions *through* their roles.
 - **Teams**: Teams are handled separately via `App\Models\Team` and the `team_user` pivot table.
 
-## core Components
+## Permission Matrix Architecture
 
-### Models & Traits
+Permissions follow an **entity-action pattern**: `"{action} {entity}"` (e.g., "view users", "edit roles").
+
+### Core Components
+
+| File | Purpose |
+|------|---------|
+| `App\Constants\Auth\PermissionEntity` | Defines all permissionable entities (users, roles, teams, etc.) |
+| `App\Constants\Auth\PermissionAction` | Defines all action types (view, create, edit, delete, etc.) |
+| `App\Constants\Auth\Permissions` | Permission constants derived from entity-action pairs |
+| `App\Services\Auth\PermissionMatrix` | Centralized service mapping entities to their supported actions |
+
+### Entities & Actions
+
+| Entity | Supported Actions |
+|--------|-------------------|
+| Users | view, create, edit, delete, activate, export, generate_activation |
+| Roles | view, create, edit, delete |
+| Teams | view, create, edit, delete |
+| Documents | view, create, edit, delete, publish, unpublish |
+| Articles | view, create, edit, delete, publish, unpublish, export |
+| Posts | view, create, edit, delete, restore, export |
+| Error Logs | view, resolve, delete, export |
+| Telescope | access |
+| Horizon | access |
+| Mail Settings | view, configure |
+
+### Usage Examples
+
+```php
+// Using permission constants
+use App\Constants\Auth\Permissions;
+
+$user->can(Permissions::VIEW_USERS);
+$user->can(Permissions::EDIT_ROLES);
+
+// In Blade
+@can(Permissions::CREATE_TEAMS) ... @endcan
+
+// Using the matrix service
+$matrix = new \App\Services\Auth\PermissionMatrix();
+$matrix->getActionsForEntity('users'); // ['view', 'create', 'edit', ...]
+$matrix->entitySupportsAction('roles', 'activate'); // false
+```
+
+## Models & Traits
 
 - **`App\Models\Role`**: Extends `BaseModel`. Has `permissions()` and `users()`.
 - **`App\Models\Permission`**: Extends `BaseModel`. Has `roles()`.
 - **`App\Models\Concerns\HasRolesAndPermissions`**: Trait used by `User` model.
-    - `roles()`: BelongsToMany relationship.
-    - `hasRole($role)`: Check if user has a role.
-    - `hasPermissionTo($permission)`: Check if user has a permission (via roles).
-    - `assignRole($role)`: Assign a role to user.
-    - `syncRoles($roles)`: Sync roles.
 
-### Authorization Logic
+## Authorization Logic
 
-Authorization is handled in `App\Providers\AppServiceProvider` via `Gate::before`.
+Handled in `App\Providers\AccessServiceProvider` via `Gate::before`.
 
 ```php
 Gate::before(function ($user, $ability) {
@@ -43,51 +82,31 @@ Gate::before(function ($user, $ability) {
 });
 ```
 
-### Usage
+## UI Component
 
-#### Checking Permissions
-
-Use standard Laravel authorization methods:
-
-```php
-// In Controllers/Code
-if ($user->can('view_users')) { ... }
-if (Gate::allows('view_users')) { ... }
-
-// In Blade
-@can('view_users') ... @endcan
-```
-
-#### Checking Roles
-
-```php
-if ($user->hasRole('admin')) { ... }
-```
-
-#### Assigning Roles
-
-```php
-$user->assignRole('editor');
-$user->syncRoles(['editor', 'viewer']);
-```
+The `<x-ui.permission-matrix>` Blade component provides a table-based UI for managing permissions:
+- Entities displayed as rows
+- Actions displayed as columns  
+- Checkboxes at valid intersections
+- Dash marks (—) for invalid entity-action pairs
 
 ## Best Practices
 
-1.  **Use Permissions, Not Roles**: Always check for permissions (`can('edit_post')`) rather than roles (`hasRole('editor')`) in your application logic. This allows for flexible role definitions.
-2.  **Define Constants**: Use `App\Constants\Auth\Permissions` and `App\Constants\Auth\Roles` to avoid hardcoded strings.
-3.  ** policies**: Use Model Policies for logic involving specific model instances (e.g., "can user edit *this* post?").
+1. **Use Constants**: Always use `Permissions::VIEW_USERS` instead of hardcoded strings.
+2. **Use Permissions, Not Roles**: Check `can('edit users')` not `hasRole('admin')`.
+3. **Use Policies**: For model-specific logic (e.g., "can user edit *this* post?").
 
 ## Database Schema
 
-- `roles`: `id`, `name`, `display_name`, ...
-- `permissions`: `id`, `name`, `display_name`, ...
+- `roles`: `id`, `uuid`, `name`, `display_name`, `description`
+- `permissions`: `id`, `uuid`, `name`, `display_name`, `description`
 - `role_user`: `user_id`, `role_id`
 - `permission_role`: `role_id`, `permission_id`
 
 ## Seeding
 
-Use `RoleAndPermissionSeeder` to define roles and permissions.
-
 ```bash
 php artisan db:seed --class=RoleAndPermissionSeeder
 ```
+
+The seeder uses `PermissionMatrix` to generate all permissions with display names and descriptions.

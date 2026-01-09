@@ -1,65 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Constants\Auth;
 
+use App\Services\Auth\PermissionMatrix;
+
 /**
- * Permission constants for Spatie Permission package.
+ * Permission constants for the RBAC system.
+ *
+ * This class provides constants for all permissions in the system.
+ * Permissions follow the pattern: "{action} {entity}" (e.g., "view users", "edit roles").
+ *
+ * The permissions are derived from the PermissionMatrix service which defines
+ * which entities support which actions.
  *
  * CRITICAL RULE: All permission names must be defined here as constants.
  * NO HARDCODED STRINGS ARE ALLOWED for permission names throughout the application.
  */
 class Permissions
 {
-    // Document permissions
-    public const VIEW_DOCUMENT = 'view document';
-
-    public const EDIT_DOCUMENT = 'edit document';
-
-    public const DELETE_DOCUMENT = 'delete document';
-
-    public const PUBLISH_DOCUMENT = 'publish document';
-
-    public const UNPUBLISH_DOCUMENT = 'unpublish document';
-
-    // Article permissions
-    public const CREATE_ARTICLE = 'create articles';
-
-    public const EDIT_ARTICLE = 'edit articles';
-
-    public const DELETE_ARTICLE = 'delete articles';
-
-    public const PUBLISH_ARTICLE = 'publish articles';
-
-    public const UNPUBLISH_ARTICLE = 'unpublish articles';
-
-    public const VIEW_UNPUBLISHED_ARTICLE = 'view unpublished articles';
-
-    public const EDIT_ALL_ARTICLES = 'edit all articles';
-
-    public const EDIT_OWN_ARTICLES = 'edit own articles';
-
-    public const DELETE_ANY_ARTICLE = 'delete any post';
-
-    public const DELETE_OWN_ARTICLES = 'delete own posts';
-
-    // Member permissions
-    public const VIEW_MEMBER_ADDRESSES = 'view member addresses';
-
-    // Post permissions
-    public const RESTORE_POSTS = 'restore posts';
-
-    public const FORCE_DELETE_POSTS = 'force delete posts';
-
-    public const CREATE_POST = 'create a post';
-
-    public const UPDATE_POST = 'update a post';
-
-    public const DELETE_POST = 'delete a post';
-
-    public const VIEW_ALL_POSTS = 'view all posts';
-
-    public const VIEW_POST = 'view a post';
-
     // User permissions
     public const VIEW_USERS = 'view users';
 
@@ -69,17 +29,11 @@ class Permissions
 
     public const DELETE_USERS = 'delete users';
 
-    public const GENERATE_ACTIVATION_LINKS = 'generate activation links';
+    public const ACTIVATE_USERS = 'activate users';
 
-    // Mail settings permissions
-    public const CONFIGURE_MAIL_SETTINGS = 'configure mail settings';
+    public const EXPORT_USERS = 'export users';
 
-    // Error log permissions
-    public const VIEW_ERROR_LOGS = 'view error logs';
-
-    public const RESOLVE_ERROR_LOGS = 'resolve error logs';
-
-    public const DELETE_ERROR_LOGS = 'delete error logs';
+    public const GENERATE_ACTIVATION_USERS = 'generate_activation users';
 
     // Role permissions
     public const VIEW_ROLES = 'view roles';
@@ -99,54 +53,110 @@ class Permissions
 
     public const DELETE_TEAMS = 'delete teams';
 
+    // Document permissions
+    public const VIEW_DOCUMENTS = 'view documents';
+
+    public const CREATE_DOCUMENTS = 'create documents';
+
+    public const EDIT_DOCUMENTS = 'edit documents';
+
+    public const DELETE_DOCUMENTS = 'delete documents';
+
+    public const PUBLISH_DOCUMENTS = 'publish documents';
+
+    public const UNPUBLISH_DOCUMENTS = 'unpublish documents';
+
+    // Article permissions
+    public const VIEW_ARTICLES = 'view articles';
+
+    public const CREATE_ARTICLES = 'create articles';
+
+    public const EDIT_ARTICLES = 'edit articles';
+
+    public const DELETE_ARTICLES = 'delete articles';
+
+    public const PUBLISH_ARTICLES = 'publish articles';
+
+    public const UNPUBLISH_ARTICLES = 'unpublish articles';
+
+    public const EXPORT_ARTICLES = 'export articles';
+
+    // Post permissions
+    public const VIEW_POSTS = 'view posts';
+
+    public const CREATE_POSTS = 'create posts';
+
+    public const EDIT_POSTS = 'edit posts';
+
+    public const DELETE_POSTS = 'delete posts';
+
+    public const RESTORE_POSTS = 'restore posts';
+
+    public const EXPORT_POSTS = 'export posts';
+
+    // Error log permissions
+    public const VIEW_ERROR_LOGS = 'view error_logs';
+
+    public const RESOLVE_ERROR_LOGS = 'resolve error_logs';
+
+    public const DELETE_ERROR_LOGS = 'delete error_logs';
+
+    public const EXPORT_ERROR_LOGS = 'export error_logs';
+
+    // System access permissions
+    public const ACCESS_TELESCOPE = 'access telescope';
+
+    public const ACCESS_HORIZON = 'access horizon';
+
+    // Settings permissions
+    public const VIEW_MAIL_SETTINGS = 'view mail_settings';
+
+    public const CONFIGURE_MAIL_SETTINGS = 'configure mail_settings';
+
     /**
-     * Get all permission constants as an array.
+     * Get all permission names from the PermissionMatrix.
      *
      * @return array<string>
      */
     public static function all(): array
     {
-        return [
-            self::VIEW_DOCUMENT,
-            self::EDIT_DOCUMENT,
-            self::DELETE_DOCUMENT,
-            self::PUBLISH_DOCUMENT,
-            self::UNPUBLISH_DOCUMENT,
-            self::CREATE_ARTICLE,
-            self::EDIT_ARTICLE,
-            self::DELETE_ARTICLE,
-            self::PUBLISH_ARTICLE,
-            self::UNPUBLISH_ARTICLE,
-            self::VIEW_UNPUBLISHED_ARTICLE,
-            self::EDIT_ALL_ARTICLES,
-            self::EDIT_OWN_ARTICLES,
-            self::DELETE_ANY_ARTICLE,
-            self::DELETE_OWN_ARTICLES,
-            self::VIEW_MEMBER_ADDRESSES,
-            self::RESTORE_POSTS,
-            self::FORCE_DELETE_POSTS,
-            self::CREATE_POST,
-            self::UPDATE_POST,
-            self::DELETE_POST,
-            self::VIEW_ALL_POSTS,
-            self::VIEW_POST,
-            self::VIEW_USERS,
-            self::CREATE_USERS,
-            self::EDIT_USERS,
-            self::DELETE_USERS,
-            self::GENERATE_ACTIVATION_LINKS,
-            self::CONFIGURE_MAIL_SETTINGS,
-            self::VIEW_ERROR_LOGS,
-            self::RESOLVE_ERROR_LOGS,
-            self::DELETE_ERROR_LOGS,
-            self::VIEW_ROLES,
-            self::CREATE_ROLES,
-            self::EDIT_ROLES,
-            self::DELETE_ROLES,
-            self::VIEW_TEAMS,
-            self::CREATE_TEAMS,
-            self::EDIT_TEAMS,
-            self::DELETE_TEAMS,
-        ];
+        return (new PermissionMatrix())->getAllPermissionNames();
+    }
+
+    /**
+     * Get permissions grouped by entity.
+     *
+     * @return array<string, array<string>>
+     */
+    public static function byEntity(): array
+    {
+        return (new PermissionMatrix())->getPermissionsByEntity();
+    }
+
+    /**
+     * Get permissions for a specific entity.
+     *
+     * @param  string  $entity  Entity constant from PermissionEntity
+     * @return array<string>
+     */
+    public static function forEntity(string $entity): array
+    {
+        $matrix = new PermissionMatrix();
+
+        return array_map(
+            fn (string $action) => $matrix->getPermissionName($entity, $action),
+            $matrix->getActionsForEntity($entity)
+        );
+    }
+
+    /**
+     * Generate a permission name for an entity-action pair.
+     *
+     * @param  string  $entity  Entity constant from PermissionEntity
+     * @param  string  $action  Action constant from PermissionAction
+     */
+    public static function make(string $entity, string $action): string
+    {
+        return (new PermissionMatrix())->getPermissionName($entity, $action);
     }
 }
