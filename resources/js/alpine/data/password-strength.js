@@ -11,12 +11,45 @@ export default function passwordStrength(targetId, translations = {}) {
             symbol: false,
         },
         score: 0,
+        checkInterval: null,
+        inputListener: null,
+        changeListener: null,
 
         init() {
-            // Listen for input events on the window, filtering by targetId
-            window.addEventListener('input', (event) => {
+            // Get the target input element
+            const getTargetElement = () => document.getElementById(this.targetId);
+            
+            // Create bound event handlers so we can remove them later
+            this.inputListener = (event) => {
                 if (event.target.id === this.targetId) {
                     this.checkStrength(event.target.value);
+                }
+            };
+
+            this.changeListener = (event) => {
+                if (event.target.id === this.targetId) {
+                    this.checkStrength(event.target.value);
+                }
+            };
+
+            // Add event listeners
+            window.addEventListener('input', this.inputListener);
+            window.addEventListener('change', this.changeListener);
+
+            // Use polling to catch value changes from Livewire
+            // This is the most reliable approach for Livewire wire:model updates
+            this.checkInterval = setInterval(() => {
+                const target = getTargetElement();
+                if (target && target.value !== this.password) {
+                    this.checkStrength(target.value);
+                }
+            }, 100); // 100ms polling for responsive updates
+
+            // Initial check
+            this.$nextTick(() => {
+                const target = getTargetElement();
+                if (target && target.value) {
+                    this.checkStrength(target.value);
                 }
             });
         },
@@ -54,6 +87,21 @@ export default function passwordStrength(targetId, translations = {}) {
             if (this.score <= 2) return 'text-error';
             if (this.score <= 3) return 'text-warning';
             return 'text-success';
+        },
+
+        destroy() {
+            // Clean up event listeners
+            if (this.inputListener) {
+                window.removeEventListener('input', this.inputListener);
+            }
+            if (this.changeListener) {
+                window.removeEventListener('change', this.changeListener);
+            }
+            
+            // Clear the polling interval
+            if (this.checkInterval) {
+                clearInterval(this.checkInterval);
+            }
         },
     };
 }

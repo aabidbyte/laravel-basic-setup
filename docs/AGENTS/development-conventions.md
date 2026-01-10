@@ -415,6 +415,46 @@ These structural elements are acceptable without components:
     -   **Exception handling**: For exceptions, models should extend `Illuminate\Database\Eloquent\Model` directly (not `BaseModel`) and include only necessary traits (e.g., `HasUuid`) manually
     -   **Example exception**: `PasswordResetToken` extends `Model` directly and includes `HasUuid` manually, avoiding the `SoftDeletes` trait from `BaseModel`
     -   **Documentation**: All exceptions must include PHPDoc comments explaining why soft deletes are not used
+-   **Pivot Models**: **ALL many-to-many relationships MUST use explicit pivot models**
+    -   **Base class**: All pivot models must extend `App\Models\Base\BasePivotModel`
+    -   **Location**: Pivot models are located in `app/Models/Pivots/` directory
+    -   **Naming convention**: Use concatenated model names (e.g., `RoleUser`, `PermissionRole`, `TeamUser`)
+    -   **Usage**: Use `->using(PivotModel::class)` on belongsToMany relationships
+    -   **Available pivot models**:
+        -   `RoleUser` - For `role_user` pivot table (users ↔ roles)
+        -   `PermissionRole` - For `permission_role` pivot table (permissions ↔ roles)
+        -   `PermissionUser` - For `permission_user` pivot table (permissions ↔ users, direct permissions)
+        -   `TeamUser` - For `team_user` pivot table (teams ↔ users)
+    -   **Example**:
+        ```php
+        use App\Models\Pivots\RoleUser;
+        
+        public function roles(): BelongsToMany
+        {
+            return $this->belongsToMany(Role::class)
+                ->using(RoleUser::class);
+        }
+        ```
+-   **UUID-Only Frontend Communication**: **CRITICAL RULE - Never expose integer IDs to the frontend**
+    -   **ALL frontend communication MUST use UUIDs, never integer IDs**
+    -   **Acceptable backend-only ID usage**:
+        -   Database queries and relationships (e.g., foreign keys)
+        -   Validation rules (e.g., `Rule::unique()->ignore($model->id)`)
+        -   Internal server-side logic
+        -   Pivot table relationships
+    -   **FORBIDDEN ID exposure to frontend**:
+        -   JSON responses or API endpoints
+        -   JavaScript/Alpine.js data attributes
+        -   Livewire wire:model bindings with IDs
+        -   Hidden form inputs with IDs
+        -   Query parameters in URLs
+    -   **Why**: Security best practice - integer IDs expose system internals and enable enumeration attacks. UUIDs are opaque and unpredictable.
+    -   **Implementation**:
+        -   Use `$model->uuid` for all frontend references
+        -   Use route model binding with `uuid` as route key
+        -   Checkbox values should use UUIDs: `value="{{ $role->id }}"` → `value="{{ $role->uuid }}"`
+        -   Wire:model id arrays should contain UUIDs, not integer IDs
+    -   **Exception**: Session IDs and notification IDs from Laravel's built-in systems may use their default format
 
 ### Authentication
 

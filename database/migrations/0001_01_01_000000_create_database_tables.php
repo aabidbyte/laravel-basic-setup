@@ -181,16 +181,32 @@ return new class extends Migration
 
         // Role-user pivot table (many-to-many: users <-> roles)
         Schema::create('role_user', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique()->index();
             $table->foreignId('role_id')->constrained()->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->primary(['role_id', 'user_id']);
+
+            $table->unique(['role_id', 'user_id']);
         });
 
         // Permission-role pivot table (many-to-many: roles <-> permissions)
         Schema::create('permission_role', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique()->index();
             $table->foreignId('permission_id')->constrained()->cascadeOnDelete();
             $table->foreignId('role_id')->constrained()->cascadeOnDelete();
-            $table->primary(['permission_id', 'role_id']);
+
+            $table->unique(['permission_id', 'role_id']);
+        });
+
+        // Permission-user pivot table (many-to-many: users <-> permissions for direct permissions)
+        Schema::create('permission_user', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique()->index();
+            $table->foreignId('permission_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+
+            $table->unique(['permission_id', 'user_id']);
         });
 
         // ============================================
@@ -333,6 +349,7 @@ return new class extends Migration
         $schema->dropIfExists('telescope_monitoring');
 
         // Drop RBAC tables
+        Schema::dropIfExists('permission_user');
         Schema::dropIfExists('permission_role');
         Schema::dropIfExists('role_user');
         Schema::dropIfExists('permissions');

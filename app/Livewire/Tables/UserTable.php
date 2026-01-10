@@ -55,6 +55,13 @@ class UserTable extends Datatable
                 ->searchable()
                 ->class('text-base-content/70'),
 
+            Column::make(__('table.users.status'), 'is_active')
+                ->sortable()
+                ->format(fn ($value) => $value
+                    ? '<span class="badge badge-success badge-sm">' . __('users.active') . '</span>'
+                    : '<span class="badge badge-error badge-sm">' . __('users.inactive') . '</span>')
+                ->html(),
+
             Column::make(__('table.users.roles'), 'roles_for_datatable')
                 ->content(fn (User $user) => $user->roles->pluck('display_name')->toArray())
                 ->type(DataTableUi::BADGE, ['variant' => 'primary', 'size' => 'sm']),
@@ -62,6 +69,10 @@ class UserTable extends Datatable
             Column::make(__('table.users.teams'), 'teams_for_datatable')
                 ->content(fn (User $user) => $user->teams->pluck('name')->toArray())
                 ->type(DataTableUi::BADGE, ['variant' => 'secondary', 'size' => 'sm']),
+
+            Column::make(__('table.users.last_login_at'), 'last_login_at')
+                ->sortable()
+                ->format(fn ($value) => $value ? $value->diffForHumans() : '—'),
         ];
     }
 

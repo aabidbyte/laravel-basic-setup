@@ -4,6 +4,7 @@ return [
     'logout' => 'Log Out',
     'save' => 'Save',
     'delete' => 'Delete',
+    'generate_password' => 'Generate strong password',
     'delete_selected' => 'Delete Selected',
     'clear_selection' => 'Clear Selection',
     'clear_filters' => 'Clear Filters',

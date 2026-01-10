@@ -4,6 +4,7 @@ return [
     'logout' => 'Se déconnecter',
     'save' => 'Enregistrer',
     'delete' => 'Supprimer',
+    'generate_password' => 'Générer un mot de passe fort',
     'delete_selected' => 'Supprimer la sélection',
     'clear_selection' => 'Effacer la sélection',
     'confirm' => 'Confirmer',

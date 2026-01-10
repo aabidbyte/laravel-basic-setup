@@ -36,6 +36,7 @@ return [
         'status' => 'Status',
         'status_active' => 'Active',
         'status_inactive' => 'Inactive',
+        'last_login_at' => 'Last Login At',
         'filters' => [
             'role' => 'Role',
             'all_roles' => 'All Roles',

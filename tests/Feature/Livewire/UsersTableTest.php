@@ -80,3 +80,18 @@ test('clear selection empties selected array', function () {
         ->call('clearSelection')
         ->assertSet('selected', []);
 });
+
+test('datatable shows status and last login columns', function () {
+    $targetUser = User::factory()->create([
+        'name' => 'Test User',
+        'is_active' => true,
+        'last_login_at' => now()->subHours(2),
+    ]);
+
+    Livewire::actingAs($this->user)
+        ->test('tables.user-table')
+        ->assertSee(__('table.users.status'))
+        ->assertSee(__('table.users.last_login_at'))
+        ->assertSee(__('users.active'))
+        ->assertSee($targetUser->last_login_at->diffForHumans());
+});

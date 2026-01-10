@@ -11,8 +11,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Database\Eloquent\Collection;
-use DateTimeZone;
-use Exception;
 
 new class extends BasePageComponent {
     public ?string $pageSubtitle = null;
@@ -33,11 +31,14 @@ new class extends BasePageComponent {
     public ?string $locale = null;
     public bool $is_active = false;
 
-    /** @var array<int> */
+    /** @var array<string> Selected role UUIDs */
     public array $selectedRoles = [];
 
-    /** @var array<int> */
+    /** @var array<string> Selected team UUIDs */
     public array $selectedTeams = [];
+
+    /** @var array<string> Selected direct permission UUIDs */
+    public array $selectedDirectPermissions = [];
 
     /**
      * Mount the component and authorize access.
@@ -56,8 +57,9 @@ new class extends BasePageComponent {
         $this->timezone = $this->editUser->timezone ?? config('app.timezone');
         $this->locale = $this->editUser->locale ?? config('app.locale');
         $this->is_active = $this->editUser->is_active;
-        $this->selectedRoles = $this->editUser->roles->pluck('id')->toArray();
-        $this->selectedTeams = $this->editUser->teams->pluck('id')->toArray();
+        $this->selectedRoles = $this->editUser->roles->pluck('uuid')->toArray();
+        $this->selectedTeams = $this->editUser->teams->pluck('uuid')->toArray();
+        $this->selectedDirectPermissions = $this->editUser->permissions->pluck('uuid')->toArray();
     }
 
     /**
@@ -101,6 +103,16 @@ new class extends BasePageComponent {
     }
 
     /**
+     * Get available permissions for selection.
+     *
+     * @return Collection<int, \App\Models\Permission>
+     */
+    public function getPermissionsProperty()
+    {
+        return \App\Models\Permission::orderBy('name')->get();
+    }
+
+    /**
      * Validation rules.
      *
      * @return array<string, mixed>
@@ -116,9 +128,11 @@ new class extends BasePageComponent {
             'locale' => ['required', 'string', 'max:10'],
             'is_active' => ['boolean'],
             'selectedRoles' => ['array'],
-            'selectedRoles.*' => ['exists:roles,id'],
+            'selectedRoles.*' => ['exists:roles,uuid'],
             'selectedTeams' => ['array'],
-            'selectedTeams.*' => ['exists:teams,id'],
+            'selectedTeams.*' => ['exists:teams,uuid'],
+            'selectedDirectPermissions' => ['array'],
+            'selectedDirectPermissions.*' => ['exists:permissions,uuid'],
         ];
     }
 
@@ -143,8 +157,9 @@ new class extends BasePageComponent {
                     'locale' => $this->locale,
                     'is_active' => $this->is_active,
                 ],
-                roleIds: $this->selectedRoles,
-                teamIds: $this->selectedTeams,
+                roleUuids: $this->selectedRoles,
+                teamUuids: $this->selectedTeams,
+                permissionUuids: $this->selectedDirectPermissions,
             );
 
             NotificationBuilder::make()
@@ -212,17 +227,17 @@ new class extends BasePageComponent {
                         <p class="text-base-content/60 text-sm">{{ __('users.edit.password_hint') }}</p>
 
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            <x-ui.input type="password"
-                                        wire:model="password"
-                                        name="password"
-                                        :label="__('users.password')"
-                                        autocomplete="new-password"></x-ui.input>
+                            <x-ui.password wire:model="password"
+                                           name="password"
+                                           :label="__('users.password')"
+                                           with-strength-meter
+                                           with-generation
+                                           autocomplete="new-password" />
 
-                            <x-ui.input type="password"
-                                        wire:model="password_confirmation"
-                                        name="password_confirmation"
-                                        :label="__('users.password_confirmation')"
-                                        autocomplete="new-password"></x-ui.input>
+                            <x-ui.password wire:model="password_confirmation"
+                                           name="password_confirmation"
+                                           :label="__('users.password_confirmation')"
+                                           autocomplete="new-password" />
                         </div>
                     </div>
 
@@ -294,7 +309,7 @@ new class extends BasePageComponent {
                                                class="hover:bg-base-200 flex cursor-pointer items-center gap-3 rounded p-2">
                                             <input type="checkbox"
                                                    wire:model="selectedRoles"
-                                                   value="{{ $role->id }}"
+                                                   value="{{ $role->uuid }}"
                                                    class="checkbox checkbox-sm checkbox-primary">
                                             <span class="label-text">{{ $role->name }}</span>
                                         </label>
@@ -313,7 +328,7 @@ new class extends BasePageComponent {
                                                class="hover:bg-base-200 flex cursor-pointer items-center gap-3 rounded p-2">
                                             <input type="checkbox"
                                                    wire:model="selectedTeams"
-                                                   value="{{ $team->id }}"
+                                                   value="{{ $team->uuid }}"
                                                    class="checkbox checkbox-sm checkbox-secondary">
                                             <span class="label-text">{{ $team->name }}</span>
                                         </label>
@@ -321,6 +336,18 @@ new class extends BasePageComponent {
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    {{-- Direct Permissions --}}
+                    <div class="divider"></div>
+                    <div class="space-y-4">
+                        <x-ui.title level="3"
+                                    class="text-base-content/70">{{ __('users.direct_permissions') }}</x-ui.title>
+                        <p class="text-base-content/60 text-sm">{{ __('users.direct_permissions_help') }}</p>
+
+                        <x-ui.permission-matrix :permissions="$this->permissions"
+                                                :selectedPermissions="$selectedDirectPermissions"
+                                                wireModel="selectedDirectPermissions"></x-ui.permission-matrix>
                     </div>
 
                     {{-- Submit --}}

@@ -5,7 +5,6 @@ use App\Livewire\Bases\BasePageComponent;
 use App\Models\User;
 use App\Services\Notifications\NotificationBuilder;
 use App\Services\Users\UserService;
-use Exception;
 
 new class extends BasePageComponent
 {
@@ -107,6 +106,29 @@ new class extends BasePageComponent
         $this->showActivationModal = false;
         $this->activationLink = null;
     }
+
+    /**
+     * Delete the user.
+     */
+    public function deleteUser(): void
+    {
+        $this->authorize(Permissions::DELETE_USERS);
+
+        try {
+            $name = $this->user->name;
+            $this->user->delete();
+
+            NotificationBuilder::make()
+                ->title('pages.common.messages.deleted', ['name' => $name])
+                ->success()
+                ->persist()
+                ->send();
+
+            $this->redirect(route('users.index'), navigate: true);
+        } catch (Exception $e) {
+            NotificationBuilder::make()->title('users.show.delete_error')->content($e->getMessage())->error()->send();
+        }
+    }
 }; ?>
 
 <section class="mx-auto w-full max-w-4xl">
@@ -168,6 +190,17 @@ new class extends BasePageComponent
                                 </x-ui.button>
                             @endcan
                         @endif
+
+                        @can(Permissions::DELETE_USERS)
+                            <x-ui.button wire:click="deleteUser"
+                                         wire:confirm="{{ __('actions.confirm_delete') }}"
+                                         color="error"
+                                         size="sm">
+                                <x-ui.icon name="trash"
+                                           size="sm"></x-ui.icon>
+                                {{ __('actions.delete') }}
+                            </x-ui.button>
+                        @endcan
                     </div>
                 </div>
 
@@ -223,6 +256,27 @@ new class extends BasePageComponent
                                           class="text-base-content/60 text-sm">({{ $user->created_at->format('Y-m-d H:i') }})</span>
                                 </p>
                             </div>
+                            
+                            <div>
+                                <span class="text-base-content/60 text-sm">{{ __('users.updated_at') }}</span>
+                                <p class="font-medium">
+                                    {{ $user->updated_at->diffForHumans() }}
+                                    <span
+                                          class="text-base-content/60 text-sm">({{ $user->updated_at->format('Y-m-d H:i') }})</span>
+                                </p>
+                            </div>
+
+                            <div>
+                                <span class="text-base-content/60 text-sm">{{ __('users.email_verified_at') }}</span>
+                                <p class="font-medium">
+                                    @if($user->email_verified_at)
+                                        {{ $user->email_verified_at->diffForHumans() }}
+                                        <span class="text-base-content/60 text-sm">({{ $user->email_verified_at->format('Y-m-d H:i') }})</span>
+                                    @else
+                                        <span class="text-error italic">{{ __('users.not_verified') }}</span>
+                                    @endif
+                                </p>
+                            </div>
 
                             @if ($user->last_login_at)
                                 <div>
@@ -241,8 +295,36 @@ new class extends BasePageComponent
                                     <p class="font-medium">{{ $user->createdBy->name }}</p>
                                 </div>
                             @endif
+
+                            @if ($user->createdUsers()->exists())
+                                <div>
+                                    <span class="text-base-content/60 text-sm">{{ __('users.created_users_count') }}</span>
+                                    <p class="font-medium">{{ $user->createdUsers()->count() }}</p>
+                                </div>
+                            @endif
                         </div>
                     </div>
+                </div>
+
+                {{-- Notification Preferences --}}
+                <div class="mt-8 space-y-4">
+                    <x-ui.title level="3"
+                                class="text-base-content/70 border-b pb-2">{{ __('users.notification_preferences') }}</x-ui.title>
+                    
+                    @if(!empty($user->notification_preferences))
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                             @foreach($user->notification_preferences as $channel => $enabled)
+                                <div class="flex items-center justify-between p-3 bg-base-200 rounded-lg">
+                                    <span class="font-medium">{{ Str::headline($channel) }}</span>
+                                    <x-ui.badge :variant="$enabled ? 'success' : 'ghost'" size="sm">
+                                        {{ $enabled ? __('users.active') : __('users.inactive') }}
+                                    </x-ui.badge>
+                                </div>
+                             @endforeach
+                        </div>
+                    @else
+                        <p class="text-base-content/60 italic">{{ __('users.not_set') }}</p>
+                    @endif
                 </div>
 
                 {{-- Preferences --}}
@@ -287,6 +369,21 @@ new class extends BasePageComponent
                             @foreach ($user->teams as $team)
                                 <x-ui.badge variant="secondary"
                                             size="md">{{ $team->name }}</x-ui.badge>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Direct Permissions --}}
+                @if ($user->permissions->count() > 0)
+                    <div class="mt-8 space-y-4">
+                        <x-ui.title level="3"
+                                    class="text-base-content/70 border-b pb-2">{{ __('users.direct_permissions') }}</x-ui.title>
+                        <p class="text-base-content/60 text-sm">{{ __('users.direct_permissions_description') }}</p>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach ($user->permissions as $permission)
+                                <x-ui.badge variant="info"
+                                            size="md">{{ $permission->display_name ?? $permission->name }}</x-ui.badge>
                             @endforeach
                         </div>
                     </div>

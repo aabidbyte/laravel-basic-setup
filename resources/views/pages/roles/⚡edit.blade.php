@@ -6,7 +6,6 @@ use App\Livewire\Bases\BasePageComponent;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Services\Notifications\NotificationBuilder;
-use Exception;
 use Illuminate\Validation\Rule;
 use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Locked;

@@ -73,8 +73,8 @@
                             $isSupported = in_array($action, $supportedActions, true);
                             $permissionName = $matrix->getPermissionName($entity, $action);
                             $permission = $permissionLookup->get($permissionName);
-                            $permissionId = $permission?->id;
-                            $isChecked = $permissionId && in_array($permissionId, $selectedPermissions, false);
+                            $permissionUuid = $permission?->uuid;
+                            $isChecked = $permissionUuid && in_array($permissionUuid, $selectedPermissions, false);
                         @endphp
                         <td class="px-2 text-center">
                             @if ($isSupported && $permission)
@@ -89,7 +89,7 @@
                                 @else
                                     <input type="checkbox"
                                            class="checkbox checkbox-sm checkbox-primary"
-                                           value="{{ $permissionId }}"
+                                           value="{{ $permissionUuid }}"
                                            @if ($wireModel) wire:model="{{ $wireModel }}" @endif
                                            @if ($isChecked) checked @endif
                                            title="{{ $permission->display_name ?? $permissionName }}" />

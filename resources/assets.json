@@ -12,7 +12,8 @@
             "resources/js/alpine/data/share-button.js",
             "resources/js/alpine/data/theme-switcher.js",
             "resources/js/alpine/data/password-visibility.js",
-            "resources/js/alpine/data/dropdown.js"
+            "resources/js/alpine/data/dropdown.js",
+            "resources/js/alpine/data/validation-error-scroller.js"
         ],
         "app": [
             "resources/js/datatable.js",

@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Models\Base\BaseModel;
+use App\Models\Pivots\PermissionRole;
+use App\Models\Pivots\RoleUser;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
@@ -28,7 +30,8 @@ class Role extends BaseModel
      */
     public function permissions(): BelongsToMany
     {
-        return $this->belongsToMany(Permission::class);
+        return $this->belongsToMany(Permission::class)
+            ->using(PermissionRole::class);
     }
 
     /**
@@ -36,7 +39,8 @@ class Role extends BaseModel
      */
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class);
+        return $this->belongsToMany(User::class)
+            ->using(RoleUser::class);
     }
 
     /**

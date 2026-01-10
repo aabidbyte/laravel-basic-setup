@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Models\Base\BaseModel;
+use App\Models\Pivots\TeamUser;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -29,6 +30,7 @@ class Team extends BaseModel
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'team_user')
+            ->using(TeamUser::class)
             ->withTimestamps();
     }
 

@@ -6,6 +6,7 @@ namespace App\Models;
 use App\Models\Base\BaseUserModel;
 use App\Models\Concerns\HasDataTable;
 use App\Models\Concerns\HasRolesAndPermissions;
+use App\Models\Pivots\TeamUser;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -95,6 +96,7 @@ class User extends BaseUserModel
     public function teams(): BelongsToMany
     {
         return $this->belongsToMany(Team::class, 'team_user')
+            ->using(TeamUser::class)
             ->withTimestamps();
     }
 
@@ -175,25 +177,6 @@ class User extends BaseUserModel
         $this->frontend_preferences = $preferences;
     }
 
-    /**
-     * Get the user's notification preferences.
-     *
-     * @return array<string, mixed>
-     */
-    public function getNotificationPreferencesAttribute(): array
-    {
-        return $this->attributes['notification_preferences'] ?? [];
-    }
-
-    /**
-     * Set the user's notification preferences.
-     *
-     * @param  array<string, mixed>  $value
-     */
-    public function setNotificationPreferencesAttribute(array $value): void
-    {
-        $this->attributes['notification_preferences'] = json_encode($value);
-    }
 
     /**
      * Get roles for datatable display

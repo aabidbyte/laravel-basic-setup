@@ -297,6 +297,61 @@ The system includes first-class RTL support:
 
 **Documentation**: See `docs/internationalization.md` for complete guide, best practices, and troubleshooting.
 
+### Validation Error Scrolling System
+
+The application includes an automatic validation error scrolling system that enhances UX by scrolling to the first validation error when forms receive errors from Laravel/Livewire.
+
+#### How It Works
+
+The system uses a CSP-safe Alpine.js component (`validationErrorScroller`) that:
+
+- Listens for Livewire updates to detect validation errors
+- Automatically finds the first error element in the DOM (elements with `.input-error`, `.select-error`, or `.textarea-error` classes)
+- Smoothly scrolls to the first error with appropriate viewport positioning
+- Optionally focuses the error input for keyboard accessibility
+
+#### Usage
+
+**Automatic (Recommended):**
+
+The component is automatically initialized on all pages via global Livewire listener. No manual integration required.
+
+**Manual Integration:**
+
+For forms that need custom configuration, wrap the form with the component:
+
+```blade
+<div x-data="validationErrorScroller({ offset: 120 })">
+    <x-ui.input name="name" label="Name" wire:model="name"></x-ui.input>
+    <x-ui.input name="email" label="Email" wire:model="email"></x-ui.input>
+    <button wire:click="submit">Submit</button>
+</div>
+```
+
+**Configuration Options:**
+
+- `offset` (default: `100`): Offset from viewport center in pixels
+- `behavior` (default: `'smooth'`): Scroll behavior - `'smooth'` or `'auto'`
+- `block` (default: `'center'`): Scroll alignment - `'start'`, `'center'`, `'end'`, `'nearest'`
+
+**Example with custom offset:**
+
+```blade
+{{-- Increase offset to account for fixed header --}}
+<div x-data="validationErrorScroller({ offset: 150 })">
+    {{-- Form fields --}}
+</div>
+```
+
+#### Implementation Details
+
+- **CSP-Safe**: Component is registered globally and follows all CSP guidelines
+- **Performance**: Uses `$nextTick()` to wait for DOM updates before scrolling
+- **Accessibility**: Automatically focuses the first error input for keyboard users
+- **Compatibility**: Works with all existing form components (`x-ui.input`, `x-ui.select`, `x-ui.password`, etc.)
+- **Location**: `resources/js/alpine/data/validation-error-scroller.js`
+
+
 ### DataTable Component
 
 The application uses a Livewire-based DataTable component system. See `docs/components/datatable/index.md` for complete documentation.

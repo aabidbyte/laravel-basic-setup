@@ -32,10 +32,10 @@ new class extends BasePageComponent {
     public ?string $locale = null;
     public bool $sendActivation = false;
 
-    /** @var array<int> */
+    /** @var array<string> Selected role UUIDs */
     public array $selectedRoles = [];
 
-    /** @var array<int> */
+    /** @var array<string> Selected team UUIDs */
     public array $selectedTeams = [];
 
     /**
@@ -108,9 +108,9 @@ new class extends BasePageComponent {
             'timezone' => ['required', 'string', 'timezone'],
             'locale' => ['required', 'string', 'max:10'],
             'selectedRoles' => ['array'],
-            'selectedRoles.*' => ['exists:roles,id'],
+            'selectedRoles.*' => ['exists:roles,uuid'],
             'selectedTeams' => ['array'],
-            'selectedTeams.*' => ['exists:teams,id'],
+            'selectedTeams.*' => ['exists:teams,uuid'],
         ];
 
         // If not sending activation, password is required
@@ -146,8 +146,8 @@ new class extends BasePageComponent {
                     'locale' => $this->locale,
                 ],
                 sendActivation: $this->sendActivation,
-                roleIds: $this->selectedRoles,
-                teamIds: $this->selectedTeams,
+                roleUuids: $this->selectedRoles,
+                teamUuids: $this->selectedTeams,
             );
 
             NotificationBuilder::make()
@@ -234,19 +234,19 @@ new class extends BasePageComponent {
 
                     @if (!$sendActivation)
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            <x-ui.input type="password"
-                                        wire:model="password"
-                                        name="password"
-                                        :label="__('users.password')"
-                                        required
-                                        autocomplete="new-password"></x-ui.input>
+                            <x-ui.password wire:model="password"
+                                           name="password"
+                                           :label="__('users.password')"
+                                           required
+                                           with-strength-meter
+                                           with-generation
+                                           autocomplete="new-password" />
 
-                            <x-ui.input type="password"
-                                        wire:model="password_confirmation"
-                                        name="password_confirmation"
-                                        :label="__('users.password_confirmation')"
-                                        required
-                                        autocomplete="new-password"></x-ui.input>
+                            <x-ui.password wire:model="password_confirmation"
+                                           name="password_confirmation"
+                                           :label="__('users.password_confirmation')"
+                                           required
+                                           autocomplete="new-password" />
                         </div>
                     @endif
                 </div>
@@ -302,7 +302,7 @@ new class extends BasePageComponent {
                                     <label class="hover:bg-base-200 flex cursor-pointer items-center gap-3 rounded p-2">
                                         <input type="checkbox"
                                                wire:model="selectedRoles"
-                                               value="{{ $role->id }}"
+                                               value="{{ $role->uuid }}"
                                                class="checkbox checkbox-sm checkbox-primary">
                                         <span class="label-text">{{ $role->name }}</span>
                                     </label>
@@ -320,7 +320,7 @@ new class extends BasePageComponent {
                                     <label class="hover:bg-base-200 flex cursor-pointer items-center gap-3 rounded p-2">
                                         <input type="checkbox"
                                                wire:model="selectedTeams"
-                                               value="{{ $team->id }}"
+                                               value="{{ $team->uuid }}"
                                                class="checkbox checkbox-sm checkbox-secondary">
                                         <span class="label-text">{{ $team->name }}</span>
                                     </label>

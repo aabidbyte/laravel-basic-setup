@@ -2,6 +2,7 @@
     'label' => null,
     'error' => null,
     'required' => false,
+    'withGeneration' => false,
 ])
 
 @php
@@ -24,6 +25,7 @@
     <div class="relative overflow-visible"
          x-data="passwordVisibility()">
         <input type="password"
+               x-ref="input"
                x-bind:type="showPassword ? 'text' : 'password'"
                {{ $attributes->merge(['class' => 'input input-bordered w-full pr-10' . ($hasError ? ' input-error' : '')])->except(['label', 'error', 'type']) }}
                id="{{ $inputId }}" />
@@ -43,11 +45,24 @@
                            class="h-5 w-5"></x-ui.icon>
             </span>
         </button>
+
+        @if ($withGeneration)
+            <button type="button"
+                    @click.stop="generate()"
+                    class="btn btn-ghost btn-sm btn-circle absolute right-10 top-1/2 z-10 h-8 min-h-0 w-8 -translate-y-1/2 p-0"
+                    title="{{ __('actions.generate_password') }}"
+                    tabindex="0">
+                <x-ui.icon name="key"
+                           class="h-5 w-5"></x-ui.icon>
+            </button>
+        @endif
     </div>
     <x-ui.input-error :name="$attributes->get('name')"
                       :error="$error" />
 
     @if ($withStrengthMeter ?? false)
-        <x-ui.password-strength :target-id="$inputId" />
+        <div wire:key="password-strength-{{ $inputId }}">
+            <x-ui.password-strength :target-id="$inputId" />
+        </div>
     @endif
 </label>

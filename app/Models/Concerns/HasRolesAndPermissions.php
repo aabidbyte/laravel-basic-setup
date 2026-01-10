@@ -2,6 +2,9 @@
 
 namespace App\Models\Concerns;
 
+use App\Models\Permission;
+use App\Models\Pivots\PermissionUser;
+use App\Models\Pivots\RoleUser;
 use App\Models\Role;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Collection;
@@ -18,7 +21,17 @@ trait HasRolesAndPermissions
      */
     public function roles(): BelongsToMany
     {
-        return $this->belongsToMany(Role::class);
+        return $this->belongsToMany(Role::class)
+            ->using(RoleUser::class);
+    }
+
+    /**
+     * Get the direct permissions assigned to the user (not through roles).
+     */
+    public function permissions(): BelongsToMany
+    {
+        return $this->belongsToMany(Permission::class)
+            ->using(PermissionUser::class);
     }
 
     /**
@@ -123,6 +136,81 @@ trait HasRolesAndPermissions
     }
 
     /**
+     * Assign the given permission(s) directly to the user.
+     *
+     * @param  string|Permission  ...$permissions  Permission(s) to assign
+     * @return $this
+     */
+    public function assignPermission(string|Permission ...$permissions): static
+    {
+        $permissionModels = collect($permissions)->map(function ($permission) {
+            return $permission instanceof Permission
+                ? $permission
+                : Permission::where('name', $permission)->first();
+        })->filter();
+
+        $this->permissions()->syncWithoutDetaching($permissionModels->pluck('id'));
+        $this->unsetRelation('permissions');
+
+        return $this;
+    }
+
+    /**
+     * Sync the given permission(s) directly to the user, removing any not in the list.
+     *
+     * @param  array<int|string|Permission>|Collection  $permissions  Permission IDs, names, or models
+     * @return $this
+     */
+    public function syncPermissions(array|Collection $permissions): static
+    {
+        $permissions = $permissions instanceof Collection ? $permissions->all() : $permissions;
+
+        $permissionIds = collect($permissions)->map(function ($permission) {
+            if ($permission instanceof Permission) {
+                return $permission->id;
+            }
+            if (is_numeric($permission)) {
+                return (int) $permission;
+            }
+
+            return Permission::where('name', $permission)->first()?->id;
+        })->filter()->toArray();
+
+        $this->permissions()->sync($permissionIds);
+        $this->unsetRelation('permissions');
+
+        return $this;
+    }
+
+    /**
+     * Remove the given permission from the user.
+     *
+     * @param  string|Permission  $permission  Permission to remove
+     * @return $this
+     */
+    public function removePermission(string|Permission $permission): static
+    {
+        $permissionModel = $permission instanceof Permission
+            ? $permission
+            : Permission::where('name', $permission)->first();
+
+        if ($permissionModel) {
+            $this->permissions()->detach($permissionModel->id);
+            $this->unsetRelation('permissions');
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get only the direct permissions assigned to the user (not from roles).
+     */
+    public function getDirectPermissions(): Collection
+    {
+        return $this->permissions;
+    }
+
+    /**
      * Check if the user has the given permission.
      *
      * @param  string  $permission  Permission name to check
@@ -133,11 +221,18 @@ trait HasRolesAndPermissions
     }
 
     /**
-     * Get all permissions for the user through their roles.
+     * Get all permissions for the user (both from roles and direct permissions).
      */
     public function getAllPermissions(): Collection
     {
-        return $this->roles->flatMap->permissions->unique('id');
+        // Get permissions from roles
+        $rolePermissions = $this->roles->flatMap->permissions;
+
+        // Get direct permissions
+        $directPermissions = $this->permissions;
+
+        // Merge and remove duplicates
+        return $rolePermissions->merge($directPermissions)->unique('id');
     }
 
     /**

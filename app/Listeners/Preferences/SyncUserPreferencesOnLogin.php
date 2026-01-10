@@ -27,7 +27,7 @@ class SyncUserPreferencesOnLogin
     {
         $user = $event->user;
 
-        if (! $user) {
+        if (! $user instanceof \App\Models\User) {
             return;
         }
 
@@ -41,5 +41,8 @@ class SyncUserPreferencesOnLogin
                 session(['team_id' => $firstTeam->id]);
             }
         }
+
+        // Update last login timestamp
+        $user->updateLastLoginAt();
     }
 }

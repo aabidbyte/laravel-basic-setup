@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Services\Users;
 
 use App\Mail\UserActivationMail;
+use App\Models\Permission;
 use App\Models\Role;
+use App\Models\Team;
 use App\Models\User;
 use App\Services\Mail\MailBuilder;
 use Illuminate\Support\Facades\Auth;
@@ -31,8 +33,9 @@ class UserService
      *
      * @param  array<string, mixed>  $data  User data (name, email, username, password, etc.)
      * @param  bool  $sendActivation  Whether to send an activation email
-     * @param  array<int>  $roleIds  Role IDs to assign
-     * @param  array<int>  $teamIds  Team IDs to assign
+     * @param  array<string>  $roleUuids  Role UUIDs to assign
+     * @param  array<string>  $teamUuids  Team UUIDs to assign
+     * @param  array<string>  $permissionUuids  Direct permission UUIDs to assign
      * @return User The created user
      *
      * @throws InvalidArgumentException If email is required for activation but not provided
@@ -40,15 +43,16 @@ class UserService
     public function createUser(
         array $data,
         bool $sendActivation = false,
-        array $roleIds = [],
-        array $teamIds = [],
+        array $roleUuids = [],
+        array $teamUuids = [],
+        array $permissionUuids = [],
     ): User {
         // Validate: if sending activation, email is required
         if ($sendActivation && empty($data['email'])) {
             throw new InvalidArgumentException('Email is required when sending activation email.');
         }
 
-        return DB::transaction(function () use ($data, $sendActivation, $roleIds, $teamIds) {
+        return DB::transaction(function () use ($data, $sendActivation, $roleUuids, $teamUuids, $permissionUuids) {
             // Get the creator (current authenticated user)
             /** @var User|null $creator */
             $creator = Auth::user();
@@ -67,15 +71,22 @@ class UserService
             // Create the user
             $user = User::create($userData);
 
-            // Assign roles (if provided)
-            if (! empty($roleIds)) {
-                $roles = Role::whereIn('id', $roleIds)->get();
-                $user->syncRoles($roles);
+            // Assign roles (if provided) - lookup by UUID
+            if (! empty($roleUuids)) {
+                $roleIds = Role::whereIn('uuid', $roleUuids)->pluck('id')->toArray();
+                $user->syncRoles($roleIds);
             }
 
-            // Assign teams (if provided) - manually attach with UUID
-            if (! empty($teamIds)) {
+            // Assign teams (if provided) - lookup by UUID, then sync with pivot UUID
+            if (! empty($teamUuids)) {
+                $teamIds = Team::whereIn('uuid', $teamUuids)->pluck('id')->toArray();
                 $this->syncTeamsWithUuid($user, $teamIds);
+            }
+
+            // Assign direct permissions (if provided) - lookup by UUID
+            if (! empty($permissionUuids)) {
+                $permissionIds = Permission::whereIn('uuid', $permissionUuids)->pluck('id')->toArray();
+                $user->syncPermissions($permissionIds);
             }
 
             // Send activation email if requested
@@ -92,17 +103,19 @@ class UserService
      *
      * @param  User  $user  The user to update
      * @param  array<string, mixed>  $data  User data to update
-     * @param  array<int>|null  $roleIds  Role IDs to assign (null = don't change)
-     * @param  array<int>|null  $teamIds  Team IDs to assign (null = don't change)
+     * @param  array<string>|null  $roleUuids  Role UUIDs to assign (null = don't change)
+     * @param  array<string>|null  $teamUuids  Team UUIDs to assign (null = don't change)
+     * @param  array<string>|null  $permissionUuids  Direct permission UUIDs to assign (null = don't change)
      * @return User The updated user
      */
     public function updateUser(
         User $user,
         array $data,
-        ?array $roleIds = null,
-        ?array $teamIds = null,
+        ?array $roleUuids = null,
+        ?array $teamUuids = null,
+        ?array $permissionUuids = null,
     ): User {
-        return DB::transaction(function () use ($user, $data, $roleIds, $teamIds) {
+        return DB::transaction(function () use ($user, $data, $roleUuids, $teamUuids, $permissionUuids) {
             // Build update data
             $updateData = [];
 
@@ -146,15 +159,22 @@ class UserService
                 $user->update($updateData);
             }
 
-            // Update roles if provided
-            if ($roleIds !== null) {
-                $roles = Role::whereIn('id', $roleIds)->get();
-                $user->syncRoles($roles);
+            // Update roles if provided - lookup by UUID
+            if ($roleUuids !== null) {
+                $roleIds = Role::whereIn('uuid', $roleUuids)->pluck('id')->toArray();
+                $user->syncRoles($roleIds);
             }
 
-            // Update teams if provided - manually attach with UUID
-            if ($teamIds !== null) {
+            // Update teams if provided - lookup by UUID, then sync with pivot UUID
+            if ($teamUuids !== null) {
+                $teamIds = Team::whereIn('uuid', $teamUuids)->pluck('id')->toArray();
                 $this->syncTeamsWithUuid($user, $teamIds);
+            }
+
+            // Update direct permissions if provided - lookup by UUID
+            if ($permissionUuids !== null) {
+                $permissionIds = Permission::whereIn('uuid', $permissionUuids)->pluck('id')->toArray();
+                $user->syncPermissions($permissionIds);
             }
 
             return $user->fresh();
