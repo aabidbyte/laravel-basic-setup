@@ -78,7 +78,7 @@
                                size="sm"></x-ui.icon>
                     {{ __('table.filters') }}
                     @if (count($datatable->getActiveFilters()) > 0)
-                        <x-ui.badge variant="primary"
+                        <x-ui.badge color="primary"
                                     size="sm">{{ count($datatable->getActiveFilters()) }}</x-ui.badge>
                     @endif
                 </x-ui.button>
@@ -92,7 +92,7 @@
             <span class="text-base-content/70 text-sm">{{ __('table.active_filters') }}:</span>
             @foreach ($datatable->getActiveFilters() as $filter)
                 <x-ui.badge size="sm"
-                            variant="secondary"
+                            color="secondary"
                             class="gap-1">
                     <span class="font-medium">{{ $filter['label'] }}:</span>
                     <span>{{ $filter['valueLabel'] }}</span>

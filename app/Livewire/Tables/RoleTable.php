@@ -6,6 +6,7 @@ namespace App\Livewire\Tables;
 
 use App\Constants\Auth\Permissions;
 use App\Constants\Auth\Roles;
+use App\Constants\DataTable\DataTableUi;
 use App\Livewire\DataTable\Datatable;
 use App\Models\Role;
 use App\Services\DataTable\Builders\Action;
@@ -58,7 +59,7 @@ class RoleTable extends Datatable
 
             Column::make(__('table.roles.users_count'), 'users_count')
                 ->sortable()
-                ->format(fn ($value) => "<span class='badge badge-ghost'>{$value}</span>")
+                ->format(fn ($value) => DataTableUi::renderComponent(DataTableUi::BADGE, (string) $value, ['variant' => 'ghost']))
                 ->html()
                 ->class('text-center'),
         ];

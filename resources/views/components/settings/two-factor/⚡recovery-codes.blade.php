@@ -67,7 +67,7 @@ new class extends LivewireBaseComponent {
             <x-ui.button type="button"
                          x-show="!showRecoveryCodes"
                          @click="showRecoveryCodes = true"
-                         variant="primary"
+                         color="primary"
                          aria-expanded="false"
                          aria-controls="recovery-codes-section">
                 {{ __('settings.two_factor.recovery.view_button') }}
@@ -76,7 +76,7 @@ new class extends LivewireBaseComponent {
             <x-ui.button type="button"
                          x-show="showRecoveryCodes"
                          @click="showRecoveryCodes = false"
-                         variant="primary"
+                         color="primary"
                          aria-expanded="true"
                          aria-controls="recovery-codes-section">
                 {{ __('settings.two_factor.recovery.hide_button') }}

@@ -10,14 +10,13 @@ A centralized, flexible badge component that provides consistent badge functiona
 
 ### Props
 
-| Prop     | Type           | Default | Description                                                                                                              |
-| -------- | -------------- | ------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `style`  | `string\|null` | `null`  | Badge style: `outline`, `dash`, `soft`, `ghost` (default: solid badge)                                                   |
-| `variant`| `string\|null` | `null`  | Badge variant/color: `neutral`, `primary`, `secondary`, `accent`, `info`, `success`, `warning`, `error` (preferred over `color`) |
-| `color`  | `string\|null` | `null`  | Badge color: `neutral`, `primary`, `secondary`, `accent`, `info`, `success`, `warning`, `error` (legacy, use `variant`) |
-| `size`   | `string`       | `'md'`  | Badge size: `xs`, `sm`, `md`, `lg`, `xl`                                                                                 |
-| `class`  | `string`       | `''`    | Additional CSS classes for the badge                                                                                     |
-| `text`   | `string\|null` | `null`  | Text content (alternative to slot for programmatic rendering from backend)                                                |
+| Prop      | Type           | Default   | Description                                                                                             |
+| --------- | -------------- | --------- | ------------------------------------------------------------------------------------------------------- |
+| `variant` | `string`       | `'solid'` | Badge style variant: `solid`, `outline`, `ghost`, `soft`, `dash`                                        |
+| `color`   | `string\|null` | `null`    | Badge color: `neutral`, `primary`, `secondary`, `accent`, `info`, `success`, `warning`, `error`         |
+| `size`    | `string`       | `'md'`    | Badge size: `xs`, `sm`, `md`, `lg`, `xl`                                                                |
+| `class`   | `string`       | `''`      | Additional CSS classes for the badge                                                                    |
+| `text`    | `string\|null` | `null`    | Text content (alternative to slot for programmatic rendering from backend)                              |
 
 ### Usage Examples
 
@@ -29,22 +28,15 @@ A centralized, flexible badge component that provides consistent badge functiona
 
 #### Colored Badges
 
-**Using `variant` (recommended):**
-```blade
-<x-ui.badge variant="success">Success</x-ui.badge>
-<x-ui.badge variant="error">Error</x-ui.badge>
-<x-ui.badge variant="warning">Warning</x-ui.badge>
-<x-ui.badge variant="info">Info</x-ui.badge>
-<x-ui.badge variant="primary">Primary</x-ui.badge>
-<x-ui.badge variant="secondary">Secondary</x-ui.badge>
-<x-ui.badge variant="accent">Accent</x-ui.badge>
-<x-ui.badge variant="neutral">Neutral</x-ui.badge>
-```
-
-**Using `color` (legacy, still supported):**
 ```blade
 <x-ui.badge color="success">Success</x-ui.badge>
 <x-ui.badge color="error">Error</x-ui.badge>
+<x-ui.badge color="warning">Warning</x-ui.badge>
+<x-ui.badge color="info">Info</x-ui.badge>
+<x-ui.badge color="primary">Primary</x-ui.badge>
+<x-ui.badge color="secondary">Secondary</x-ui.badge>
+<x-ui.badge color="accent">Accent</x-ui.badge>
+<x-ui.badge color="neutral">Neutral</x-ui.badge>
 ```
 
 #### Sized Badges
@@ -60,18 +52,18 @@ A centralized, flexible badge component that provides consistent badge functiona
 #### Styled Badges
 
 ```blade
-<x-ui.badge style="outline" color="primary">Outline</x-ui.badge>
-<x-ui.badge style="dash" color="success">Dash</x-ui.badge>
-<x-ui.badge style="soft" color="warning">Soft</x-ui.badge>
-<x-ui.badge style="ghost" color="error">Ghost</x-ui.badge>
+<x-ui.badge variant="outline" color="primary">Outline</x-ui.badge>
+<x-ui.badge variant="dash" color="success">Dash</x-ui.badge>
+<x-ui.badge variant="soft" color="warning">Soft</x-ui.badge>
+<x-ui.badge variant="ghost" color="error">Ghost</x-ui.badge>
 ```
 
 #### Combined Props
 
 ```blade
-<x-ui.badge variant="success" size="lg">Enabled</x-ui.badge>
-<x-ui.badge variant="error" size="lg">Disabled</x-ui.badge>
-<x-ui.badge variant="primary" size="sm" style="outline">Small Outline</x-ui.badge>
+<x-ui.badge color="success" size="lg">Enabled</x-ui.badge>
+<x-ui.badge color="error" size="lg">Disabled</x-ui.badge>
+<x-ui.badge variant="outline" color="primary" size="sm">Small Outline</x-ui.badge>
 ```
 
 #### Programmatic Rendering (Backend)
@@ -83,13 +75,13 @@ use App\Constants\DataTable\DataTableUi;
 
 // Render single badge
 $html = DataTableUi::renderComponent(DataTableUi::BADGE, 'Admin', [
-    'variant' => 'primary',
+    'color' => 'primary',
     'size' => 'sm',
 ]);
 
 // Render multiple badges
 $html = DataTableUi::renderComponent(DataTableUi::BADGE, ['Admin', 'Editor'], [
-    'variant' => 'primary',
+    'color' => 'primary',
     'size' => 'sm',
 ]);
 ```

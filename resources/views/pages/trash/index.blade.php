@@ -18,7 +18,8 @@
                 @foreach ($registry->getAccessibleEntities() as $type => $typeConfig)
                     <x-ui.button href="{{ route('trash.index', ['entityType' => $type]) }}"
                                  wire:navigate
-                                 :variant="$entityType === $type ? 'primary' : 'ghost'"
+                                 :color="$entityType === $type ? 'primary' : null"
+                                 :variant="$entityType === $type ? 'solid' : 'ghost'"
                                  size="sm">
                         <x-ui.icon name="{{ $typeConfig['icon'] }}"
                                    size="sm"></x-ui.icon>

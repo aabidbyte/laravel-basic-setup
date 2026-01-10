@@ -23,7 +23,7 @@
                                :error="$errors->first('password_confirmation')"></x-ui.password>
 
                 <x-ui.button type="submit"
-                             variant="primary"
+                             color="primary"
                              class="w-full">
                     {{ __('authentication.activation.submit') }}
                 </x-ui.button>

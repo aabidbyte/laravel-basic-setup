@@ -32,7 +32,11 @@
                                       alpine-confirm-label="confirmLabel || '{{ __('actions.confirm') }}'"
                                       alpine-cancel-label="cancelLabel || '{{ __('actions.cancel') }}'"
                                       on-confirm="executeConfirm()"
-                                      on-cancel="closeModal()" />
+                                      on-cancel="closeModal()"
+                                      :confirm-variant="$confirmVariant"
+                                      :confirm-color="$confirmColor"
+                                      :cancel-variant="$cancelVariant"
+                                      :cancel-color="$cancelColor" />
         @else
             {{ $slot }}
         @endif

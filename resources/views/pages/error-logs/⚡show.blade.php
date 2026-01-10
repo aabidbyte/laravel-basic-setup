@@ -120,7 +120,7 @@ new class extends BasePageComponent {
                             <x-ui.copy-button :text="$errorLog->reference_id"
                                               size="xs"></x-ui.copy-button>
                         </div>
-                        <x-ui.badge :variant="$errorLog->isResolved() ? 'success' : 'error'"
+                        <x-ui.badge :color="$errorLog->isResolved() ? 'success' : 'error'"
                                     size="lg">
                             {{ $errorLog->isResolved() ? __('errors.management.resolved') : __('errors.management.unresolved') }}
                         </x-ui.badge>
@@ -198,7 +198,9 @@ new class extends BasePageComponent {
                         <span class="text-base-content/60 text-sm">{{ __('errors.management.url') }}</span>
                         <p class="break-all font-mono text-sm">
                             @if ($errorLog->method)
-                                <span class="badge badge-ghost badge-xs mr-1">{{ $errorLog->method }}</span>
+                                <x-ui.badge variant="ghost"
+                                            size="xs"
+                                            class="mr-1">{{ $errorLog->method }}</x-ui.badge>
                             @endif
                             {{ $errorLog->url ?? '-' }}
                         </p>

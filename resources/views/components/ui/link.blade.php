@@ -8,6 +8,7 @@
 --}}
 @props([
     'href' => '#',
+    'variant' => null,
     'color' => 'primary',
     'underline' => false,
     'class' => '',
@@ -26,10 +27,15 @@
         'error' => 'link-error',
     ];
 
+    $variantClasses = [
+        // Add variants here if needed in the future
+    ];
+
     $colorClass = $colorClasses[$color] ?? $colorClasses['primary'];
+    $variantClass = $variantClasses[$variant] ?? '';
     $underlineClass = $underline ? '' : 'link-hover';
 
-    $classes = "link {$colorClass} {$underlineClass}";
+    $classes = "link {$colorClass} {$variantClass} {$underlineClass}";
     if (!empty($class)) {
         $classes .= ' ' . $class;
     }

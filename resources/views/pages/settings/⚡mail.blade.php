@@ -296,14 +296,14 @@ new class extends BasePageComponent {
             {{-- Actions --}}
             <div class="flex flex-wrap items-center gap-4 pt-4">
                 <x-ui.button type="submit"
-                             variant="primary"
+                             color="primary"
                              data-test="save-mail-settings-button">
                     {{ __('actions.save') }}
                 </x-ui.button>
 
                 <x-ui.button type="button"
                              wire:click="testConnection"
-                             variant="secondary">
+                             color="secondary">
                     <x-ui.icon name="paper-airplane"
                                class="h-4 w-4"></x-ui.icon>
                     {{ __('settings.mail.test_button') }}

@@ -44,6 +44,7 @@ class BaseModal extends Component
         public ?string $description = null,
         ?string $descriptionId = null,
         public string $variant = 'default',
+        public ?string $color = null,
         public string $maxWidth = 'md',
         public ?string $placement = null,
         public string $class = '',
@@ -77,6 +78,7 @@ class BaseModal extends Component
         $this->placement = $this->sanitizePlacement($this->placement);
         $this->transition = $this->sanitizeTransition($this->transition);
         $this->variant = $this->sanitizeVariant($this->variant);
+        $this->color = $this->sanitizeColor($this->color);
         $this->backdropOpacity = $this->sanitizeOpacity($this->backdropOpacity);
         $this->backdropBlur = $this->sanitizeBackdropBlur($this->backdropBlur);
 
@@ -184,11 +186,11 @@ class BaseModal extends Component
             default => $this->maxWidth,
         };
 
-        $variantClasses = match ($this->variant) {
+        $colorClasses = match ($this->color) {
             'success' => 'border border-success',
             'info' => 'border border-info',
             'warning' => 'border border-warning',
-            'danger' => 'border border-error',
+            'danger', 'error' => 'border border-error',
             default => '',
         };
 
@@ -200,7 +202,7 @@ class BaseModal extends Component
             'p-6',
             'shadow-lg',
             $maxWidthClasses,
-            $variantClasses,
+            $colorClasses,
             $this->dialogClass,
         ];
 
@@ -406,13 +408,28 @@ class BaseModal extends Component
 
         $allowed = [
             'default',
+        ];
+
+        return in_array($variant, $allowed, true) ? $variant : 'default';
+    }
+
+    private function sanitizeColor(?string $color): ?string
+    {
+        if ($color === null) {
+            return null;
+        }
+
+        $color = trim($color);
+
+        $allowed = [
             'success',
             'info',
             'warning',
             'danger',
+            'error',
         ];
 
-        return in_array($variant, $allowed, true) ? $variant : 'default';
+        return in_array($color, $allowed, true) ? $color : null;
     }
 
     private function sanitizeOpacity(int $opacity): int

@@ -1,15 +1,13 @@
 {{--
     Badge Component Props:
-    - style: 'outline', 'dash', 'soft', 'ghost'
-    - variant: 'neutral', 'primary', 'secondary', 'accent', 'info', 'success', 'warning', 'error' (maps to color)
-    - color: 'neutral', 'primary', 'secondary', 'accent', 'info', 'success', 'warning', 'error' (legacy, use variant)
+    - variant: 'solid', 'outline', 'ghost', 'soft', 'dash' (Default: 'solid')
+    - color: 'neutral', 'primary', 'secondary', 'accent', 'info', 'success', 'warning', 'error'
     - size: 'xs', 'sm', 'md', 'lg', 'xl'
     - class: Additional classes
     - text: Text content (alternative to slot for programmatic rendering)
 --}}
 @props([
-    'style' => null,
-    'variant' => null,
+    'variant' => 'solid',
     'color' => null,
     'size' => 'md',
     'class' => '',
@@ -17,11 +15,12 @@
 ])
 
 @php
-    $styleClasses = [
+    $variantClasses = [
+        'solid' => '',
         'outline' => 'badge-outline',
-        'dash' => 'badge-dash',
-        'soft' => 'badge-soft',
         'ghost' => 'badge-ghost',
+        'soft' => 'badge-soft',
+        'dash' => 'badge-dash',
     ];
 
     $colorClasses = [
@@ -43,31 +42,15 @@
         'xl' => 'badge-xl',
     ];
 
-    $classes = 'badge';
+    $variantClass = $variantClasses[$variant] ?? '';
+    $colorClass = isset($color) ? ($colorClasses[$color] ?? '') : '';
+    $sizeClass = $sizeClasses[$size] ?? '';
 
-    if ($style && isset($styleClasses[$style])) {
-        $classes .= ' ' . $styleClasses[$style];
-    }
-
-    // Use variant if provided, otherwise fall back to color (for backward compatibility)
-    $colorValue = $variant ?? $color;
-    if ($colorValue && isset($colorClasses[$colorValue])) {
-        $classes .= ' ' . $colorClasses[$colorValue];
-    }
-
-    if (isset($sizeClasses[$size])) {
-        $classes .= ' ' . $sizeClasses[$size];
-    }
-
-    if (!empty($class)) {
-        $classes .= ' ' . $class;
-    }
-
-    $classes = trim($classes);
+    $classes = trim("badge {$variantClass} {$colorClass} {$sizeClass} {$class}");
     $finalClass = $classes . ' whitespace-nowrap';
 @endphp
 
 <span class="{!! $finalClass !!}"
-      {{ $attributes->except(['style', 'variant', 'color', 'size', 'class', 'text']) }}>
+      {{ $attributes->except(['variant', 'color', 'size', 'class', 'text']) }}>
     {{ $text ?? $slot }}
 </span>

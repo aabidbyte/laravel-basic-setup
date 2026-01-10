@@ -37,7 +37,7 @@
                            :placeholder="__('authentication.register.confirm_password_placeholder')"></x-ui.password>
 
             <x-ui.button type="submit"
-                         variant="primary"
+                         color="primary"
                          class="w-full"
                          data-test="register-user-button">
                 {{ __('authentication.register.submit') }}

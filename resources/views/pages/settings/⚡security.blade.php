@@ -327,7 +327,7 @@ new class extends BasePageComponent {
                                 <div class="card-actions mt-4">
                                     <x-ui.button type="button"
                                                  wire:click="disableTwoFactor"
-                                                 variant="error">
+                                                 color="error">
                                         {{ __('settings.two_factor.disable_button') }}
                                     </x-ui.button>
                                 </div>
@@ -348,7 +348,7 @@ new class extends BasePageComponent {
                                 <div class="card-actions mt-4">
                                     <x-ui.button type="button"
                                                  wire:click="enableTwoFactor"
-                                                 variant="primary">
+                                                 color="primary">
                                         {{ __('settings.two_factor.enable_button') }}
                                     </x-ui.button>
                                 </div>
@@ -430,7 +430,7 @@ new class extends BasePageComponent {
                             <x-ui.button type="button"
                                          wire:click="revokeAllOtherSessions"
                                          wire:confirm="{{ __('settings.security.revoke_all_confirm') }}"
-                                         variant="error"
+                                         color="error"
                                          class="mt-4">
                                 {{ __('settings.security.revoke_all_button') }}
                             </x-ui.button>

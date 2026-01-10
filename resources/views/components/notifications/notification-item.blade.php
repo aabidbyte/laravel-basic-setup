@@ -15,7 +15,7 @@
         </div>
     </div>
     @if (!$isRead)
-        <x-ui.badge variant="primary"
+        <x-ui.badge color="primary"
                     size="xs"></x-ui.badge>
     @endif
 </div>

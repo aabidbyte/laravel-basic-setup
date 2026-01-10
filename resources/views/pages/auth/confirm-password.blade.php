@@ -15,7 +15,7 @@
                            :placeholder="__('authentication.confirm_password.password_placeholder')"></x-ui.password>
 
             <x-ui.button type="submit"
-                         variant="primary"
+                         color="primary"
                          class="w-full"
                          data-test="confirm-password-button">
                 {{ __('actions.confirm') }}

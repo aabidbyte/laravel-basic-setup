@@ -24,7 +24,8 @@ Standardized anchor link with consistent styling and automatic SPA navigation.
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `href` | `string` | `#` | URL to link to |
-| `color` | `string` | `primary` | Color variant |
+| `variant` | `string` | `null` | Link visual style (future use) |
+| `color` | `string` | `primary` | Semantic color variant |
 | `underline` | `bool` | `false` | Always show underline (vs hover-only) |
 | `navigate` | `bool` | `true` | Use wire:navigate for SPA navigation |
 

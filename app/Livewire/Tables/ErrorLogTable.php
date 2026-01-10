@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Tables;
 
 use App\Constants\Auth\PolicyAbilities;
+use App\Constants\DataTable\DataTableUi;
 use App\Livewire\DataTable\Datatable;
 use App\Models\ErrorLog;
 use App\Services\DataTable\Builders\Action;
@@ -74,8 +75,8 @@ class ErrorLogTable extends Datatable
             Column::make(__('errors.management.status'), 'resolved_at')
                 ->sortable()
                 ->format(fn ($value) => $value
-                    ? '<span class="badge badge-success badge-sm">' . __('errors.management.resolved') . '</span>'
-                    : '<span class="badge badge-error badge-sm">' . __('errors.management.unresolved') . '</span>')
+                    ? DataTableUi::renderComponent(DataTableUi::BADGE, __('errors.management.resolved'), ['color' => 'success', 'size' => 'sm'])
+                    : DataTableUi::renderComponent(DataTableUi::BADGE, __('errors.management.unresolved'), ['color' => 'error', 'size' => 'sm']))
                 ->html(),
 
             Column::make(__('errors.management.created_at'), 'created_at')
@@ -95,7 +96,7 @@ class ErrorLogTable extends Datatable
         }
 
         $methodBadge = $method
-            ? '<span class="badge badge-ghost badge-xs mr-1">' . e($method) . '</span>'
+            ? DataTableUi::renderComponent(DataTableUi::BADGE, e($method), ['variant' => 'ghost', 'size' => 'xs', 'class' => 'mr-1'])
             : '';
 
         // Truncate long URLs

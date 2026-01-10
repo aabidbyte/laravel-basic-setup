@@ -16,7 +16,7 @@
                         placeholder="email@example.com"></x-ui.input>
 
             <x-ui.button type="submit"
-                         variant="primary"
+                         color="primary"
                          class="w-full"
                          data-test="email-password-reset-link-button">
                 {{ __('authentication.forgot_password.submit') }}

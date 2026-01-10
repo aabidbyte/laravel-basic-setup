@@ -14,12 +14,12 @@
     'title' => __('common.type_confirm.title'),
     'description' => __('common.type_confirm.description'),
     'confirmButtonText' => __('actions.force_delete'),
-    'variant' => 'danger',
+    'color' => 'danger',
 ])
 
 <x-ui.base-modal open-state="isOpen"
                  :title="$title"
-                 :variant="$variant"
+                 :color="$color"
                  transition="scale-up">
     <div class="space-y-4">
         {{-- Description --}}

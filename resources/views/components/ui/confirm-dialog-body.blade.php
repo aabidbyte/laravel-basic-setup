@@ -10,6 +10,10 @@
     'alpineMessage' => null,
     'alpineConfirmLabel' => null,
     'alpineCancelLabel' => null,
+    'confirmVariant' => 'solid',
+    'confirmColor' => 'error',
+    'cancelVariant' => 'ghost',
+    'cancelColor' => null,
 ])
 
 <div class="flex items-start gap-4 p-6">
@@ -33,14 +37,16 @@
 </div>
 
 <div class="bg-base-100 flex justify-end gap-3 px-6 pb-6">
-    <x-ui.button variant="ghost"
+    <x-ui.button :variant="$cancelVariant"
+                 :color="$cancelColor"
                  @click="{{ $onCancel }}">
         <span @if ($alpineCancelLabel) x-text="{{ $alpineCancelLabel }}" @endif>
             {{ $alpineCancelLabel ? '' : $cancelLabel }}
         </span>
     </x-ui.button>
 
-    <x-ui.button variant="error"
+    <x-ui.button :variant="$confirmVariant"
+                 :color="$confirmColor"
                  @click="{{ $onConfirm }}">
         <span @if ($alpineConfirmLabel) x-text="{{ $alpineConfirmLabel }}" @endif>
             {{ $alpineConfirmLabel ? '' : $confirmLabel }}

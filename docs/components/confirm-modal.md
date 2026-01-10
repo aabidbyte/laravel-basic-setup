@@ -15,8 +15,10 @@ A reusable confirmation modal component that provides a consistent way to handle
 | Prop             | Type     | Default           | Description                                                                    |
 | ---------------- | -------- | ----------------- | ------------------------------------------------------------------------------ |
 | `id`             | `string` | `'confirm-modal'` | Unique ID for the modal (defaults to 'confirm-modal' for global usage)         |
-| `confirmVariant` | `string` | `'error'`         | Button variant for the confirm button (uses `<x-ui.button>` variants)          |
-| `cancelVariant`  | `string` | `'ghost'`         | Button variant for the cancel button (uses `<x-ui.button>` variants)           |
+| `confirmVariant` | `string` | `'solid'`         | Button visual style for the confirm button          |
+| `confirmColor`   | `string` | `'error'`         | Button semantic color for the confirm button        |
+| `cancelVariant`  | `string` | `'ghost'`         | Button visual style for the cancel button           |
+| `cancelColor`   | `string` | `null`            | Button semantic color for the cancel button         |
 | `maxWidth`       | `string` | `'md'`            | Maximum width of the modal (DaisyUI sizes: `xs`, `sm`, `md`, `lg`, `xl`, etc.) |
 | `placement`      | `string \| null` | `null`     | Placement passthrough to `<x-ui.base-modal>` (see Base Modal placement options) |
 | `openState`      | `string \| null` | `null`     | External Alpine state variable name to control open/close (when provided)       |

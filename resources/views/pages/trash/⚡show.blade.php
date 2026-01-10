@@ -271,7 +271,7 @@ new class extends BasePageComponent {
         {{-- Force Delete Confirmation Modal --}}
         @if ($showForceDeleteModal)
             <x-ui.base-modal title="{{ __('common.type_confirm.title') }}"
-                             variant="danger"
+                             color="danger"
                              open
                              @close="$wire.closeForceDeleteModal()">
                 <div class="space-y-4">

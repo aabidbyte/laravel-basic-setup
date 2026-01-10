@@ -146,7 +146,7 @@ new class extends BasePageComponent {
                     {{ __('notifications.mark_all_read') }}
                 </x-ui.button>
             @endif
-            <x-ui.button variant="error"
+            <x-ui.button color="error"
                          size="sm"
                          @click="openConfirmClearAll('{{ addslashes(__('notifications.clear_all')) }}', '{{ addslashes(__('modals.confirm.message')) }}')">
                 {{ __('notifications.clear_all') }} ({{ $this->totalCount }})
@@ -192,7 +192,7 @@ new class extends BasePageComponent {
                                 </div>
                                 <div class="flex items-center gap-2">
                                     @if (!$notification['isRead'])
-                                        <x-ui.badge variant="primary"
+                                        <x-ui.badge color="primary"
                                                     size="sm">{{ __('notifications.unread') }}</x-ui.badge>
                                     @endif
                                     <x-ui.button variant="ghost"

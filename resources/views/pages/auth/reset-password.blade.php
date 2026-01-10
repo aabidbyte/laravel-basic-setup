@@ -32,7 +32,7 @@
                            :placeholder="__('authentication.reset_password.confirm_password_placeholder')"></x-ui.password>
 
             <x-ui.button type="submit"
-                         variant="primary"
+                         color="primary"
                          class="w-full"
                          data-test="reset-password-button">
                 {{ __('authentication.reset_password.submit') }}

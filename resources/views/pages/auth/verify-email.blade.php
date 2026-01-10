@@ -11,7 +11,7 @@
                   action="{{ route('verification.send') }}">
                 @csrf
                 <x-ui.button type="submit"
-                             variant="primary"
+                             color="primary"
                              class="w-full">
                     {{ __('authentication.verify_email.resend_button') }}
                 </x-ui.button>

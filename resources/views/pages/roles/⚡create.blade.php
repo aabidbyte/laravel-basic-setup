@@ -145,7 +145,7 @@ new class extends BasePageComponent {
                                  variant="ghost"
                                  wire:navigate>{{ __('actions.cancel') }}</x-ui.button>
                     <x-ui.button type="submit"
-                                 variant="primary">
+                                 color="primary">
                         <x-ui.loading wire:loading
                                       wire:target="createRole"
                                       size="sm"></x-ui.loading>

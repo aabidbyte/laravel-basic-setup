@@ -161,7 +161,7 @@ new class extends BasePageComponent {
 
             <div class="flex items-center gap-4 pt-4">
                 <x-ui.button type="submit"
-                             variant="primary"
+                             color="primary"
                              data-test="save-notifications-button">
                     {{ __('actions.save') }}
                 </x-ui.button>

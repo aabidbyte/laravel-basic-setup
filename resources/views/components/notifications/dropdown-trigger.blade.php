@@ -33,7 +33,7 @@
                            class="h-5 w-5"></x-ui.icon>
                 {{-- Badge managed by Alpine, visible when count > 0 --}}
                 <template x-if="unreadCount > 0">
-                    <x-ui.badge variant="error"
+                    <x-ui.badge color="error"
                                 size="xs"
                                 class="absolute -right-1 -top-1 h-4 w-4 justify-center"
                                 x-bind:aria-label="'{{ __('notifications.unread') }}: ' + unreadCount"

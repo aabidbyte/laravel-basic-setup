@@ -113,7 +113,7 @@ new class extends LivewireBaseComponent {
                         {{ __('actions.back') }}
                     </x-ui.button>
                     <x-ui.button type="button"
-                                 variant="primary"
+                                 color="primary"
                                  wire:click="confirmTwoFactor"
                                  x-bind:disabled="!$wire.code || $wire.code.length < 6"
                                  class="flex-1">
@@ -180,7 +180,7 @@ new class extends LivewireBaseComponent {
 
         <x-slot:footer-actions>
             <x-ui.button type="button"
-                         variant="primary"
+                         color="primary"
                          wire:click="$parent.showVerificationIfNecessary">
                 <span x-text="modalConfig.buttonText || @js(__('actions.continue'))"></span>
             </x-ui.button>

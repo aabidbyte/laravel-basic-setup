@@ -41,7 +41,8 @@ A comprehensive, flexible modal component built with Alpine.js following Penguin
 
 | Prop          | Type     | Default   | Description                                                                                                 |
 | ------------- | -------- | --------- | ----------------------------------------------------------------------------------------------------------- |
-| `variant`     | `string` | `'default'` | Modal variant: `'default'`, `'success'`, `'info'`, `'warning'`, `'danger'` (adds border color)            |
+| `variant`     | `string` | `'default'` | Modal visual style: `'default'` (Standard appearance)                                   |
+| `color`       | `string` | `null`    | Semantic border color: `'success'`, `'info'`, `'warning'`, `'danger'`, `'error'`            |
 | `maxWidth`    | `string` | `'md'`    | Maximum width: `'xs'`, `'sm'`, `'md'`, `'lg'`, `'xl'`, `'2xl'`, `'3xl'`, `'4xl'`, `'5xl'`, `'6xl'`, `'7xl'`, or custom Tailwind class |
 | `placement`   | `string \| null` | `null` | Modal placement: `top-left`, `top-center`, `top-right`, `center-left`, `center`, `center-right`, `bottom-left`, `bottom-center`, `bottom-right`. If `null`, uses responsive default (bottom on small screens, center on `sm+`). |
 | `class`       | `string` | `''`      | Additional classes for modal container                                                                      |
@@ -142,7 +143,7 @@ A comprehensive, flexible modal component built with Alpine.js following Penguin
 <x-ui.base-modal
     open-state="successModalIsOpen"
     title="Success!"
-    variant="success"
+    color="success"
 >
     <p>Your action was completed successfully.</p>
 </x-ui.base-modal>
@@ -151,7 +152,7 @@ A comprehensive, flexible modal component built with Alpine.js following Penguin
 <x-ui.base-modal
     open-state="warningModalIsOpen"
     title="Warning"
-    variant="warning"
+    color="warning"
 >
     <p>Please review your changes before proceeding.</p>
 </x-ui.base-modal>
@@ -160,7 +161,7 @@ A comprehensive, flexible modal component built with Alpine.js following Penguin
 <x-ui.base-modal
     open-state="dangerModalIsOpen"
     title="Danger"
-    variant="danger"
+    color="danger"
 >
     <p>This action cannot be undone.</p>
 </x-ui.base-modal>
@@ -280,7 +281,8 @@ A comprehensive, flexible modal component built with Alpine.js following Penguin
 <x-ui.base-modal
     open-state="customModalIsOpen"
     title="Custom Styled Modal"
-    variant="info"
+    color="info"
+    variant="default"
     max-width="3xl"
     dialog-class="bg-base-200"
     header-class="border-b border-base-300"

@@ -18,8 +18,10 @@ class ConfirmModal extends Component
      */
     public function __construct(
         public string $id = 'confirm-modal',
-        public string $confirmVariant = 'error',
+        public string $confirmVariant = 'solid',
+        public string $confirmColor = 'error',
         public string $cancelVariant = 'ghost',
+        public ?string $cancelColor = null,
         public string $maxWidth = 'md',
         public ?string $placement = null,
         public bool $showIcon = true,

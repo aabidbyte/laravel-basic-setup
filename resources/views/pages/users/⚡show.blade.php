@@ -282,7 +282,7 @@ new class extends BasePageComponent {
 
                 {{-- Status badge --}}
                 <div class="mb-6">
-                    <x-ui.badge :variant="$user->is_active ? 'success' : 'error'"
+                    <x-ui.badge :color="$user->is_active ? 'success' : 'error'"
                                 size="lg">
                         {{ $user->is_active ? __('users.active') : __('users.inactive') }}
                     </x-ui.badge>
@@ -410,7 +410,8 @@ new class extends BasePageComponent {
                             @foreach ($user->notification_preferences as $channel => $enabled)
                                 <div class="bg-base-200 flex items-center justify-between rounded-lg p-3">
                                     <span class="font-medium">{{ Str::headline($channel) }}</span>
-                                    <x-ui.badge :variant="$enabled ? 'success' : 'ghost'"
+                                    <x-ui.badge :color="$enabled ? 'success' : null"
+                                                :variant="$enabled ? null : 'ghost'"
                                                 size="sm">
                                         {{ $enabled ? __('users.active') : __('users.inactive') }}
                                     </x-ui.badge>
@@ -448,7 +449,7 @@ new class extends BasePageComponent {
                                     class="text-base-content/70 border-b pb-2">{{ __('users.roles') }}</x-ui.title>
                         <div class="flex flex-wrap gap-2">
                             @foreach ($user->roles as $role)
-                                <x-ui.badge variant="primary"
+                                <x-ui.badge color="primary"
                                             size="md">{{ $role->display_name }}</x-ui.badge>
                             @endforeach
                         </div>
@@ -462,7 +463,7 @@ new class extends BasePageComponent {
                                     class="text-base-content/70 border-b pb-2">{{ __('users.teams') }}</x-ui.title>
                         <div class="flex flex-wrap gap-2">
                             @foreach ($user->teams as $team)
-                                <x-ui.badge variant="secondary"
+                                <x-ui.badge color="secondary"
                                             size="md">{{ $team->name }}</x-ui.badge>
                             @endforeach
                         </div>
@@ -477,7 +478,7 @@ new class extends BasePageComponent {
                         <p class="text-base-content/60 text-sm">{{ __('users.direct_permissions_description') }}</p>
                         <div class="flex flex-wrap gap-2">
                             @foreach ($user->permissions as $permission)
-                                <x-ui.badge variant="info"
+                                <x-ui.badge color="info"
                                             size="md">{{ $permission->display_name ?? $permission->name }}</x-ui.badge>
                             @endforeach
                         </div>
@@ -512,7 +513,7 @@ new class extends BasePageComponent {
                                     class="font-mono text-sm"></x-ui.input>
                         <x-ui.copy-button :text="$activationLink"
                                           size="sm"
-                                          variant="primary"
+                                          color="primary"
                                           showText></x-ui.copy-button>
                     </div>
 

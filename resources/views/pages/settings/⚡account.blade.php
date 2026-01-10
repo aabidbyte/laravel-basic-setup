@@ -141,7 +141,7 @@ new class extends BasePageComponent {
 
                     <div class="mt-4 flex items-center gap-4">
                         <x-ui.button type="submit"
-                                     variant="primary"
+                                     color="primary"
                                      data-test="update-profile-button">
                             {{ __('actions.save') }}
                         </x-ui.button>
@@ -177,7 +177,7 @@ new class extends BasePageComponent {
 
                     <div class="mt-4 flex items-center gap-4">
                         <x-ui.button type="submit"
-                                     variant="primary"
+                                     color="primary"
                                      data-test="update-password-button">
                             {{ __('actions.save') }}
                         </x-ui.button>

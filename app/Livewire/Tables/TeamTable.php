@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Tables;
 
 use App\Constants\Auth\Permissions;
+use App\Constants\DataTable\DataTableUi;
 use App\Livewire\DataTable\Datatable;
 use App\Models\Team;
 use App\Services\DataTable\Builders\Action;
@@ -54,7 +55,7 @@ class TeamTable extends Datatable
 
             Column::make(__('table.teams.members_count'), 'users_count')
                 ->sortable()
-                ->format(fn ($value) => "<span class='badge badge-ghost'>{$value}</span>")
+                ->format(fn ($value) => DataTableUi::renderComponent(DataTableUi::BADGE, (string) $value, ['variant' => 'ghost']))
                 ->html()
                 ->class('text-center'),
         ];

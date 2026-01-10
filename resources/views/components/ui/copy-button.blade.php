@@ -17,6 +17,7 @@
     'text' => '',
     'size' => 'sm',
     'variant' => 'ghost',
+    'color' => null,
     'showText' => false,
     'copyText' => null,
     'copiedText' => null,
@@ -32,6 +33,7 @@
     <x-ui.button @click="copy()"
                  size="{{ $size }}"
                  variant="{{ $variant }}"
+                 color="{{ $color }}"
                  type="button">
         <x-ui.icon x-show="!copied && !error"
                    name="clipboard"

@@ -51,7 +51,7 @@
                            :checked="old('remember')" />
 
             <x-ui.button type="submit"
-                         variant="primary"
+                         color="primary"
                          class="w-full"
                          data-test="login-button">
                 {{ __('authentication.login.submit') }}

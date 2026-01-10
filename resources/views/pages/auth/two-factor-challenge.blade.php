@@ -54,7 +54,7 @@
                     </div>
 
                     <x-ui.button type="submit"
-                                 variant="primary"
+                                 color="primary"
                                  class="w-full">
                         {{ __('actions.continue') }}
                     </x-ui.button>
