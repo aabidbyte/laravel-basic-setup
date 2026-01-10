@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Services\Notifications\NotificationBuilder;
 use App\Services\Users\ActivationService;
-use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -69,23 +68,13 @@ class AuthController extends Controller
             'password' => ['required', 'string', Password::defaults(), 'confirmed'],
         ]);
 
-        try {
-            $activationService->activateWithPassword($user, $request->password, $token);
+        $activationService->activateWithPassword($user, $request->password, $token);
 
-            NotificationBuilder::make()
-                ->title('authentication.activation.success')
-                ->success()
-                ->send();
+        NotificationBuilder::make()
+            ->title('authentication.activation.success')
+            ->success()
+            ->send();
 
-            return redirect()->route('login')->with('activated', true);
-        } catch (Exception $e) {
-            NotificationBuilder::make()
-                ->title('authentication.activation.error')
-                ->content($e->getMessage())
-                ->error()
-                ->send();
-
-            return back();
-        }
+        return redirect()->route('login')->with('activated', true);
     }
 }

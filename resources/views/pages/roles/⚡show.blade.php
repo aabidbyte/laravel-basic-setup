@@ -3,11 +3,11 @@
 use App\Constants\Auth\Permissions;
 use App\Constants\Auth\Roles;
 use App\Livewire\Bases\BasePageComponent;
+use App\Models\Permission;
 use App\Models\Role;
 use Livewire\Attributes\Locked;
 
-new class extends BasePageComponent
-{
+new class extends BasePageComponent {
     public ?string $pageSubtitle = null;
 
     protected string $placeholderType = 'card';
@@ -25,7 +25,7 @@ new class extends BasePageComponent
         $this->authorize(Permissions::VIEW_ROLES);
 
         // Only super_admin can view the super_admin role
-        if ($role->name === Roles::SUPER_ADMIN && ! auth()->user()?->hasRole(Roles::SUPER_ADMIN)) {
+        if ($role->name === Roles::SUPER_ADMIN && !auth()->user()?->hasRole(Roles::SUPER_ADMIN)) {
             abort(403);
         }
 
@@ -38,6 +38,16 @@ new class extends BasePageComponent
     public function getPageTitle(): string
     {
         return $this->role?->label() ?? __('types.role');
+    }
+
+    /**
+     * Get available permissions.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getPermissionsProperty()
+    {
+        return Permission::orderBy('name')->get();
     }
 }; ?>
 
@@ -96,8 +106,8 @@ new class extends BasePageComponent
                             <span>{{ __('roles.super_admin_all_permissions') }}</span>
                         </div>
                     @else
-                        <x-ui.permission-matrix :permissions="Permission::all()"
-                                                :selectedPermissions="$role->permissions->pluck('id')->toArray()"
+                        <x-ui.permission-matrix :permissions="$this->permissions"
+                                                :selectedPermissions="$role->permissions->pluck('uuid')->toArray()"
                                                 :readonly="true"></x-ui.permission-matrix>
                     @endif
                 </div>

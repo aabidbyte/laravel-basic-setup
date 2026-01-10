@@ -18,6 +18,7 @@
 16. **Component documentation required** - **ALWAYS update `docs/components/index.md` when adding new UI components** - Include props, usage examples, implementation details, and add to component index
 17. **Use Page Layout for CRUD views** - All CRUD views (index, create, edit, show) MUST use `x-layouts.page` component for consistent structure with back button and action slots. See `docs/components/page-layout.md`
 18. **Responsive design required** - ALL layouts and views MUST be responsive, supporting mobile, tablet, and desktop devices using Tailwind's responsive prefixes (sm:, md:, lg:, xl:). Use mobile-first approach.
-19. **Update this file** when adding new patterns, conventions, or features
-20. **Route organization required** - All routes must follow the domain-based structure in `routes/web/` with proper separation: `public/` (no auth), `auth/` (requires login), `dev/` (local only). See `docs/AGENTS/routes.md` for full conventions.
-21. **Permission matrix architecture** - Permissions follow entity-action pattern (`"action entity"`). Use `PermissionEntity`, `PermissionAction`, `Permissions` constants, and `PermissionMatrix` service. See `docs/permissions.md` and `docs/rbac.md`.
+19. **Translation keys required** - When adding new translation keys, you **MUST** add them to all supported language directories in the `lang/` folder (e.g., `en_US` and `fr_FR`). Never add a key to only one language. Follow the established directory structure for new files.
+20. **Update this file** when adding new patterns, conventions, or features
+21. **Route organization required** - All routes must follow the domain-based structure in `routes/web/` with proper separation: `public/` (no auth), `auth/` (requires login), `dev/` (local only). See `docs/AGENTS/routes.md` for full conventions.
+22. **Permission matrix architecture** - Permissions follow entity-action pattern (`"action entity"`). Use `PermissionEntity`, `PermissionAction`, `Permissions` constants, and `PermissionMatrix` service. See `docs/permissions.md` and `docs/rbac.md`.

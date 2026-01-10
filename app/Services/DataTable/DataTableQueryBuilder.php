@@ -6,7 +6,6 @@ namespace App\Services\DataTable;
 
 use App\Services\DataTable\Builders\Column;
 use App\Services\DataTable\Builders\Filter;
-use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -132,35 +131,35 @@ class DataTableQueryBuilder
         }
 
         // Get relationship
-        try {
-            $relation = $model->{$relationshipName}();
-            $relatedModel = $relation->getRelated();
-            $relatedTable = $relatedModel->getTable();
-
-            // Determine join type and keys based on relationship type
-            $relationType = class_basename(get_class($relation));
-
-            match ($relationType) {
-                'BelongsTo' => $this->applyBelongsToJoin($query, $relation, $parentTable, $relatedTable),
-                'HasOne', 'HasMany' => $this->applyHasJoin($query, $relation, $parentTable, $relatedTable),
-                'BelongsToMany' => $this->applyBelongsToManyJoin($query, $relation, $parentTable, $relatedTable),
-                default => null,
-            };
-
-            $this->appliedJoins[$joinKey] = true;
-
-            // Continue with remaining relationships
-            if (! empty($relationships)) {
-                $this->joinRelationships(
-                    $query,
-                    $relationships,
-                    $relatedTable,
-                    $relationshipName,
-                );
-            }
-        } catch (Exception $e) {
+        if (! method_exists($model, $relationshipName)) {
             // Relationship doesn't exist, skip
             return;
+        }
+
+        $relation = $model->{$relationshipName}();
+        $relatedModel = $relation->getRelated();
+        $relatedTable = $relatedModel->getTable();
+
+        // Determine join type and keys based on relationship type
+        $relationType = class_basename(get_class($relation));
+
+        match ($relationType) {
+            'BelongsTo' => $this->applyBelongsToJoin($query, $relation, $parentTable, $relatedTable),
+            'HasOne', 'HasMany' => $this->applyHasJoin($query, $relation, $parentTable, $relatedTable),
+            'BelongsToMany' => $this->applyBelongsToManyJoin($query, $relation, $parentTable, $relatedTable),
+            default => null,
+        };
+
+        $this->appliedJoins[$joinKey] = true;
+
+        // Continue with remaining relationships
+        if (! empty($relationships)) {
+            $this->joinRelationships(
+                $query,
+                $relationships,
+                $relatedTable,
+                $relationshipName,
+            );
         }
     }
 
@@ -375,13 +374,13 @@ class DataTableQueryBuilder
         $model = $query->getModel();
 
         foreach ($relationships as $relationshipName) {
-            try {
-                $relation = $model->{$relationshipName}();
-                $model = $relation->getRelated();
-            } catch (Exception $e) {
+            if (! method_exists($model, $relationshipName)) {
                 // Relationship doesn't exist, return base table
                 return $model->getTable();
             }
+
+            $relation = $model->{$relationshipName}();
+            $model = $relation->getRelated();
         }
 
         return $model->getTable();

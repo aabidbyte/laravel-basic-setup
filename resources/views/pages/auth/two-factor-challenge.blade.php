@@ -64,7 +64,7 @@
                     <span>{{ __('authentication.two_factor.switch_to_recovery') }}</span>
                     <x-ui.button type="button"
                                  @click="toggleInput()"
-                                 style="link"
+                                 variant="link"
                                  color="primary"
                                  size="sm"><span
                               x-show="!showRecoveryInput">{{ __('authentication.two_factor.use_recovery_code') }}</span><span

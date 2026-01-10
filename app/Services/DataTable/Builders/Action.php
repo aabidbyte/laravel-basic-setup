@@ -395,7 +395,6 @@ class Action
     }
 
     /**
-     *
      * @param  mixed  $model  The row model
      * @param  User|null  $user  The authenticated user
      */
@@ -435,7 +434,6 @@ class Action
     }
 
     /**
-     *
      * @param  mixed  $model  The row model
      * @param  User|null  $user  The authenticated user
      */

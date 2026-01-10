@@ -31,6 +31,9 @@ class User extends BaseUserModel
         'username',
         'email',
         'email_verified_at',
+        'pending_email',
+        'pending_email_token',
+        'pending_email_expires_at',
         'password',
         'created_by_user_id',
         'is_active',
@@ -60,6 +63,7 @@ class User extends BaseUserModel
     {
         return [
             'email_verified_at' => 'datetime',
+            'pending_email_expires_at' => 'datetime',
             'password' => 'hashed',
             'frontend_preferences' => 'array',
             'notification_preferences' => 'array',
@@ -133,6 +137,66 @@ class User extends BaseUserModel
     }
 
     /**
+     * Check if user has a pending email change.
+     */
+    public function hasPendingEmailChange(): bool
+    {
+        return ! empty($this->pending_email) && ! $this->isPendingEmailExpired();
+    }
+
+    /**
+     * Check if the pending email has expired.
+     */
+    public function isPendingEmailExpired(): bool
+    {
+        if (empty($this->pending_email_expires_at)) {
+            return true;
+        }
+
+        return $this->pending_email_expires_at->isPast();
+    }
+
+    /**
+     * Cancel the pending email change.
+     */
+    public function cancelPendingEmailChange(): bool
+    {
+        return $this->update([
+            'pending_email' => null,
+            'pending_email_token' => null,
+            'pending_email_expires_at' => null,
+        ]);
+    }
+
+    /**
+     * Confirm the pending email change (called after user verifies).
+     */
+    public function confirmPendingEmail(): bool
+    {
+        if (! $this->hasPendingEmailChange()) {
+            return false;
+        }
+
+        $newEmail = $this->pending_email;
+
+        return $this->update([
+            'email' => $newEmail,
+            'email_verified_at' => now(),
+            'pending_email' => null,
+            'pending_email_token' => null,
+            'pending_email_expires_at' => null,
+        ]);
+    }
+
+    /**
+     * Check if user has a verified email address.
+     */
+    public function hasVerifiedEmail(): bool
+    {
+        return ! empty($this->email) && ! empty($this->email_verified_at);
+    }
+
+    /**
      * Get the entity's notifications.
      * Override to use our custom Notification model with resolving accessors.
      */
@@ -176,7 +240,6 @@ class User extends BaseUserModel
         $preferences['locale'] = $value;
         $this->frontend_preferences = $preferences;
     }
-
 
     /**
      * Get roles for datatable display

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services\Users;
 
+use App\Constants\Auth\Roles;
+use App\Mail\EmailChangeSecurityMail;
+use App\Mail\EmailChangeVerificationMail;
 use App\Mail\UserActivationMail;
 use App\Models\Permission;
 use App\Models\Role;
@@ -13,8 +16,10 @@ use App\Services\Mail\MailBuilder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
+use RuntimeException;
 
 /**
  * Service for user CRUD operations.
@@ -128,11 +133,27 @@ class UserService
             }
 
             if (array_key_exists('email', $data)) {
-                $updateData['email'] = $data['email'];
+                $newEmail = $data['email'];
+                $currentEmail = $user->email;
+
+                // If email is being changed and user has a verified email
+                if ($newEmail !== $currentEmail && $user->hasVerifiedEmail()) {
+                    // Store in pending_email instead of email
+                    $this->initiateEmailChange($user, $newEmail);
+                } elseif ($newEmail !== $currentEmail) {
+                    // User has no verified email, update directly
+                    $updateData['email'] = $newEmail;
+                }
             }
 
+            // Password can only be updated by super_admin
             if (! empty($data['password'])) {
-                $updateData['password'] = Hash::make($data['password']);
+                /** @var User|null $currentUser */
+                $currentUser = Auth::user();
+                if ($currentUser && $currentUser->hasRole(Roles::SUPER_ADMIN)) {
+                    $updateData['password'] = Hash::make($data['password']);
+                }
+                // Silently ignore password updates from non-super-admins
             }
 
             if (isset($data['is_active'])) {
@@ -309,6 +330,79 @@ class UserService
             $user->teams()->attach($teamId, [
                 'uuid' => (string) Str::uuid(),
             ]);
+        }
+    }
+
+    /**
+     * Initiate an email change for a user.
+     *
+     * This stores the new email in pending_email, sends a verification email
+     * to the new address, and sends a security notification to the old address.
+     *
+     * @param  User  $user  The user changing their email
+     * @param  string  $newEmail  The new email address
+     */
+    public function initiateEmailChange(User $user, string $newEmail): void
+    {
+        $token = Str::random(64);
+        $expiresAt = now()->addDays(7);
+
+        // Update user with pending email
+        $user->update([
+            'pending_email' => $newEmail,
+            'pending_email_token' => hash('sha256', $token),
+            'pending_email_expires_at' => $expiresAt,
+        ]);
+
+        // Generate verification URL
+        $verificationUrl = route('email.change.verify', ['token' => $token]);
+
+        // Send verification email to new address
+        MailBuilder::make()
+            ->to($newEmail)
+            ->mailable((new EmailChangeVerificationMail($user, $verificationUrl))->locale(config('app.locale')))
+            ->send();
+
+        // Send security notification to old address
+        if (! empty($user->email)) {
+            MailBuilder::make()
+                ->to($user->email)
+                ->mailable((new EmailChangeSecurityMail($user, $newEmail))->locale(config('app.locale')))
+                ->send();
+        }
+    }
+
+    /**
+     * Cancel a pending email change for a user.
+     *
+     * @param  User  $user  The user to cancel the email change for
+     * @return bool True if successful
+     */
+    public function cancelPendingEmailChange(User $user): bool
+    {
+        return $user->cancelPendingEmailChange();
+    }
+
+    /**
+     * Send password reset email to a user.
+     *
+     * Uses Laravel's built-in password reset flow.
+     *
+     * @param  User  $user  The user to send reset email to
+     *
+     * @throws InvalidArgumentException If user has no email address
+     * @throws RuntimeException If failed to send reset link
+     */
+    public function sendPasswordResetEmail(User $user): void
+    {
+        if (empty($user->email)) {
+            throw new InvalidArgumentException('User must have an email address to send password reset email.');
+        }
+
+        $status = Password::broker()->sendResetLink(['email' => $user->email]);
+
+        if ($status !== Password::RESET_LINK_SENT) {
+            throw new RuntimeException(__($status));
         }
     }
 }

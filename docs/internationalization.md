@@ -33,19 +33,12 @@ return [
                 'pack' => 'heroicons',
                 'name' => 'globe-alt',
             ],
-            'date_format' => 'm/d/Y',
-            'datetime_format' => 'm/d/Y H:i:s',
-            'time_format' => 'H:i:s',
-            'currency' => [
-                'code' => 'USD',
-                'symbol' => '$',
-                'precision' => 2,
-            ],
         ],
         // ... more locales
     ],
 
-    'namespaces' => ['ui', 'messages'],
+    // Namespaces are automatically discovered from lang/en_US/*.php files
+    'namespaces' => [],
     'extracted_file' => 'extracted',
     'protected_translation_files' => ['validation', 'auth', 'pagination', 'passwords'],
 ];
@@ -59,10 +52,6 @@ Each supported locale includes:
 -   **english_name**: The locale name in English
 -   **direction**: Text direction (`ltr` or `rtl`) - used for RTL language support
 -   **icon**: Icon configuration for UI display (uses `<x-ui.icon>` component)
--   **date_format**: PHP date format string for dates
--   **datetime_format**: PHP date format string for date-time values
--   **time_format**: PHP date format string for time values
--   **currency**: Currency configuration (code, symbol, precision, symbol_position, decimal_separator, thousands_separator)
 
 ### Integration with `config/app.php`
 
@@ -77,42 +66,44 @@ The `config/app.php` file sources locale settings from `config/i18n.php`:
 ## Translation Key Conventions
 
 ### Semantic Keys (Default)
- 
- **Always use semantic keys by default.** Semantic keys are now organized by dedicated files (namespaces) for better modularity:
- 
+
+ **Always use semantic keys by default.** Semantic keys are now organized by dedicated files (namespaces) for better modularity.
+
+ **Note**: Namespaces are **automatically discovered** from the files in your `lang/en_US/` directory. You do not need to register them in the config.
+
  ```php
  // UI elements
  __('navigation.dashboard')
  __('authentication.login.title')
  __('settings.profile.name_label')
- 
+
  // Generic Pages
  __('pages.common.create.title', ['type' => __('types.user')])
- 
+
  // Specific Resource
  __('users.name')
- 
+
  // System messages
  __('notifications.success')
  ```
- 
+
  **Key Structure:**
- 
+
  -   `navigation.*` - Navigation items
  -   `actions.*` - Common buttons and actions
  -   `authentication.*` - Auth related labels (login, register...)
  -   `settings.*` - Settings pages
  -   `pages.*` - Generic page titles/descriptions
  -   `users.*`, `types.*`, etc. - Resource specific labels
- 
+
  ### JSON String Keys (Optional)
- 
+
  JSON string keys should **only** be used for very small UI labels when semantic keys are impractical. This is not the default approach.
- 
+
  ## Translation File Structure
- 
+
  ### Directory Structure
- 
+
  ```
  lang/
  ├── en_US/              # Default locale (source of truth)
@@ -131,9 +122,9 @@ The `config/app.php` file sources locale settings from `config/i18n.php`:
      ├── actions.php
      ├── ... (same structure)
  ```
- 
+
  ### File Organization
- 
+
  -   **`pages.php`**: Generic page translations (Common CRUD patterns)
  -   **`users.php`**: Resource-specific field labels and customized messages
  -   **`types.php`**: Entity type names (Singular/Plural)
@@ -363,6 +354,7 @@ return [
 5. **Review `extracted.php`**: Move newly discovered keys to appropriate namespace files
 6. **Never modify protected files manually**: Let Laravel manage `validation.php`, `auth.php`, etc.
 7. **Test with multiple locales**: Ensure RTL support works correctly for RTL languages
+8. **Bulk Actions**: Do not include the word "selected" in bulk action translations (e.g., use "Delete" instead of "Delete Selected"). The context of a bulk action automatically implies it applies to selected items.
 
 ## Troubleshooting
 
@@ -394,26 +386,26 @@ The application provides helper functions for formatting dates, times, and curre
 
 Located in `app/helpers/dateTime.php`:
 
--   **`formatDate($date, ?string $locale = null, ?string $timezone = null): string`** - Formats a date using the locale's `date_format` and user's timezone preference (for display only)
--   **`formatTime($time, ?string $locale = null, ?string $timezone = null): string`** - Formats a time using the locale's `time_format` and user's timezone preference (for display only)
--   **`formatDateTime($datetime, ?string $locale = null, ?string $timezone = null): string`** - Formats a datetime using the locale's `datetime_format` and user's timezone preference (for display only)
+-   **`formatDate($date, ?string $locale = null, ?string $timezone = null): string`** - Formats a date using localized Carbon format (`isoFormat('L')`) and user's timezone preference
+-   **`formatTime($time, ?string $locale = null, ?string $timezone = null): string`** - Formats a time using localized Carbon format (`isoFormat('LT')`) and user's timezone preference
+-   **`formatDateTime($datetime, ?string $locale = null, ?string $timezone = null): string`** - Formats a datetime using localized Carbon format (`isoFormat('L LT')`) and user's timezone preference
 
 **Usage:**
 
 ```php
 // In Blade templates
 {{ formatDate(now()) }}           // "12/16/2025" (en_US) or "16/12/2025" (fr_FR)
-{{ formatTime(now()) }}           // "14:30:00" (converted to user's timezone preference)
-{{ formatDateTime(now()) }}       // "12/16/2025 14:30:00" (en_US, converted to user's timezone preference)
-
-**Timezone Handling:**
--   All dates/times are stored in the database using the application timezone from `config/app.php`
--   The helpers automatically convert dates/times to the user's timezone preference (from `FrontendPreferencesService`) when displaying
--   You can override the timezone by passing it as the third parameter: `formatDateTime($date, 'en_US', 'America/New_York')`
+{{ formatTime(now()) }}           // "2:30 PM" (en_US) or "14:30" (fr_FR)
+{{ formatDateTime(now()) }}       // "12/16/2025 2:30 PM" (en_US) or "16/12/2025 14:30" (fr_FR)
 
 // With locale override
 {{ formatDate('2025-12-16', 'fr_FR') }}  // "16/12/2025"
 ```
+
+**Timezone Handling:**
+-   All dates/times are stored in the database using the application timezone from `config/app.php`
+-   The helpers automatically convert dates/times to the user's timezone preference (from `FrontendPreferencesService`) when displaying
+-   You can pass a timezone override as the third parameter
 
 **Input Types:**
 
@@ -426,24 +418,21 @@ Located in `app/helpers/dateTime.php`:
 
 Located in `app/helpers/currency.php`:
 
--   **`formatCurrency($amount, ?string $locale = null, ?string $currencyCode = null): string`** - Formats currency using locale's currency settings
+-   **`formatCurrency($amount, ?string $currencyCode = 'USD', ?string $locale = 'en_US'): string`** - Formats currency using Laravel's `Number::currency()` helper
 
 **Usage:**
 
 ```php
 // In Blade templates
-{{ formatCurrency(100.50) }}                    // "$100.50" (en_US) or "100,50 €" (fr_FR)
-{{ formatCurrency(1000.50, 'fr_FR') }}         // "1 000,50 €"
-{{ formatCurrency(100.50, null, 'EUR') }}      // Uses EUR formatting
+{{ formatCurrency(100.50) }}                    // "$100.50" (defaults to USD, en_US)
+{{ formatCurrency(100.50, 'EUR', 'fr_FR') }}    // "100,50 €"
+{{ formatCurrency(100.50, 'JPY') }}             // "¥101"
 ```
 
 **Features:**
-
--   Locale-specific decimal separators (`.` for en_US, `,` for fr_FR)
--   Locale-specific thousands separators (`,` for en_US, ` ` for fr_FR)
--   Configurable symbol position (`before` or `after`)
--   Currency code override support
--   Automatic fallback to default locale if locale not supported
+-   Uses native `Number::currency()` formatting
+-   Supports standard currency codes (USD, EUR, GBP, etc.)
+-   Configurable locale for formatting rules (separators, symbol position)
 
 **Input Types:**
 

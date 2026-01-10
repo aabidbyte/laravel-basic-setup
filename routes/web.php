@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 // Public routes (no auth required)
 require __DIR__ . '/web/public/preferences.php';
 require __DIR__ . '/web/public/activation.php';
+require __DIR__ . '/web/public/verification.php';
 
 // Development-only routes
 if (app()->environment('local', 'development')) {

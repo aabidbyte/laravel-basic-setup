@@ -63,9 +63,12 @@ class EssentialUserSeeder extends Seeder
                 ],
             );
 
-            // Always update password (in case user already exists)
-            if (! Hash::check($superAdminPassword, $superAdmin->password)) {
-                $superAdmin->update(['password' => Hash::make($superAdminPassword)]);
+            // Always update password and verification (in case user already exists)
+            if (! Hash::check($superAdminPassword, $superAdmin->password) || ! $superAdmin->email_verified_at) {
+                $superAdmin->update([
+                    'password' => Hash::make($superAdminPassword),
+                    'email_verified_at' => $superAdmin->email_verified_at ?? now(),
+                ]);
             }
 
             // Assign to default team via pivot table

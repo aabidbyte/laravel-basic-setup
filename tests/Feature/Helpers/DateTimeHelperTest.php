@@ -66,7 +66,7 @@ test('formatTime formats time using current locale', function () {
 
     $result = formatTime($time);
 
-    expect($result)->toBe('14:30:00');
+    expect($result)->toBe('2:30 PM');
 });
 
 test('formatTime formats time using specified locale', function () {
@@ -74,7 +74,7 @@ test('formatTime formats time using specified locale', function () {
 
     $result = formatTime($time, 'fr_FR');
 
-    expect($result)->toBe('14:30:00');
+    expect($result)->toBe('14:30');
 });
 
 test('formatTime accepts string input', function () {
@@ -82,7 +82,7 @@ test('formatTime accepts string input', function () {
 
     $result = formatTime('14:30:00');
 
-    expect($result)->toBe('14:30:00');
+    expect($result)->toBe('2:30 PM');
 });
 
 test('formatDateTime returns empty string for null input', function () {
@@ -99,7 +99,7 @@ test('formatDateTime formats datetime using current locale', function () {
 
     $result = formatDateTime($datetime);
 
-    expect($result)->toBe('12/16/2025 14:30:00');
+    expect($result)->toBe('12/16/2025 2:30 PM');
 });
 
 test('formatDateTime formats datetime using specified locale', function () {
@@ -107,7 +107,7 @@ test('formatDateTime formats datetime using specified locale', function () {
 
     $result = formatDateTime($datetime, 'fr_FR');
 
-    expect($result)->toBe('16/12/2025 14:30:00');
+    expect($result)->toBe('16/12/2025 14:30');
 });
 
 test('formatDateTime accepts string input', function () {
@@ -115,7 +115,7 @@ test('formatDateTime accepts string input', function () {
 
     $result = formatDateTime('2025-12-16 14:30:00');
 
-    expect($result)->toBe('12/16/2025 14:30:00');
+    expect($result)->toBe('12/16/2025 2:30 PM');
 });
 
 test('formatDate falls back to default locale for unsupported locale', function () {
@@ -151,8 +151,8 @@ test('formatTime uses user timezone preference for display', function () {
     $result = formatTime($time);
 
     // Should display in user's timezone (America/New_York is UTC-5 in December)
-    // 14:00 UTC = 09:00 EST
-    expect($result)->toBe('09:00:00');
+    // 14:00 UTC = 09:00 EST -> 9:00 AM
+    expect($result)->toBe('9:00 AM');
 });
 
 test('formatDateTime uses user timezone preference for display', function () {
@@ -165,8 +165,8 @@ test('formatDateTime uses user timezone preference for display', function () {
     $result = formatDateTime($datetime);
 
     // Should display in user's timezone (America/New_York is UTC-5 in December)
-    // 14:00 UTC = 09:00 EST
-    expect($result)->toBe('12/16/2025 09:00:00');
+    // 14:00 UTC = 09:00 EST -> 9:00 AM
+    expect($result)->toBe('12/16/2025 9:00 AM');
 });
 
 test('formatDate accepts timezone override', function () {

@@ -42,7 +42,8 @@
     $permissionLookup = $permissions->keyBy('name');
 @endphp
 
-<div class="permission-matrix-container overflow-x-auto">
+<div class="permission-matrix-container overflow-x-auto"
+     x-data="permissionMatrix({{ $readonly ? 'true' : 'false' }})">
     <table class="table-zebra table-compact table w-full">
         <thead>
             <tr>
@@ -50,7 +51,8 @@
                     {{ __('permissions.entities.users') ? __('permissions.matrix.title') : 'Permission Matrix' }}
                 </th>
                 @foreach ($allActions as $action)
-                    <th class="bg-base-200 min-w-20 px-2 text-center">
+                    <th class="bg-base-200 hover:bg-base-300 min-w-20 cursor-pointer px-2 text-center transition-colors"
+                        @click="toggleBatch('action', '{{ $action }}')">
                         <div class="flex flex-col items-center gap-1">
                             <span class="text-xs font-medium">
                                 {{ PermissionAction::getLabel($action) }}
@@ -63,7 +65,8 @@
         <tbody>
             @foreach ($matrixData as $entity => $supportedActions)
                 <tr class="hover">
-                    <td class="bg-base-100 sticky left-0 z-10 font-medium">
+                    <td class="bg-base-100 hover:bg-base-200 sticky left-0 z-10 cursor-pointer font-medium transition-colors"
+                        @click="toggleBatch('entity', '{{ $entity }}')">
                         <div class="flex items-center gap-2">
                             <span>{{ PermissionEntity::getLabel($entity) }}</span>
                         </div>
@@ -90,13 +93,15 @@
                                     <input type="checkbox"
                                            class="checkbox checkbox-sm checkbox-primary"
                                            value="{{ $permissionUuid }}"
+                                           data-entity="{{ $entity }}"
+                                           data-action="{{ $action }}"
                                            @if ($wireModel) wire:model="{{ $wireModel }}" @endif
                                            @if ($isChecked) checked @endif
                                            title="{{ $permission->display_name ?? $permissionName }}" />
                                 @endif
                             @else
                                 <span class="text-base-content/20 inline-block h-5 w-5"
-                                      title="{{ __('Not applicable') }}">
+                                      title="{{ __('common.not_applicable') }}">
                                     —
                                 </span>
                             @endif

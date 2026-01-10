@@ -3,12 +3,17 @@
 declare(strict_types=1);
 
 use App\Constants\Auth\Permissions;
+use App\Constants\Auth\Roles;
+use App\Mail\EmailChangeSecurityMail;
+use App\Mail\EmailChangeVerificationMail;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\Users\UserService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 
 uses(RefreshDatabase::class);
 
@@ -87,7 +92,7 @@ describe('UserService', function () {
                     'name' => 'Role User',
                     'email' => 'roleuser@example.com',
                 ],
-                roleIds: [$writerRole->id, $editorRole->id],
+                roleUuids: [$writerRole->uuid, $editorRole->uuid],
             );
 
             expect($user->roles)->toHaveCount(2);
@@ -106,7 +111,7 @@ describe('UserService', function () {
                     'name' => 'Multi Team User',
                     'email' => 'multiteam@example.com',
                 ],
-                teamIds: [$team1->id, $team2->id],
+                teamUuids: [$team1->uuid, $team2->uuid],
             );
 
             expect($user->teams)->toHaveCount(2);
@@ -177,13 +182,76 @@ describe('UserService', function () {
             $updated = $userService->updateUser(
                 $user,
                 [],
-                roleIds: [$editorRole->id],
+                roleUuids: [$editorRole->uuid],
             );
 
             $updated->refresh();
             expect($updated->roles)->toHaveCount(1);
             expect($updated->hasRole('editor'))->toBeTrue();
             expect($updated->hasRole('writer'))->toBeFalse();
+        });
+
+        it('does not update password for non-super-admin', function () {
+            $user = User::factory()->create(['password' => Hash::make('old_password')]);
+            $userService = app(UserService::class);
+
+            // Admin is not super admin
+            $userService->updateUser($user, ['password' => 'new_password']);
+
+            $user->refresh();
+            expect(Hash::check('old_password', $user->password))->toBeTrue();
+        });
+
+        it('updates password for super-admin', function () {
+            $user = User::factory()->create(['password' => Hash::make('old_password')]);
+            $userService = app(UserService::class);
+
+            // Assign super admin role to acting user
+            $superAdminRole = Role::create(['name' => Roles::SUPER_ADMIN]);
+            $this->admin->assignRole($superAdminRole);
+
+            $userService->updateUser($user, ['password' => 'new_password']);
+
+            $user->refresh();
+            expect(Hash::check('new_password', $user->password))->toBeTrue();
+        });
+
+        it('initiates email change flow for verified user', function () {
+            Mail::fake();
+
+            $user = User::factory()->create([
+                'email' => 'old@example.com',
+                'email_verified_at' => now(),
+            ]);
+            $userService = app(UserService::class);
+
+            $userService->updateUser($user, ['email' => 'new@example.com']);
+
+            $user->refresh();
+            expect($user->email)->toBe('old@example.com');
+            expect($user->pending_email)->toBe('new@example.com');
+            expect($user->pending_email_token)->not->toBeNull();
+
+            Mail::assertQueued(EmailChangeVerificationMail::class);
+            Mail::assertQueued(EmailChangeSecurityMail::class);
+        });
+
+        it('directly updates email for unverified user', function () {
+            Mail::fake();
+
+            $user = User::factory()->create([
+                'email' => 'old@example.com',
+                'email_verified_at' => null,
+            ]);
+            $userService = app(UserService::class);
+
+            $userService->updateUser($user, ['email' => 'new@example.com']);
+
+            $user->refresh();
+            expect($user->email)->toBe('new@example.com');
+            expect($user->pending_email)->toBeNull();
+
+            Mail::assertNothingQueued();
         });
     });
 
@@ -208,6 +276,42 @@ describe('UserService', function () {
 
             expect($result)->toBeTrue();
             expect($user->fresh()->is_active)->toBeFalse();
+        });
+    });
+
+    describe('pending email', function () {
+        it('cancels pending email change', function () {
+            $user = User::factory()->create([
+                'pending_email' => 'new@example.com',
+                'pending_email_token' => 'token',
+                'pending_email_expires_at' => now()->addDays(7),
+            ]);
+            $userService = app(UserService::class);
+
+            $userService->cancelPendingEmailChange($user);
+
+            $user->refresh();
+            expect($user->pending_email)->toBeNull();
+            expect($user->pending_email_token)->toBeNull();
+            expect($user->pending_email_expires_at)->toBeNull();
+        });
+
+        it('confirms pending email', function () {
+            $user = User::factory()->create([
+                'email' => 'old@example.com',
+                'pending_email' => 'new@example.com',
+                'pending_email_token' => 'token',
+                'pending_email_expires_at' => now()->addDays(7),
+            ]);
+
+            $user->confirmPendingEmail();
+
+            $user->refresh();
+            expect($user->email)->toBe('new@example.com');
+            expect($user->pending_email)->toBeNull();
+            expect($user->pending_email_token)->toBeNull();
+            expect($user->pending_email_expires_at)->toBeNull();
+            expect($user->email_verified_at)->not->toBeNull();
         });
     });
 });

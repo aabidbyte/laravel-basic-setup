@@ -5,11 +5,11 @@ use App\Services\I18nService;
 use Carbon\Carbon;
 
 /**
- * Format a date according to the current locale's date format.
- * Uses user's timezone preference for display (timezone is for display only, DB storage uses app timezone).
+ * Format a date according to the locale's format.
+ * Uses Carbon's isoFormat('L') for localized date (e.g., 12/31/2024 or 31/12/2024).
  *
  * @param  \Carbon\Carbon|\DateTime|string|null  $date
- * @param  string|null  $locale  Locale override (e.g., 'en_US', 'fr_FR')
+ * @param  string|null  $locale  Locale override
  * @param  string|null  $timezone  Timezone override (for display only)
  * @return string Formatted date string
  */
@@ -21,32 +21,30 @@ function formatDate($date, ?string $locale = null, ?string $timezone = null): st
 
     try {
         $carbon = Carbon::parse($date);
-    } catch (Exception $e) {
+    } catch (\Exception $e) {
         return '';
     }
 
-    $i18n = app(I18nService::class);
-    $locale = $i18n->getValidLocale($locale);
-    $localeMetadata = $i18n->getLocaleMetadata($locale);
-    $defaultLocale = $i18n->getDefaultLocale();
-
-    $format = $localeMetadata['date_format'] ?? $i18n->getLocaleMetadata($defaultLocale)['date_format'] ?? 'Y-m-d';
+    // Set locale if provided
+    if ($locale) {
+        $i18n = app(I18nService::class);
+        $validLocale = $i18n->getValidLocale($locale);
+        $carbon->locale($validLocale);
+    }
 
     // Apply user's timezone preference for display (if not overridden)
     if ($timezone === null) {
-        $preferences = app(FrontendPreferencesService::class);
-        $timezone = $preferences->getTimezone();
+        // Optimized: access timezone directly if possible or resolve service
+        $timezone = app(FrontendPreferencesService::class)->getTimezone();
     }
 
-    // Convert to user's timezone for display (original remains in app timezone for DB)
-    $carbon = $carbon->setTimezone($timezone);
-
-    return $carbon->format($format);
+    // Convert to user's timezone for display
+    return $carbon->setTimezone($timezone)->isoFormat('L');
 }
 
 /**
- * Format a time according to the current locale's time format.
- * Uses user's timezone preference for display (timezone is for display only, DB storage uses app timezone).
+ * Format a time according to the locale's format.
+ * Uses Carbon's isoFormat('LT') for localized time (e.g., 8:30 PM or 20:30).
  *
  * @param  \Carbon\Carbon|\DateTime|string|null  $time
  * @param  string|null  $locale  Locale override
@@ -61,32 +59,26 @@ function formatTime($time, ?string $locale = null, ?string $timezone = null): st
 
     try {
         $carbon = Carbon::parse($time);
-    } catch (Exception $e) {
+    } catch (\Exception $e) {
         return '';
     }
 
-    $i18n = app(I18nService::class);
-    $locale = $i18n->getValidLocale($locale);
-    $localeMetadata = $i18n->getLocaleMetadata($locale);
-    $defaultLocale = $i18n->getDefaultLocale();
-
-    $format = $localeMetadata['time_format'] ?? $i18n->getLocaleMetadata($defaultLocale)['time_format'] ?? 'H:i:s';
-
-    // Apply user's timezone preference for display (if not overridden)
-    if ($timezone === null) {
-        $preferences = app(FrontendPreferencesService::class);
-        $timezone = $preferences->getTimezone();
+    if ($locale) {
+        $i18n = app(I18nService::class);
+        $validLocale = $i18n->getValidLocale($locale);
+        $carbon->locale($validLocale);
     }
 
-    // Convert to user's timezone for display (original remains in app timezone for DB)
-    $carbon = $carbon->setTimezone($timezone);
+    if ($timezone === null) {
+        $timezone = app(FrontendPreferencesService::class)->getTimezone();
+    }
 
-    return $carbon->format($format);
+    return $carbon->setTimezone($timezone)->isoFormat('LT');
 }
 
 /**
- * Format a datetime according to the current locale's datetime format.
- * Uses user's timezone preference for display (timezone is for display only, DB storage uses app timezone).
+ * Format a datetime according to the locale's format.
+ * Uses Carbon's isoFormat('L LT') for localized date and time.
  *
  * @param  \Carbon\Carbon|\DateTime|string|null  $datetime
  * @param  string|null  $locale  Locale override
@@ -101,25 +93,20 @@ function formatDateTime($datetime, ?string $locale = null, ?string $timezone = n
 
     try {
         $carbon = Carbon::parse($datetime);
-    } catch (Exception $e) {
+    } catch (\Exception $e) {
         return '';
     }
 
-    $i18n = app(I18nService::class);
-    $locale = $i18n->getValidLocale($locale);
-    $localeMetadata = $i18n->getLocaleMetadata($locale);
-    $defaultLocale = $i18n->getDefaultLocale();
-
-    $format = $localeMetadata['datetime_format'] ?? $i18n->getLocaleMetadata($defaultLocale)['datetime_format'] ?? 'Y-m-d H:i:s';
-
-    // Apply user's timezone preference for display (if not overridden)
-    if ($timezone === null) {
-        $preferences = app(FrontendPreferencesService::class);
-        $timezone = $preferences->getTimezone();
+    if ($locale) {
+        $i18n = app(I18nService::class);
+        $validLocale = $i18n->getValidLocale($locale);
+        $carbon->locale($validLocale);
     }
 
-    // Convert to user's timezone for display (original remains in app timezone for DB)
-    $carbon = $carbon->setTimezone($timezone);
+    if ($timezone === null) {
+        $timezone = app(FrontendPreferencesService::class)->getTimezone();
+    }
 
-    return $carbon->format($format);
+    // Combine Date (L) and Time (LT) formats
+    return $carbon->setTimezone($timezone)->isoFormat('L LT');
 }

@@ -322,7 +322,7 @@ new class extends BasePageComponent {
         {{-- Back button --}}
         <div class="pt-4">
             <x-ui.button href="{{ route('admin.errors.index') }}"
-                         style="ghost"
+                         variant="ghost"
                          wire:navigate>
                 <x-ui.icon name="arrow-left"
                            size="sm"></x-ui.icon>
@@ -352,7 +352,7 @@ new class extends BasePageComponent {
 
                 <x-slot:actions>
                     <x-ui.button wire:click="closeResolveModal"
-                                 style="ghost">{{ __('actions.cancel') }}</x-ui.button>
+                                 variant="ghost">{{ __('actions.cancel') }}</x-ui.button>
                     <x-ui.button wire:click="resolveError"
                                  color="success">
                         <x-ui.icon name="check"

@@ -63,11 +63,23 @@ class UserTable extends Datatable
                 ->html(),
 
             Column::make(__('table.users.roles'), 'roles_for_datatable')
-                ->content(fn (User $user) => $user->roles->pluck('display_name')->toArray())
+                ->content(function (User $user) {
+                    $roles = $user->roles->pluck('display_name')->toArray();
+
+                    return count($roles) > 3
+                        ? [trans_choice('users.roles_count', count($roles))]
+                        : $roles;
+                })
                 ->type(DataTableUi::BADGE, ['variant' => 'primary', 'size' => 'sm']),
 
             Column::make(__('table.users.teams'), 'teams_for_datatable')
-                ->content(fn (User $user) => $user->teams->pluck('name')->toArray())
+                ->content(function (User $user) {
+                    $teams = $user->teams->pluck('name')->toArray();
+
+                    return count($teams) > 3
+                        ? [trans_choice('users.teams_count', count($teams))]
+                        : $teams;
+                })
                 ->type(DataTableUi::BADGE, ['variant' => 'secondary', 'size' => 'sm']),
 
             Column::make(__('table.users.last_login_at'), 'last_login_at')

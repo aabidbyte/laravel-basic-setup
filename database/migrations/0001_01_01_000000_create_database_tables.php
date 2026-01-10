@@ -38,6 +38,9 @@ return new class extends Migration
             $table->string('name');
             $table->string('username')->nullable()->unique();
             $table->string('email')->nullable()->unique(); // Nullable for users without email
+            $table->string('pending_email')->nullable(); // New email awaiting verification
+            $table->string('pending_email_token')->nullable(); // Token for email change verification
+            $table->timestamp('pending_email_expires_at')->nullable(); // Expiry for pending email (7 days)
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password')->nullable();
             $table->foreignId('created_by_user_id')->nullable(); // Track who created user (FK added after table exists)

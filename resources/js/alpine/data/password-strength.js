@@ -17,8 +17,9 @@ export default function passwordStrength(targetId, translations = {}) {
 
         init() {
             // Get the target input element
-            const getTargetElement = () => document.getElementById(this.targetId);
-            
+            const getTargetElement = () =>
+                document.getElementById(this.targetId);
+
             // Create bound event handlers so we can remove them later
             this.inputListener = (event) => {
                 if (event.target.id === this.targetId) {
@@ -97,7 +98,7 @@ export default function passwordStrength(targetId, translations = {}) {
             if (this.changeListener) {
                 window.removeEventListener('change', this.changeListener);
             }
-            
+
             // Clear the polling interval
             if (this.checkInterval) {
                 clearInterval(this.checkInterval);

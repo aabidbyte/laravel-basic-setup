@@ -9,11 +9,11 @@ use App\Models\User;
 use App\Notifications\UserActivatedNotification;
 use App\Services\Mail\MailBuilder;
 use App\Services\Notifications\NotificationBuilder;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Carbon\Carbon;
 
 /**
  * Service for user activation operations.

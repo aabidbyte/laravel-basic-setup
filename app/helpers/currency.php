@@ -1,77 +1,21 @@
 <?php
 
-use App\Services\I18nService;
+use Illuminate\Support\Number;
 
 /**
- * Format a currency amount according to the current locale's currency settings.
+ * Format a currency amount.
  *
  * @param  float|int|string  $amount
- * @param  string|null  $locale  Locale override
- * @param  string|null  $currencyCode  Currency code override (e.g., 'USD', 'EUR')
- * @return string Formatted currency string (e.g., "$100.00" or "100,00 €")
+ * @param  string|null  $currencyCode  Currency code (e.g., 'USD', 'EUR')
+ * @param  string|null  $locale  Locale for formatting rules
+ * @return string Formatted currency string
  */
-function formatCurrency($amount, ?string $locale = null, ?string $currencyCode = null): string
+function formatCurrency($amount, ?string $currencyCode = 'USD', ?string $locale = 'en_US'): string
 {
     if ($amount === null || $amount === '') {
         return '';
     }
 
-    // Convert to float
-    $amount = (float) $amount;
-
-    $i18n = app(I18nService::class);
-    $locale = $i18n->getValidLocale($locale);
-    $localeMetadata = $i18n->getLocaleMetadata($locale);
-    $defaultLocale = $i18n->getDefaultLocale();
-    $supportedLocales = $i18n->getSupportedLocales();
-
-    // Get currency config
-    $currencyConfig = $localeMetadata['currency'] ?? $i18n->getLocaleMetadata($defaultLocale)['currency'] ?? null;
-
-    if ($currencyConfig === null) {
-        // Fallback to basic formatting
-        return number_format($amount, 2, '.', ',');
-    }
-
-    // Override currency code if provided
-    if ($currencyCode !== null) {
-        // Try to find the currency in supported locales
-        $foundCurrency = null;
-        foreach ($supportedLocales as $loc => $config) {
-            if (isset($config['currency']['code']) && $config['currency']['code'] === $currencyCode) {
-                $foundCurrency = $config['currency'];
-                break;
-            }
-        }
-
-        if ($foundCurrency !== null) {
-            $currencyConfig = $foundCurrency;
-        } else {
-            // Use currency code as symbol fallback
-            $currencyConfig = [
-                'code' => $currencyCode,
-                'symbol' => $currencyCode,
-                'precision' => $currencyConfig['precision'] ?? 2,
-                'symbol_position' => $currencyConfig['symbol_position'] ?? 'before',
-                'decimal_separator' => $currencyConfig['decimal_separator'] ?? '.',
-                'thousands_separator' => $currencyConfig['thousands_separator'] ?? ',',
-            ];
-        }
-    }
-
-    $precision = $currencyConfig['precision'] ?? 2;
-    $symbol = $currencyConfig['symbol'] ?? '';
-    $symbolPosition = $currencyConfig['symbol_position'] ?? 'before';
-    $decimalSeparator = $currencyConfig['decimal_separator'] ?? '.';
-    $thousandsSeparator = $currencyConfig['thousands_separator'] ?? ',';
-
-    // Format number with precision and locale-specific separators
-    $formattedAmount = number_format($amount, $precision, $decimalSeparator, $thousandsSeparator);
-
-    // Place symbol based on position
-    if ($symbolPosition === 'after') {
-        return $formattedAmount . ' ' . $symbol;
-    }
-
-    return $symbol . $formattedAmount;
+    // Use Laravel's Number helper if available, or fallback to basic formatting
+    return Number::currency($amount, in: $currencyCode ?? 'USD', locale: $locale ?? 'en_US');
 }

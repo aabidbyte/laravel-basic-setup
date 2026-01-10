@@ -86,16 +86,10 @@ new class extends BasePageComponent {
      */
     public function updatePassword(): void
     {
-        try {
-            $validated = $this->validate([
-                'current_password' => ['required', 'string', 'current_password'],
-                'password' => ['required', 'string', Password::defaults(), 'confirmed'],
-            ]);
-        } catch (ValidationException $e) {
-            $this->reset('current_password', 'password', 'password_confirmation');
-
-            throw $e;
-        }
+        $validated = $this->validate([
+            'current_password' => ['required', 'string', 'current_password'],
+            'password' => ['required', 'string', Password::defaults(), 'confirmed'],
+        ]);
 
         Auth::user()->update([
             'password' => $validated['password'],
@@ -138,7 +132,7 @@ new class extends BasePageComponent {
                                 {{ __('settings.profile.email_unverified') }}
                                 <x-ui.button type="button"
                                              wire:click.prevent="resendVerificationNotification"
-                                             style="link"
+                                             variant="link"
                                              color="primary"
                                              size="sm">{{ __('settings.profile.resend_verification') }}</x-ui.button>
                             </span>

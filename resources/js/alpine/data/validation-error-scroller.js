@@ -58,7 +58,9 @@ export function validationErrorScroller(config = {}) {
          */
         findFirstError() {
             // Find all elements with error class
-            const errorInputs = document.querySelectorAll('.input-error, .select-error, .textarea-error');
+            const errorInputs = document.querySelectorAll(
+                '.input-error, .select-error, .textarea-error',
+            );
 
             if (errorInputs.length === 0) {
                 return null;
@@ -81,7 +83,10 @@ export function validationErrorScroller(config = {}) {
             // Get the element's position
             const elementRect = element.getBoundingClientRect();
             const absoluteElementTop = elementRect.top + window.pageYOffset;
-            const middle = absoluteElementTop - (window.innerHeight / 2) + (elementRect.height / 2);
+            const middle =
+                absoluteElementTop -
+                window.innerHeight / 2 +
+                elementRect.height / 2;
 
             // Scroll to calculated position with offset
             window.scrollTo({
@@ -90,7 +95,11 @@ export function validationErrorScroller(config = {}) {
             });
 
             // Optional: Focus the error input for keyboard accessibility
-            if (element.tagName === 'INPUT' || element.tagName === 'SELECT' || element.tagName === 'TEXTAREA') {
+            if (
+                element.tagName === 'INPUT' ||
+                element.tagName === 'SELECT' ||
+                element.tagName === 'TEXTAREA'
+            ) {
                 element.focus({ preventScroll: true });
             }
         },
@@ -130,7 +139,9 @@ document.addEventListener('livewire:init', () => {
                 }
 
                 // Find first error element
-                const errorInputs = document.querySelectorAll('.input-error, .select-error, .textarea-error');
+                const errorInputs = document.querySelectorAll(
+                    '.input-error, .select-error, .textarea-error',
+                );
                 if (errorInputs.length === 0) {
                     return;
                 }
@@ -143,7 +154,10 @@ document.addEventListener('livewire:init', () => {
                 // Scroll to error
                 const elementRect = errorElement.getBoundingClientRect();
                 const absoluteElementTop = elementRect.top + window.pageYOffset;
-                const middle = absoluteElementTop - (window.innerHeight / 2) + (elementRect.height / 2);
+                const middle =
+                    absoluteElementTop -
+                    window.innerHeight / 2 +
+                    elementRect.height / 2;
 
                 window.scrollTo({
                     top: Math.max(0, middle - 100), // Default offset
@@ -151,7 +165,11 @@ document.addEventListener('livewire:init', () => {
                 });
 
                 // Focus for accessibility
-                if (errorElement.tagName === 'INPUT' || errorElement.tagName === 'SELECT' || errorElement.tagName === 'TEXTAREA') {
+                if (
+                    errorElement.tagName === 'INPUT' ||
+                    errorElement.tagName === 'SELECT' ||
+                    errorElement.tagName === 'TEXTAREA'
+                ) {
                     errorElement.focus({ preventScroll: true });
                 }
 
@@ -160,4 +178,3 @@ document.addEventListener('livewire:init', () => {
         });
     });
 });
-

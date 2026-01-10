@@ -119,13 +119,47 @@ class LangSyncCommand extends Command
         $this->defaultLocale = config('i18n.default_locale', 'en_US');
         $this->supportedLocales = array_keys(config('i18n.supported_locales', []));
         $this->protectedFiles = config('i18n.protected_translation_files', []);
-        $this->namespaces = config('i18n.namespaces', ['ui', 'messages']);
+
+        // Load configured namespaces and merge with auto-discovered ones
+        $configuredNamespaces = config('i18n.namespaces', ['ui', 'messages']);
+        $discoveredNamespaces = $this->discoverNamespaces();
+        $this->namespaces = array_unique(array_merge($configuredNamespaces, $discoveredNamespaces));
+
         $this->extractedFile = config('i18n.extracted_file', 'extracted');
 
         if (empty($this->supportedLocales)) {
             $this->error('No supported locales found in config/i18n.php');
             exit(1);
         }
+    }
+
+    /**
+     * Auto-discover namespaces from default locale files.
+     *
+     * @return array<string>
+     */
+    protected function discoverNamespaces(): array
+    {
+        $defaultPath = lang_path($this->defaultLocale);
+
+        if (! File::exists($defaultPath)) {
+            return [];
+        }
+
+        $files = File::files($defaultPath);
+        $namespaces = [];
+        $extractedFile = config('i18n.extracted_file', 'extracted');
+
+        foreach ($files as $file) {
+            $filename = $file->getFilenameWithoutExtension();
+
+            // Skip extracted file
+            if ($filename !== $extractedFile) {
+                $namespaces[] = $filename;
+            }
+        }
+
+        return $namespaces;
     }
 
     /**

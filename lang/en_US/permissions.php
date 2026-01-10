@@ -1,16 +1,6 @@
 <?php
 
 return [
-    /*
-    |--------------------------------------------------------------------------
-    | Permission Language Lines
-    |--------------------------------------------------------------------------
-    |
-    | The following language lines are used for permission labels and
-    | descriptions in the permission matrix UI.
-    |
-    */
-
     'title' => 'Permissions',
     'matrix' => [
         'title' => 'Permission Matrix',
@@ -19,8 +9,6 @@ return [
         'select_all_column' => 'Select all :action',
         'no_permissions' => 'No permissions available',
     ],
-
-    // Entity labels
     'entities' => [
         'users' => 'Users',
         'roles' => 'Roles',
@@ -29,9 +17,8 @@ return [
         'telescope' => 'Telescope',
         'horizon' => 'Horizon',
         'mail_settings' => 'Mail Settings',
+        '{$entity}' => 'DYNAMIC_KEY: This key is dynamically constructed using PHP variables. The variable portion should be resolved to all possible values from the source class/constants. See source at app/Constants/Auth/PermissionEntity.php:72 to find the values (e.g., from a constants class). Create individual translation entries for each resolved key instead of this pattern.',
     ],
-
-    // Action labels
     'actions' => [
         'view' => 'View',
         'create' => 'Create',
@@ -46,5 +33,6 @@ return [
         'activate' => 'Activate',
         'configure' => 'Configure',
         'generate_activation' => 'Generate Activation',
+        '{$action}' => 'DYNAMIC_KEY: This key is dynamically constructed using PHP variables. The variable portion should be resolved to all possible values from the source class/constants. See source at app/Constants/Auth/PermissionAction.php:106 to find the values (e.g., from a constants class). Create individual translation entries for each resolved key instead of this pattern.',
     ],
 ];

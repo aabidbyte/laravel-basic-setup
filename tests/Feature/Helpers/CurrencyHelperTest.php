@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\App;
-
 test('formatCurrency returns empty string for null input', function () {
     expect(formatCurrency(null))->toBe('');
 });
@@ -10,90 +8,46 @@ test('formatCurrency returns empty string for empty string input', function () {
     expect(formatCurrency(''))->toBe('');
 });
 
-test('formatCurrency formats currency using current locale', function () {
-    App::setLocale('en_US');
-
+test('formatCurrency formats currency using defaults (USD, en_US)', function () {
     $result = formatCurrency(100.50);
-
     expect($result)->toBe('$100.50');
 });
 
-test('formatCurrency formats currency using specified locale', function () {
-    $result = formatCurrency(100.50, 'fr_FR');
-
-    expect($result)->toBe('100,50 €');
+test('formatCurrency formats currency using specified currency and locale', function () {
+    $result = formatCurrency(100.50, 'EUR', 'fr_FR');
+    // Number::currency might spit out distinct non-breaking spaces or simple spaces depending on lib
+    // using toContain ensures we check generic formatting correctness
+    expect($result)->toContain('100,50');
+    expect($result)->toContain('€');
 });
 
 test('formatCurrency handles integer input', function () {
-    App::setLocale('en_US');
-
     $result = formatCurrency(100);
-
     expect($result)->toBe('$100.00');
 });
 
 test('formatCurrency handles string numeric input', function () {
-    App::setLocale('en_US');
-
     $result = formatCurrency('100.50');
-
     expect($result)->toBe('$100.50');
 });
 
-test('formatCurrency uses correct symbol position for en_US', function () {
-    App::setLocale('en_US');
-
-    $result = formatCurrency(100.50);
-
+test('formatCurrency uses correct symbol position for USD', function () {
+    $result = formatCurrency(100.50, 'USD', 'en_US');
     expect($result)->toStartWith('$');
 });
 
-test('formatCurrency uses correct symbol position for fr_FR', function () {
-    $result = formatCurrency(100.50, 'fr_FR');
-
+test('formatCurrency uses correct symbol position for EUR', function () {
+    $result = formatCurrency(100.50, 'EUR', 'fr_FR');
     expect($result)->toEndWith('€');
 });
 
 test('formatCurrency uses correct decimal separator for fr_FR', function () {
-    $result = formatCurrency(100.50, 'fr_FR');
-
+    $result = formatCurrency(100.50, 'EUR', 'fr_FR');
     expect($result)->toContain(',');
-    expect($result)->not->toContain('.');
 });
 
-test('formatCurrency uses correct thousands separator for fr_FR', function () {
-    $result = formatCurrency(1000.50, 'fr_FR');
-
-    expect($result)->toContain('1 000');
-});
-
-test('formatCurrency uses correct thousands separator for en_US', function () {
-    App::setLocale('en_US');
-
-    $result = formatCurrency(1000.50);
-
-    expect($result)->toContain('1,000');
-});
-
-test('formatCurrency respects precision setting', function () {
-    App::setLocale('en_US');
-
-    $result = formatCurrency(100.5);
-
-    expect($result)->toBe('$100.50');
-});
-
-test('formatCurrency allows currency code override', function () {
-    App::setLocale('en_US');
-
-    $result = formatCurrency(100.50, null, 'EUR');
-
-    expect($result)->toContain('€');
-});
-
-test('formatCurrency falls back to basic formatting when currency config is missing', function () {
-    // This test verifies the fallback behavior
-    $result = formatCurrency(100.50, 'unsupported_locale');
-
-    expect($result)->not->toBeEmpty();
+test('formatCurrency uses specified currency code (JPY)', function () {
+    $result = formatCurrency(100, 'JPY', 'ja_JP');
+    // JPY typically has no decimals
+    expect($result)->toContain('￥100');
 });

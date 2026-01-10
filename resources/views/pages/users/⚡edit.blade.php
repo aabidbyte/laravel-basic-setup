@@ -1,6 +1,7 @@
 <?php
 
 use App\Constants\Auth\Permissions;
+use App\Constants\Auth\Roles;
 use App\Livewire\Bases\BasePageComponent;
 use App\Models\Role;
 use App\Models\Team;
@@ -143,39 +144,31 @@ new class extends BasePageComponent {
     {
         $validated = $this->validate();
 
-        try {
-            $userService = app(UserService::class);
+        $userService = app(UserService::class);
 
-            $user = $userService->updateUser(
-                user: $this->editUser,
-                data: [
-                    'name' => $this->name,
-                    'username' => $this->username,
-                    'email' => $this->email,
-                    'password' => $this->password ?: null,
-                    'timezone' => $this->timezone,
-                    'locale' => $this->locale,
-                    'is_active' => $this->is_active,
-                ],
-                roleUuids: $this->selectedRoles,
-                teamUuids: $this->selectedTeams,
-                permissionUuids: $this->selectedDirectPermissions,
-            );
+        $user = $userService->updateUser(
+            user: $this->editUser,
+            data: [
+                'name' => $this->name,
+                'username' => $this->username,
+                'email' => $this->email,
+                'password' => $this->password ?: null,
+                'timezone' => $this->timezone,
+                'locale' => $this->locale,
+                'is_active' => $this->is_active,
+            ],
+            roleUuids: $this->selectedRoles,
+            teamUuids: $this->selectedTeams,
+            permissionUuids: $this->selectedDirectPermissions,
+        );
 
-            NotificationBuilder::make()
-                ->title('pages.common.edit.success', ['name' => $user->name])
-                ->success()
-                ->persist()
-                ->send();
+        NotificationBuilder::make()
+            ->title('pages.common.edit.success', ['name' => $user->name])
+            ->success()
+            ->persist()
+            ->send();
 
-            $this->redirect(route('users.show', $user->uuid), navigate: true);
-        } catch (Exception $e) {
-            NotificationBuilder::make()
-                ->title('pages.common.edit.error', ['type' => __('types.user')])
-                ->content($e->getMessage())
-                ->error()
-                ->send();
-        }
+        $this->redirect(route('users.show', $user->uuid), navigate: true);
     }
 
     public function getPageTitle(): string
@@ -217,29 +210,46 @@ new class extends BasePageComponent {
                                     wire:model="email"
                                     name="email"
                                     :label="__('users.email')"></x-ui.input>
+                        @if ($editUser->hasVerifiedEmail())
+                            <p class="text-info mt-1 text-sm">
+                                <x-ui.icon name="information-circle"
+                                           size="sm"
+                                           class="inline"></x-ui.icon>
+                                {{ __('users.edit.email_change_note') }}
+                            </p>
+                        @endif
+                        @if ($editUser->hasPendingEmailChange())
+                            <div class="alert alert-warning mt-2">
+                                <x-ui.icon name="clock"
+                                           size="sm"></x-ui.icon>
+                                <span>{{ __('users.edit.pending_email_note', ['email' => $editUser->pending_email]) }}</span>
+                            </div>
+                        @endif
                     </div>
 
-                    {{-- Password (optional on edit) --}}
-                    <div class="divider"></div>
-                    <div class="space-y-4">
-                        <x-ui.title level="3"
-                                    class="text-base-content/70">{{ __('users.edit.password') }}</x-ui.title>
-                        <p class="text-base-content/60 text-sm">{{ __('users.edit.password_hint') }}</p>
+                    {{-- Password (Super Admin only) --}}
+                    @if (Auth::user()->hasRole(Roles::SUPER_ADMIN))
+                        <div class="divider"></div>
+                        <div class="space-y-4">
+                            <x-ui.title level="3"
+                                        class="text-base-content/70">{{ __('users.edit.password') }}</x-ui.title>
+                            <p class="text-base-content/60 text-sm">{{ __('users.edit.password_hint') }}</p>
 
-                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            <x-ui.password wire:model="password"
-                                           name="password"
-                                           :label="__('users.password')"
-                                           with-strength-meter
-                                           with-generation
-                                           autocomplete="new-password" />
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <x-ui.password wire:model="password"
+                                               name="password"
+                                               :label="__('users.password')"
+                                               with-strength-meter
+                                               with-generation
+                                               autocomplete="new-password"></x-ui.password>
 
-                            <x-ui.password wire:model="password_confirmation"
-                                           name="password_confirmation"
-                                           :label="__('users.password_confirmation')"
-                                           autocomplete="new-password" />
+                                <x-ui.password wire:model="password_confirmation"
+                                               name="password_confirmation"
+                                               :label="__('users.password_confirmation')"
+                                               autocomplete="new-password"></x-ui.password>
+                            </div>
                         </div>
-                    </div>
+                    @endif
 
                     {{-- Status --}}
                     <div class="divider"></div>
@@ -354,7 +364,7 @@ new class extends BasePageComponent {
                     <div class="divider"></div>
                     <div class="flex justify-end gap-4">
                         <x-ui.button href="{{ route('users.show', $editUser->uuid) }}"
-                                     style="ghost"
+                                     variant="ghost"
                                      wire:navigate>{{ __('actions.cancel') }}</x-ui.button>
                         <x-ui.button type="submit"
                                      variant="primary">

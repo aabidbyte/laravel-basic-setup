@@ -60,6 +60,19 @@
 -   **View Composers**: **Use View Composers instead of `@inject` for global data** - Register View Composers in service providers to share data globally with all views. This is more efficient and cleaner than using `@inject` directives in every template.
 -   **Leading Import Slashes**: **NO leading import slashes are allowed in PHP or Blade files** - Avoid using leading slashes in `use` statements or inline class references (e.g., use `App\Models\User` instead of `\App\Models\User`). Always prefer importing classes at the top of the file. If a name collision occurs, use the `as` keyword with descriptive context (e.g., `use App\Models\User as AppUser`).
  
+
+ ### Exception Handling
+
+ -   **Global Handler**: The application uses a robust global exception handling system.
+ -   **No Try-Catch**: **Do NOT use `try-catch` blocks in controllers, services, or other application code.**
+     -   Let exceptions propagate to the global handler.
+     -   The global handler will manage logging, user notifications, and error pages.
+ -   **Exceptions**: `try-catch` blocks are only permitted in:
+     -   Infrastructure code where crashing the handler itself must be avoided (e.g., error reporting channels).
+     -   Specific third-party integrations where the library requires it *and* specific recovery logic is implemented (not just logging).
+     -   Testing code where verifying exception throwing is required.
+     -   Validation logic where exception flow is used for control flow (though avoid this if possible).
+
  ### Internationalization (i18n)
  
  -   **Namespaces**: **Always use granular namespaces** (e.g., `pages.*`, `users.*`, `actions.*`) instead of the monolithic `ui.*` prefix.
@@ -68,6 +81,7 @@
      -   *Incorrect*: `__('users.create_new_user')` (unless highly specific)
  -   **Hardcoded Strings**: **No hardcoded user-facing strings**. Always use `__('namespace.key')`.
  -   **Sync**: Run `php artisan lang:sync` after adding new keys.
+-   **Bulk Actions**: **Do not include the word "selected" in bulk action translations** (e.g., use "Delete" instead of "Delete Selected"). The context of a bulk action automatically implies it applies to selected items.
 
 ### Constants and Code Reusability
 
@@ -92,6 +106,8 @@
 
 -   **Extract repeated patterns** into helper functions, closures, or methods
 -   **Use configuration arrays** and loops when configuring multiple similar items
+-   **When adding new translation keys, you **MUST** add them to all supported language directories in the `lang/` folder (currently `en_US` and `fr_FR`).
+-   Use the `trans_choice` function for pluralization.
 -   **Create factory functions** for generating similar configurations
 -   **DRY Principle**: Don't Repeat Yourself - if you find yourself writing the same code pattern multiple times, extract it
 
@@ -242,6 +258,15 @@ it('tests something', function () {
     ```
 -   **Component Documentation**: **ALWAYS update `docs/components/index.md` when adding new UI components** - This ensures all components are documented with props, usage examples, and implementation details
 -   **Component Tag Format**: **ALL Blade and Livewire component tags MUST use opening and closing tags, never self-closing tags** - Always write `<x-component></x-component>` or `<livewire:component></livewire:component>` instead of `<x-component />` or `<livewire:component />`, even if the component has no content. **Exception**: Standard HTML self-closing tags (void elements) like `<img />`, `<br />`, `<hr />`, `<input />`, `<meta />`, `<link />`, `<area />`, `<base />`, `<col />`, `<embed />`, `<source />`, `<track />`, `<wbr />` should remain self-closing as per HTML5 specification.
+-   **No Directives in Component Tags**: **NEVER use Blade directives (e.g., `@if`, `@foreach`, `@auth`) inside component opening tags.** This is a critical rule because it causes syntax errors in the Blade compiler. Instead, use conditional attribute binding.
+    -   **❌ Incorrect**:
+        ```blade
+        <x-ui.button @if($href) href="{{ $href }}" @endif>Click</x-ui.button>
+        ```
+    -   **✅ Correct**:
+        ```blade
+        <x-ui.button :href="$href ?: null">Click</x-ui.button>
+        ```
 -   **Component Props Comments**: **NO comments shall be inside `@props` directive** - All comments for component props MUST be placed at the top of the file, isolated in a Blade comment block (`{{-- --}}`). This keeps the `@props` directive clean and makes component documentation more readable. Example:
     ```blade
     {{--
@@ -273,6 +298,8 @@ it('tests something', function () {
     -   **Seamless**: No need to call `parent::mount()` - title and subtitle sharing happens automatically via `boot()` lifecycle hook
     -   **Example**: `new class extends BasePageComponent { public ?string $pageTitle = 'pages.dashboard'; public string $pageSubtitle = 'pages.dashboard.description'; }`
     -   **Rule**: Never extend `Livewire\Component` directly for full-page components - always use `BasePageComponent`
+-   **Translations**: Always add translation keys to all supported languages (e.g., `en_US` and `fr_FR`) when introducing new keys. Do not leave keys missing or with placeholders in any language.
+-   **Strict Typing**: Use `declare(strict_types=1);` in all PHP files.
 -   **Naming**: Use descriptive names (e.g., `isRegisteredForDiscounts`, not `discount()`)
 -   **DataTable Components**:
     -   **Location**: `App\Livewire\Tables\`

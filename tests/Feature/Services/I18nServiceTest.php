@@ -56,8 +56,6 @@ test('getLocaleMetadata returns metadata for supported locale', function () {
 
     expect($metadata)->toBeArray();
     expect($metadata)->toHaveKey('native_name');
-    expect($metadata)->toHaveKey('date_format');
-    expect($metadata)->toHaveKey('currency');
 });
 
 test('getLocaleMetadata returns null for unsupported locale', function () {

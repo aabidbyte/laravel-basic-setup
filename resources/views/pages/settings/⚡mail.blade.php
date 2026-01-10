@@ -4,9 +4,7 @@ use App\Constants\Auth\Permissions;
 use App\Livewire\Bases\BasePageComponent;
 use App\Models\MailSettings;
 use App\Services\Notifications\NotificationBuilder;
-use Illuminate\Support\Facades\Mail;
 use Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport;
-use Exception;
 
 new class extends BasePageComponent {
     public ?string $pageTitle = 'settings.tabs.mail';
@@ -315,8 +313,8 @@ new class extends BasePageComponent {
                     <x-ui.button type="button"
                                  wire:click="deleteSettings"
                                  wire:confirm="{{ __('settings.mail.delete_confirm') }}"
-                                 variant="error"
-                                 style="outline">
+                                 color="error"
+                                 variant="outline">
                         {{ __('actions.delete') }}
                     </x-ui.button>
                 @endif

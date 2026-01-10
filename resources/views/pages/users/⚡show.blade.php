@@ -6,8 +6,7 @@ use App\Models\User;
 use App\Services\Notifications\NotificationBuilder;
 use App\Services\Users\UserService;
 
-new class extends BasePageComponent
-{
+new class extends BasePageComponent {
     public ?string $pageTitle = null;
 
     public ?string $pageSubtitle = null;
@@ -45,15 +44,51 @@ new class extends BasePageComponent
     {
         $this->authorize(Permissions::GENERATE_ACTIVATION_USERS);
 
-        try {
-            $userService = app(UserService::class);
-            $this->activationLink = $userService->generateActivationLink($this->user);
-            $this->showActivationModal = true;
+        $userService = app(UserService::class);
+        $this->activationLink = $userService->generateActivationLink($this->user);
+        $this->showActivationModal = true;
 
-            NotificationBuilder::make()->title('users.show.activation_link_generated')->success()->send();
-        } catch (Exception $e) {
-            NotificationBuilder::make()->title('users.show.activation_link_error')->content($e->getMessage())->error()->send();
-        }
+        NotificationBuilder::make()->title('users.show.activation_link_generated')->success()->send();
+    }
+
+    /**
+     * Send password reset email to the user.
+     */
+    public function sendPasswordResetEmail(): void
+    {
+        $this->authorize(Permissions::EDIT_USERS);
+
+        $userService = app(UserService::class);
+        $userService->sendPasswordResetEmail($this->user);
+
+        NotificationBuilder::make()->title('users.show.password_reset_sent')->success()->send();
+    }
+
+    /**
+     * Send activation email to the user.
+     */
+    public function sendActivationEmail(): void
+    {
+        $this->authorize(Permissions::EDIT_USERS);
+
+        $userService = app(UserService::class);
+        $userService->sendActivationEmail($this->user);
+
+        NotificationBuilder::make()->title('users.show.activation_email_sent')->success()->send();
+    }
+
+    /**
+     * Cancel pending email change.
+     */
+    public function cancelPendingEmailChange(): void
+    {
+        $this->authorize(Permissions::EDIT_USERS);
+
+        $userService = app(UserService::class);
+        $userService->cancelPendingEmailChange($this->user);
+        $this->user = $this->user->fresh();
+
+        NotificationBuilder::make()->title('users.show.pending_email_cancelled')->success()->send();
     }
 
     /**
@@ -63,18 +98,14 @@ new class extends BasePageComponent
     {
         $this->authorize(Permissions::EDIT_USERS);
 
-        try {
-            $this->user->activate();
-            $this->user = $this->user->fresh();
+        $this->user->activate();
+        $this->user = $this->user->fresh();
 
-            NotificationBuilder::make()
-                ->title('pages.common.messages.activated', ['name' => $this->user->name])
-                ->success()
-                ->persist()
-                ->send();
-        } catch (Exception $e) {
-            NotificationBuilder::make()->title('users.show.activation_error')->content($e->getMessage())->error()->send();
-        }
+        NotificationBuilder::make()
+            ->title('pages.common.messages.activated', ['name' => $this->user->name])
+            ->success()
+            ->persist()
+            ->send();
     }
 
     /**
@@ -84,18 +115,14 @@ new class extends BasePageComponent
     {
         $this->authorize(Permissions::EDIT_USERS);
 
-        try {
-            $this->user->deactivate();
-            $this->user = $this->user->fresh();
+        $this->user->deactivate();
+        $this->user = $this->user->fresh();
 
-            NotificationBuilder::make()
-                ->title('pages.common.messages.deactivated', ['name' => $this->user->name])
-                ->warning()
-                ->persist()
-                ->send();
-        } catch (Exception $e) {
-            NotificationBuilder::make()->title('users.show.deactivation_error')->content($e->getMessage())->error()->send();
-        }
+        NotificationBuilder::make()
+            ->title('pages.common.messages.deactivated', ['name' => $this->user->name])
+            ->warning()
+            ->persist()
+            ->send();
     }
 
     /**
@@ -114,20 +141,16 @@ new class extends BasePageComponent
     {
         $this->authorize(Permissions::DELETE_USERS);
 
-        try {
-            $name = $this->user->name;
-            $this->user->delete();
+        $name = $this->user->name;
+        $this->user->delete();
 
-            NotificationBuilder::make()
-                ->title('pages.common.messages.deleted', ['name' => $name])
-                ->success()
-                ->persist()
-                ->send();
+        NotificationBuilder::make()
+            ->title('pages.common.messages.deleted', ['name' => $name])
+            ->success()
+            ->persist()
+            ->send();
 
-            $this->redirect(route('users.index'), navigate: true);
-        } catch (Exception $e) {
-            NotificationBuilder::make()->title('users.show.delete_error')->content($e->getMessage())->error()->send();
-        }
+        $this->redirect(route('users.index'), navigate: true);
     }
 }; ?>
 
@@ -158,15 +181,31 @@ new class extends BasePageComponent
                         @endcan
 
                         @if (!$user->is_active)
-                            @can(Permissions::GENERATE_ACTIVATION_USERS)
-                                <x-ui.button wire:click="generateActivationLink"
-                                             color="secondary"
-                                             size="sm">
-                                    <x-ui.icon name="link"
-                                               size="sm"></x-ui.icon>
-                                    {{ __('users.show.generate_link') }}
-                                </x-ui.button>
-                            @endcan
+                            {{-- Inactive user: show activation options --}}
+                            @if (!$user->email)
+                                {{-- No email: generate activation link --}}
+                                @can(Permissions::GENERATE_ACTIVATION_USERS)
+                                    <x-ui.button wire:click="generateActivationLink"
+                                                 color="secondary"
+                                                 size="sm">
+                                        <x-ui.icon name="link"
+                                                   size="sm"></x-ui.icon>
+                                        {{ __('users.show.generate_link') }}
+                                    </x-ui.button>
+                                @endcan
+                            @else
+                                {{-- Has email: send activation email --}}
+                                @can(Permissions::EDIT_USERS)
+                                    <x-ui.button wire:click="sendActivationEmail"
+                                                 wire:confirm="{{ __('users.show.confirm_send_activation') }}"
+                                                 color="secondary"
+                                                 size="sm">
+                                        <x-ui.icon name="envelope"
+                                                   size="sm"></x-ui.icon>
+                                        {{ __('users.show.send_activation_email') }}
+                                    </x-ui.button>
+                                @endcan
+                            @endif
 
                             @can(Permissions::EDIT_USERS)
                                 <x-ui.button wire:click="activateUser"
@@ -179,6 +218,43 @@ new class extends BasePageComponent
                                 </x-ui.button>
                             @endcan
                         @else
+                            {{-- Active user: password reset and deactivate options --}}
+                            @if ($user->hasVerifiedEmail())
+                                @can(Permissions::EDIT_USERS)
+                                    <x-ui.button wire:click="sendPasswordResetEmail"
+                                                 wire:confirm="{{ __('users.show.confirm_send_reset') }}"
+                                                 color="info"
+                                                 size="sm">
+                                        <x-ui.icon name="key"
+                                                   size="sm"></x-ui.icon>
+                                        {{ __('users.show.send_password_reset') }}
+                                    </x-ui.button>
+                                @endcan
+                            @elseif ($user->email)
+                                {{-- Has email but not verified --}}
+                                @can(Permissions::EDIT_USERS)
+                                    <x-ui.button wire:click="sendActivationEmail"
+                                                 wire:confirm="{{ __('users.show.confirm_send_activation') }}"
+                                                 color="secondary"
+                                                 size="sm">
+                                        <x-ui.icon name="envelope"
+                                                   size="sm"></x-ui.icon>
+                                        {{ __('users.show.send_activation_email') }}
+                                    </x-ui.button>
+                                @endcan
+                            @else
+                                {{-- No email: generate activation link --}}
+                                @can(Permissions::GENERATE_ACTIVATION_USERS)
+                                    <x-ui.button wire:click="generateActivationLink"
+                                                 color="secondary"
+                                                 size="sm">
+                                        <x-ui.icon name="link"
+                                                   size="sm"></x-ui.icon>
+                                        {{ __('users.show.generate_link') }}
+                                    </x-ui.button>
+                                @endcan
+                            @endif
+
                             @can(Permissions::EDIT_USERS)
                                 <x-ui.button wire:click="deactivateUser"
                                              wire:confirm="{{ __('users.show.confirm_deactivate') }}"
@@ -228,6 +304,22 @@ new class extends BasePageComponent
                             <div>
                                 <span class="text-base-content/60 text-sm">{{ __('users.email') }}</span>
                                 <p class="font-medium">{{ $user->email ?? '—' }}</p>
+                                @if ($user->hasPendingEmailChange())
+                                    <div class="alert alert-warning mt-2 p-2">
+                                        <x-ui.icon name="clock"
+                                                   size="sm"></x-ui.icon>
+                                        <span
+                                              class="text-sm">{{ __('users.show.pending_email', ['email' => $user->pending_email]) }}</span>
+                                        @can(Permissions::EDIT_USERS)
+                                            <x-ui.button wire:click="cancelPendingEmailChange"
+                                                         wire:confirm="{{ __('users.show.confirm_cancel_pending') }}"
+                                                         color="ghost"
+                                                         size="xs">
+                                                {{ __('actions.cancel') }}
+                                            </x-ui.button>
+                                        @endcan
+                                    </div>
+                                @endif
                             </div>
 
                             <div>
@@ -256,7 +348,7 @@ new class extends BasePageComponent
                                           class="text-base-content/60 text-sm">({{ $user->created_at->format('Y-m-d H:i') }})</span>
                                 </p>
                             </div>
-                            
+
                             <div>
                                 <span class="text-base-content/60 text-sm">{{ __('users.updated_at') }}</span>
                                 <p class="font-medium">
@@ -269,9 +361,10 @@ new class extends BasePageComponent
                             <div>
                                 <span class="text-base-content/60 text-sm">{{ __('users.email_verified_at') }}</span>
                                 <p class="font-medium">
-                                    @if($user->email_verified_at)
+                                    @if ($user->email_verified_at)
                                         {{ $user->email_verified_at->diffForHumans() }}
-                                        <span class="text-base-content/60 text-sm">({{ $user->email_verified_at->format('Y-m-d H:i') }})</span>
+                                        <span
+                                              class="text-base-content/60 text-sm">({{ $user->email_verified_at->format('Y-m-d H:i') }})</span>
                                     @else
                                         <span class="text-error italic">{{ __('users.not_verified') }}</span>
                                     @endif
@@ -298,7 +391,8 @@ new class extends BasePageComponent
 
                             @if ($user->createdUsers()->exists())
                                 <div>
-                                    <span class="text-base-content/60 text-sm">{{ __('users.created_users_count') }}</span>
+                                    <span
+                                          class="text-base-content/60 text-sm">{{ __('users.created_users_count') }}</span>
                                     <p class="font-medium">{{ $user->createdUsers()->count() }}</p>
                                 </div>
                             @endif
@@ -310,17 +404,18 @@ new class extends BasePageComponent
                 <div class="mt-8 space-y-4">
                     <x-ui.title level="3"
                                 class="text-base-content/70 border-b pb-2">{{ __('users.notification_preferences') }}</x-ui.title>
-                    
-                    @if(!empty($user->notification_preferences))
+
+                    @if (!empty($user->notification_preferences))
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                             @foreach($user->notification_preferences as $channel => $enabled)
-                                <div class="flex items-center justify-between p-3 bg-base-200 rounded-lg">
+                            @foreach ($user->notification_preferences as $channel => $enabled)
+                                <div class="bg-base-200 flex items-center justify-between rounded-lg p-3">
                                     <span class="font-medium">{{ Str::headline($channel) }}</span>
-                                    <x-ui.badge :variant="$enabled ? 'success' : 'ghost'" size="sm">
+                                    <x-ui.badge :variant="$enabled ? 'success' : 'ghost'"
+                                                size="sm">
                                         {{ $enabled ? __('users.active') : __('users.inactive') }}
                                     </x-ui.badge>
                                 </div>
-                             @endforeach
+                            @endforeach
                         </div>
                     @else
                         <p class="text-base-content/60 italic">{{ __('users.not_set') }}</p>
@@ -392,7 +487,7 @@ new class extends BasePageComponent
                 {{-- Back button --}}
                 <div class="mt-8 border-t pt-4">
                     <x-ui.button href="{{ route('users.index') }}"
-                                 style="ghost"
+                                 variant="ghost"
                                  wire:navigate>
                         <x-ui.icon name="arrow-left"
                                    size="sm"></x-ui.icon>
@@ -430,7 +525,7 @@ new class extends BasePageComponent
 
                 <x-slot:actions>
                     <x-ui.button wire:click="closeActivationModal"
-                                 style="ghost">{{ __('actions.close') }}</x-ui.button>
+                                 variant="ghost">{{ __('actions.close') }}</x-ui.button>
                 </x-slot:actions>
             </x-ui.base-modal>
         @endif

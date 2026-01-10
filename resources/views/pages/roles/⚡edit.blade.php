@@ -6,7 +6,6 @@ use App\Livewire\Bases\BasePageComponent;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Services\Notifications\NotificationBuilder;
-use Illuminate\Validation\Rule;
 use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Locked;
 
@@ -25,7 +24,7 @@ new class extends BasePageComponent {
     public ?string $display_name = null;
     public ?string $description = null;
 
-    /** @var array<int> */
+    /** @var array<string> */
     public array $selectedPermissions = [];
 
     /**
@@ -44,7 +43,7 @@ new class extends BasePageComponent {
         $this->name = $role->name;
         $this->display_name = $role->display_name;
         $this->description = $role->description;
-        $this->selectedPermissions = $role->permissions->pluck('id')->toArray();
+        $this->selectedPermissions = $role->permissions->pluck('uuid')->toArray();
 
         $this->pageSubtitle = __('pages.common.edit.description', ['type' => __('types.role')]);
     }
@@ -82,11 +81,11 @@ new class extends BasePageComponent {
         $role = $this->getRole();
 
         return [
-            'name' => ['required', 'string', 'max:255', Rule::unique(Role::class)->ignore($role?->id)],
-            'display_name' => ['nullable', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
+            'display_name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:1000'],
             'selectedPermissions' => ['array'],
-            'selectedPermissions.*' => ['exists:permissions,id'],
+            'selectedPermissions.*' => ['exists:permissions,uuid'],
         ];
     }
 
@@ -108,29 +107,22 @@ new class extends BasePageComponent {
             return;
         }
 
-        try {
-            $role->update([
-                'name' => $this->name,
-                'display_name' => $this->display_name,
-                'description' => $this->description,
-            ]);
+        $role->update([
+            'display_name' => $this->display_name,
+            'description' => $this->description,
+        ]);
 
-            $role->syncPermissions($this->selectedPermissions);
+        // Retrieve permission IDs from UUIDs
+        $permissionIds = Permission::whereIn('uuid', $this->selectedPermissions)->pluck('id')->toArray();
+        $role->syncPermissions($permissionIds);
 
-            NotificationBuilder::make()
-                ->title('pages.common.edit.success', ['name' => $role->label()])
-                ->success()
-                ->persist()
-                ->send();
+        NotificationBuilder::make()
+            ->title('pages.common.edit.success', ['name' => $role->label()])
+            ->success()
+            ->persist()
+            ->send();
 
-            $this->redirect(route('roles.show', $role->uuid), navigate: true);
-        } catch (Exception $e) {
-            NotificationBuilder::make()
-                ->title('pages.common.edit.error', ['type' => __('types.role')])
-                ->content($e->getMessage())
-                ->error()
-                ->send();
-        }
+        $this->redirect(route('roles.show', $role->uuid), navigate: true);
     }
 }; ?>
 
@@ -149,16 +141,17 @@ new class extends BasePageComponent {
 
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <x-ui.input type="text"
+                                    wire:model="display_name"
+                                    name="display_name"
+                                    :label="__('roles.display_name')"
+                                    required
+                                    autoFocus></x-ui.input>
+                        <x-ui.input type="text"
                                     wire:model="name"
                                     name="name"
                                     :label="__('roles.name')"
                                     required
-                                    autofocus></x-ui.input>
-
-                        <x-ui.input type="text"
-                                    wire:model="display_name"
-                                    name="display_name"
-                                    :label="__('roles.display_name')"></x-ui.input>
+                                    disabled></x-ui.input>
                     </div>
 
                     <x-ui.input type="textarea"
@@ -191,7 +184,7 @@ new class extends BasePageComponent {
                 <div class="divider"></div>
                 <div class="flex justify-end gap-4">
                     <x-ui.button href="{{ route('roles.show', $roleUuid) }}"
-                                 style="ghost"
+                                 variant="ghost"
                                  wire:navigate>{{ __('actions.cancel') }}</x-ui.button>
                     <x-ui.button type="submit"
                                  variant="primary">

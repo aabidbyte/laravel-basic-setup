@@ -11,7 +11,6 @@
 -   **Form** (`form.blade.php`) - Form wrapper with automatic CSRF and method spoofing
 -   **Icon** (`icon.blade.php`) - Dynamic icon component with multiple icon pack support and security validation
 -   **Dropdown** (`dropdown.blade.php`) - Flexible dropdown component with CSS focus pattern, multiple placements, and menu support
--   **Dropdown Item** (`dropdown-item.blade.php`) - Helper component for dropdown menu items
 -   **Badge** (`badge.blade.php`) - Flexible badge component with support for all DaisyUI styles, colors, and sizes
 -   **Icon Placeholder** (`icon-placeholder.blade.php`) - Placeholder for icons
 -   **Placeholder** (`placeholder.blade.php`) - Generic placeholder component

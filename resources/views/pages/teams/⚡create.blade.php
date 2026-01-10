@@ -5,7 +5,6 @@ use App\Livewire\Bases\BasePageComponent;
 use App\Models\Team;
 use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Validation\Rule;
-use Exception;
 
 new class extends BasePageComponent {
     public ?string $pageSubtitle = null;
@@ -52,26 +51,18 @@ new class extends BasePageComponent {
     {
         $this->validate();
 
-        try {
-            $team = Team::create([
-                'name' => $this->name,
-                'description' => $this->description,
-            ]);
+        $team = Team::create([
+            'name' => $this->name,
+            'description' => $this->description,
+        ]);
 
-            NotificationBuilder::make()
-                ->title('pages.common.create.success', ['name' => $team->label()])
-                ->success()
-                ->persist()
-                ->send();
+        NotificationBuilder::make()
+            ->title('pages.common.create.success', ['name' => $team->label()])
+            ->success()
+            ->persist()
+            ->send();
 
-            $this->redirect(route('teams.index'), navigate: true);
-        } catch (Exception $e) {
-            NotificationBuilder::make()
-                ->title('pages.common.create.error', ['type' => __('types.team')])
-                ->content($e->getMessage())
-                ->error()
-                ->send();
-        }
+        $this->redirect(route('teams.index'), navigate: true);
     }
 }; ?>
 
@@ -106,7 +97,7 @@ new class extends BasePageComponent {
                 <div class="divider"></div>
                 <div class="flex justify-end gap-4">
                     <x-ui.button href="{{ route('teams.index') }}"
-                                 style="ghost"
+                                 variant="ghost"
                                  wire:navigate>{{ __('actions.cancel') }}</x-ui.button>
                     <x-ui.button type="submit"
                                  variant="primary">

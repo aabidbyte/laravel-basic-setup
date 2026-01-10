@@ -68,5 +68,5 @@ return [
     'trash' => [
         'deleted_at' => 'Deleted At',
     ],
-    'copy_failed' => 'TRANSLATION_NEEDED: Please see context at resources/views/components/ui/share-button.blade.php:19',
+    'copy_failed' => 'Copy failed',
 ];

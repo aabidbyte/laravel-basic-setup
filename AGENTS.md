@@ -10,6 +10,11 @@ The full documentation is now organized into sections for easier navigation and 
 **All Alpine.js components with methods/functions MUST be extracted to registered components.**
 
 See [CSP Safety Guide](docs/AGENTS/csp-safety.md) and [Important Patterns](docs/AGENTS/important-patterns.md#csp-safe-alpinejs-development-critical) for full CSP documentation.
+ 
+### No Blade Directives in Component Tags (CRITICAL)
+**NEVER use Blade directives (e.g., `@if`, `@foreach`) inside component opening tags.** This causes syntax errors in the Blade compiler. Use conditional attribute binding (`:attr="$val ?: null"`) instead.
+
+See [Development Conventions](docs/AGENTS/development-conventions.md#no-directives-in-component-tags) for details.
 
 ### No Leading Import Slashes (PHP/Blade)
 **Avoid leading slashes (`\`) in `use` statements and class references.** Use full namespaces in `use` statements and short names in the code.
@@ -25,6 +30,11 @@ catch (Exception $e)
 ```
 
 See [Development Conventions](docs/AGENTS/development-conventions.md#no-leading-import-slashes) for details.
+
+### Mandatory Translations
+**When adding new translation keys, you MUST add them to all supported language directories in the `lang/` folder (currently `en_US` and `fr_FR`).** Never leave keys missing or with placeholders in any language.
+
+See [Development Conventions](docs/AGENTS/development-conventions.md#translations) for details.
 
 ## Quick Links
 

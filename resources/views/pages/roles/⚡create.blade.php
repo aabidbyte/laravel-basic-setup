@@ -5,9 +5,8 @@ use App\Livewire\Bases\BasePageComponent;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Services\Notifications\NotificationBuilder;
-use Illuminate\Validation\Rule;
 use Illuminate\Database\Eloquent\Collection;
-use Exception;
+use Illuminate\Validation\Rule;
 
 new class extends BasePageComponent {
     public ?string $pageSubtitle = null;
@@ -18,10 +17,12 @@ new class extends BasePageComponent {
 
     // Form fields
     public string $name = '';
+
     public ?string $display_name = null;
+
     public ?string $description = null;
 
-    /** @var array<int> */
+    /** @var array<string> */
     public array $selectedPermissions = [];
 
     /**
@@ -60,7 +61,7 @@ new class extends BasePageComponent {
             'display_name' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:1000'],
             'selectedPermissions' => ['array'],
-            'selectedPermissions.*' => ['exists:permissions,id'],
+            'selectedPermissions.*' => ['exists:permissions,uuid'],
         ];
     }
 
@@ -71,31 +72,24 @@ new class extends BasePageComponent {
     {
         $this->validate();
 
-        try {
-            $role = Role::create([
-                'name' => $this->name,
-                'display_name' => $this->display_name,
-                'description' => $this->description,
-            ]);
+        $role = Role::create([
+            'name' => $this->name,
+            'display_name' => $this->display_name,
+            'description' => $this->description,
+        ]);
 
-            if (!empty($this->selectedPermissions)) {
-                $role->syncPermissions($this->selectedPermissions);
-            }
-
-            NotificationBuilder::make()
-                ->title('pages.common.create.success', ['name' => $role->label()])
-                ->success()
-                ->persist()
-                ->send();
-
-            $this->redirect(route('roles.index'), navigate: true);
-        } catch (Exception $e) {
-            NotificationBuilder::make()
-                ->title('pages.common.create.error', ['type' => __('types.role')])
-                ->content($e->getMessage())
-                ->error()
-                ->send();
+        if (!empty($this->selectedPermissions)) {
+            $permissionIds = Permission::whereIn('uuid', $this->selectedPermissions)->pluck('id')->toArray();
+            $role->syncPermissions($permissionIds);
         }
+
+        NotificationBuilder::make()
+            ->title('pages.common.create.success', ['name' => $role->label()])
+            ->success()
+            ->persist()
+            ->send();
+
+        $this->redirect(route('roles.index'), navigate: true);
     }
 }; ?>
 
@@ -148,7 +142,7 @@ new class extends BasePageComponent {
                 <div class="divider"></div>
                 <div class="flex justify-end gap-4">
                     <x-ui.button href="{{ route('roles.index') }}"
-                                 style="ghost"
+                                 variant="ghost"
                                  wire:navigate>{{ __('actions.cancel') }}</x-ui.button>
                     <x-ui.button type="submit"
                                  variant="primary">

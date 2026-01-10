@@ -5,7 +5,6 @@ use App\Livewire\Bases\BasePageComponent;
 use App\Models\Team;
 use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Validation\Rule;
-use Exception;
 use Livewire\Attributes\Locked;
 
 new class extends BasePageComponent {
@@ -20,6 +19,7 @@ new class extends BasePageComponent {
 
     // Form fields
     public string $name = '';
+
     public ?string $description = null;
 
     /**
@@ -82,26 +82,18 @@ new class extends BasePageComponent {
             return;
         }
 
-        try {
-            $team->update([
-                'name' => $this->name,
-                'description' => $this->description,
-            ]);
+        $team->update([
+            'name' => $this->name,
+            'description' => $this->description,
+        ]);
 
-            NotificationBuilder::make()
-                ->title('pages.common.edit.success', ['name' => $team->label()])
-                ->success()
-                ->persist()
-                ->send();
+        NotificationBuilder::make()
+            ->title('pages.common.edit.success', ['name' => $team->label()])
+            ->success()
+            ->persist()
+            ->send();
 
-            $this->redirect(route('teams.show', $team->uuid), navigate: true);
-        } catch (Exception $e) {
-            NotificationBuilder::make()
-                ->title('pages.common.edit.error', ['type' => __('types.team')])
-                ->content($e->getMessage())
-                ->error()
-                ->send();
-        }
+        $this->redirect(route('teams.show', $team->uuid), navigate: true);
     }
 }; ?>
 
@@ -136,7 +128,7 @@ new class extends BasePageComponent {
                 <div class="divider"></div>
                 <div class="flex justify-end gap-4">
                     <x-ui.button href="{{ route('teams.show', $teamUuid) }}"
-                                 style="ghost"
+                                 variant="ghost"
                                  wire:navigate>{{ __('actions.cancel') }}</x-ui.button>
                     <x-ui.button type="submit"
                                  variant="primary">

@@ -15,7 +15,7 @@ beforeEach(function () {
     // Create permissions
     $viewPermission = Permission::create(['name' => Permissions::VIEW_USERS]);
     $deletePermission = Permission::create(['name' => Permissions::DELETE_USERS]);
-    
+
     $adminRole = Role::create(['name' => 'admin']);
     $adminRole->givePermissionTo($viewPermission);
     $adminRole->givePermissionTo($deletePermission);
@@ -61,7 +61,7 @@ test('authorized user can delete a user from show page', function () {
 test('unauthorized user cannot see delete button on show page', function () {
     $viewerRole = Role::create(['name' => 'viewer']);
     $viewerRole->givePermissionTo(Permission::where('name', Permissions::VIEW_USERS)->first());
-    
+
     $viewer = User::factory()->create();
     $viewer->assignRole($viewerRole);
 

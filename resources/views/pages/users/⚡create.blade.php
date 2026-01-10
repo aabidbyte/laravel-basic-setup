@@ -6,14 +6,11 @@ use App\Models\Role;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\Notifications\NotificationBuilder;
-use App\Services\Users\ActivationService;
 use App\Services\Users\UserService;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Database\Eloquent\Collection;
 use DateTimeZone;
-use Exception;
 
 new class extends BasePageComponent {
     public ?string $pageSubtitle = null;
@@ -133,37 +130,28 @@ new class extends BasePageComponent {
     {
         $validated = $this->validate();
 
-        try {
-            $userService = app(UserService::class);
+        $userService = app(UserService::class);
+        $user = $userService->createUser(
+            data: [
+                'name' => $this->name,
+                'username' => $this->username,
+                'email' => $this->email,
+                'password' => $this->password ?: null,
+                'timezone' => $this->timezone,
+                'locale' => $this->locale,
+            ],
+            sendActivation: $this->sendActivation,
+            roleUuids: $this->selectedRoles,
+            teamUuids: $this->selectedTeams,
+        );
 
-            $user = $userService->createUser(
-                data: [
-                    'name' => $this->name,
-                    'username' => $this->username,
-                    'email' => $this->email,
-                    'password' => $this->password ?: null,
-                    'timezone' => $this->timezone,
-                    'locale' => $this->locale,
-                ],
-                sendActivation: $this->sendActivation,
-                roleUuids: $this->selectedRoles,
-                teamUuids: $this->selectedTeams,
-            );
+        NotificationBuilder::make()
+            ->title('pages.common.create.success', ['name' => $user->name])
+            ->success()
+            ->persist()
+            ->send();
 
-            NotificationBuilder::make()
-                ->title('pages.common.create.success', ['name' => $user->name])
-                ->success()
-                ->persist()
-                ->send();
-
-            $this->redirect(route('users.index'), navigate: true);
-        } catch (Exception $e) {
-            NotificationBuilder::make()
-                ->title('pages.common.create.error', ['type' => __('types.user')])
-                ->content($e->getMessage())
-                ->error()
-                ->send();
-        }
+        $this->redirect(route('users.index'), navigate: true);
     }
 
     /**
@@ -334,7 +322,7 @@ new class extends BasePageComponent {
                 <div class="divider"></div>
                 <div class="flex justify-end gap-4">
                     <x-ui.button href="{{ route('users.index') }}"
-                                 style="ghost"
+                                 variant="ghost"
                                  wire:navigate>{{ __('actions.cancel') }}</x-ui.button>
                     <x-ui.button type="submit"
                                  variant="primary">

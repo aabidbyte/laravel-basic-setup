@@ -10,7 +10,6 @@ use App\Services\FrontendPreferences\Stores\SessionPreferencesStore;
 use App\Services\FrontendPreferences\Stores\UserJsonPreferencesStore;
 use App\Services\I18nService;
 use DateTimeZone;
-use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Session\Store as SessionStore;
 use Illuminate\Support\Facades\Auth;
@@ -259,13 +258,11 @@ class FrontendPreferencesService
         $timezone = $this->get(FrontendPreferences::KEY_TIMEZONE, FrontendPreferences::DEFAULT_TIMEZONE);
 
         // Validate timezone
-        try {
-            new DateTimeZone($timezone);
-
+        if (in_array($timezone, DateTimeZone::listIdentifiers(), true)) {
             return $timezone;
-        } catch (Exception $e) {
-            return FrontendPreferences::DEFAULT_TIMEZONE;
         }
+
+        return FrontendPreferences::DEFAULT_TIMEZONE;
     }
 
     /**
@@ -276,10 +273,9 @@ class FrontendPreferencesService
     public function setTimezone(string $timezone): void
     {
         // Validate timezone
-        try {
-            new DateTimeZone($timezone);
+        if (in_array($timezone, DateTimeZone::listIdentifiers(), true)) {
             $this->set(FrontendPreferences::KEY_TIMEZONE, $timezone);
-        } catch (Exception $e) {
+        } else {
             $this->set(FrontendPreferences::KEY_TIMEZONE, FrontendPreferences::DEFAULT_TIMEZONE);
         }
     }

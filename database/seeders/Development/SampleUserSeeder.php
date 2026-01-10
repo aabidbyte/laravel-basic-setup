@@ -97,7 +97,10 @@ class SampleUserSeeder extends Seeder
                     'is_active' => true,
                 ],
             );
-
+            // Always update verification (in case user already exists)
+            if (! $superAdmin->email_verified_at) {
+                $superAdmin->update(['email_verified_at' => now()]);
+            }
             // Assign to team via pivot table
             if (! $superAdmin->teams()->where('teams.id', $team->id)->exists()) {
                 $superAdmin->teams()->attach($team->id, ['uuid' => (string) Str::uuid()]);
@@ -127,7 +130,10 @@ class SampleUserSeeder extends Seeder
                 'is_active' => true,
             ],
         );
-
+        // Always update verification (in case user already exists)
+        if (! $admin->email_verified_at) {
+            $admin->update(['email_verified_at' => now()]);
+        }
         // Assign to team via pivot table
         if (! $admin->teams()->where('teams.id', $team->id)->exists()) {
             $admin->teams()->attach($team->id, ['uuid' => (string) Str::uuid()]);

@@ -48,9 +48,9 @@ A centralized, flexible dropdown component that provides consistent dropdown fun
         <div class="btn btn-ghost">Menu</div>
     </x-slot:trigger>
 
-    <a>Item 1</a>
-    <a>Item 2</a>
-    <a>Item 3</a>
+    <x-ui.link href="#">Item 1</x-ui.link>
+    <x-ui.link href="#">Item 2</x-ui.link>
+    <x-ui.link href="#">Item 3</x-ui.link>
 </x-ui.dropdown>
 ```
 
@@ -95,15 +95,15 @@ A centralized, flexible dropdown component that provides consistent dropdown fun
     <x-slot:trigger>
         <button class="btn">Left</button>
     </x-slot:trigger>
-    <a>Item</a>
+    <x-ui.button variant="ghost" class="justify-start w-full">Item</x-ui.button>
 </x-ui.dropdown>
 
 {{-- Dropdown on the top --}}
 <x-ui.dropdown placement="top" menu>
     <x-slot:trigger>
-        <button class="btn">Top</button>
+        <x-ui.button>Top</x-ui.button>
     </x-slot:trigger>
-    <a>Item</a>
+    <x-ui.button variant="ghost" class="justify-start w-full">Item</x-ui.button>
 </x-ui.dropdown>
 ```
 
@@ -134,9 +134,9 @@ The dropdown component supports Alpine.js `x-bind:class` for reactive class mana
 ```blade
 <x-ui.dropdown x-bind:class="{ 'dropdown-open': isOpen }" menu>
     <x-slot:trigger>
-        <button @click="isOpen = true">Open</button>
+        <x-ui.button @click="isOpen = true">Open</x-ui.button>
     </x-slot:trigger>
-    <a>Item</a>
+    <x-ui.button variant="ghost" class="justify-start w-full">Item</x-ui.button>
 </x-ui.dropdown>
 ```
 

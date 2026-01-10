@@ -33,23 +33,17 @@ class MailpitClient
      */
     public function getMessages(int $limit = 50): array
     {
-        try {
-            $response = Http::get("{$this->baseUrl}/api/v1/messages", [
-                'limit' => $limit,
-            ]);
+        $response = Http::get("{$this->baseUrl}/api/v1/messages", [
+            'limit' => $limit,
+        ]);
 
-            if ($response->successful()) {
-                return $response->json('messages', []);
-            }
-
-            Log::warning('Mailpit: Failed to get messages', ['status' => $response->status()]);
-
-            return [];
-        } catch (Exception $e) {
-            Log::warning('Mailpit: Could not connect', ['error' => $e->getMessage()]);
-
-            return [];
+        if ($response->successful()) {
+            return $response->json('messages', []);
         }
+
+        Log::warning('Mailpit: Failed to get messages', ['status' => $response->status()]);
+
+        return [];
     }
 
     /**
@@ -60,19 +54,13 @@ class MailpitClient
      */
     public function getMessage(string $id): ?array
     {
-        try {
-            $response = Http::get("{$this->baseUrl}/api/v1/message/{$id}");
+        $response = Http::get("{$this->baseUrl}/api/v1/message/{$id}");
 
-            if ($response->successful()) {
-                return $response->json();
-            }
-
-            return null;
-        } catch (Exception $e) {
-            Log::warning('Mailpit: Could not get message', ['id' => $id, 'error' => $e->getMessage()]);
-
-            return null;
+        if ($response->successful()) {
+            return $response->json();
         }
+
+        return null;
     }
 
     /**
@@ -83,21 +71,15 @@ class MailpitClient
      */
     public function searchMessages(string $query): array
     {
-        try {
-            $response = Http::get("{$this->baseUrl}/api/v1/search", [
-                'query' => $query,
-            ]);
+        $response = Http::get("{$this->baseUrl}/api/v1/search", [
+            'query' => $query,
+        ]);
 
-            if ($response->successful()) {
-                return $response->json('messages', []);
-            }
-
-            return [];
-        } catch (Exception $e) {
-            Log::warning('Mailpit: Search failed', ['query' => $query, 'error' => $e->getMessage()]);
-
-            return [];
+        if ($response->successful()) {
+            return $response->json('messages', []);
         }
+
+        return [];
     }
 
     /**
@@ -105,15 +87,9 @@ class MailpitClient
      */
     public function deleteAllMessages(): bool
     {
-        try {
-            $response = Http::delete("{$this->baseUrl}/api/v1/messages");
+        $response = Http::delete("{$this->baseUrl}/api/v1/messages");
 
-            return $response->successful();
-        } catch (Exception $e) {
-            Log::warning('Mailpit: Could not delete messages', ['error' => $e->getMessage()]);
-
-            return false;
-        }
+        return $response->successful();
     }
 
     /**

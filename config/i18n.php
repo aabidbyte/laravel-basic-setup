@@ -65,17 +65,6 @@ return [
                 'pack' => 'heroicons',
                 'name' => 'globe-alt',
             ],
-            'date_format' => 'm/d/Y',
-            'datetime_format' => 'm/d/Y H:i:s',
-            'time_format' => 'H:i:s',
-            'currency' => [
-                'code' => 'USD',
-                'symbol' => '$',
-                'precision' => 2,
-                'symbol_position' => 'before',
-                'decimal_separator' => '.',
-                'thousands_separator' => ',',
-            ],
         ],
         'fr_FR' => [
             'native_name' => 'Français',
@@ -84,17 +73,6 @@ return [
             'icon' => [
                 'pack' => 'heroicons',
                 'name' => 'globe-alt',
-            ],
-            'date_format' => 'd/m/Y',
-            'datetime_format' => 'd/m/Y H:i:s',
-            'time_format' => 'H:i:s',
-            'currency' => [
-                'code' => 'EUR',
-                'symbol' => '€',
-                'precision' => 2,
-                'symbol_position' => 'after',
-                'decimal_separator' => ',',
-                'thousands_separator' => ' ',
             ],
         ],
         // Future RTL support example (commented out until needed):
@@ -115,39 +93,6 @@ return [
         //         'precision' => 2,
         //     ],
         // ],
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Translation Namespaces
-    |--------------------------------------------------------------------------
-    |
-    | These are the semantic namespaces used for organizing translations.
-    | - 'ui': User interface elements (buttons, labels, navigation, etc.)
-    | - 'messages': System messages, notifications, alerts, etc.
-    |
-    | Use semantic keys by default: `__('ui.auth.login.title')`
-    | JSON string keys should only be used for very small UI labels.
-    |
-    */
-
-    'namespaces' => [
-        'messages',
-        'auth',
-        'pagination',
-        'emails',
-        'navigation',
-        'types',
-        'actions',
-        'authentication',
-        'settings',
-        'preferences',
-        'notifications',
-        'common',
-        'modals',
-        'table',
-        'users',
-        'pages',
     ],
 
     /*

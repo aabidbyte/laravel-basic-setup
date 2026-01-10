@@ -21,7 +21,7 @@
                                teleport>
                     <x-slot:trigger>
                         <x-ui.button type="button"
-                                     style="outline"
+                                     variant="outline"
                                      size="sm"
                                      class="gap-2">
                             {{ __('table.bulk_actions') }}
@@ -32,48 +32,36 @@
 
                     @foreach ($datatable->getBulkActions() as $action)
                         @php
-                            $colorClass = match ($action['color'] ?? null) {
-                                'error' => 'text-error hover:bg-error/10',
-                                'warning' => 'text-warning hover:bg-warning/10',
-                                'success' => 'text-success hover:bg-success/10',
-                                'info' => 'text-info hover:bg-info/10',
-                                'primary' => 'text-primary hover:bg-primary/10',
-                                'secondary' => 'text-secondary hover:bg-secondary/10',
-                                default => '',
-                            };
+                            $actionClick = $action['confirm']
+                                ? "executeActionWithConfirmation('{$action['key']}', null, true)"
+                                : null;
 
-                            $baseClasses = 'flex items-center gap-2 w-full text-left ' . $colorClass;
+                            $wireClick = !$action['confirm']
+                                ? "executeBulkAction('{$action['key']}')"
+                                : null;
                         @endphp
 
-                        @if ($action['confirm'])
-                            <button type="button"
-                                    @click="executeActionWithConfirmation('{{ $action['key'] }}', null, true)"
-                                    class="{{ $baseClasses }}">
-                                @if ($action['icon'])
-                                    <x-ui.icon :name="$action['icon']"
-                                               size="sm"></x-ui.icon>
-                                @endif
-                                {{ $action['label'] }}
-                            </button>
-                        @else
-                            <button type="button"
-                                    wire:click="executeBulkAction('{{ $action['key'] }}')"
-                                    class="{{ $baseClasses }}">
-                                @if ($action['icon'])
-                                    <x-ui.icon :name="$action['icon']"
-                                               size="sm"></x-ui.icon>
-                                @endif
-                                {{ $action['label'] }}
-                            </button>
-                        @endif
+                        <x-ui.button type="button"
+                                     :@click="$actionClick ?: null"
+                                     :wire:click="$wireClick ?: null"
+                                     :variant="$action['variant'] ?? 'ghost'"
+                                     :color="$action['color'] ?? null"
+                                     size="sm"
+                                     class="justify-start">
+                            @if ($action['icon'])
+                                <x-ui.icon :name="$action['icon']"
+                                           size="sm"></x-ui.icon>
+                            @endif
+                            {{ $action['label'] }}
+                        </x-ui.button>
                     @endforeach
                 </x-ui.dropdown>
 
                 <x-ui.button wire:click="clearSelection()"
                              type="button"
-                             style="ghost"
-                             size="sm"
-                             class="text-error hover:bg-error/10">
+                             variant="ghost"
+                             color="error"
+                             size="sm">
                     <x-ui.icon name="x-mark"
                                size="sm"></x-ui.icon>
                     {{ __('actions.clear_selection') }}
@@ -84,7 +72,7 @@
             <div class="flex items-center gap-2">
                 <x-ui.button @click="toggleFilters()"
                              type="button"
-                             style="ghost"
+                             variant="ghost"
                              size="md">
                     <x-ui.icon name="funnel"
                                size="sm"></x-ui.icon>
@@ -152,7 +140,7 @@
                 <div class="card-actions mt-4 justify-end">
                     <x-ui.button wire:click="clearFilters"
                                  type="button"
-                                 style="ghost"
+                                 variant="ghost"
                                  size="sm">
                         {{ __('actions.clear_filters') }}
                     </x-ui.button>

@@ -38,13 +38,7 @@ new class extends LivewireBaseComponent {
         $user = Auth::user();
 
         if ($user->hasEnabledTwoFactorAuthentication() && $user->two_factor_recovery_codes) {
-            try {
-                $this->recoveryCodes = json_decode(decrypt($user->two_factor_recovery_codes), true);
-            } catch (Exception) {
-                NotificationBuilder::make()->title('settings.two_factor.recovery.load_error')->error()->send();
-
-                $this->recoveryCodes = [];
-            }
+            $this->recoveryCodes = json_decode(decrypt($user->two_factor_recovery_codes), true);
         }
     }
 }; ?>

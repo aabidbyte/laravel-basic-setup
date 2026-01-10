@@ -25,16 +25,16 @@ test('sidebar contains platform section', function () {
     $response = $this->actingAs($user)->get(route('dashboard'));
 
     $response->assertOk()
-        ->assertSee(__('Platform'), false);
+        ->assertSee(__('navigation.platform'), false);
 });
 
-test('sidebar contains resources section', function () {
+test('sidebar contains administration section', function () {
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->get(route('dashboard'));
 
     $response->assertOk()
-        ->assertSee(__('Resources'), false);
+        ->assertSee(__('navigation.administration'), false);
 });
 
 test('unauthenticated user cannot see sidebar', function () {

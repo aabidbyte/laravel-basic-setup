@@ -29,7 +29,7 @@
                 </span>
             @else
                 <x-ui.button wire:click="previousPage('{{ $paginator->getPageName() }}')"
-                             style="ghost"
+                             variant="ghost"
                              size="sm">
                     {!! __('pagination.previous') !!}
                 </x-ui.button>
@@ -37,7 +37,7 @@
 
             @if ($paginator->hasMorePages())
                 <x-ui.button wire:click="nextPage('{{ $paginator->getPageName() }}')"
-                             style="ghost"
+                             variant="ghost"
                              size="sm">
                     {!! __('pagination.next') !!}
                 </x-ui.button>
@@ -75,7 +75,7 @@
                         </span>
                     @else
                         <x-ui.button wire:click="previousPage('{{ $paginator->getPageName() }}')"
-                                     style="ghost"
+                                     variant="ghost"
                                      size="sm"
                                      class="rounded-r-none"
                                      aria-label="{{ __('pagination.previous') }}">
@@ -101,7 +101,7 @@
                                 </span>
                             @else
                                 <x-ui.button wire:click="gotoPage({{ $i }}, '{{ $paginator->getPageName() }}')"
-                                             style="ghost"
+                                             variant="ghost"
                                              size="sm"
                                              class="rounded-none"
                                              aria-label="{{ __('pagination.go_to_page', ['page' => $i]) }}">
@@ -118,7 +118,7 @@
                                 </span>
                             @else
                                 <x-ui.button wire:click="gotoPage({{ $i }}, '{{ $paginator->getPageName() }}')"
-                                             style="ghost"
+                                             variant="ghost"
                                              size="sm"
                                              class="rounded-none"
                                              aria-label="{{ __('pagination.go_to_page', ['page' => $i]) }}">
@@ -136,7 +136,7 @@
                                 </span>
                             @else
                                 <x-ui.button wire:click="gotoPage({{ $i }}, '{{ $paginator->getPageName() }}')"
-                                             style="ghost"
+                                             variant="ghost"
                                              size="sm"
                                              class="rounded-none"
                                              aria-label="{{ __('pagination.go_to_page', ['page' => $i]) }}">
@@ -151,7 +151,7 @@
 
                         @for ($i = $lastPage - 1; $i <= $lastPage; $i++)
                             <x-ui.button wire:click="gotoPage({{ $i }}, '{{ $paginator->getPageName() }}')"
-                                         style="ghost"
+                                         variant="ghost"
                                          size="sm"
                                          class="rounded-none"
                                          aria-label="{{ __('pagination.go_to_page', ['page' => $i]) }}">
@@ -163,7 +163,7 @@
                     {{-- Next Page Link --}}
                     @if ($paginator->hasMorePages())
                         <x-ui.button wire:click="nextPage('{{ $paginator->getPageName() }}')"
-                                     style="ghost"
+                                     variant="ghost"
                                      size="sm"
                                      class="rounded-l-none"
                                      aria-label="{{ __('pagination.next') }}">
@@ -193,7 +193,7 @@
                                aria-label="{{ __('pagination.go_to_page_label') }}" />
                         <x-ui.tooltip text="{{ __('pagination.go_to_page_label') }}">
                             <x-ui.button wire:click="performGotoPage"
-                                         style="ghost"
+                                         variant="ghost"
                                          size="sm"
                                          aria-label="{{ __('pagination.go_to_page', ['page' => 'X']) }}">
                                 <x-ui.icon name="chevron-double-right"
@@ -205,7 +205,7 @@
                 {{-- Share Button --}}
                 <x-ui.share-button :url="$shareUrl"
                                    size="sm"
-                                   style="ghost"></x-ui.share-button>
+                                   variant="ghost"></x-ui.share-button>
             </div>
         </div>
     @else

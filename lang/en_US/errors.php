@@ -102,12 +102,12 @@ return [
         'resolve_success' => 'Error marked as resolved',
 
         // Actions
-        'resolve_selected' => 'Resolve Selected',
-        'delete_selected' => 'Delete Selected',
+        'resolve_selected' => 'Resolve',
+        'delete_selected' => 'Delete',
         'confirm_resolve' => 'Mark this error as resolved?',
-        'confirm_bulk_resolve' => 'Mark all selected errors as resolved?',
+        'confirm_bulk_resolve' => 'Mark all these errors as resolved?',
         'confirm_delete' => 'Delete this error? This cannot be undone.',
-        'confirm_bulk_delete' => 'Delete all selected errors? This cannot be undone.',
+        'confirm_bulk_delete' => 'Delete all these errors? This cannot be undone.',
         'deleted_successfully' => 'Error deleted successfully',
         'bulk_resolved_successfully' => ':count errors marked as resolved',
         'bulk_deleted_successfully' => ':count errors deleted',

@@ -9,8 +9,6 @@ return [
         'select_all_column' => 'Tout sélectionner :action',
         'no_permissions' => 'Aucune permission disponible',
     ],
-
-    // Entity labels
     'entities' => [
         'users' => 'Utilisateurs',
         'roles' => 'Rôles',
@@ -19,9 +17,8 @@ return [
         'telescope' => 'Telescope',
         'horizon' => 'Horizon',
         'mail_settings' => 'Configuration Mail',
+        '{$entity}' => '',
     ],
-
-    // Action labels
     'actions' => [
         'view' => 'Voir',
         'create' => 'Créer',
@@ -36,5 +33,6 @@ return [
         'activate' => 'Activer',
         'configure' => 'Configurer',
         'generate_activation' => 'Générer activation',
+        '{$action}' => '',
     ],
 ];

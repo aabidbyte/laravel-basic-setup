@@ -1,3 +1,10 @@
+{{--
+    DataTable Row Actions Component
+    - datatable: The datatable instance
+    - row: The current row object
+--}}
+@props(['datatable', 'row'])
+
 <x-ui.dropdown placement="end"
                menu
                menuSize="sm"
@@ -5,6 +12,7 @@
     <x-slot:trigger>
         <x-ui.button type="button"
                      size="sm"
+                     variant="ghost"
                      class="btn-square">
             <x-ui.icon name="ellipsis-vertical"
                        size="sm"></x-ui.icon>
@@ -13,60 +21,37 @@
 
     @foreach ($datatable->getRowActionsForRow($row) as $action)
         @php
-            $colorClass = match ($action['color'] ?? null) {
-                'error' => 'text-error hover:bg-error/10',
-                'warning' => 'text-warning hover:bg-warning/10',
-                'success' => 'text-success hover:bg-success/10',
-                'info' => 'text-info hover:bg-info/10',
-                'primary' => 'text-primary hover:bg-primary/10',
-                'secondary' => 'text-secondary hover:bg-secondary/10',
-                default => 'text-base hover:bg-base-300',
-            };
+            $actionType = 'button';
+            $actionHref = null;
+            $actionClick = null;
+            $wireClick = null;
 
-            $baseClasses = "flex items-center gap-2 w-full cursor-pointer px-2 py-1 rounded $colorClass";
+            if ($action['hasRoute']) {
+                $actionType = 'link';
+                $actionHref = $action['route'];
+            } elseif ($action['hasModal']) {
+                $actionClick = "window.dispatchEvent(new CustomEvent('datatable-modal-loading')); \$wire.openActionModal('{$action['key']}', '{$row->uuid}')";
+            } elseif ($action['confirm']) {
+                $actionClick = "executeActionWithConfirmation('{$action['key']}', '{$row->uuid}', false)";
+            } else {
+                $wireClick = "executeAction('{$action['key']}', '{$row->uuid}')";
+            }
         @endphp
 
-        @if ($action['hasRoute'])
-            <a href="{{ $action['route'] }}"
-               wire:navigate
-               class="{{ $baseClasses }}">
-                @if ($action['icon'])
-                    <x-ui.icon :name="$action['icon']"
-                               size="sm"></x-ui.icon>
-                @endif
-                {{ $action['label'] }}
-            </a>
-        @elseif ($action['hasModal'])
-            {{-- Dispatch loading event immediately, then make Livewire request --}}
-            <button type="button"
-                    @click="window.dispatchEvent(new CustomEvent('datatable-modal-loading')); $wire.openActionModal('{{ $action['key'] }}', '{{ $row->uuid }}')"
-                    class="{{ $baseClasses }}">
-                @if ($action['icon'])
-                    <x-ui.icon :name="$action['icon']"
-                               size="sm"></x-ui.icon>
-                @endif
-                {{ $action['label'] }}
-            </button>
-        @elseif ($action['confirm'])
-            <button type="button"
-                    @click="executeActionWithConfirmation('{{ $action['key'] }}', '{{ $row->uuid }}', false)"
-                    class="{{ $baseClasses }}">
-                @if ($action['icon'])
-                    <x-ui.icon :name="$action['icon']"
-                               size="sm"></x-ui.icon>
-                @endif
-                {{ $action['label'] }}
-            </button>
-        @else
-            <button type="button"
-                    wire:click="executeAction('{{ $action['key'] }}', '{{ $row->uuid }}')"
-                    class="{{ $baseClasses }}">
-                @if ($action['icon'])
-                    <x-ui.icon :name="$action['icon']"
-                               size="sm"></x-ui.icon>
-                @endif
-                {{ $action['label'] }}
-            </button>
-        @endif
+        <x-ui.button :href="$actionHref"
+                     :type="$actionHref ? null : 'button'"
+                     :wire:navigate="$actionHref ? true : null"
+                     :@click="$actionClick ?: null"
+                     :wire:click="$wireClick ?: null"
+                     :variant="$action['variant'] ?? 'ghost'"
+                     :color="$action['color'] ?? null"
+                     size="sm"
+                     class="justify-start">
+            @if ($action['icon'])
+                <x-ui.icon :name="$action['icon']"
+                           size="sm"></x-ui.icon>
+            @endif
+            {{ $action['label'] }}
+        </x-ui.button>
     @endforeach
 </x-ui.dropdown>
