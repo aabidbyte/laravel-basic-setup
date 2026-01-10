@@ -65,47 +65,6 @@ class Permissions
 
     public const FORCE_DELETE_TEAMS = 'force_delete teams';
 
-    // Document permissions
-    public const VIEW_DOCUMENTS = 'view documents';
-
-    public const CREATE_DOCUMENTS = 'create documents';
-
-    public const EDIT_DOCUMENTS = 'edit documents';
-
-    public const DELETE_DOCUMENTS = 'delete documents';
-
-    public const PUBLISH_DOCUMENTS = 'publish documents';
-
-    public const UNPUBLISH_DOCUMENTS = 'unpublish documents';
-
-    // Article permissions
-    public const VIEW_ARTICLES = 'view articles';
-
-    public const CREATE_ARTICLES = 'create articles';
-
-    public const EDIT_ARTICLES = 'edit articles';
-
-    public const DELETE_ARTICLES = 'delete articles';
-
-    public const PUBLISH_ARTICLES = 'publish articles';
-
-    public const UNPUBLISH_ARTICLES = 'unpublish articles';
-
-    public const EXPORT_ARTICLES = 'export articles';
-
-    // Post permissions
-    public const VIEW_POSTS = 'view posts';
-
-    public const CREATE_POSTS = 'create posts';
-
-    public const EDIT_POSTS = 'edit posts';
-
-    public const DELETE_POSTS = 'delete posts';
-
-    public const RESTORE_POSTS = 'restore posts';
-
-    public const EXPORT_POSTS = 'export posts';
-
     // Error log permissions
     public const VIEW_ERROR_LOGS = 'view error_logs';
 
@@ -120,9 +79,9 @@ class Permissions
     public const FORCE_DELETE_ERROR_LOGS = 'force_delete error_logs';
 
     // System access permissions
-    public const ACCESS_TELESCOPE = 'access telescope';
+    public const VIEW_TELESCOPE = 'view telescope';
 
-    public const ACCESS_HORIZON = 'access horizon';
+    public const VIEW_HORIZON = 'view horizon';
 
     // Settings permissions
     public const VIEW_MAIL_SETTINGS = 'view mail_settings';

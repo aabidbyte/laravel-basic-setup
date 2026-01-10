@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\DataTable\Builders\Column;
 use App\Services\FrontendPreferences\FrontendPreferencesService;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -28,7 +29,7 @@ class TestDatatableForPreferences extends Datatable
 
 class DataTablePreferencesTest extends TestCase
 {
-    use \Illuminate\Foundation\Testing\RefreshDatabase;
+    use RefreshDatabase;
 
     public function test_per_page_preference_is_saved_and_loaded(): void
     {

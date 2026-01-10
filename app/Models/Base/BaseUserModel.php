@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
  * Base user model class for all authenticatable models.
@@ -67,7 +69,7 @@ abstract class BaseUserModel extends Authenticatable
 
                 if ($variableSet !== 1) {
                     // Variable not set, check if user is updating themselves
-                    $currentUser = \Illuminate\Support\Facades\Auth::user();
+                    $currentUser = Auth::user();
 
                     if ($currentUser && $currentUser->id === 1) {
                         // User ID 1 is updating themselves - allow it
@@ -154,7 +156,7 @@ abstract class BaseUserModel extends Authenticatable
         if (! empty($user->email)) {
             $base = explode('@', $user->email)[0];
         } elseif (! empty($user->name)) {
-            $base = \Illuminate\Support\Str::slug($user->name);
+            $base = Str::slug($user->name);
         }
 
         if (empty($base)) {
@@ -162,7 +164,7 @@ abstract class BaseUserModel extends Authenticatable
         }
 
         // Clean base string (remove special characters if from email)
-        $base = \Illuminate\Support\Str::slug($base);
+        $base = Str::slug($base);
         if (empty($base)) {
             $base = 'user';
         }

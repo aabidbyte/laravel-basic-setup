@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 namespace App\Constants\DataTable;
+ 
+use Illuminate\View\ComponentAttributeBag;
 
 /**
  * DataTable UI constants
@@ -160,7 +162,7 @@ class DataTableUi
         $props = array_merge($attributes, ['text' => (string) $content]);
 
         // Create attributes bag for component
-        $attributesBag = new \Illuminate\View\ComponentAttributeBag($props);
+        $attributesBag = new ComponentAttributeBag($props);
 
         return view($viewPath, array_merge($props, ['attributes' => $attributesBag]))->render();
     }

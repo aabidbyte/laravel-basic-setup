@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\DataTable\Builders;
 
+use App\Models\User;
 use Closure;
 
 /**
@@ -340,7 +341,7 @@ class BulkAction
     /**
      * Check if the bulk action is authorized via policy.
      */
-    public function isAuthorized(?\App\Models\User $user = null): bool
+    public function isAuthorized(?User $user = null): bool
     {
         if ($this->ability === null) {
             return true;
@@ -369,7 +370,7 @@ class BulkAction
      *
      * Combines authorization AND visibility.
      */
-    public function shouldRender(?\App\Models\User $user = null): bool
+    public function shouldRender(?User $user = null): bool
     {
         if (! $this->isAuthorized($user)) {
             return false;

@@ -22,13 +22,6 @@ class PermissionEntity
 
     public const TEAMS = 'teams';
 
-    // Content management
-    public const DOCUMENTS = 'documents';
-
-    public const ARTICLES = 'articles';
-
-    public const POSTS = 'posts';
-
     // System administration
     public const ERROR_LOGS = 'error_logs';
 
@@ -50,9 +43,6 @@ class PermissionEntity
             self::USERS,
             self::ROLES,
             self::TEAMS,
-            self::DOCUMENTS,
-            self::ARTICLES,
-            self::POSTS,
             self::ERROR_LOGS,
             self::TELESCOPE,
             self::HORIZON,

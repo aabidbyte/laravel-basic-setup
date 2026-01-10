@@ -58,31 +58,6 @@ class PermissionMatrix
                 PermissionAction::RESTORE,
                 PermissionAction::FORCE_DELETE,
             ],
-            PermissionEntity::DOCUMENTS => [
-                PermissionAction::VIEW,
-                PermissionAction::CREATE,
-                PermissionAction::EDIT,
-                PermissionAction::DELETE,
-                PermissionAction::PUBLISH,
-                PermissionAction::UNPUBLISH,
-            ],
-            PermissionEntity::ARTICLES => [
-                PermissionAction::VIEW,
-                PermissionAction::CREATE,
-                PermissionAction::EDIT,
-                PermissionAction::DELETE,
-                PermissionAction::PUBLISH,
-                PermissionAction::UNPUBLISH,
-                PermissionAction::EXPORT,
-            ],
-            PermissionEntity::POSTS => [
-                PermissionAction::VIEW,
-                PermissionAction::CREATE,
-                PermissionAction::EDIT,
-                PermissionAction::DELETE,
-                PermissionAction::RESTORE,
-                PermissionAction::EXPORT,
-            ],
             PermissionEntity::ERROR_LOGS => [
                 PermissionAction::VIEW,
                 PermissionAction::RESOLVE,
@@ -92,10 +67,10 @@ class PermissionMatrix
                 PermissionAction::EXPORT,
             ],
             PermissionEntity::TELESCOPE => [
-                PermissionAction::ACCESS,
+                PermissionAction::VIEW,
             ],
             PermissionEntity::HORIZON => [
-                PermissionAction::ACCESS,
+                PermissionAction::VIEW,
             ],
             PermissionEntity::MAIL_SETTINGS => [
                 PermissionAction::VIEW,
@@ -261,5 +236,19 @@ class PermissionMatrix
         }
 
         return $result;
+    }
+
+    /**
+     * Get entities that should only be visible to super admins in the matrix UI.
+     * These permissions can only be assigned by super admins.
+     *
+     * @return array<string>
+     */
+    public function getSuperAdminOnlyEntities(): array
+    {
+        return [
+            PermissionEntity::TELESCOPE,
+            PermissionEntity::HORIZON,
+        ];
     }
 }

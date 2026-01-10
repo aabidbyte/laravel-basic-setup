@@ -58,6 +58,7 @@
 -   **Helper Functions**: **Do NOT use `function_exists()` checks in helper files** - Helper files are autoloaded via Composer and will only be loaded once, so function existence checks are unnecessary
 -   **I18nService**: **Always use `I18nService` for locale-related code** - Do not directly access `config('i18n.*')` in helper functions or other code. Use `I18nService` methods to centralize all locale-related logic (`getSupportedLocales()`, `getDefaultLocale()`, `getValidLocale()`, `getLocaleMetadata()`, etc.)
 -   **View Composers**: **Use View Composers instead of `@inject` for global data** - Register View Composers in service providers to share data globally with all views. This is more efficient and cleaner than using `@inject` directives in every template.
+-   **Leading Import Slashes**: **NO leading import slashes are allowed in PHP or Blade files** - Avoid using leading slashes in `use` statements or inline class references (e.g., use `App\Models\User` instead of `\App\Models\User`). Always prefer importing classes at the top of the file. If a name collision occurs, use the `as` keyword with descriptive context (e.g., `use App\Models\User as AppUser`).
  
  ### Internationalization (i18n)
  

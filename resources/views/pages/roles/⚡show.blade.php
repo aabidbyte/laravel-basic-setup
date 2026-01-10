@@ -1,12 +1,13 @@
 <?php
 
 use App\Constants\Auth\Permissions;
-use App\Constants\DataTable\DataTableUi;
+use App\Constants\Auth\Roles;
 use App\Livewire\Bases\BasePageComponent;
 use App\Models\Role;
 use Livewire\Attributes\Locked;
 
-new class extends BasePageComponent {
+new class extends BasePageComponent
+{
     public ?string $pageSubtitle = null;
 
     protected string $placeholderType = 'card';
@@ -22,6 +23,11 @@ new class extends BasePageComponent {
     public function mount(Role $role): void
     {
         $this->authorize(Permissions::VIEW_ROLES);
+
+        // Only super_admin can view the super_admin role
+        if ($role->name === Roles::SUPER_ADMIN && ! auth()->user()?->hasRole(Roles::SUPER_ADMIN)) {
+            abort(403);
+        }
 
         $this->roleUuid = $role->uuid;
         $this->role = $role->load(['permissions']);
@@ -55,13 +61,13 @@ new class extends BasePageComponent {
                 @endcan
             </div>
 
-            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div class="grid grid-cols-1 gap-6">
                 {{-- Basic Info --}}
                 <div class="space-y-4">
                     <x-ui.title level="3"
                                 class="text-base-content/70">{{ __('roles.show.basic_info') }}</x-ui.title>
 
-                    <dl class="space-y-3">
+                    <dl class="grid grid-cols-1 md:grid-cols-2">
                         <div>
                             <dt class="text-base-content/60 text-sm font-medium">{{ __('roles.name') }}</dt>
                             <dd class="text-base-content font-semibold">{{ $role->name }}</dd>
@@ -70,7 +76,7 @@ new class extends BasePageComponent {
                             <dt class="text-base-content/60 text-sm font-medium">{{ __('roles.display_name') }}</dt>
                             <dd class="text-base-content">{{ $role->display_name ?? '-' }}</dd>
                         </div>
-                        <div>
+                        <div class="col-span-2">
                             <dt class="text-base-content/60 text-sm font-medium">{{ __('roles.description') }}</dt>
                             <dd class="text-base-content">{{ $role->description ?? '-' }}</dd>
                         </div>
@@ -83,14 +89,14 @@ new class extends BasePageComponent {
                                 class="text-base-content/70">{{ __('roles.permissions') }}
                         ({{ $role->permissions->count() }})</x-ui.title>
 
-                    @if ($role->name === \App\Constants\Auth\Roles::SUPER_ADMIN)
+                    @if ($role->name === Roles::SUPER_ADMIN)
                         <div class="alert alert-info">
                             <x-ui.icon name="shield-check"
                                        class="h-6 w-6"></x-ui.icon>
                             <span>{{ __('roles.super_admin_all_permissions') }}</span>
                         </div>
                     @else
-                        <x-ui.permission-matrix :permissions="\App\Models\Permission::all()"
+                        <x-ui.permission-matrix :permissions="Permission::all()"
                                                 :selectedPermissions="$role->permissions->pluck('id')->toArray()"
                                                 :readonly="true"></x-ui.permission-matrix>
                     @endif

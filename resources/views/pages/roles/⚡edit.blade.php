@@ -1,11 +1,14 @@
 <?php
 
 use App\Constants\Auth\Permissions;
+use App\Constants\Auth\Roles;
 use App\Livewire\Bases\BasePageComponent;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Services\Notifications\NotificationBuilder;
+use Exception;
 use Illuminate\Validation\Rule;
+use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Locked;
 
 new class extends BasePageComponent {
@@ -33,6 +36,11 @@ new class extends BasePageComponent {
     {
         $this->authorize(Permissions::EDIT_ROLES);
 
+        // Only super_admin can edit the super_admin role
+        if ($role->name === Roles::SUPER_ADMIN && !auth()->user()?->hasRole(Roles::SUPER_ADMIN)) {
+            abort(403);
+        }
+
         $this->roleUuid = $role->uuid;
         $this->name = $role->name;
         $this->display_name = $role->display_name;
@@ -58,7 +66,7 @@ new class extends BasePageComponent {
     /**
      * Get available permissions for selection.
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, Permission>
+     * @return Collection<int, Permission>
      */
     public function getPermissionsProperty()
     {
@@ -117,7 +125,7 @@ new class extends BasePageComponent {
                 ->send();
 
             $this->redirect(route('roles.show', $role->uuid), navigate: true);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             NotificationBuilder::make()
                 ->title('pages.common.edit.error', ['type' => __('types.role')])
                 ->content($e->getMessage())
@@ -167,9 +175,17 @@ new class extends BasePageComponent {
                     <x-ui.title level="3"
                                 class="text-base-content/70">{{ __('roles.permissions') }}</x-ui.title>
 
-                    <x-ui.permission-matrix :permissions="$this->permissions"
-                                            :selectedPermissions="$selectedPermissions"
-                                            wireModel="selectedPermissions"></x-ui.permission-matrix>
+                    @if ($name !== Roles::SUPER_ADMIN)
+                        <x-ui.permission-matrix :permissions="$this->permissions"
+                                                :selectedPermissions="$selectedPermissions"
+                                                wireModel="selectedPermissions"></x-ui.permission-matrix>
+                    @else
+                        <div class="alert alert-info">
+                            <x-ui.icon name="shield-check"
+                                       class="h-6 w-6"></x-ui.icon>
+                            <span>{{ __('roles.super_admin_all_permissions') }}</span>
+                        </div>
+                    @endif
                 </div>
 
                 {{-- Submit --}}

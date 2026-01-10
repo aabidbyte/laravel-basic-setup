@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\DataTable\Concerns;
 
+use Livewire\WithoutUrlPagination;
 use Livewire\WithPagination;
 
 /**
@@ -11,7 +12,7 @@ use Livewire\WithPagination;
  */
 trait HasDatatableLivewirePagination
 {
-    use \Livewire\WithoutUrlPagination;
+    use WithoutUrlPagination;
     use WithPagination;
 
     /**

@@ -56,7 +56,7 @@ class UserTable extends Datatable
                 ->class('text-base-content/70'),
 
             Column::make(__('table.users.roles'), 'roles_for_datatable')
-                ->content(fn (User $user) => $user->roles->pluck('name')->toArray())
+                ->content(fn (User $user) => $user->roles->pluck('display_name')->toArray())
                 ->type(DataTableUi::BADGE, ['variant' => 'primary', 'size' => 'sm']),
 
             Column::make(__('table.users.teams'), 'teams_for_datatable')

@@ -11,9 +11,13 @@ use App\Events\Notifications\ToastBroadcasted;
 use App\Models\Notification;
 use App\Models\Team;
 use App\Models\User;
+use App\Services\IconPackMapper;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Lang;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 use RuntimeException;
@@ -132,7 +136,7 @@ class NotificationBuilder
         }
 
         // Check if it looks like a translation key (Lang::has)
-        if (\Illuminate\Support\Facades\Lang::has($value)) {
+        if (Lang::has($value)) {
             return ['key' => $value, 'params' => []];
         }
 
@@ -159,9 +163,9 @@ class NotificationBuilder
     /**
      * Set the notification content as HTML (trusted).
      *
-     * @param  string|\Illuminate\Contracts\Support\Htmlable|\Illuminate\Support\HtmlString  $html  The notification content as HTML
+     * @param  string|Htmlable|HtmlString  $html  The notification content as HTML
      */
-    public function html(string|\Illuminate\Contracts\Support\Htmlable|\Illuminate\Support\HtmlString $html): static
+    public function html(string|Htmlable|HtmlString $html): static
     {
         $this->content = NotificationContent::html($html);
 
@@ -443,7 +447,7 @@ class NotificationBuilder
      */
     protected function renderIconForType(ToastType $type): string
     {
-        $iconMapper = app(\App\Services\IconPackMapper::class);
+        $iconMapper = app(IconPackMapper::class);
 
         $iconNames = [
             ToastType::Success->value => 'check-circle',

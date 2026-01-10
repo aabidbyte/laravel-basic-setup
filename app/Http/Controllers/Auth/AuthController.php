@@ -3,10 +3,14 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Services\Notifications\NotificationBuilder;
+use App\Services\Users\ActivationService;
 use Exception;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
 {
@@ -37,7 +41,7 @@ class AuthController extends Controller
      */
     public function showActivationForm(string $token)
     {
-        $activationService = app(\App\Services\Users\ActivationService::class);
+        $activationService = app(ActivationService::class);
         $user = $activationService->findUserByToken($token);
         $tokenValid = $user !== null;
 
@@ -47,13 +51,13 @@ class AuthController extends Controller
     /**
      * Handle the activation request.
      */
-    public function activate(\Illuminate\Http\Request $request, string $token)
+    public function activate(Request $request, string $token)
     {
-        $activationService = app(\App\Services\Users\ActivationService::class);
+        $activationService = app(ActivationService::class);
         $user = $activationService->findUserByToken($token);
 
         if (! $user) {
-            \App\Services\Notifications\NotificationBuilder::make()
+            NotificationBuilder::make()
                 ->title('authentication.activation.invalid_token')
                 ->error()
                 ->send();
@@ -62,20 +66,20 @@ class AuthController extends Controller
         }
 
         $request->validate([
-            'password' => ['required', 'string', \Illuminate\Validation\Rules\Password::defaults(), 'confirmed'],
+            'password' => ['required', 'string', Password::defaults(), 'confirmed'],
         ]);
 
         try {
             $activationService->activateWithPassword($user, $request->password, $token);
 
-            \App\Services\Notifications\NotificationBuilder::make()
+            NotificationBuilder::make()
                 ->title('authentication.activation.success')
                 ->success()
                 ->send();
 
             return redirect()->route('login')->with('activated', true);
         } catch (Exception $e) {
-            \App\Services\Notifications\NotificationBuilder::make()
+            NotificationBuilder::make()
                 ->title('authentication.activation.error')
                 ->content($e->getMessage())
                 ->error()

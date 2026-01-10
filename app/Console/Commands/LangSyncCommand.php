@@ -586,10 +586,10 @@ class LangSyncCommand extends Command
      */
     protected function getDynamicKeyValue(string $key, string $locationValue): string
     {
-        return "DYNAMIC_KEY: This key is dynamically constructed using PHP variables. "
-            . "The variable portion should be resolved to all possible values from the source class/constants. "
+        return 'DYNAMIC_KEY: This key is dynamically constructed using PHP variables. '
+            . 'The variable portion should be resolved to all possible values from the source class/constants. '
             . "See source at {$locationValue} to find the values (e.g., from a constants class). "
-            . "Create individual translation entries for each resolved key instead of this pattern.";
+            . 'Create individual translation entries for each resolved key instead of this pattern.';
     }
 
     /**

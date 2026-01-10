@@ -13,6 +13,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 /**
  * Service for user activation operations.
@@ -98,7 +99,7 @@ class ActivationService
         }
 
         // Check if token has expired
-        $createdAt = \Carbon\Carbon::parse($record->created_at);
+        $createdAt = Carbon::parse($record->created_at);
         if ($createdAt->diffInDays(now()) > self::TOKEN_EXPIRATION_DAYS) {
             return false;
         }

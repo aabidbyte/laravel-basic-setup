@@ -11,6 +11,9 @@ use App\Services\Users\UserService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Database\Eloquent\Collection;
+use DateTimeZone;
+use Exception;
 
 new class extends BasePageComponent {
     public ?string $pageSubtitle = null;
@@ -54,7 +57,7 @@ new class extends BasePageComponent {
     /**
      * Get available roles for selection.
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, Role>
+     * @return Collection<int, Role>
      */
     public function getRolesProperty()
     {
@@ -64,7 +67,7 @@ new class extends BasePageComponent {
     /**
      * Get available teams for selection.
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, Team>
+     * @return Collection<int, Team>
      */
     public function getTeamsProperty()
     {
@@ -78,7 +81,7 @@ new class extends BasePageComponent {
      */
     public function getTimezonesProperty(): array
     {
-        return collect(\DateTimeZone::listIdentifiers())->mapWithKeys(fn($tz) => [$tz => $tz])->toArray();
+        return collect(DateTimeZone::listIdentifiers())->mapWithKeys(fn($tz) => [$tz => $tz])->toArray();
     }
 
     /**
@@ -154,7 +157,7 @@ new class extends BasePageComponent {
                 ->send();
 
             $this->redirect(route('users.index'), navigate: true);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             NotificationBuilder::make()
                 ->title('pages.common.create.error', ['type' => __('types.user')])
                 ->content($e->getMessage())

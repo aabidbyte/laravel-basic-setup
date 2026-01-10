@@ -5,6 +5,7 @@ use App\Livewire\Bases\BasePageComponent;
 use App\Models\Team;
 use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Validation\Rule;
+use Exception;
 use Livewire\Attributes\Locked;
 
 new class extends BasePageComponent {
@@ -94,7 +95,7 @@ new class extends BasePageComponent {
                 ->send();
 
             $this->redirect(route('teams.show', $team->uuid), navigate: true);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             NotificationBuilder::make()
                 ->title('pages.common.edit.error', ['type' => __('types.team')])
                 ->content($e->getMessage())

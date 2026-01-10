@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\DataTable\Builders;
 
+use App\Constants\DataTable\DataTableUi;
 use Closure;
 
 /**
@@ -425,7 +426,7 @@ class Column
 
         $content = ($this->contentCallback)($row, $this);
 
-        return \App\Constants\DataTable\DataTableUi::renderComponent(
+        return DataTableUi::renderComponent(
             $this->componentType,
             $content,
             $this->componentAttributes,

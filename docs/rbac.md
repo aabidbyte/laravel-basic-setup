@@ -29,12 +29,9 @@ Permissions follow an **entity-action pattern**: `"{action} {entity}"` (e.g., "v
 | Users | view, create, edit, delete, activate, export, generate_activation |
 | Roles | view, create, edit, delete |
 | Teams | view, create, edit, delete |
-| Documents | view, create, edit, delete, publish, unpublish |
-| Articles | view, create, edit, delete, publish, unpublish, export |
-| Posts | view, create, edit, delete, restore, export |
 | Error Logs | view, resolve, delete, export |
-| Telescope | access |
-| Horizon | access |
+| Telescope | view (super_admin only) |
+| Horizon | view (super_admin only) |
 | Mail Settings | view, configure |
 
 ### Usage Examples
@@ -89,6 +86,8 @@ The `<x-ui.permission-matrix>` Blade component provides a table-based UI for man
 - Actions displayed as columns  
 - Checkboxes at valid intersections
 - Dash marks (—) for invalid entity-action pairs
+- **Super Admin Only Entities**: Telescope and Horizon are only visible to super_admin users
+- **Super Admin Role Protection**: The super_admin role is only visible and manageable by super_admin users
 
 ## Best Practices
 

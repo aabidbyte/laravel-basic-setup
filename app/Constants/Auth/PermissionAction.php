@@ -43,8 +43,6 @@ class PermissionAction
 
     public const CONFIGURE = 'configure';
 
-    public const ACCESS = 'access';
-
     public const GENERATE_ACTIVATION = 'generate_activation';
 
     /**
@@ -67,7 +65,6 @@ class PermissionAction
             self::RESOLVE,
             self::ACTIVATE,
             self::CONFIGURE,
-            self::ACCESS,
             self::GENERATE_ACTIVATION,
         ];
     }

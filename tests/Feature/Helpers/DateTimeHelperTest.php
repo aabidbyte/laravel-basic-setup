@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\FrontendPreferences\FrontendPreferencesService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\App;
 
@@ -169,7 +170,7 @@ test('formatDateTime uses user timezone preference for display', function () {
 });
 
 test('formatDate accepts timezone override', function () {
-    $preferences = app(\App\Services\FrontendPreferences\FrontendPreferencesService::class);
+    $preferences = app(FrontendPreferencesService::class);
     $preferences->setTimezone('America/New_York');
 
     // Date stored in UTC

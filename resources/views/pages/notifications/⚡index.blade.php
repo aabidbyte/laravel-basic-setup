@@ -2,6 +2,7 @@
 
 use App\Events\Notifications\DatabaseNotificationChanged;
 use App\Livewire\Bases\BasePageComponent;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 
@@ -39,7 +40,7 @@ new class extends BasePageComponent {
     }
 
     #[Computed]
-    public function notifications(): \Illuminate\Support\Collection
+    public function notifications(): Collection
     {
         return Auth::user()
             ->notifications()

@@ -6,6 +6,7 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Team;
 use App\Models\User;
+use App\Services\Auth\PermissionMatrix;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
@@ -26,20 +27,20 @@ test('can create a role', function () {
 });
 
 test('can create a permission', function () {
-    $permission = Permission::create(['name' => Permissions::EDIT_ARTICLES]);
+    $permission = Permission::create(['name' => Permissions::EDIT_USERS]);
 
-    expect($permission->name)->toBe(Permissions::EDIT_ARTICLES)
+    expect($permission->name)->toBe(Permissions::EDIT_USERS)
         ->and($permission->uuid)->not->toBeNull();
 });
 
 test('role can have permissions', function () {
     $role = Role::create(['name' => Roles::ADMIN]);
-    $permission = Permission::create(['name' => Permissions::EDIT_ARTICLES]);
+    $permission = Permission::create(['name' => Permissions::EDIT_USERS]);
 
     $role->givePermissionTo($permission);
 
     expect($role->permissions)->toHaveCount(1)
-        ->and($role->hasPermissionTo(Permissions::EDIT_ARTICLES))->toBeTrue();
+        ->and($role->hasPermissionTo(Permissions::EDIT_USERS))->toBeTrue();
 });
 
 test('user can be assigned a role', function () {
@@ -54,12 +55,12 @@ test('user can be assigned a role', function () {
 test('user gets permissions through role', function () {
     $user = User::factory()->create();
     $role = Role::create(['name' => Roles::ADMIN]);
-    $permission = Permission::create(['name' => Permissions::EDIT_ARTICLES]);
+    $permission = Permission::create(['name' => Permissions::EDIT_USERS]);
 
     $role->givePermissionTo($permission);
     $user->assignRole($role);
 
-    expect($user->hasPermissionTo(Permissions::EDIT_ARTICLES))->toBeTrue();
+    expect($user->hasPermissionTo(Permissions::EDIT_USERS))->toBeTrue();
 });
 
 test('user can have multiple roles', function () {
@@ -125,8 +126,8 @@ test('can remove role from user', function () {
 test('can get all permissions for user', function () {
     $user = User::factory()->create();
     $role = Role::create(['name' => Roles::ADMIN]);
-    $permission1 = Permission::create(['name' => Permissions::EDIT_ARTICLES]);
-    $permission2 = Permission::create(['name' => Permissions::DELETE_ARTICLES]);
+    $permission1 = Permission::create(['name' => Permissions::EDIT_USERS]);
+    $permission2 = Permission::create(['name' => Permissions::DELETE_USERS]);
 
     $role->givePermissionTo($permission1, $permission2);
     $user->assignRole($role);
@@ -134,34 +135,34 @@ test('can get all permissions for user', function () {
     $permissions = $user->getAllPermissions();
 
     expect($permissions)->toHaveCount(2)
-        ->and($user->getPermissionNames())->toContain(Permissions::EDIT_ARTICLES)
-        ->and($user->getPermissionNames())->toContain(Permissions::DELETE_ARTICLES);
+        ->and($user->getPermissionNames())->toContain(Permissions::EDIT_USERS)
+        ->and($user->getPermissionNames())->toContain(Permissions::DELETE_USERS);
 });
 
 test('role permissions can be synced', function () {
     $role = Role::create(['name' => Roles::ADMIN]);
-    $permission1 = Permission::create(['name' => Permissions::EDIT_ARTICLES]);
-    $permission2 = Permission::create(['name' => Permissions::DELETE_ARTICLES]);
+    $permission1 = Permission::create(['name' => Permissions::EDIT_USERS]);
+    $permission2 = Permission::create(['name' => Permissions::DELETE_USERS]);
 
     $role->givePermissionTo($permission1);
-    expect($role->hasPermissionTo(Permissions::EDIT_ARTICLES))->toBeTrue();
+    expect($role->hasPermissionTo(Permissions::EDIT_USERS))->toBeTrue();
 
     // Sync replaces permissions
     $role->syncPermissions([$permission2]);
 
-    expect($role->fresh()->hasPermissionTo(Permissions::EDIT_ARTICLES))->toBeFalse()
-        ->and($role->hasPermissionTo(Permissions::DELETE_ARTICLES))->toBeTrue();
+    expect($role->fresh()->hasPermissionTo(Permissions::EDIT_USERS))->toBeFalse()
+        ->and($role->hasPermissionTo(Permissions::DELETE_USERS))->toBeTrue();
 });
 
 test('can revoke permission from role', function () {
     $role = Role::create(['name' => Roles::ADMIN]);
-    $permission = Permission::create(['name' => Permissions::EDIT_ARTICLES]);
+    $permission = Permission::create(['name' => Permissions::EDIT_USERS]);
 
     $role->givePermissionTo($permission);
-    expect($role->hasPermissionTo(Permissions::EDIT_ARTICLES))->toBeTrue();
+    expect($role->hasPermissionTo(Permissions::EDIT_USERS))->toBeTrue();
 
     $role->revokePermissionTo($permission);
-    expect($role->fresh()->hasPermissionTo(Permissions::EDIT_ARTICLES))->toBeFalse();
+    expect($role->fresh()->hasPermissionTo(Permissions::EDIT_USERS))->toBeFalse();
 });
 
 test('users belong to teams through pivot table', function () {
@@ -198,18 +199,18 @@ test('super admin role bypass works via Gate::before', function () {
 });
 
 test('permission matrix generates correct permission names', function () {
-    $matrix = new \App\Services\Auth\PermissionMatrix;
+    $matrix = new PermissionMatrix;
 
     $permissionNames = $matrix->getAllPermissionNames();
 
     expect($permissionNames)->toBeArray()
         ->and($permissionNames)->toContain('view users')
         ->and($permissionNames)->toContain('edit roles')
-        ->and($permissionNames)->toContain('access telescope');
+        ->and($permissionNames)->toContain('view telescope');
 });
 
 test('permission matrix returns correct actions for entity', function () {
-    $matrix = new \App\Services\Auth\PermissionMatrix;
+    $matrix = new PermissionMatrix;
 
     $userActions = $matrix->getActionsForEntity('users');
 
@@ -222,7 +223,7 @@ test('permission matrix returns correct actions for entity', function () {
 });
 
 test('permission matrix correctly identifies entity-action support', function () {
-    $matrix = new \App\Services\Auth\PermissionMatrix;
+    $matrix = new PermissionMatrix;
 
     // Users support activate
     expect($matrix->entitySupportsAction('users', 'activate'))->toBeTrue();
@@ -230,7 +231,7 @@ test('permission matrix correctly identifies entity-action support', function ()
     // Roles do NOT support activate
     expect($matrix->entitySupportsAction('roles', 'activate'))->toBeFalse();
 
-    // Telescope only supports access
-    expect($matrix->entitySupportsAction('telescope', 'access'))->toBeTrue();
+    // Telescope only supports view
+    expect($matrix->entitySupportsAction('telescope', 'view'))->toBeTrue();
     expect($matrix->entitySupportsAction('telescope', 'edit'))->toBeFalse();
 });

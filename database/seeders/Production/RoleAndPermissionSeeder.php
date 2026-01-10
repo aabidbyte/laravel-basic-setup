@@ -95,7 +95,6 @@ class RoleAndPermissionSeeder extends Seeder
             PermissionAction::RESOLVE => "Can resolve {$entityLabel}",
             PermissionAction::ACTIVATE => "Can activate/deactivate {$entityLabel}",
             PermissionAction::CONFIGURE => "Can configure {$entityLabel}",
-            PermissionAction::ACCESS => "Can access {$entityLabel} dashboard",
             PermissionAction::GENERATE_ACTIVATION => "Can generate activation links for {$entityLabel}",
             default => "Can {$actionLabel} {$entityLabel}",
         };

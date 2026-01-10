@@ -4,8 +4,9 @@ use App\Constants\Auth\Permissions;
 use App\Livewire\Bases\BasePageComponent;
 use App\Models\MailSettings;
 use App\Services\Notifications\NotificationBuilder;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport;
+use Exception;
 
 new class extends BasePageComponent {
     public ?string $pageTitle = 'settings.tabs.mail';
@@ -159,7 +160,7 @@ new class extends BasePageComponent {
 
             // For SMTP, try to connect
             if ($this->provider === 'smtp' && !empty($this->host)) {
-                $transport = new \Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport($this->host, $this->port ?? 587);
+                $transport = new EsmtpTransport($this->host, $this->port ?? 587);
 
                 if (!empty($this->username)) {
                     $transport->setUsername($this->username);
@@ -172,7 +173,7 @@ new class extends BasePageComponent {
             }
 
             NotificationBuilder::make()->title('settings.mail.test_success')->success()->send();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             NotificationBuilder::make()->title('settings.mail.test_failed')->subtitle($e->getMessage())->error()->send();
         }
     }

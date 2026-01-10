@@ -504,7 +504,7 @@ class DatabaseSetup
             }
         } catch (PDOException $e) {
             // If we can't connect to check, that's okay - we'll catch it in the connection test
-            \Laravel\Prompts\warning("Could not check if database exists: {$e->getMessage()}");
+            warning("Could not check if database exists: {$e->getMessage()}");
             info('Will attempt to connect to the database in the next step.');
         }
     }

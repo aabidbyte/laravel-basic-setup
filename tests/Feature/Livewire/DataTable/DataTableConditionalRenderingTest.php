@@ -11,6 +11,7 @@ use App\Services\DataTable\Builders\BulkAction;
 use App\Services\DataTable\Builders\Column;
 use App\Services\DataTable\Builders\Filter;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -102,7 +103,7 @@ class RowActionsOnlyDatatableForConditionalTest extends Datatable
 
 class DataTableConditionalRenderingTest extends TestCase
 {
-    use \Illuminate\Foundation\Testing\RefreshDatabase;
+    use RefreshDatabase;
 
     protected User $user;
 

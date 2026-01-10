@@ -2,6 +2,7 @@
 
 use App\Constants\Logging\LogChannels;
 use App\Constants\Logging\LogLevels;
+use App\Logging\LevelSpecificLogChannelFactory;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -17,7 +18,7 @@ use Monolog\Processor\PsrLogMessageProcessor;
 $createLevelSpecificChannel = function (string $channel, string $level): array {
     return [
         'driver' => 'custom',
-        'via' => \App\Logging\LevelSpecificLogChannelFactory::class,
+        'via' => LevelSpecificLogChannelFactory::class,
         'name' => $channel,
         'path' => storage_path("logs/{$channel}/laravel.log"),
         'level' => $level,

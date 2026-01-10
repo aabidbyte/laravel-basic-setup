@@ -3,6 +3,7 @@
 use App\Constants\Auth\Permissions;
 use App\Livewire\Bases\BasePageComponent;
 use App\Services\Notifications\NotificationBuilder;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -82,7 +83,7 @@ new class extends BasePageComponent {
                     'id' => $session->id,
                     'ip_address' => $session->ip_address,
                     'user_agent' => $this->parseUserAgent($session->user_agent),
-                    'last_activity' => \Carbon\Carbon::createFromTimestamp($session->last_activity)->diffForHumans(),
+                    'last_activity' => Carbon::createFromTimestamp($session->last_activity)->diffForHumans(),
                     'is_current' => $session->id === session()->getId(),
                 ];
             });
@@ -310,7 +311,7 @@ new class extends BasePageComponent {
     <x-settings.layout>
         <div class="space-y-8">
             {{-- Two-Factor Authentication Section --}}
-            @if (Laravel\Fortify\Features::enabled(Laravel\Fortify\Features::twoFactorAuthentication()))
+            @if (Features::enabled(Features::twoFactorAuthentication()))
                 <div>
                     <h2 class="text-base-content mb-4 text-lg font-semibold">{{ __('settings.two_factor.title') }}</h2>
 

@@ -22,7 +22,7 @@
     <x-ui.dropdown placement="end"
                    menu
                    menuSize="sm"
-                   contentClass="w-80 max-h-96 overflow-y-auto"
+                   contentClass="min-w-80 max-h-96 overflow-y-auto"
                    x-bind:class="{ 'dropdown-open': isOpen }">
         <x-slot:trigger>
             <button x-ref="trigger"

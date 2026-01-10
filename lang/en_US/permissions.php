@@ -25,9 +25,6 @@ return [
         'users' => 'Users',
         'roles' => 'Roles',
         'teams' => 'Teams',
-        'documents' => 'Documents',
-        'articles' => 'Articles',
-        'posts' => 'Posts',
         'error_logs' => 'Error Logs',
         'telescope' => 'Telescope',
         'horizon' => 'Horizon',
@@ -48,7 +45,6 @@ return [
         'resolve' => 'Resolve',
         'activate' => 'Activate',
         'configure' => 'Configure',
-        'access' => 'Access',
         'generate_activation' => 'Generate Activation',
     ],
 ];

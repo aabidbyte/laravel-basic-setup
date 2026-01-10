@@ -15,9 +15,6 @@ return [
         'users' => 'Utilisateurs',
         'roles' => 'Rôles',
         'teams' => 'Équipes',
-        'documents' => 'Documents',
-        'articles' => 'Articles',
-        'posts' => 'Articles de blog',
         'error_logs' => 'Logs d\'erreurs',
         'telescope' => 'Telescope',
         'horizon' => 'Horizon',
@@ -38,7 +35,6 @@ return [
         'resolve' => 'Résoudre',
         'activate' => 'Activer',
         'configure' => 'Configurer',
-        'access' => 'Accéder',
         'generate_activation' => 'Générer activation',
     ],
 ];

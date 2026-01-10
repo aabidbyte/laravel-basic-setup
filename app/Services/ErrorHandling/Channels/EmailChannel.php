@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\ErrorHandling\Channels;
 
+use Illuminate\Mail\Mailable;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
 
@@ -71,11 +72,11 @@ class EmailChannel implements ChannelInterface
      *
      * @param  Throwable  $e  The exception
      * @param  array<string, mixed>  $context  Error context
-     * @return \Illuminate\Mail\Mailable The mailable instance
+     * @return Mailable The mailable instance
      */
-    protected function buildMailable(Throwable $e, array $context): \Illuminate\Mail\Mailable
+    protected function buildMailable(Throwable $e, array $context): Mailable
     {
-        return new \Illuminate\Mail\Mailable(function ($message) use ($e, $context) {
+        return new Mailable(function ($message) use ($e, $context) {
             $appName = config('app.name', 'Laravel');
             $environment = app()->environment();
 

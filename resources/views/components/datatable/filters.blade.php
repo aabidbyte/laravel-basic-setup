@@ -130,34 +130,34 @@
 
 {{-- Filters Panel - only render if filters are defined --}}
 @if ($datatable->hasFilters())
-<div x-show="openFilters"
-     x-collapse
-     class="mb-6">
-    <div class="card card-border">
-        <div class="card-body">
-            <h3 class="card-title mb-4 text-lg">{{ __('table.filters') }}</h3>
+    <div x-show="openFilters"
+         x-collapse
+         class="mb-6">
+        <div class="card card-border">
+            <div class="card-body">
+                <h3 class="card-title mb-4 text-lg">{{ __('table.filters') }}</h3>
 
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-                @foreach ($datatable->getFilters() as $filter)
-                    @if ($filter['type'] === 'select')
-                        <x-ui.select wire:model.live="filters.{{ $filter['key'] }}"
-                                     :label="$filter['label']"
-                                     class="select-md"
-                                     :options="$filter['options']">
-                        </x-ui.select>
-                    @endif
-                @endforeach
-            </div>
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                    @foreach ($datatable->getFilters() as $filter)
+                        @if ($filter['type'] === 'select')
+                            <x-ui.select wire:model.live="filters.{{ $filter['key'] }}"
+                                         :label="$filter['label']"
+                                         class="select-md"
+                                         :options="$filter['options']">
+                            </x-ui.select>
+                        @endif
+                    @endforeach
+                </div>
 
-            <div class="card-actions mt-4 justify-end">
-                <x-ui.button wire:click="clearFilters"
-                             type="button"
-                             style="ghost"
-                             size="sm">
-                    {{ __('actions.clear_filters') }}
-                </x-ui.button>
+                <div class="card-actions mt-4 justify-end">
+                    <x-ui.button wire:click="clearFilters"
+                                 type="button"
+                                 style="ghost"
+                                 size="sm">
+                        {{ __('actions.clear_filters') }}
+                    </x-ui.button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 @endif

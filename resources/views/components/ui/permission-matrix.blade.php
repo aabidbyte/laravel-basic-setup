@@ -21,10 +21,22 @@
     use App\Services\Auth\PermissionMatrix;
     use App\Constants\Auth\PermissionAction;
     use App\Constants\Auth\PermissionEntity;
+    use App\Constants\Auth\Roles;
 
     $matrix = new PermissionMatrix();
     $matrixData = $matrix->getMatrix();
     $allActions = $matrix->getAllActions();
+    $superAdminOnlyEntities = $matrix->getSuperAdminOnlyEntities();
+
+    // Filter out super_admin-only entities if current user is not super_admin
+    $isSuperAdmin = auth()->check() && auth()->user()->hasRole(Roles::SUPER_ADMIN);
+    if (!$isSuperAdmin) {
+        $matrixData = array_filter(
+            $matrixData,
+            fn($entity) => !in_array($entity, $superAdminOnlyEntities, true),
+            ARRAY_FILTER_USE_KEY,
+        );
+    }
 
     // Create a lookup map: permission name => permission model
     $permissionLookup = $permissions->keyBy('name');

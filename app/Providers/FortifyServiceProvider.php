@@ -9,16 +9,22 @@ use App\Http\Responses\Fortify\PasswordResetResponse;
 use App\Http\Responses\Fortify\SuccessfulPasswordResetLinkRequestResponse;
 use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Actions\AttemptToAuthenticate;
 use Laravel\Fortify\Actions\CanonicalizeUsername;
 use Laravel\Fortify\Actions\EnsureLoginIsNotThrottled;
 use Laravel\Fortify\Actions\PrepareAuthenticatedSession;
 use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
+use Laravel\Fortify\Contracts\EmailVerificationNotificationSentResponse as EmailVerificationContract;
+use Laravel\Fortify\Contracts\PasswordResetResponse as PasswordResetContract;
+use Laravel\Fortify\Contracts\SuccessfulPasswordResetLinkRequestResponse as SuccessfulPasswordResetContract;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
 
@@ -32,17 +38,17 @@ class FortifyServiceProvider extends ServiceProvider
         // Bind custom response classes for Fortify
         // Fortify will automatically resolve these from the container when needed
         $this->app->singleton(
-            \Laravel\Fortify\Contracts\EmailVerificationNotificationSentResponse::class,
+            EmailVerificationContract::class,
             EmailVerificationNotificationSentResponse::class,
         );
 
         $this->app->singleton(
-            \Laravel\Fortify\Contracts\PasswordResetResponse::class,
+            PasswordResetContract::class,
             PasswordResetResponse::class,
         );
 
         $this->app->singleton(
-            \Laravel\Fortify\Contracts\SuccessfulPasswordResetLinkRequestResponse::class,
+            SuccessfulPasswordResetContract::class,
             SuccessfulPasswordResetLinkRequestResponse::class,
         );
     }
@@ -98,7 +104,7 @@ class FortifyServiceProvider extends ServiceProvider
 
             // Check if user is active - throw specific exception with notification
             if (! $user->isActive()) {
-                throw \Illuminate\Validation\ValidationException::withMessages([
+                throw ValidationException::withMessages([
                     'identifier' => [__('auth.inactive')],
                 ]);
             }
@@ -160,7 +166,7 @@ class FortifyServiceProvider extends ServiceProvider
     /**
      * Get login view with optional user list for development.
      */
-    private function getLoginView(): \Illuminate\Contracts\View\View
+    private function getLoginView(): View
     {
         $users = isProduction() ? null : $this->getDevelopmentUsers();
 

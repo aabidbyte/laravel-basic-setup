@@ -9,15 +9,22 @@ The full documentation is now organized into sections for easier navigation and 
 ### CSP-Safe Alpine.js (MANDATORY)
 **All Alpine.js components with methods/functions MUST be extracted to registered components.**
 
-```blade
-{{-- ❌ FORBIDDEN --}}
-<div x-data="{ toggle() { this.open = !this.open } }">
+See [CSP Safety Guide](docs/AGENTS/csp-safety.md) and [Important Patterns](docs/AGENTS/important-patterns.md#csp-safe-alpinejs-development-critical) for full CSP documentation.
 
-{{-- ✅ REQUIRED --}}
-<div x-data="myComponent()">  {{-- Registered in JS file --}}
+### No Leading Import Slashes (PHP/Blade)
+**Avoid leading slashes (`\`) in `use` statements and class references.** Use full namespaces in `use` statements and short names in the code.
+
+```php
+// ❌ FORBIDDEN
+use \App\Models\User;
+catch (\Exception $e)
+
+// ✅ REQUIRED
+use App\Models\User;
+catch (Exception $e)
 ```
 
-See [CSP Safety Guide](docs/AGENTS/csp-safety.md) and [Important Patterns](docs/AGENTS/important-patterns.md#csp-safe-alpinejs-development-critical) for full CSP documentation.
+See [Development Conventions](docs/AGENTS/development-conventions.md#no-leading-import-slashes) for details.
 
 ## Quick Links
 

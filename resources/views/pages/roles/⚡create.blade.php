@@ -6,6 +6,8 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Validation\Rule;
+use Illuminate\Database\Eloquent\Collection;
+use Exception;
 
 new class extends BasePageComponent {
     public ?string $pageSubtitle = null;
@@ -39,7 +41,7 @@ new class extends BasePageComponent {
     /**
      * Get available permissions for selection.
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, Permission>
+     * @return Collection<int, Permission>
      */
     public function getPermissionsProperty()
     {
@@ -87,7 +89,7 @@ new class extends BasePageComponent {
                 ->send();
 
             $this->redirect(route('roles.index'), navigate: true);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             NotificationBuilder::make()
                 ->title('pages.common.create.error', ['type' => __('types.role')])
                 ->content($e->getMessage())

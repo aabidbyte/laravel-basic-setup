@@ -2,6 +2,7 @@
     Settings Layout Component with consolidated tab navigation.
     Tabs: Account, Security, Preferences, Notifications, Mail (permission-gated)
 --}}
+@use('App\Constants\Auth\Permissions')
 <div class="flex items-start max-md:flex-col">
     <div class="me-10 w-full pb-4 md:w-[220px]">
         <ul class="menu bg-base-200 rounded-box p-2">
@@ -50,7 +51,7 @@
             </li>
 
             {{-- Mail Tab (Permission-gated) --}}
-            @can(\App\Constants\Auth\Permissions::CONFIGURE_MAIL_SETTINGS)
+            @can(Permissions::CONFIGURE_MAIL_SETTINGS)
                 <li>
                     <a href="{{ route('settings.mail') }}"
                        wire:navigate

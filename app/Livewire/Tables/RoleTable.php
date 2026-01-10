@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Tables;
 
 use App\Constants\Auth\Permissions;
+use App\Constants\Auth\Roles;
 use App\Livewire\DataTable\Datatable;
 use App\Models\Role;
 use App\Services\DataTable\Builders\Action;
@@ -29,9 +30,16 @@ class RoleTable extends Datatable
      */
     public function baseQuery(): Builder
     {
-        return Role::query()
+        $query = Role::query()
             ->select('roles.*')
             ->withCount(['permissions', 'users']);
+
+        // Hide super_admin role from non-super_admin users
+        if (! auth()->user()?->hasRole(Roles::SUPER_ADMIN)) {
+            $query->where('name', '!=', Roles::SUPER_ADMIN);
+        }
+
+        return $query;
     }
 
     /**
@@ -87,7 +95,7 @@ class RoleTable extends Datatable
             ->color('error')
             ->confirm(__('actions.confirm_delete'))
             ->execute(function (Role $role) {
-                if (in_array($role->name, [\App\Constants\Auth\Roles::SUPER_ADMIN, \App\Constants\Auth\Roles::ADMIN], true)) {
+                if (in_array($role->name, [Roles::SUPER_ADMIN, Roles::ADMIN], true)) {
                     NotificationBuilder::make()
                         ->title(__('actions.error'))
                         ->content('Cannot delete protected role.')
@@ -104,7 +112,7 @@ class RoleTable extends Datatable
                     ->send();
             })
             ->can(Permissions::DELETE_ROLES, false)
-            ->show(fn (Role $role) => ! in_array($role->name, [\App\Constants\Auth\Roles::SUPER_ADMIN, \App\Constants\Auth\Roles::ADMIN], true));
+            ->show(fn (Role $role) => ! in_array($role->name, [Roles::SUPER_ADMIN, Roles::ADMIN], true));
 
         return $actions;
     }
@@ -124,7 +132,7 @@ class RoleTable extends Datatable
                 ->confirm(__('actions.confirm_bulk_delete'))
                 ->confirm(__('actions.confirm_bulk_delete'))
                 ->execute(function ($roles) {
-                    $roles->reject(fn ($role) => in_array($role->name, [\App\Constants\Auth\Roles::SUPER_ADMIN, \App\Constants\Auth\Roles::ADMIN], true))
+                    $roles->reject(fn ($role) => in_array($role->name, [Roles::SUPER_ADMIN, Roles::ADMIN], true))
                         ->each->delete();
                 })
                 ->can(Permissions::DELETE_ROLES),

@@ -5,11 +5,15 @@
     $rows = $this->rows;
     $columns = $this->getColumns();
     $countColumns = count($columns);
-    
+
     // Calculate extra columns for checkbox and actions
     $extraColumns = 0;
-    if ($this->hasBulkActions()) $extraColumns++;
-    if ($this->hasRowActions()) $extraColumns++;
+    if ($this->hasBulkActions()) {
+        $extraColumns++;
+    }
+    if ($this->hasRowActions()) {
+        $extraColumns++;
+    }
 @endphp
 
 <div>
@@ -70,4 +74,3 @@
         {{-- Modal is now global: see components/datatable/action-modal.blade.php --}}
     </div>
 </div>
-

@@ -9,6 +9,8 @@
  */
 
 use App\Constants\ErrorHandling\ErrorChannels;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Validation\ValidationException;
 
 return [
     /*
@@ -82,8 +84,8 @@ return [
     |
     */
     'dont_report' => [
-        \Illuminate\Validation\ValidationException::class,
-        \Illuminate\Auth\AuthenticationException::class,
+        ValidationException::class,
+        AuthenticationException::class,
     ],
 
     /*

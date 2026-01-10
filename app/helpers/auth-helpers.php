@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\User;
 use Illuminate\Http\Request;
 
 /**
@@ -20,7 +21,7 @@ function getIdentifierFromRequest(Request $request): ?string
  * This helper centralizes team session setting logic used after successful authentication.
  * It sets the first team as the active team for the session.
  */
-function setTeamSessionForUser(\App\Models\User $user): void
+function setTeamSessionForUser(User $user): void
 {
     $firstTeam = $user->teams()->orderBy('teams.id')->first();
     if ($firstTeam) {

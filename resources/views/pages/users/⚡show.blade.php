@@ -5,8 +5,10 @@ use App\Livewire\Bases\BasePageComponent;
 use App\Models\User;
 use App\Services\Notifications\NotificationBuilder;
 use App\Services\Users\UserService;
+use Exception;
 
-new class extends BasePageComponent {
+new class extends BasePageComponent
+{
     public ?string $pageTitle = null;
 
     public ?string $pageSubtitle = null;
@@ -50,7 +52,7 @@ new class extends BasePageComponent {
             $this->showActivationModal = true;
 
             NotificationBuilder::make()->title('users.show.activation_link_generated')->success()->send();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             NotificationBuilder::make()->title('users.show.activation_link_error')->content($e->getMessage())->error()->send();
         }
     }
@@ -71,7 +73,7 @@ new class extends BasePageComponent {
                 ->success()
                 ->persist()
                 ->send();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             NotificationBuilder::make()->title('users.show.activation_error')->content($e->getMessage())->error()->send();
         }
     }
@@ -92,7 +94,7 @@ new class extends BasePageComponent {
                 ->warning()
                 ->persist()
                 ->send();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             NotificationBuilder::make()->title('users.show.deactivation_error')->content($e->getMessage())->error()->send();
         }
     }
@@ -270,7 +272,7 @@ new class extends BasePageComponent {
                         <div class="flex flex-wrap gap-2">
                             @foreach ($user->roles as $role)
                                 <x-ui.badge variant="primary"
-                                            size="md">{{ $role->name }}</x-ui.badge>
+                                            size="md">{{ $role->display_name }}</x-ui.badge>
                             @endforeach
                         </div>
                     </div>

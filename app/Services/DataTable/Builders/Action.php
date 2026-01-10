@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\DataTable\Builders;
 
+use App\Models\User;
 use Closure;
 
 /**
@@ -394,14 +395,11 @@ class Action
     }
 
     /**
-     * Check if the action is authorized via policy.
-     *
-     * Returns true if no ability is set (authorization not required).
      *
      * @param  mixed  $model  The row model
-     * @param  \App\Models\User|null  $user  The authenticated user
+     * @param  User|null  $user  The authenticated user
      */
-    public function isAuthorized(mixed $model = null, ?\App\Models\User $user = null): bool
+    public function isAuthorized(mixed $model = null, ?User $user = null): bool
     {
         // No ability specified = authorization not required
         if ($this->ability === null) {
@@ -437,15 +435,11 @@ class Action
     }
 
     /**
-     * Check if action should be rendered for the given model.
-     *
-     * Combines authorization (policy) AND visibility (show) checks.
-     * Both must pass for the action to be rendered.
      *
      * @param  mixed  $model  The row model
-     * @param  \App\Models\User|null  $user  The authenticated user
+     * @param  User|null  $user  The authenticated user
      */
-    public function shouldRender(mixed $model = null, ?\App\Models\User $user = null): bool
+    public function shouldRender(mixed $model = null, ?User $user = null): bool
     {
         // First check policy authorization
         if (! $this->isAuthorized($model, $user)) {
