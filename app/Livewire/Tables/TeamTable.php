@@ -55,7 +55,7 @@ class TeamTable extends Datatable
 
             Column::make(__('table.teams.members_count'), 'users_count')
                 ->sortable()
-                ->format(fn ($value) => DataTableUi::renderComponent(DataTableUi::BADGE, (string) $value, ['variant' => 'ghost']))
+                ->format(fn ($value) => DataTableUi::renderComponent(DataTableUi::UI_BADGE, (string) $value, ['variant' => 'ghost']))
                 ->html()
                 ->class('text-center'),
         ];

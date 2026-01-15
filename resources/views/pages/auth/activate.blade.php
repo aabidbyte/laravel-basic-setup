@@ -14,6 +14,7 @@
                                autofocus
                                autocomplete="new-password"
                                :error="$errors->first('password')"
+                               with-generation
                                with-strength-meter></x-ui.password>
 
                 <x-ui.password name="password_confirmation"

@@ -49,37 +49,15 @@ class DataTableUi
 
     public const ICON_UNLOCK = 'lock-open';
 
-    // Component registry keys (cell components)
-    public const COMPONENT_CELL_TEXT = 'datatable.cells.text';
+    // UI Component types for Column::type() method
+    // These render x-ui.* blade components in datatable cells
+    public const UI_BADGE = 'badge';
 
-    public const COMPONENT_CELL_BADGE = 'datatable.cells.badge';
+    public const UI_AVATAR = 'avatar';
 
-    public const COMPONENT_CELL_BOOLEAN = 'datatable.cells.boolean';
+    public const UI_LINK = 'link';
 
-    public const COMPONENT_CELL_DATE = 'datatable.cells.date';
-
-    public const COMPONENT_CELL_DATETIME = 'datatable.cells.datetime';
-
-    public const COMPONENT_CELL_CURRENCY = 'datatable.cells.currency';
-
-    public const COMPONENT_CELL_NUMBER = 'datatable.cells.number';
-
-    public const COMPONENT_CELL_LINK = 'datatable.cells.link';
-
-    public const COMPONENT_CELL_AVATAR = 'datatable.cells.avatar';
-
-    public const COMPONENT_CELL_SAFE_HTML = 'datatable.cells.safe-html';
-
-    // Component registry keys (filter components)
-    public const COMPONENT_FILTER_SELECT = 'datatable.filters.select';
-
-    public const COMPONENT_FILTER_MULTISELECT = 'datatable.filters.multiselect';
-
-    public const COMPONENT_FILTER_BOOLEAN = 'datatable.filters.boolean';
-
-    public const COMPONENT_FILTER_DATE_RANGE = 'datatable.filters.date-range';
-
-    public const COMPONENT_FILTER_RELATIONSHIP = 'datatable.filters.relationship';
+    public const UI_BUTTON = 'button';
 
     // Translation keys (for DataTable-specific translations)
     public const TRANSLATION_BULK_ACTIONS = 'table.bulk_actions';
@@ -122,50 +100,6 @@ class DataTableUi
     public const COLOR_WARNING = 'warning';
 
     public const COLOR_INFO = 'info';
-
-    // Badge type constant
-    public const BADGE = 'badge';
-
-    /**
-     * Render a component with content
-     *
-     * @param  string  $type  Component type (e.g., 'badge', 'button')
-     * @param  string|array  $content  Content to render inside component (string or array for multiple items)
-     * @param  array<string, mixed>  $attributes  Component attributes/props
-     * @return string Component HTML
-     */
-    public static function renderComponent(string $type, string|array $content, array $attributes = []): string
-    {
-        // Handle array content - render each item as the component type and join
-        if (is_array($content)) {
-            $rendered = [];
-            foreach ($content as $item) {
-                if (is_string($item)) {
-                    $rendered[] = self::renderComponent($type, $item, $attributes);
-                } else {
-                    $rendered[] = (string) $item;
-                }
-            }
-
-            return implode(' ', $rendered);
-        }
-
-        // Handle string content
-        $viewPath = "components.ui.{$type}";
-
-        if (! view()->exists($viewPath)) {
-            return (string) $content;
-        }
-
-        // Render the view with content as 'text' prop
-        // Need to pass attributes properly for Blade components
-        $props = array_merge($attributes, ['text' => (string) $content]);
-
-        // Create attributes bag for component
-        $attributesBag = new ComponentAttributeBag($props);
-
-        return view($viewPath, array_merge($props, ['attributes' => $attributesBag]))->render();
-    }
 
     // Header column keys
     public const HEADER_KEY = 'key';
@@ -215,4 +149,45 @@ class DataTableUi
     public const PROCESSED_HEADER_COLUMN_KEY = 'columnKey';
 
     public const PROCESSED_HEADER_SORTABLE = 'sortable';
+
+    /**
+     * Render a component with content
+     *
+     * @param  string  $type  Component type (e.g., 'badge', 'button')
+     * @param  string|array  $content  Content to render inside component (string or array for multiple items)
+     * @param  array<string, mixed>  $attributes  Component attributes/props
+     * @return string Component HTML
+     */
+    public static function renderComponent(string $type, string|array $content, array $attributes = []): string
+    {
+        // Handle array content - render each item as the component type and join
+        if (is_array($content)) {
+            $rendered = [];
+            foreach ($content as $item) {
+                if (is_string($item)) {
+                    $rendered[] = self::renderComponent($type, $item, $attributes);
+                } else {
+                    $rendered[] = (string) $item;
+                }
+            }
+
+            return implode(' ', $rendered);
+        }
+
+        // Handle string content
+        $viewPath = "components.ui.{$type}";
+
+        if (! view()->exists($viewPath)) {
+            return (string) $content;
+        }
+
+        // Render the view with content as 'text' prop
+        // Need to pass attributes properly for Blade components
+        $props = array_merge($attributes, ['text' => (string) $content]);
+
+        // Create attributes bag for component
+        $attributesBag = new ComponentAttributeBag($props);
+
+        return view($viewPath, array_merge($props, ['attributes' => $attributesBag]))->render();
+    }
 }

@@ -59,7 +59,7 @@ class RoleTable extends Datatable
 
             Column::make(__('table.roles.users_count'), 'users_count')
                 ->sortable()
-                ->format(fn ($value) => DataTableUi::renderComponent(DataTableUi::BADGE, (string) $value, ['variant' => 'ghost']))
+                ->format(fn ($value) => DataTableUi::renderComponent(DataTableUi::UI_BADGE, (string) $value, ['variant' => 'ghost']))
                 ->html()
                 ->class('text-center'),
         ];

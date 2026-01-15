@@ -7,7 +7,7 @@
  */
 return [
     \Spatie\Csp\AddCspHeaders::class,
-    \App\Http\Middleware\Auth\MapLoginIdentifier::class,
+    \App\Http\Middleware\Auth\ResolveRequestIdentifier::class,
     \App\Http\Middleware\Preferences\ApplyFrontendPreferences::class,
     \App\Http\Middleware\Teams\TeamsPermission::class,
 ];

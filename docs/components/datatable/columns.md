@@ -80,28 +80,30 @@ use App\Constants\DataTable\DataTableUi;
 
 Column::make(__('Roles'), 'roles_for_datatable')
     ->content(fn (User $user) => $user->roles->pluck('name')->toArray())
-    ->type(DataTableUi::BADGE, ['variant' => 'primary', 'size' => 'sm']),
+    ->type(DataTableUi::UI_BADGE, ['color' => 'primary', 'size' => 'sm']),
 
 Column::make(__('Teams'), 'teams_for_datatable')
     ->content(fn (User $user) => $user->teams->pluck('name')->toArray())
-    ->type(DataTableUi::BADGE, ['variant' => 'secondary', 'size' => 'sm']),
+    ->type(DataTableUi::UI_BADGE, ['color' => 'secondary', 'size' => 'sm']),
 ```
 
 **How it works:**
 - `content()` accepts a closure that receives the row and returns a string or array
-- `type()` specifies the component type (e.g., `DataTableUi::BADGE`) and optional attributes
+- `type()` specifies the component type (e.g., `DataTableUi::UI_BADGE`) and optional attributes
 - Arrays are automatically rendered as multiple component instances
 - Components are rendered server-side with proper props and attributes
 
 **Available component types:**
-- `DataTableUi::BADGE` - Badge component
-- `'button'` - Button component (and other UI components)
+- `DataTableUi::UI_BADGE` - Badge component
+- `DataTableUi::UI_AVATAR` - Avatar component
+- `DataTableUi::UI_LINK` - Link component
+- `DataTableUi::UI_BUTTON` - Button component
 
 **Component attributes:**
 All attributes passed to `type()` are forwarded to the component as props. For badges:
-- `variant` - Color variant (`primary`, `secondary`, `success`, `error`, etc.)
+- `color` - Semantic color (`primary`, `secondary`, `success`, `error`, `info`, `warning`, `accent`, `neutral`)
+- `variant` - Visual style (`solid`, `outline`, `dash`, `soft`, `ghost`)
 - `size` - Size (`xs`, `sm`, `md`, `lg`, `xl`)
-- `style` - Style (`outline`, `dash`, `soft`, `ghost`)
 
 ## Custom View
 

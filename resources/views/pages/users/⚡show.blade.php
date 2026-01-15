@@ -154,7 +154,13 @@ new class extends BasePageComponent {
     }
 }; ?>
 
-<section class="mx-auto w-full max-w-4xl">
+<section class="mx-auto w-full max-w-4xl"
+         @confirm-send-activation-email.window="$wire.sendActivationEmail()"
+         @confirm-activate-user.window="$wire.activateUser()"
+         @confirm-send-password-reset.window="$wire.sendPasswordResetEmail()"
+         @confirm-deactivate-user.window="$wire.deactivateUser()"
+         @confirm-delete-user.window="$wire.deleteUser()"
+         @confirm-cancel-pending-email.window="$wire.cancelPendingEmailChange()">
     @if ($user)
         <div class="card bg-base-100 shadow-xl">
             <div class="card-body">
@@ -196,8 +202,11 @@ new class extends BasePageComponent {
                             @else
                                 {{-- Has email: send activation email --}}
                                 @can(Permissions::EDIT_USERS)
-                                    <x-ui.button wire:click="sendActivationEmail"
-                                                 wire:confirm="{{ __('users.show.confirm_send_activation') }}"
+                                    <x-ui.button @click="$dispatch('confirm-modal', {
+                                                     title: '{{ __('users.show.send_activation_email') }}',
+                                                     message: '{{ __('users.show.confirm_send_activation') }}',
+                                                     confirmEvent: 'confirm-send-activation-email'
+                                                 })"
                                                  color="secondary"
                                                  size="sm">
                                         <x-ui.icon name="envelope"
@@ -208,8 +217,11 @@ new class extends BasePageComponent {
                             @endif
 
                             @can(Permissions::EDIT_USERS)
-                                <x-ui.button wire:click="activateUser"
-                                             wire:confirm="{{ __('users.show.confirm_activate') }}"
+                                <x-ui.button @click="$dispatch('confirm-modal', {
+                                                 title: '{{ __('actions.activate') }}',
+                                                 message: '{{ __('users.show.confirm_activate') }}',
+                                                 confirmEvent: 'confirm-activate-user'
+                                             })"
                                              color="success"
                                              size="sm">
                                     <x-ui.icon name="check"
@@ -221,8 +233,11 @@ new class extends BasePageComponent {
                             {{-- Active user: password reset and deactivate options --}}
                             @if ($user->hasVerifiedEmail())
                                 @can(Permissions::EDIT_USERS)
-                                    <x-ui.button wire:click="sendPasswordResetEmail"
-                                                 wire:confirm="{{ __('users.show.confirm_send_reset') }}"
+                                    <x-ui.button @click="$dispatch('confirm-modal', {
+                                                     title: '{{ __('users.show.send_password_reset') }}',
+                                                     message: '{{ __('users.show.confirm_send_reset') }}',
+                                                     confirmEvent: 'confirm-send-password-reset'
+                                                 })"
                                                  color="info"
                                                  size="sm">
                                         <x-ui.icon name="key"
@@ -233,8 +248,11 @@ new class extends BasePageComponent {
                             @elseif ($user->email)
                                 {{-- Has email but not verified --}}
                                 @can(Permissions::EDIT_USERS)
-                                    <x-ui.button wire:click="sendActivationEmail"
-                                                 wire:confirm="{{ __('users.show.confirm_send_activation') }}"
+                                    <x-ui.button @click="$dispatch('confirm-modal', {
+                                                     title: '{{ __('users.show.send_activation_email') }}',
+                                                     message: '{{ __('users.show.confirm_send_activation') }}',
+                                                     confirmEvent: 'confirm-send-activation-email'
+                                                 })"
                                                  color="secondary"
                                                  size="sm">
                                         <x-ui.icon name="envelope"
@@ -256,8 +274,12 @@ new class extends BasePageComponent {
                             @endif
 
                             @can(Permissions::EDIT_USERS)
-                                <x-ui.button wire:click="deactivateUser"
-                                             wire:confirm="{{ __('users.show.confirm_deactivate') }}"
+                                <x-ui.button @click="$dispatch('confirm-modal', {
+                                                 title: '{{ __('actions.deactivate') }}',
+                                                 message: '{{ __('users.show.confirm_deactivate') }}',
+                                                 confirmColor: 'warning',
+                                                 confirmEvent: 'confirm-deactivate-user'
+                                             })"
                                              color="warning"
                                              size="sm">
                                     <x-ui.icon name="x-mark"
@@ -268,8 +290,12 @@ new class extends BasePageComponent {
                         @endif
 
                         @can(Permissions::DELETE_USERS)
-                            <x-ui.button wire:click="deleteUser"
-                                         wire:confirm="{{ __('actions.confirm_delete') }}"
+                            <x-ui.button @click="$dispatch('confirm-modal', {
+                                                 title: '{{ __('actions.delete') }}',
+                                                 message: '{{ __('actions.confirm_delete') }}',
+                                                 confirmColor: 'error',
+                                                 confirmEvent: 'confirm-delete-user'
+                                             })"
                                          color="error"
                                          size="sm">
                                 <x-ui.icon name="trash"
@@ -311,8 +337,11 @@ new class extends BasePageComponent {
                                         <span
                                               class="text-sm">{{ __('users.show.pending_email', ['email' => $user->pending_email]) }}</span>
                                         @can(Permissions::EDIT_USERS)
-                                            <x-ui.button wire:click="cancelPendingEmailChange"
-                                                         wire:confirm="{{ __('users.show.confirm_cancel_pending') }}"
+                                            <x-ui.button @click="$dispatch('confirm-modal', {
+                                                             title: '{{ __('actions.cancel') }}',
+                                                             message: '{{ __('users.show.confirm_cancel_pending') }}',
+                                                             confirmEvent: 'confirm-cancel-pending-email'
+                                                         })"
                                                          color="ghost"
                                                          size="xs">
                                                 {{ __('actions.cancel') }}

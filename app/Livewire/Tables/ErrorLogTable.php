@@ -75,8 +75,8 @@ class ErrorLogTable extends Datatable
             Column::make(__('errors.management.status'), 'resolved_at')
                 ->sortable()
                 ->format(fn ($value) => $value
-                    ? DataTableUi::renderComponent(DataTableUi::BADGE, __('errors.management.resolved'), ['color' => 'success', 'size' => 'sm'])
-                    : DataTableUi::renderComponent(DataTableUi::BADGE, __('errors.management.unresolved'), ['color' => 'error', 'size' => 'sm']))
+                    ? DataTableUi::renderComponent(DataTableUi::UI_BADGE, __('errors.management.resolved'), ['color' => 'success', 'size' => 'sm'])
+                    : DataTableUi::renderComponent(DataTableUi::UI_BADGE, __('errors.management.unresolved'), ['color' => 'error', 'size' => 'sm']))
                 ->html(),
 
             Column::make(__('errors.management.created_at'), 'created_at')
@@ -96,7 +96,7 @@ class ErrorLogTable extends Datatable
         }
 
         $methodBadge = $method
-            ? DataTableUi::renderComponent(DataTableUi::BADGE, e($method), ['variant' => 'ghost', 'size' => 'xs', 'class' => 'mr-1'])
+            ? DataTableUi::renderComponent(DataTableUi::UI_BADGE, e($method), ['variant' => 'ghost', 'size' => 'xs', 'class' => 'mr-1'])
             : '';
 
         // Truncate long URLs

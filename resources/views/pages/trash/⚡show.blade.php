@@ -131,7 +131,8 @@ new class extends BasePageComponent {
     }
 }; ?>
 
-<section class="mx-auto w-full max-w-4xl">
+<section class="mx-auto w-full max-w-4xl space-y-6"
+         @confirm-restore.window="$wire.restore()">
     @if ($model)
         <div class="card bg-base-100 shadow-xl">
             <div class="card-body">
@@ -158,8 +159,11 @@ new class extends BasePageComponent {
                     {{-- Actions --}}
                     <div class="flex flex-wrap gap-2">
                         @can($entityConfig['restorePermission'])
-                            <x-ui.button wire:click="restore"
-                                         wire:confirm="{{ __('actions.confirm_restore') }}"
+                            <x-ui.button @click="$dispatch('confirm-modal', {
+                                             title: '{{ __('actions.restore') }}',
+                                             message: '{{ __('actions.confirm_restore') }}',
+                                             confirmEvent: 'confirm-restore'
+                                         })"
                                          color="success"
                                          size="sm">
                                 <x-ui.icon name="arrow-uturn-left"

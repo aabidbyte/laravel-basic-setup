@@ -12,7 +12,8 @@ use Illuminate\Http\Request;
  */
 function getIdentifierFromRequest(Request $request): ?string
 {
-    return $request->input('identifier') ?? $request->input('email');
+    // Strict mode: Application standardizes on 'identifier' field
+    return $request->input('identifier');
 }
 
 /**

@@ -74,19 +74,26 @@ The badge component supports programmatic rendering from PHP code (e.g., in Data
 use App\Constants\DataTable\DataTableUi;
 
 // Render single badge
-$html = DataTableUi::renderComponent(DataTableUi::BADGE, 'Admin', [
+$html = DataTableUi::renderComponent(DataTableUi::UI_BADGE, 'Admin', [
     'color' => 'primary',
     'size' => 'sm',
 ]);
 
 // Render multiple badges
-$html = DataTableUi::renderComponent(DataTableUi::BADGE, ['Admin', 'Editor'], [
+$html = DataTableUi::renderComponent(DataTableUi::UI_BADGE, ['Admin', 'Editor'], [
     'color' => 'primary',
     'size' => 'sm',
 ]);
 ```
 
-When rendering programmatically, the `text` prop is used instead of the slot.
+**Props for programmatic rendering:**
+- `text` - The badge content (set automatically by `renderComponent`)
+- `color` - Semantic color: `primary`, `secondary`, `success`, `error`, `info`, `warning`, `accent`, `neutral`
+- `variant` - Visual style: `solid`, `outline`, `dash`, `soft`, `ghost`
+- `size` - Size: `xs`, `sm`, `md`, `lg`, `xl`
+
+> [!NOTE]
+> `color` sets the semantic color (e.g., success=green, error=red). `variant` sets the visual style (e.g., outline, ghost).
 
 #### Empty Badge (Dot Indicator)
 

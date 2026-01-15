@@ -11,18 +11,19 @@
                    name="token"
                    value="{{ request()->route('token') }}">
 
-            <x-ui.input type="email"
-                        name="email"
-                        :label="__('authentication.reset_password.email_label')"
-                        :value="request('email')"
+            <x-ui.input type="text"
+                        name="identifier"
+                        :label="__('authentication.reset_password.identifier_label')"
+                        :value="request('identifier')"
                         required
-                        autocomplete="email"></x-ui.input>
+                        autocomplete="username"></x-ui.input>
 
             <x-ui.password name="password"
                            :label="__('authentication.reset_password.password_label')"
                            required
                            autocomplete="new-password"
                            :placeholder="__('authentication.reset_password.password_placeholder')"
+                           with-generation
                            with-strength-meter></x-ui.password>
 
             <x-ui.password name="password_confirmation"

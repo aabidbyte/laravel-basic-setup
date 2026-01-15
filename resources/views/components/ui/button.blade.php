@@ -46,10 +46,10 @@
     ];
 
     $variantClass = $variantClasses[$variant] ?? '';
-    $colorClass = isset($color) ? ($colorClasses[$color] ?? '') : '';
+    $colorClass = isset($color) ? $colorClasses[$color] ?? '' : '';
     $sizeClass = $sizeClasses[$size] ?? '';
     $circleClass = $circle ? 'btn-circle' : '';
-    
+
     $btnClasses = trim(implode(' ', [$variantClass, $colorClass, $sizeClass, $circleClass]));
 @endphp
 

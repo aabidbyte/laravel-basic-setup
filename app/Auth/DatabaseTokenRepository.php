@@ -71,4 +71,17 @@ class DatabaseTokenRepository extends BaseDatabaseTokenRepository
 
         return $token;
     }
+
+    /**
+     * Determine if the given user recently created a password reset token.
+     *
+     * @return bool
+     */
+    public function recentlyCreatedToken(CanResetPasswordContract $user)
+    {
+        $identifier = $user->getEmailForPasswordReset();
+        $record = PasswordResetToken::where('identifier', $identifier)->first();
+
+        return $record && $this->tokenRecentlyCreated($record->created_at);
+    }
 }

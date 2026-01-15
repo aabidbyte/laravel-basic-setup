@@ -31,8 +31,9 @@ return [
     ],
     'forgot_password' => [
         'title' => 'Forgot password',
-        'description' => 'Enter your email to receive a password reset link',
+        'description' => 'Enter your email or username to receive a password reset link',
         'email_label' => 'Email Address',
+        'identifier_label' => 'Email or Username',
         'submit' => 'Email password reset link',
         'back_to_login' => 'Or, return to',
         'log_in' => 'log in',
@@ -42,6 +43,7 @@ return [
         'title' => 'Reset password',
         'description' => 'Please enter your new password below',
         'email_label' => 'Email',
+        'identifier_label' => 'Email or Username',
         'password_label' => 'Password',
         'password_placeholder' => 'Password',
         'confirm_password_label' => 'Confirm password',

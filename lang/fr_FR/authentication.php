@@ -31,8 +31,9 @@ return [
     ],
     'forgot_password' => [
         'title' => 'Mot de passe oublié',
-        'description' => 'Entrez votre adresse e-mail pour recevoir un lien de réinitialisation du mot de passe',
+        'description' => 'Entrez votre adresse e-mail ou nom d\'utilisateur pour recevoir un lien de réinitialisation',
         'email_label' => 'Adresse e-mail',
+        'identifier_label' => 'E-mail ou nom d\'utilisateur',
         'submit' => 'Envoyer le lien de réinitialisation',
         'back_to_login' => 'Ou, retourner à la',
         'log_in' => 'connexion',
@@ -42,6 +43,7 @@ return [
         'title' => 'Réinitialiser le mot de passe',
         'description' => 'Veuillez entrer votre nouveau mot de passe ci-dessous',
         'email_label' => 'E-mail',
+        'identifier_label' => 'E-mail ou nom d\'utilisateur',
         'password_label' => 'Mot de passe',
         'password_placeholder' => 'Mot de passe',
         'confirm_password_label' => 'Confirmer le mot de passe',

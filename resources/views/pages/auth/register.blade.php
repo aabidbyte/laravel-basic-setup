@@ -28,7 +28,9 @@
                            :label="__('authentication.register.password_label')"
                            required
                            autocomplete="new-password"
-                           :placeholder="__('authentication.register.password_placeholder')"></x-ui.password>
+                           :placeholder="__('authentication.register.password_placeholder')"
+                           with-generation
+                           with-strength-meter></x-ui.password>
 
             <x-ui.password name="password_confirmation"
                            :label="__('authentication.register.confirm_password_label')"

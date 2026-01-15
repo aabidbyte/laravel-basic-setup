@@ -199,7 +199,8 @@ new class extends BasePageComponent {
     }
 }; ?>
 
-<section class="w-full">
+<section class="max-w-4xl space-y-6"
+         @confirm-delete-mail-settings.window="$wire.deleteSettings()">
     <x-settings.layout>
         <x-ui.form wire:submit="saveSettings"
                    class="w-full space-y-6">
@@ -311,8 +312,12 @@ new class extends BasePageComponent {
 
                 @if ($hasExistingSettings)
                     <x-ui.button type="button"
-                                 wire:click="deleteSettings"
-                                 wire:confirm="{{ __('settings.mail.delete_confirm') }}"
+                                 @click="$dispatch('confirm-modal', {
+                                     title: '{{ __('actions.delete') }}',
+                                     message: '{{ __('settings.mail.delete_confirm') }}',
+                                     confirmColor: 'error',
+                                     confirmEvent: 'confirm-delete-mail-settings'
+                                 })"
                                  color="error"
                                  variant="outline">
                         {{ __('actions.delete') }}

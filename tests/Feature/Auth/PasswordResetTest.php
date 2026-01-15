@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\User;
-use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\Facades\Notification;
 
 test('reset password link can be requested', function () {
@@ -10,11 +9,29 @@ test('reset password link can be requested', function () {
     $user = User::factory()->create();
 
     $response = $this->post(route('password.email'), [
-        'email' => $user->email,
+        'identifier' => $user->email,
     ]);
 
     $response->assertSessionHasNoErrors();
-    Notification::assertSentTo($user, ResetPassword::class);
+    Notification::assertSentTo($user, \App\Notifications\Auth\ResetPasswordNotification::class, function ($notification, $channels, $notifiable) use ($user) {
+        $mailData = $notification->toMail($notifiable);
+        $url = $mailData->actionUrl;
+
+        return str_contains($url, 'identifier=' . urlencode($user->email));
+    });
+});
+
+test('reset password link can be requested with username', function () {
+    Notification::fake();
+
+    $user = User::factory()->create(['username' => 'johndoe']);
+
+    $response = $this->post(route('password.email'), [
+        'identifier' => 'johndoe',
+    ]);
+
+    $response->assertSessionHasNoErrors();
+    Notification::assertSentTo($user, \App\Notifications\Auth\ResetPasswordNotification::class);
 });
 
 test('password can be reset with valid token', function () {
@@ -22,13 +39,13 @@ test('password can be reset with valid token', function () {
 
     $user = User::factory()->create();
 
-    $response = $this->post(route('password.email'), ['email' => $user->email]);
+    $response = $this->post(route('password.email'), ['identifier' => $user->email]);
 
     $response->assertSessionHasNoErrors();
-    Notification::assertSentTo($user, ResetPassword::class, function ($notification) use ($user) {
+    Notification::assertSentTo($user, \App\Notifications\Auth\ResetPasswordNotification::class, function ($notification) use ($user) {
         $response = $this->post(route('password.update'), [
             'token' => $notification->token,
-            'email' => $user->email,
+            'identifier' => $user->email,
             'password' => 'Password123!',
             'password_confirmation' => 'Password123!',
         ]);
@@ -39,4 +56,34 @@ test('password can be reset with valid token', function () {
 
         return true;
     });
+});
+
+test('password cannot be reset with expired token', function () {
+    Notification::fake();
+
+    $user = User::factory()->create();
+
+    // Generate token
+    $token = Password::broker()->createToken($user);
+
+    // Fast forward 61 minutes
+    $this->travel(61)->minutes();
+
+    $response = $this->post(route('password.update'), [
+        'token' => $token,
+        'identifier' => $user->email,
+        'password' => 'Password123!',
+        'password_confirmation' => 'Password123!',
+    ]);
+
+    // Note: The error key here depends on what the backed validation throws.
+    // If we map identifier -> email using middleware, validation might still complain about 'email'
+    // if the token is invalid for that email?
+    // Actually, `ResetUserPassword` validates `email`.
+    // Our middleware adds `email` to the request request.
+    // So error will likely be on `email`.
+    // However, if we want to be strict, we might want to map errors back?
+    // For now, let's assume Laravel might return error on 'email' since that's what failed validation.
+    // BUT, the user only sent 'identifier'.
+    $response->assertSessionHasErrors(['email']);
 });

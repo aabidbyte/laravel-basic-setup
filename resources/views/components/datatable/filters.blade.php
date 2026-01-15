@@ -36,9 +36,7 @@
                                 ? "executeActionWithConfirmation('{$action['key']}', null, true)"
                                 : null;
 
-                            $wireClick = !$action['confirm']
-                                ? "executeBulkAction('{$action['key']}')"
-                                : null;
+                            $wireClick = !$action['confirm'] ? "executeBulkAction('{$action['key']}')" : null;
                         @endphp
 
                         <x-ui.button type="button"

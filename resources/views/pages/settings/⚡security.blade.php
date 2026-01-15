@@ -301,7 +301,9 @@ new class extends BasePageComponent {
     }
 }; ?>
 
-<section class="w-full">
+<section class="w-full"
+         @confirm-revoke-session.window="$wire.revokeSession($event.detail.id)"
+         @confirm-revoke-all-sessions.window="$wire.revokeAllOtherSessions()">
     <x-settings.layout>
         <div class="space-y-8">
             {{-- Two-Factor Authentication Section --}}
@@ -407,8 +409,13 @@ new class extends BasePageComponent {
 
                                         @if (!$session['is_current'])
                                             <x-ui.button type="button"
-                                                         wire:click="revokeSession('{{ $session['id'] }}')"
-                                                         wire:confirm="{{ __('settings.security.revoke_confirm') }}"
+                                                         @click="$dispatch('confirm-modal', {
+                                                             title: '{{ __('actions.revoke') }}',
+                                                             message: '{{ __('settings.security.revoke_confirm') }}',
+                                                             confirmColor: 'error',
+                                                             confirmEvent: 'confirm-revoke-session',
+                                                             confirmData: { id: '{{ $session['id'] }}' }
+                                                         })"
                                                          variant="ghost"
                                                          size="sm">
                                                 <x-ui.icon name="x-mark"
@@ -428,8 +435,12 @@ new class extends BasePageComponent {
 
                         @if ($this->sessions->count() > 1)
                             <x-ui.button type="button"
-                                         wire:click="revokeAllOtherSessions"
-                                         wire:confirm="{{ __('settings.security.revoke_all_confirm') }}"
+                                         @click="$dispatch('confirm-modal', {
+                                             title: '{{ __('settings.security.revoke_all_button') }}',
+                                             message: '{{ __('settings.security.revoke_all_confirm') }}',
+                                             confirmColor: 'error',
+                                             confirmEvent: 'confirm-revoke-all-sessions'
+                                         })"
                                          color="error"
                                          class="mt-4">
                                 {{ __('settings.security.revoke_all_button') }}

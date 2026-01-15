@@ -5,8 +5,8 @@ declare(strict_types=1);
 use App\Constants\DataTable\DataTableUi;
 
 it('can render badge component with text prop', function () {
-    $html = DataTableUi::renderComponent(DataTableUi::BADGE, 'Test Badge', [
-        'variant' => 'primary',
+    $html = DataTableUi::renderComponent(DataTableUi::UI_BADGE, 'Test Badge', [
+        'color' => 'primary',
         'size' => 'sm',
     ]);
 
@@ -18,8 +18,8 @@ it('can render badge component with text prop', function () {
 });
 
 it('can render badge component with array content', function () {
-    $html = DataTableUi::renderComponent(DataTableUi::BADGE, ['Admin', 'User'], [
-        'variant' => 'primary',
+    $html = DataTableUi::renderComponent(DataTableUi::UI_BADGE, ['Admin', 'User'], [
+        'color' => 'primary',
         'size' => 'sm',
     ]);
 
@@ -48,13 +48,13 @@ it('returns content as string when component view does not exist', function () {
 });
 
 it('handles empty array content', function () {
-    $html = DataTableUi::renderComponent(DataTableUi::BADGE, []);
+    $html = DataTableUi::renderComponent(DataTableUi::UI_BADGE, []);
 
     expect($html)->toBe('');
 });
 
 it('handles array with non-string items', function () {
-    $html = DataTableUi::renderComponent(DataTableUi::BADGE, ['String', 123, true]);
+    $html = DataTableUi::renderComponent(DataTableUi::UI_BADGE, ['String', 123, true]);
 
     expect($html)
         ->toContain('String')

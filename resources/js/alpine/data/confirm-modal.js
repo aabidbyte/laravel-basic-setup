@@ -1,8 +1,4 @@
-/**
- * Confirm Modal Alpine Component
- * Self-registers as 'confirmModal'
- */
-export function confirmModal(config = {}) {
+export default function confirmModal(config = {}) {
     return {
         isOpen: false,
         title: config.title || 'Confirm Action',
@@ -66,8 +62,3 @@ export function confirmModal(config = {}) {
         },
     };
 }
-
-// Self-register
-document.addEventListener('alpine:init', () => {
-    window.Alpine.data('confirmModal', confirmModal);
-});

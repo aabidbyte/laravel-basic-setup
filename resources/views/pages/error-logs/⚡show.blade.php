@@ -107,7 +107,8 @@ new class extends BasePageComponent {
     }
 }; ?>
 
-<section class="mx-auto w-full max-w-4xl space-y-6">
+<section class="mx-auto w-full max-w-4xl space-y-6"
+         @confirm-delete-error-log.window="$wire.deleteError()">
     @if ($errorLog)
         {{-- Header Card --}}
         <div class="card bg-base-100 shadow-xl">
@@ -139,8 +140,12 @@ new class extends BasePageComponent {
                         @endif
 
                         @can(Permissions::DELETE_ERROR_LOGS)
-                            <x-ui.button wire:click="deleteError"
-                                         wire:confirm="{{ __('errors.management.confirm_delete') }}"
+                            <x-ui.button @click="$dispatch('confirm-modal', {
+                                             title: '{{ __('actions.delete') }}',
+                                             message: '{{ __('errors.management.confirm_delete') }}',
+                                             confirmColor: 'error',
+                                             confirmEvent: 'confirm-delete-error-log'
+                                         })"
                                          color="error"
                                          variant="ghost"
                                          size="sm">

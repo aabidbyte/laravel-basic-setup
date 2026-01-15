@@ -8,12 +8,12 @@
               class="flex flex-col gap-6">
             @csrf
 
-            <x-ui.input type="email"
-                        name="email"
-                        :label="__('authentication.forgot_password.email_label')"
+            <x-ui.input type="text"
+                        name="identifier"
+                        :label="__('authentication.forgot_password.identifier_label')"
                         required
                         autofocus
-                        placeholder="email@example.com"></x-ui.input>
+                        :placeholder="__('authentication.login.email_placeholder')"></x-ui.input>
 
             <x-ui.button type="submit"
                          color="primary"

@@ -44,6 +44,9 @@ This index is designed for AI assistants to quickly locate specific topics and f
 
 -   [Teleport](#teleport) - @teleport directive, basic usage, why use, common use cases, constraints, Alpine integration
 -   [Morphing](#morphing) - How it works, shortcomings, internal look-ahead, morph markers, wrapping conditionals, wire:replace
+-   [Drag and Drop](#drag-and-drop) - Sortable lists, handles, groups, animations
+-   [Transitions](#transitions) - wire:transition, component transitions, view transitions API
+-   [Optimistic UI](#optimistic-ui) - wire:show, wire:text, wire:bind, $dirty
 
 **Advanced Technical:**
 
@@ -105,6 +108,9 @@ When searching for specific functionality, use these keywords:
 - [File Downloads](file-downloads.md)
 - [Teleport](teleport.md)
 - [Morphing](morphing.md)
+- [Drag and Drop](drag-and-drop.md)
+- [Transitions](transitions.md)
+- [Optimistic UI](optimistic-ui.md)
 - [Hydration](hydration.md)
 - [Synthesizers](synthesizers.md)
 - [JavaScript](javascript.md)

@@ -58,8 +58,8 @@ class UserTable extends Datatable
             Column::make(__('table.users.status'), 'is_active')
                 ->sortable()
                 ->format(fn ($value) => $value
-                    ? DataTableUi::renderComponent(DataTableUi::BADGE, __('users.active'), ['color' => 'success', 'size' => 'sm'])
-                    : DataTableUi::renderComponent(DataTableUi::BADGE, __('users.inactive'), ['color' => 'error', 'size' => 'sm']))
+                    ? DataTableUi::renderComponent(DataTableUi::UI_BADGE, __('users.active'), ['color' => 'success', 'size' => 'sm'])
+                    : DataTableUi::renderComponent(DataTableUi::UI_BADGE, __('users.inactive'), ['color' => 'error', 'size' => 'sm']))
                 ->html(),
 
             Column::make(__('table.users.roles'), 'roles_for_datatable')
@@ -70,7 +70,7 @@ class UserTable extends Datatable
                         ? [trans_choice('users.roles_count', count($roles))]
                         : $roles;
                 })
-                ->type(DataTableUi::BADGE, ['color' => 'primary', 'size' => 'sm']),
+                ->type(DataTableUi::UI_BADGE, ['color' => 'primary', 'size' => 'sm']),
 
             Column::make(__('table.users.teams'), 'teams_for_datatable')
                 ->content(function (User $user) {
@@ -80,7 +80,7 @@ class UserTable extends Datatable
                         ? [trans_choice('users.teams_count', count($teams))]
                         : $teams;
                 })
-                ->type(DataTableUi::BADGE, ['color' => 'secondary', 'size' => 'sm']),
+                ->type(DataTableUi::UI_BADGE, ['color' => 'secondary', 'size' => 'sm']),
 
             Column::make(__('table.users.last_login_at'), 'last_login_at')
                 ->sortable()

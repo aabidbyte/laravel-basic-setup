@@ -43,7 +43,7 @@
     ];
 
     $variantClass = $variantClasses[$variant] ?? '';
-    $colorClass = isset($color) ? ($colorClasses[$color] ?? '') : '';
+    $colorClass = isset($color) ? $colorClasses[$color] ?? '' : '';
     $sizeClass = $sizeClasses[$size] ?? '';
 
     $classes = trim("badge {$variantClass} {$colorClass} {$sizeClass} {$class}");

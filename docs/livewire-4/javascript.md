@@ -12,6 +12,64 @@ Scripts in components are executed:
 </script>
 ```
 
+### Json Methods
+
+Return data directly to JavaScript without rendering Blade. Use the `#[Json]` attribute on your component methods.
+
+```php
+use Livewire\Attributes\Json;
+
+#[Json]
+public function search($query)
+{
+    return Post::where('title', 'like', "%{$query}%")->get();
+}
+```
+
+Call it from JavaScript:
+
+```html
+<script>
+    let results = await this.search('livewire')
+    console.log(results)
+</script>
+```
+
+### Client-Side Actions ($js)
+
+Run actions purely on the client-side using the `$js` object.
+
+```blade
+<button wire:click="$js.bookmark">Bookmark</button>
+ 
+<script>
+    this.$js.bookmark = () => {
+        this.bookmarked = !this.bookmarked
+        this.save() // Call server-side method if needed
+    }
+</script>
+```
+
+### References (wire:ref)
+
+Target elements easily from JavaScript using `wire:ref` and accessing them via `$refs`.
+
+```blade
+<input wire:ref="search" type="text" />
+ 
+<script>
+    this.$refs.search.addEventListener('keydown', (e) => {
+        // Handle keyboard events...
+    })
+</script>
+```
+
+You can also target refs when dispatching events:
+
+```php
+$this->dispatch('close')->to(ref: 'modal');
+```
+
 ### $wire Object
 
 Access component from JavaScript (see [AlpineJS Integration](#alpinejs-integration) section).

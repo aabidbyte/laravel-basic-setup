@@ -6,7 +6,6 @@ use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
-use Illuminate\Validation\ValidationException;
 
 new class extends BasePageComponent {
     public ?string $pageTitle = 'settings.tabs.account';
@@ -167,6 +166,7 @@ new class extends BasePageComponent {
                                    :label="__('settings.password.new_password_label')"
                                    required
                                    autocomplete="new-password"
+                                   with-generation
                                    with-strength-meter></x-ui.password>
 
                     <x-ui.password wire:model="password_confirmation"

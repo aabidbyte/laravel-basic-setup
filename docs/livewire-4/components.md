@@ -188,7 +188,33 @@ Use namespaces in `config/livewire.php`:
 'component_namespaces' => [
     'pages' => resource_path('views/pages'),
     'components' => resource_path('views/components'),
+    'admin' => resource_path('views/admin'), // Custom namespace
 ],
+```
+
+### Namespaces
+
+Livewire 4 encourages a structured approach with namespaces. By default:
+
+- `pages::` points to page components.
+- `layouts::` points to layouts.
+- Everything else is in `resources/views/components`.
+
+You can register custom namespaces in `config/livewire.php` to organize your application modules (e.g., `admin::`, `billing::`).
+
+## Inline Placeholders
+
+For lazy components and islands, you can define loading states directly within the component using the `@placeholder` directive. This eliminates the need for separate placeholder views.
+
+```blade
+@placeholder
+    <div class="animate-pulse h-32 bg-gray-200 rounded"></div>
+@endplaceholder
+
+<div>
+    <!-- Actual content loads here -->
+    <h1>{{ $title }}</h1>
+</div>
 ```
 
 ### Converting Between Formats

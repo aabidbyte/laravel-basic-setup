@@ -7,6 +7,7 @@ use App\Models\Base\BaseUserModel;
 use App\Models\Concerns\HasDataTable;
 use App\Models\Concerns\HasRolesAndPermissions;
 use App\Models\Pivots\TeamUser;
+use App\Notifications\Auth\ResetPasswordNotification;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -320,5 +321,16 @@ class User extends BaseUserModel
         }
 
         return $result;
+    }
+
+    /**
+     * Send the password reset notification.
+     *
+     * @param  string  $token
+     * @return void
+     */
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new ResetPasswordNotification($token));
     }
 }
