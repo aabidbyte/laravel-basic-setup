@@ -19,3 +19,11 @@
     - Log Viewer: `admin/system/log-viewer`
     - All protected by authorization gates
 
+4. **Request Idempotency**:
+
+    - Automatic duplicate request prevention
+    - Content-based fingerprinting (SHA-256)
+    - Redis atomic locks for race condition protection
+    - Configurable exclusions for third-party packages
+    - See [Idempotency System](idempotency-system.md) for details
+

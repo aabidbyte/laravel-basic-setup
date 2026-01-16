@@ -23,7 +23,7 @@
          x-bind:data-tip="tooltipText">
         <button @click="copyUrl()"
                 type="button"
-                class="btn btn-{{ $style }} btn-{{ $size }} btn-square"
+                class="btn btn-{{ $style }} btn-{{ $size }} btn-square data-loading:opacity-50 data-loading:pointer-events-none"
                 aria-label="{{ $tooltipText }}">
             <svg class="h-5 w-5"
                  fill="none"

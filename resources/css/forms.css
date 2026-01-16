@@ -1,0 +1,22 @@
+@layer components {
+    /* ==========================================
+       Form Submitting State
+       ==========================================
+       When a form has the 'form-submitting' class (added by submitForm Alpine component),
+       the form becomes slightly transparent and all interactive elements inside are disabled.
+    */
+
+    .form-submitting {
+        @apply !opacity-75 !pointer-events-none;
+
+        /* Disable all interactive elements inside */
+        button,
+        a,
+        input[type="submit"],
+        input[type="button"],
+        [role="button"],
+        [onclick] {
+            @apply !opacity-50 !pointer-events-none !cursor-not-allowed;
+        }
+    }
+}

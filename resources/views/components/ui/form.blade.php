@@ -14,6 +14,7 @@
 
 <form method="{{ $isGet ? 'GET' : 'POST' }}"
       {!! $formAction !!}
+      x-data="submitForm"
       {{ $attributes->merge(['class' => trim('space-y-6 ' . $class)])->except(['method', 'action']) }}>
     @if ($needsMethodSpoofing)
         @method($formMethod)
@@ -25,3 +26,4 @@
 
     {{ $slot }}
 </form>
+

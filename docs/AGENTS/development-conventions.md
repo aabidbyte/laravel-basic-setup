@@ -256,6 +256,20 @@ it('tests something', function () {
     {{-- Inline spinner --}}
     <x-ui.loading size="sm" :centered="false"></x-ui.loading>
     ```
+-   **Interactive Component Disabled States**: **ALL interactive components (buttons, links) must have loading/disabled state handling** to prevent double-clicks and improve UX:
+    -   **Livewire requests**: Use `data-loading:opacity-50 data-loading:pointer-events-none` classes (automatic Livewire 4 feature)
+    -   **Blade forms**: The `x-ui.form` component automatically uses `submitForm` Alpine component which disables buttons via DOM manipulation
+    -   **CSP Compliance**: All Alpine logic must be inside **registered components** (`Alpine.data()`). Never use inline `x-data="{ ... }"` with JavaScript, and never use `x-bind` with complex expressions. DOM manipulation inside `init()` is CSP-safe.
+    -   **Example**:
+        ```blade
+        {{-- Livewire: data-loading handled automatically --}}
+        <x-ui.button wire:click="save">Save</x-ui.button>
+        
+        {{-- Blade form: submitForm component disables buttons automatically --}}
+        <x-ui.form action="/users" method="POST">
+            <x-ui.button type="submit">Submit</x-ui.button>
+        </x-ui.form>
+        ```
 -   **Component Documentation**: **ALWAYS update `docs/components/index.md` when adding new UI components** - This ensures all components are documented with props, usage examples, and implementation details
 -   **Component Tag Format**: **ALL Blade and Livewire component tags MUST use opening and closing tags, never self-closing tags** - Always write `<x-component></x-component>` or `<livewire:component></livewire:component>` instead of `<x-component />` or `<livewire:component />`, even if the component has no content. **Exception**: Standard HTML self-closing tags (void elements) like `<img />`, `<br />`, `<hr />`, `<input />`, `<meta />`, `<link />`, `<area />`, `<base />`, `<col />`, `<embed />`, `<source />`, `<track />`, `<wbr />` should remain self-closing as per HTML5 specification.
 -   **No Directives in Component Tags**: **NEVER use Blade directives (e.g., `@if`, `@foreach`, `@auth`) inside component opening tags.** This is a critical rule because it causes syntax errors in the Blade compiler. Instead, use conditional attribute binding.

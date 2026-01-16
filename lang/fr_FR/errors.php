@@ -81,4 +81,11 @@ return [
         'bulk_resolved_successfully' => ':count erreurs marquées comme résolues',
         'bulk_deleted_successfully' => ':count erreurs supprimées',
     ],
+
+    // Erreurs d'idempotence
+    'idempotency' => [
+        'title' => 'Requête déjà en cours',
+        'subtitle' => 'Veuillez attendre que la requête précédente soit terminée.',
+        'api_message' => 'Une requête en double est déjà en cours de traitement.',
+    ],
 ];

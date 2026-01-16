@@ -112,4 +112,11 @@ return [
         'bulk_resolved_successfully' => ':count errors marked as resolved',
         'bulk_deleted_successfully' => ':count errors deleted',
     ],
+
+    // Idempotency errors
+    'idempotency' => [
+        'title' => 'Request Already Processing',
+        'subtitle' => 'Please wait for the previous request to complete.',
+        'api_message' => 'A duplicate request is already being processed.',
+    ],
 ];

@@ -55,12 +55,12 @@
 
 @if ($href ?? false)
     <a href="{{ $href }}"
-       {{ $attributes->merge(['class' => trim("btn {$btnClasses}")])->except(['variant', 'color', 'size', 'type', 'text', 'href', 'circle']) }}>
+       {{ $attributes->merge(['class' => trim("btn {$btnClasses} data-loading:opacity-50 data-loading:pointer-events-none")])->except(['variant', 'color', 'size', 'type', 'text', 'href', 'circle']) }}>
         {{ $text ?? $slot }}
     </a>
 @else
     <button type="{{ $type }}"
-            {{ $attributes->merge(['class' => trim("btn {$btnClasses}")])->except(['variant', 'color', 'size', 'type', 'text', 'circle']) }}>
+            {{ $attributes->merge(['class' => trim("btn {$btnClasses} data-loading:opacity-50 data-loading:pointer-events-none")])->except(['variant', 'color', 'size', 'type', 'text', 'circle']) }}>
         {{ $text ?? $slot }}
     </button>
 @endif

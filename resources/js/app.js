@@ -20,6 +20,7 @@ import passwordStrength from './alpine/data/password-strength';
 import InfiniteScroll from './alpine/data/infinite-scroll';
 import permissionMatrix from './alpine/data/permission-matrix';
 import confirmModal from './alpine/data/confirm-modal';
+import submitForm from './alpine/data/submit-form';
 
 // Register Alpine plugins when initialized
 document.addEventListener('alpine:init', () => {
@@ -30,6 +31,7 @@ document.addEventListener('alpine:init', () => {
     window.Alpine.data('infiniteScroll', InfiniteScroll);
     window.Alpine.data('permissionMatrix', permissionMatrix);
     window.Alpine.data('confirmModal', confirmModal);
+    window.Alpine.data('submitForm', submitForm);
 });
 
 // Also register immediately if Alpine is already available
@@ -41,4 +43,5 @@ if (window.Alpine) {
     window.Alpine.data('infiniteScroll', InfiniteScroll);
     window.Alpine.data('permissionMatrix', permissionMatrix);
     window.Alpine.data('confirmModal', confirmModal);
+    window.Alpine.data('submitForm', submitForm);
 }

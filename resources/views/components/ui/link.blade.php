@@ -43,6 +43,6 @@
 
 <a href="{{ $href }}"
    @if ($navigate) wire:navigate @endif
-   {{ $attributes->merge(['class' => trim($classes)]) }}>
+   {{ $attributes->merge(['class' => trim($classes . ' data-loading:opacity-50 data-loading:pointer-events-none')]) }}>
     {{ $slot }}
 </a>
