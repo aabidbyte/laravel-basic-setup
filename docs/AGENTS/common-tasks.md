@@ -144,6 +144,45 @@ The command:
 -   Uses default locale as source of truth
 -   Syncs missing keys to other locales
 -   Optionally prunes unused keys (respects protected files)
+-   Detects dynamic keys (concatenation, variable interpolation) and marks them with `DYNAMIC_KEY` instructions
+
+#### Handling Dynamic Keys
+
+When `lang:sync` detects translation keys with PHP concatenation or variable interpolation (e.g., `__('locales.' . $code)`, `"permissions.{$action}"`), it creates a `DYNAMIC_KEY` entry with instructions:
+
+**Example:**
+
+```php
+'locales.{$code}' => 'DYNAMIC_KEY: This translation key is dynamically constructed using PHP variables or concatenation. 
+AI agents should resolve this by following these steps:
+
+1. Navigate to the source location: resources/views/pages/settings/⚡preferences.blade.php:52
+2. Identify where the dynamic portion comes from (e.g., loop variables, class constants, service methods like I18nService::getSupportedLocales())
+3. Find ALL possible values for the variable (e.g., \'en_US\', \'fr_FR\' for locale codes)
+4. Create individual translation entries for EACH resolved value:
+   - Example: If key is \'locales.{$code}\', create \'locales.en_US\' => \'English (US)\', \'locales.fr_FR\' => \'Français\', etc.
+5. REPLACE this dynamic pattern entry with the expanded translations (do not just remove it)
+
+The goal is to transform dynamic keys into concrete, translatable entries.',
+```
+
+**Resolution Steps for AI Agents:**
+
+1. **Navigate to source**: Open the file and line mentioned
+2. **Find the origin**: Determine where dynamic values come from:
+   - Loop variables: `@foreach($i18n->getSupportedLocales() as $code => $data)`
+   - Service methods: `I18nService::getSupportedLocales()`
+   - Constants: `PermissionAction::all()`
+3. **Extract all values**: List ALL possible values
+   - **TIP**: Use PHP Thinker if available to execute code and resolve values (e.g., `app(I18nService::class)->getSupportedLocales()`)
+4. **Create expanded entries**: Replace the pattern with concrete keys:
+   ```php
+   // Remove: 'locales.{$code}' => 'DYNAMIC_KEY...'
+   // Add:
+   'en_US' => 'English (US)',
+   'fr_FR' => 'Français',
+   ```
+5. **Update all locales**: Add the same expanded keys to all supported languages
 
 #### Helper Functions
 

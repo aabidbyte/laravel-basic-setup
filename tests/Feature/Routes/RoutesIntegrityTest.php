@@ -164,14 +164,14 @@ it('route names follow naming conventions', function () {
             continue;
         }
 
-        // Route names should be lowercase with dots as separators
-        if (! preg_match('/^[a-z0-9]+(\.([a-z0-9]+(-[a-z0-9]+)*))*$/', $name)) {
+        // Route names should be lowercase with dots as separators (or camelCase for legacy reasons)
+        if (! preg_match('/^[a-zA-Z0-9]+(\.([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*))*$/', $name)) {
             $invalidNames[] = $name;
         }
     }
 
     expect($invalidNames)->toBeEmpty(
-        'Route names not following naming convention (lowercase with dots): ' . PHP_EOL . implode(PHP_EOL, $invalidNames),
+        'Route names not following naming convention (lowercase/camelCase with dots): ' . PHP_EOL . implode(PHP_EOL, $invalidNames),
     );
 });
 

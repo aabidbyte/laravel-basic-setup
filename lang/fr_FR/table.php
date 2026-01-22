@@ -68,5 +68,26 @@ return [
     'trash' => [
         'deleted_at' => 'Supprimé le',
     ],
-    'copy_failed' => 'Échec de la copie',
+    'common' => [
+        'updated_at' => 'Mis à jour le',
+        'created_at' => 'Créé le',
+    ],
+    'email_templates' => [
+        'key' => 'Clé',
+        'name' => 'Nom',
+        'kind' => 'Type de template',
+        'type' => 'Catégorie',
+        'layout' => 'Mise en page',
+        'status' => 'Statut',
+        'translations' => 'Traductions',
+        'filters' => [
+            'kind' => 'Type de template',
+            'all_kinds' => 'Tous les types',
+            'type' => 'Catégorie',
+            'all_types' => 'Toutes les catégories',
+            'status' => 'Statut',
+            'all_statuses' => 'Tous les statuts',
+        ],
+    ],
+    'copy_failed' => 'Échec de la copie dans le presse-papiers',
 ];

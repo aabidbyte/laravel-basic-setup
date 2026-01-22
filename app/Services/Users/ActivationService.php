@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Users;
 
-use App\Mail\WelcomeMail;
+// use App\Mail\WelcomeMail;
 use App\Models\User;
 use App\Notifications\UserActivatedNotification;
 use App\Services\Mail\MailBuilder;
@@ -182,7 +182,12 @@ class ActivationService
 
         MailBuilder::make()
             ->to($user)
-            ->mailable(new WelcomeMail($user))
+            ->template('User Welcome', [
+                'user' => $user,
+            ], [
+                'action_url' => route('dashboard'),
+                'login_url' => route('login'),
+            ])
             ->send();
     }
 

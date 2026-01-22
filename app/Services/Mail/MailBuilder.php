@@ -7,6 +7,8 @@ namespace App\Services\Mail;
 use App\Models\MailSettings;
 use App\Models\Team;
 use App\Models\User;
+use App\Services\EmailTemplate\EmailRenderer;
+use App\Services\EmailTemplate\RenderedEmail;
 use App\Services\Mail\Contracts\MailProviderContract;
 use App\Services\Mail\Providers\LaravelMailProvider;
 use Illuminate\Contracts\Mail\Mailable;
@@ -90,10 +92,21 @@ class MailBuilder
     /**
      * Create a new mail builder instance.
      */
+    /**
+     * @var RenderedEmail|null Pre-rendered email content
+     */
+    protected ?RenderedEmail $renderedEmail = null;
+
+    protected EmailRenderer $renderer;
+
+    /**
+     * Create a new mail builder instance.
+     */
     public function __construct()
     {
         $this->provider = new LaravelMailProvider;
         $this->resolver = new MailCredentialResolver;
+        $this->renderer = app(EmailRenderer::class);
     }
 
     /**
@@ -104,6 +117,28 @@ class MailBuilder
     public static function make(): static
     {
         return new static;
+    }
+
+    /**
+     * Set the email content from a Database Template.
+     *
+     * @param  string  $templateName  The name of the template (e.g. 'User Welcome')
+     * @param  array<string, mixed>  $entities  Entities for merge tags (e.g. ['user' => $user])
+     * @param  array<string, mixed>  $context  Context variables (e.g. ['action_url' => '...'])
+     */
+    public function template(string $templateName, array $entities = [], array $context = []): static
+    {
+        // Resolve target locale from recipient if possible, otherwise use app locale
+        $locale = null;
+        if ($this->to instanceof User && ! empty($this->to->frontend_preferences['locale'])) {
+            $locale = $this->to->frontend_preferences['locale'];
+        }
+
+        $this->renderedEmail = $this->renderer->renderByName($templateName, $entities, $context, $locale);
+
+        $this->subject($this->renderedEmail->subject);
+
+        return $this;
     }
 
     /**
@@ -251,10 +286,10 @@ class MailBuilder
         // For queued mail, we configure the mailer in the Mailable itself
         // This is handled by the mailable class
         if ($queue !== null) {
-            Mail::onQueue($queue)->send($mailable);
-        } else {
-            Mail::queue($mailable);
+            $mailable->onQueue($queue);
         }
+
+        Mail::to($this->resolveRecipient())->queue($mailable);
     }
 
     /**
@@ -268,9 +303,19 @@ class MailBuilder
             throw new InvalidArgumentException('Mail recipient is required. Use ->to() method.');
         }
 
-        if ($this->mailable === null && $this->viewName === null) {
-            throw new InvalidArgumentException('Mail content is required. Use ->view() or ->mailable() method.');
+        if ($this->mailable === null && $this->viewName === null && $this->renderedEmail === null) {
+            throw new InvalidArgumentException('Mail content is required. Use ->view(), ->mailable(), or ->template() method.');
         }
+    }
+
+    /**
+     * Get the built mailable instance (without sending).
+     */
+    public function getMailable(): Mailable
+    {
+        $this->validate();
+
+        return $this->buildMailable();
     }
 
     /**
@@ -291,6 +336,28 @@ class MailBuilder
             }
 
             return $mailable;
+        }
+
+        // Build from RenderedEmail (Database Template)
+        if ($this->renderedEmail !== null) {
+            $recipient = $this->resolveRecipient();
+            $rendered = $this->renderedEmail;
+
+            return new class($rendered, $recipient) extends BaseMailable
+            {
+                public function __construct(protected RenderedEmail $rendered, protected mixed $mailRecipient) {}
+
+                public function build(): static
+                {
+                    $this->withSymfonyMessage(function ($message) {
+                        $message->text($this->rendered->text);
+                    });
+
+                    return $this->html($this->rendered->html)
+                        ->subject($this->rendered->subject)
+                        ->to($this->mailRecipient);
+                }
+            };
         }
 
         // Build a simple mailable from view

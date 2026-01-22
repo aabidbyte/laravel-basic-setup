@@ -7,7 +7,6 @@ namespace App\Notifications;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /**
@@ -43,15 +42,17 @@ class UserActivatedNotification extends Notification implements ShouldQueue
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail(object $notifiable): MailMessage
+    public function toMail(object $notifiable): \Illuminate\Contracts\Mail\Mailable
     {
-        return (new MailMessage)
-            ->subject(__('messages.notifications.user_activated.subject', ['name' => $this->activatedUser->name]))
-            ->greeting(__('messages.notifications.user_activated.greeting'))
-            ->line(__('messages.notifications.user_activated.line1', ['name' => $this->activatedUser->name]))
-            ->line(__('messages.notifications.user_activated.line2'))
-            ->action(__('messages.notifications.user_activated.action'), route('users.show', $this->activatedUser->uuid))
-            ->salutation(__('messages.notifications.user_activated.salutation', ['app' => config('app.name')]));
+        return \App\Services\Mail\MailBuilder::make()
+            ->to($notifiable)
+            ->template('User Activated', [
+                'user' => $notifiable,
+                'activated_user' => $this->activatedUser,
+            ], [
+                'action_url' => route('users.show', $this->activatedUser->uuid),
+            ])
+            ->getMailable();
     }
 
     /**

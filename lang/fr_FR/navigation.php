@@ -17,5 +17,9 @@ return [
     'error_handler' => 'Gestion des erreurs',
     'user' => 'Utilisateur',
     'settings' => 'Paramètres',
+    'email_templates_group' => 'Modèles d\'e-mail',
+
+    'email_templates' => 'Modèles',
+    'email_layouts' => 'Mises en page',
     'trashed' => 'Corbeille',
 ];

@@ -57,6 +57,9 @@ return [
         'resend_success' => 'A new verification link has been sent to the email address you provided during registration.',
         'resend_button' => 'Resend verification email',
         'logout' => 'Log out',
+        'invalid_token' => 'Invalid email verification link.',
+        'expired_token' => 'This email verification link has expired.',
+        'success' => 'Your email has been successfully updated.',
     ],
     'confirm_password' => [
         'title' => 'Confirm password',

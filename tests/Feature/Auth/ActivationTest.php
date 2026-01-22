@@ -17,6 +17,7 @@ class ActivationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->seed(\Database\Seeders\EmailTemplateSeeder::class);
         $this->activationService = app(ActivationService::class);
     }
 

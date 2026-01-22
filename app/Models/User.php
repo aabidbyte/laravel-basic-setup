@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\Base\BaseUserModel;
 use App\Models\Concerns\HasDataTable;
 use App\Models\Concerns\HasRolesAndPermissions;
 use App\Models\Pivots\TeamUser;
 use App\Notifications\Auth\ResetPasswordNotification;
+use App\Notifications\Auth\VerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -16,7 +17,7 @@ use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use RuntimeException;
 
-class User extends BaseUserModel
+class User extends BaseUserModel implements MustVerifyEmail
 {
     use HasDataTable;
     use HasRolesAndPermissions;
@@ -332,5 +333,15 @@ class User extends BaseUserModel
     public function sendPasswordResetNotification($token)
     {
         $this->notify(new ResetPasswordNotification($token));
+    }
+
+    /**
+     * Send the email verification notification.
+     *
+     * @return void
+     */
+    public function sendEmailVerificationNotification()
+    {
+        $this->notify(new VerifyEmail);
     }
 }

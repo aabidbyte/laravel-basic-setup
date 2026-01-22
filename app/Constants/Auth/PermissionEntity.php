@@ -32,6 +32,11 @@ class PermissionEntity
     // Settings
     public const MAIL_SETTINGS = 'mail_settings';
 
+    // Email templates
+    public const EMAIL_TEMPLATES = 'email_templates';
+
+    public const EMAIL_LAYOUTS = 'email_layouts';
+
     /**
      * Get all entity constants as an array.
      *
@@ -47,6 +52,8 @@ class PermissionEntity
             self::TELESCOPE,
             self::HORIZON,
             self::MAIL_SETTINGS,
+            self::EMAIL_TEMPLATES,
+            self::EMAIL_LAYOUTS,
         ];
     }
 

@@ -196,20 +196,56 @@ The command detects translation keys in various formats:
 -   **Standard calls**: `__('key')`, `@lang('key')`, `trans('key')`
 -   **Parameterized calls**: `__('key', ['params' => ...])`
 -   **Notification Builder**: `->title('key')` and `->subtitle('key')` (automatically detected as keys)
+-   **Concatenation patterns**: `__('locales.' . $code)`, `__('permissions.actions.' . $action)` (detected as dynamic keys)
 
 ### Dynamic Key Detection
 
-When the command detects translation keys containing PHP variable interpolation (e.g., `"permissions.actions.{$action}"`), it adds a special `DYNAMIC_KEY` instruction instead of `TRANSLATION_NEEDED`:
+When the command detects translation keys containing PHP variable interpolation or concatenation, it adds a special `DYNAMIC_KEY` instruction instead of `TRANSLATION_NEEDED`.
+
+**Patterns detected as dynamic:**
+- Variable interpolation: `"permissions.actions.{$action}"`
+- String concatenation: `__('locales.' . $translation->locale)`
+- Direct variable: `__("prefix.$variable")`
+
+**Example output:**
 
 ```php
-'permissions.actions.{$action}' => 'DYNAMIC_KEY: This key is dynamically constructed using PHP variables. The variable portion should be resolved to all possible values from the source class/constants. See source at app/Constants/Auth/PermissionAction.php:109 to find the values (e.g., from a constants class). Create individual translation entries for each resolved key instead of this pattern.',
+'locales.{$code}' => 'DYNAMIC_KEY: This translation key is dynamically constructed using PHP variables or concatenation. 
+AI agents should resolve this by following these steps:
+
+1. Navigate to the source location: resources/views/pages/settings/⚡preferences.blade.php:52
+2. Identify where the dynamic portion comes from (e.g., loop variables, class constants, service methods like I18nService::getSupportedLocales())
+3. Find ALL possible values for the variable (e.g., \'en_US\', \'fr_FR\' for locale codes)
+4. Create individual translation entries for EACH resolved value:
+   - Example: If key is \'locales.{$code}\', create \'locales.en_US\' => \'English (US)\', \'locales.fr_FR\' => \'Français\', etc.
+5. REPLACE this dynamic pattern entry with the expanded translations (do not just remove it)
+
+The goal is to transform dynamic keys into concrete, translatable entries.',
 ```
 
 **For AI agents**: When you encounter a `DYNAMIC_KEY` entry:
-1. Navigate to the source file mentioned in the instruction
-2. Find all possible values for the variable (e.g., from a constants class like `PermissionAction::all()`)
-3. Create individual translation entries for each resolved key (e.g., `permissions.actions.view`, `permissions.actions.create`, etc.)
-4. Remove the dynamic pattern entry after resolving
+
+1. **Navigate to source**: Go to the file and line mentioned in the instruction
+2. **Identify the source**: Find where the dynamic values come from:
+   - Loop variables (e.g., `@foreach($locales as $code => $name)`)
+   - Service methods (e.g., `I18nService::getSupportedLocales()`)
+   - Constants classes (e.g., `PermissionAction::all()`)
+   - Model relationships or collections
+3. **Extract all values**: Get ALL possible values for the variable
+   - For locales: Check `config/i18n.php` supported_locales keys
+   - For constants: Check the constants class methods
+   - For models: Query the database or check seeders
+   - **TIP**: Use PHP Thinker if available to execute code and resolve values (e.g., `app(I18nService::class)->getSupportedLocales()`)
+4. **Create expanded entries**: Add individual translation entries:
+   ```php
+   // Instead of: 'locales.{$code}' => 'DYNAMIC_KEY...'
+   // Create:
+   'locales.en_US' => 'English (US)',
+   'locales.fr_FR' => 'Français',
+   ```
+5. **Replace the pattern**: Remove the `DYNAMIC_KEY` entry after creating all expanded translations
+6. **Update all locales**: Ensure the expanded translations are added to all supported language files
+
 
 
 ### Safety Features

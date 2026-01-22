@@ -88,6 +88,21 @@ class Permissions
 
     public const CONFIGURE_MAIL_SETTINGS = 'configure mail_settings';
 
+    // Email template permissions
+    public const VIEW_EMAIL_TEMPLATES = 'view email_templates';
+
+    public const CREATE_EMAIL_TEMPLATES = 'create email_templates';
+
+    public const EDIT_EMAIL_TEMPLATES = 'edit email_templates';
+
+    public const DELETE_EMAIL_TEMPLATES = 'delete email_templates';
+
+    public const RESTORE_EMAIL_TEMPLATES = 'restore email_templates';
+
+    public const FORCE_DELETE_EMAIL_TEMPLATES = 'force_delete email_templates';
+
+    public const PUBLISH_EMAIL_TEMPLATES = 'publish email_templates';
+
     /**
      * Get all permission names from the PermissionMatrix.
      *

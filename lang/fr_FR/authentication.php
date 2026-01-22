@@ -57,6 +57,9 @@ return [
         'resend_success' => 'Un nouveau lien de vérification a été envoyé à l\'adresse e-mail que vous avez fournie lors de l\'inscription.',
         'resend_button' => 'Renvoyer l\'e-mail de vérification',
         'logout' => 'Se déconnecter',
+        'invalid_token' => 'Lien de vérification d\'e-mail invalide.',
+        'expired_token' => 'Ce lien de vérification d\'e-mail a expiré.',
+        'success' => 'Votre adresse e-mail a été mise à jour avec succès.',
     ],
     'confirm_password' => [
         'title' => 'Confirmer le mot de passe',

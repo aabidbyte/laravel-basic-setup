@@ -22,4 +22,5 @@ Route::middleware(['auth'])->group(function () {
     require __DIR__ . '/web/auth/settings.php';
     require __DIR__ . '/web/auth/admin.php';
     require __DIR__ . '/web/auth/trash.php';
+    require __DIR__ . '/web/auth/emailTemplates.php';
 });

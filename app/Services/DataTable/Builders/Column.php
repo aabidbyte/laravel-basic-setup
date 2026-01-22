@@ -426,10 +426,19 @@ class Column
 
         $content = ($this->contentCallback)($row, $this);
 
+        // Resolve dynamic attributes if they are Closures
+        $attributes = array_map(function ($value) use ($row) {
+            if ($value instanceof Closure) {
+                return $value($row, $this);
+            }
+
+            return $value;
+        }, $this->componentAttributes);
+
         return DataTableUi::renderComponent(
             $this->componentType,
             $content,
-            $this->componentAttributes,
+            $attributes,
         );
     }
 

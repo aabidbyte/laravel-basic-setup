@@ -68,6 +68,24 @@ class SideBarMenuService
                             ->show(Auth::user()?->can(Permissions::VIEW_TEAMS) ?? false),
                     ),
 
+                // Email Templates (Unified)
+                NavigationItem::make()
+                    ->title(__('types.email_templates'))
+                    ->icon('envelope')
+                    ->items(
+                        NavigationItem::make()
+                            ->title(__('types.email_contents'))
+                            ->route('emailTemplates.contents.index')
+                            ->activeRoutes('emailTemplates.contents.*')
+                            ->show(Auth::user()?->can(Permissions::VIEW_EMAIL_TEMPLATES) ?? false),
+
+                        NavigationItem::make()
+                            ->title(__('types.email_layouts'))
+                            ->route('emailTemplates.layouts.index')
+                            ->activeRoutes('emailTemplates.layouts.*')
+                            ->show(Auth::user()?->can(Permissions::VIEW_EMAIL_TEMPLATES) ?? false),
+                    ),
+
                 // Developer Tools group (collapsible, dev only)
                 NavigationItem::make()
                     ->title(__('navigation.developer_tools'))

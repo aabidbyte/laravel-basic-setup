@@ -68,5 +68,25 @@ return [
     'trash' => [
         'deleted_at' => 'Deleted At',
     ],
-    'copy_failed' => 'Copy failed',
+    'common' => [
+        'updated_at' => 'Updated At',
+        'created_at' => 'Created At',
+    ],
+    'email_templates' => [
+        'name' => 'Name',
+        'kind' => 'Kind',
+        'type' => 'Type',
+        'layout' => 'Layout',
+        'status' => 'Status',
+        'translations' => 'Translations',
+        'filters' => [
+            'kind' => 'Kind',
+            'all_kinds' => 'All Kinds',
+            'type' => 'Type',
+            'all_types' => 'All Types',
+            'status' => 'Status',
+            'all_statuses' => 'All Statuses',
+        ],
+    ],
+    'copy_failed' => 'Failed to copy to clipboard',
 ];

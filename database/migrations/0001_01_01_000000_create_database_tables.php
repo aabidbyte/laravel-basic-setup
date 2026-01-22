@@ -281,6 +281,72 @@ return new class extends Migration
         });
 
         // ============================================
+        // EMAIL TEMPLATE TABLES
+        // ============================================
+
+        // Unified email templates table (layouts + contents)
+        Schema::create('email_templates', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique()->index();
+            $table->string('name')->unique();
+            $table->text('description')->nullable();
+            $table->boolean('is_layout')->default(false);
+            $table->unsignedBigInteger('layout_id')->nullable(); // Self-ref FK added after
+            $table->string('type')->default('transactional');
+            $table->json('entity_types')->nullable();
+            $table->json('context_variables')->nullable();
+            $table->string('status')->default('published');
+            $table->boolean('is_system')->default(false);
+            $table->boolean('is_default')->default(false);
+            $table->boolean('all_teams')->default(true);
+            $table->string('preview')->nullable(); // Future: image preview path
+            $table->timestamps();
+            $table->softDeletes();
+
+            $table->index(['is_layout', 'status']);
+            $table->index('type');
+            $table->index('is_system');
+            $table->index('is_default');
+            $table->index('all_teams');
+        });
+
+        // Self-referential FK for layout_id (contents reference their layout)
+        Schema::table('email_templates', function (Blueprint $table) {
+            $table->foreign('layout_id')
+                ->references('id')
+                ->on('email_templates')
+                ->nullOnDelete();
+        });
+
+        // Email translations table (polymorphic for templates)
+        Schema::create('email_translations', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique()->index();
+            $table->morphs('translatable'); // translatable_type, translatable_id
+            $table->string('locale', 10);
+            $table->string('subject')->nullable(); // Nullable for layouts
+            $table->longText('html_content');
+            $table->longText('text_content')->nullable();
+            $table->string('preheader')->nullable();
+            $table->timestamps();
+            $table->softDeletes();
+
+            $table->unique(['translatable_type', 'translatable_id', 'locale'], 'translatable_locale_unique');
+            $table->index('locale');
+        });
+
+        // Email template team pivot table
+        Schema::create('email_template_team', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique()->index();
+            $table->foreignId('email_template_id')->constrained('email_templates')->cascadeOnDelete();
+            $table->foreignId('team_id')->constrained('teams')->cascadeOnDelete();
+            $table->timestamps();
+
+            $table->unique(['email_template_id', 'team_id']);
+        });
+
+        // ============================================
         // DATABASE TRIGGERS (MySQL only)
         // ============================================
 
@@ -360,6 +426,11 @@ return new class extends Migration
 
         // Drop error logs table
         Schema::dropIfExists('error_logs');
+
+        // Drop email template tables
+        Schema::dropIfExists('email_template_team');
+        Schema::dropIfExists('email_translations');
+        Schema::dropIfExists('email_templates');
 
         // Drop other tables
         Schema::dropIfExists('sessions');

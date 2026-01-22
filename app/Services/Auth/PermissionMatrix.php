@@ -76,6 +76,21 @@ class PermissionMatrix
                 PermissionAction::VIEW,
                 PermissionAction::CONFIGURE,
             ],
+            PermissionEntity::EMAIL_TEMPLATES => [
+                PermissionAction::VIEW,
+                PermissionAction::CREATE,
+                PermissionAction::EDIT,
+                PermissionAction::DELETE,
+                PermissionAction::RESTORE,
+                PermissionAction::FORCE_DELETE,
+                PermissionAction::PUBLISH,
+            ],
+            PermissionEntity::EMAIL_LAYOUTS => [
+                PermissionAction::VIEW,
+                PermissionAction::CREATE,
+                PermissionAction::EDIT,
+                PermissionAction::DELETE,
+            ],
         ];
     }
 

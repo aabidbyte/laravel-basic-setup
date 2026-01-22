@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 use App\Constants\Auth\Permissions;
 use App\Constants\Auth\Roles;
-use App\Mail\EmailChangeSecurityMail;
-use App\Mail\EmailChangeVerificationMail;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Team;
@@ -232,8 +230,7 @@ describe('UserService', function () {
             expect($user->pending_email)->toBe('new@example.com');
             expect($user->pending_email_token)->not->toBeNull();
 
-            Mail::assertQueued(EmailChangeVerificationMail::class);
-            Mail::assertQueued(EmailChangeSecurityMail::class);
+            Mail::assertSentCount(2);
         });
 
         it('directly updates email for unverified user', function () {

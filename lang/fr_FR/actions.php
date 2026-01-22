@@ -46,5 +46,11 @@ return [
     'force_deleted_successfully' => ':name a été supprimé définitivement',
     'bulk_restored_successfully' => ':count éléments ont été restaurés',
     'bulk_force_deleted_successfully' => ':count éléments ont été supprimés définitivement',
-    'error' => 'Une erreur est survenue lors du traitement de l\'action.',
+    'view_all' => 'Voir tout',
+    'error' => 'Erreur',
+    'success' => 'Succès',
+    'revoke' => 'Révoquer',
+    'create_new' => 'Créer nouveau',
+    'add_locale' => 'Ajouter une langue',
+    'remove_locale' => 'Supprimer la langue',
 ];

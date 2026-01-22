@@ -1,15 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 /*
 |--------------------------------------------------------------------------
 | Extracted Translations
 |--------------------------------------------------------------------------
 |
-| Keys found here should be moved to appropriate files with semantic keys.
+| This file contains translations extracted from the source code.
+| It is intended to be used as a temporary storage for translations
+| that have not yet been moved to their respective translation files.
 |
 */
 
 return [
-    'Error' => 'TRANSLATION_NEEDED: Please see context at app/Http/Controllers/Auth/EmailChangeVerificationController.php:28, app/Http/Controllers/Auth/EmailChangeVerificationController.php:38',
-    'Success' => 'TRANSLATION_NEEDED: Please see context at app/Http/Controllers/Auth/EmailChangeVerificationController.php:51',
 ];

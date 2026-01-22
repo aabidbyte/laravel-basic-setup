@@ -21,6 +21,7 @@ import InfiniteScroll from './alpine/data/infinite-scroll';
 import permissionMatrix from './alpine/data/permission-matrix';
 import confirmModal from './alpine/data/confirm-modal';
 import submitForm from './alpine/data/submit-form';
+import mergeTagPicker from './alpine/merge-tag-picker';
 
 // Register Alpine plugins when initialized
 document.addEventListener('alpine:init', () => {
@@ -32,6 +33,7 @@ document.addEventListener('alpine:init', () => {
     window.Alpine.data('permissionMatrix', permissionMatrix);
     window.Alpine.data('confirmModal', confirmModal);
     window.Alpine.data('submitForm', submitForm);
+    window.Alpine.data('mergeTagPicker', mergeTagPicker);
 });
 
 // Also register immediately if Alpine is already available
@@ -44,4 +46,5 @@ if (window.Alpine) {
     window.Alpine.data('permissionMatrix', permissionMatrix);
     window.Alpine.data('confirmModal', confirmModal);
     window.Alpine.data('submitForm', submitForm);
+    window.Alpine.data('mergeTagPicker', mergeTagPicker);
 }

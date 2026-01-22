@@ -49,6 +49,46 @@ graph TD
     F -->|No| H[Use Environment]
 ```
 
+## Template & Layout Architecture
+
+The system uses a unified architecture for email content, with layouts and content templates stored in a single table distinguished by an `is_layout` boolean.
+
+### Database Schema
+
+-   **`email_templates`**: Unified table for both layouts and content.
+    -   `is_layout`: Boolean distinguishing layouts (`true`) from content (`false`).
+    -   `layout_id`: Self-referential FK (content templates reference their layout).
+    -   `type`: Category (transactional, marketing, system).
+    -   `status`: Draft, published, or archived.
+    -   `is_system`: Protected system templates.
+    -   `is_default`: Default layout flag.
+    -   `entity_types`, `context_variables`: Merge tag configuration.
+    -   `all_teams`, `teams()`: Team access restrictions.
+    -   `preview`: Future image preview path.
+    -   `translations`: Polymorphic relation to `email_translations`.
+-   **`email_translations`**: Stores localized content (`subject`, `html_content`, `text_content`) for all templates.
+-   **`email_template_team`**: Pivot table for team-based access control.
+
+### Seeding & Unified Tag Resolution
+
+Templates and Layouts are seeded from `resources/views/emails`. The seeder renders the Blade files to resolve translations and variables, storing the **rendered HTML** in the database.
+
+> [!IMPORTANT]
+> **Unified Merge Tag Format**: The entire system uses the `{{ tag }}` or `{{{ tag }}}` (for unescaped) format for merge tags.
+> -   **In Database**: Content is stored as `{{ user.name }}`.
+> -   **In Blade Files**: Use `@{{ user.name }}` if the tag is not provided in mock data, or just `{{ user.name }}` if it is.
+> -   **Slot Replacement**: Layouts use `{{ $slot }}` or `{!! $slot !!}` which are replaced via string manipulation in `EmailLayoutComposer`.
+
+### Layout Composition Logic
+
+The `EmailLayoutComposer` service handles combining layouts with content. It uses a robust string-based replacement for the `$slot` placeholder to avoid unintended Blade execution of merge tags stored in the database.
+
+```php
+// Standard Slot Replacement (EmailLayoutComposer.php)
+$parts = preg_split('/(\{\{\s*\$slot\s*\}\}|\{!!\s*\$slot\s*!!\})/', $layoutContent);
+return implode($content, $parts);
+```
+
 ## API Reference
 
 ### Recipient Methods

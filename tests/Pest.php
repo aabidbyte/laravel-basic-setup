@@ -13,6 +13,9 @@
 
 pest()->extend(Tests\TestCase::class)
     ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+    ->beforeEach(function () {
+        $this->seed(Database\Seeders\EmailTemplateSeeder::class);
+    })
     ->in('Feature');
 
 /*

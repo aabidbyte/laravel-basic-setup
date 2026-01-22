@@ -13,6 +13,7 @@ class ProductionSeeder extends Seeder
         EssentialTeamSeeder::class,
         RoleAndPermissionSeeder::class,
         EssentialUserSeeder::class,
+        EmailTemplateSeeder::class,
     ];
 
     /**

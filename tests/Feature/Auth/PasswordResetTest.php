@@ -1,10 +1,31 @@
 <?php
 
+use App\Enums\EmailTemplate\EmailTemplateStatus;
+use App\Enums\EmailTemplate\EmailTemplateType;
+use App\Models\EmailTemplate\EmailTemplate;
 use App\Models\User;
 use Illuminate\Support\Facades\Notification;
 
 test('reset password link can be requested', function () {
     Notification::fake();
+
+    // Seed/Update the Password Reset template required by the notification
+    $template = EmailTemplate::updateOrCreate(
+        ['name' => 'Password Reset'],
+        [
+            'is_layout' => false,
+            'status' => EmailTemplateStatus::PUBLISHED,
+            'type' => EmailTemplateType::SYSTEM,
+        ],
+    );
+
+    $template->translations()->updateOrCreate(
+        ['locale' => 'en_US'],
+        [
+            'subject' => 'Reset Password',
+            'html_content' => 'Reset Link: {{ action.reset_url }}',
+        ],
+    );
 
     $user = User::factory()->create();
 
@@ -15,9 +36,9 @@ test('reset password link can be requested', function () {
     $response->assertSessionHasNoErrors();
     Notification::assertSentTo($user, \App\Notifications\Auth\ResetPasswordNotification::class, function ($notification, $channels, $notifiable) use ($user) {
         $mailData = $notification->toMail($notifiable);
-        $url = $mailData->actionUrl;
+        $rendered = $mailData->render();
 
-        return str_contains($url, 'identifier=' . urlencode($user->email));
+        return str_contains($rendered, 'identifier=' . urlencode($user->email));
     });
 });
 

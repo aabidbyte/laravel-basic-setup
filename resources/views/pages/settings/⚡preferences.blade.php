@@ -49,7 +49,7 @@ new class extends BasePageComponent {
      */
     public function getLocalesProperty(I18nService $i18nService): array
     {
-        return collect($i18nService->getSupportedLocales())->mapWithKeys(fn($data, $code) => [$code => $data['native_name'] ?? $code])->toArray();
+        return collect($i18nService->getSupportedLocales())->mapWithKeys(fn($data, $code) => [$code => __("locales.{$code}")])->toArray();
     }
 
     /**

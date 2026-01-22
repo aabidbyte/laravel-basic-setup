@@ -73,6 +73,84 @@
      -   Testing code where verifying exception throwing is required.
      -   Validation logic where exception flow is used for control flow (though avoid this if possible).
 
+### Single Responsibility Principle (SRP) — MANDATORY
+
+⚠️ **CRITICAL RULE**: All functions MUST have exactly ONE responsibility. This rule is **mandatory** and applies to all code.
+
+#### Function Validity Rules
+
+A function is considered valid ONLY IF:
+-   It performs a single, clearly describable action
+-   It operates at ONE level of abstraction
+-   Its name fully describes its behavior **WITHOUT using "and", "or", "then"**
+-   It can be summarized in one short sentence
+
+#### Function Size & Structure
+
+-   **Functions MUST be small**
+-   **Default target**: 1–10 lines
+-   **Hard limit**: 20 lines (exceptions require explicit justification)
+-   Nested control structures are discouraged
+-   **Early returns are preferred**
+
+#### Refactoring Requirement (MANDATORY)
+
+If a function:
+-   Contains multiple logical steps
+-   Mixes orchestration and implementation
+-   Requires inline comments to explain steps
+-   Uses loops + conditionals + side effects together
+
+**THEN the function MUST be decomposed into smaller functions.** Each sub-function must follow the same rules recursively.
+
+#### Level of Abstraction Rule
+
+A function MUST NOT mix:
+-   Business logic
+-   Infrastructure concerns (DB, HTTP, FS, Cache)
+-   Formatting or transformation logic
+
+Each responsibility MUST be extracted into a dedicated function or service.
+
+#### Controller / Entry-Point Rule
+
+Controllers, Commands, and Jobs:
+-   **MUST only orchestrate**
+-   **MUST NOT contain business logic**
+-   **MUST only call domain-level actions/services**
+-   **Max 10 lines per method** in controllers
+
+#### Naming Enforcement
+
+**❌ Invalid function names** (too vague):
+-   `processData`, `handleRequest`, `doStuff`, `manageUser`
+
+**✅ Valid function names** (specific and descriptive):
+-   `calculateInvoiceTotal`, `validateSubscriptionStatus`, `persistUserProfile`
+
+#### Laravel-Specific Rules
+
+-   **Controllers**: max 10 lines per method, no DB queries
+-   **Services / Actions**: one public method = one use case
+-   **Private methods**: must support exactly one public action
+-   **No HTTP / Request usage** inside domain services
+
+#### AI Self-Check (MANDATORY)
+
+Before finalizing code, YOU MUST:
+1.  Review every function
+2.  Assert its single responsibility
+3.  Split any function that violates this rule
+4.  Prefer clarity over brevity
+5.  Prefer decomposition over cleverness
+
+**If unsure → SPLIT THE FUNCTION**
+
+When modifying or reviewing existing code:
+-   You MUST refactor any function that violates SRP
+-   Even if not explicitly requested
+-   **Refactoring is NOT optional**
+
  ### Internationalization (i18n)
  
  -   **Namespaces**: **Always use granular namespaces** (e.g., `pages.*`, `users.*`, `actions.*`) instead of the monolithic `ui.*` prefix.
@@ -81,7 +159,16 @@
      -   *Incorrect*: `__('users.create_new_user')` (unless highly specific)
  -   **Hardcoded Strings**: **No hardcoded user-facing strings**. Always use `__('namespace.key')`.
  -   **Sync**: Run `php artisan lang:sync` after adding new keys.
--   **Bulk Actions**: **Do not include the word "selected" in bulk action translations** (e.g., use "Delete" instead of "Delete Selected"). The context of a bulk action automatically implies it applies to selected items.
+ -   **Bulk Actions**: **Do not include the word "selected" in bulk action translations** (e.g., use "Delete" instead of "Delete Selected"). The context of a bulk action automatically implies it applies to selected items.
+ -   **Locale Definitions**: **Locales MUST be defined in `lang/xx_XX/locales.php`**.
+     -   Create a `locales.php` file in each language directory (e.g., `lang/en_US/locales.php`).
+     -   Keys must be the locale code (e.g., `'en_US'` => `'English (US)'`).
+     -   **Format Rule**: Values MUST follow the format `[Language Name] ([Country Code])`. Examples:
+         -   English: `'en_US' => 'English (US)'`, `'en_GB' => 'English (GB)'`
+         -   French (in French locale): `'fr_FR' => 'Français (FR)'`, `'fr_CA' => 'Français (CA)'`
+         -   Spanish (in French locale): `'es_ES' => 'Espagnol (ES)'`
+     -   Always use `__('locales.en_US')` to display language names, never hardcode "English" or rely on config Native Name for user-facing UI.
+     -   This ensures the language list itself is translatable (e.g., a French user sees "Anglais (US)").
 
 ### Constants and Code Reusability
 

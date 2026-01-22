@@ -61,4 +61,10 @@ return [
         ],
         'badge' => 'Trashed',
     ],
+    'email_templates' => [
+        'index' => [
+            'title' => 'Email Templates',
+            'subtitle' => 'Manage email templates and layouts',
+        ],
+    ],
 ];

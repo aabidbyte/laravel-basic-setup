@@ -34,7 +34,34 @@ See [Development Conventions](docs/AGENTS/development-conventions.md#no-leading-
 ### Mandatory Translations
 **When adding new translation keys, you MUST add them to all supported language directories in the `lang/` folder (currently `en_US` and `fr_FR`).** Never leave keys missing or with placeholders in any language.
 
+**Locale Display Rule**: Always use `lang/xx_XX/locales.php` to define and display language names (e.g., `__('locales.en_US')`). Do NOT hardcode "English" or rely on config Native Name for user-facing UI.
+
+**Locale Translation Format**: When translating locale codes (en_US, fr_FR, es_ES, etc.) in `locales.php`, always use the format: `[Language Name] ([Country Code])`. Examples:
+ -   `en_US` => "English (US)"
+ -   `fr_FR` => "Français (FR)" 
+ -   `fr_CA` => "Français (CA)"
+ -   `es_ES` => "Espagnol (ES)" (in French locale)
+
+This ensures consistency and clarity across all locale displays.
+
 See [Development Conventions](docs/AGENTS/development-conventions.md#translations) for details.
+
+### Enums Over Constants (CRITICAL)
+**Always use PHP enums instead of class constants for fixed value sets.** Enums provide type safety, Laravel integration, and automatic translation resolution.
+
+**Examples:**
+- ✅ `EmailTemplateStatus::DRAFT` (backed enum)
+- ❌ `EmailTemplateConstants::STATUS_DRAFT` (class constant)
+
+**When creating new value sets:**
+1. Create a backed enum in `app/Enums/[Domain]/` (e.g., `app/Enums/EmailTemplate/`)
+2. Add `color()` method for badge colors (if applicable)
+3. Add `label()` method for translations
+4. Add enum cast to model
+5. Add resolver to `config/translation-resolvers.php`
+6. Use `Enum` validation rule in forms
+
+See [Development Conventions](docs/AGENTS/development-conventions.md#enum-usage) for detailed enum patterns.
 
 ## Quick Links
 

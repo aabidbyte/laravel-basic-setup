@@ -46,5 +46,11 @@ return [
     'force_deleted_successfully' => ':name has been permanently deleted',
     'bulk_restored_successfully' => ':count items have been restored',
     'bulk_force_deleted_successfully' => ':count items have been permanently deleted',
-    'error' => 'An error occurred while processing the action.',
+    'create_new' => 'Create New',
+    'add_locale' => 'Add Locale',
+    'remove_locale' => 'Remove :locale',
+    'view_all' => 'View All',
+    'error' => 'Error',
+    'success' => 'Success',
+    'revoke' => 'Revoke',
 ];

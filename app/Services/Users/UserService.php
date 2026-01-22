@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Services\Users;
 
 use App\Constants\Auth\Roles;
-use App\Mail\EmailChangeSecurityMail;
-use App\Mail\EmailChangeVerificationMail;
 use App\Mail\UserActivationMail;
 use App\Models\Permission;
 use App\Models\Role;
@@ -360,14 +358,23 @@ class UserService
         // Send verification email to new address
         MailBuilder::make()
             ->to($newEmail)
-            ->mailable((new EmailChangeVerificationMail($user, $verificationUrl))->locale(config('app.locale')))
+            ->template('Email Change Verification', [
+                'user' => $user,
+            ], [
+                'action_url' => $verificationUrl,
+            ])
             ->send();
 
         // Send security notification to old address
         if (! empty($user->email)) {
             MailBuilder::make()
                 ->to($user->email)
-                ->mailable((new EmailChangeSecurityMail($user, $newEmail))->locale(config('app.locale')))
+                ->template('Security Email Change', [
+                    'user' => $user,
+                ], [
+                    'new_email' => $newEmail,
+                    'support_email' => config('mail.support_email', config('mail.from.address')),
+                ])
                 ->send();
         }
     }
