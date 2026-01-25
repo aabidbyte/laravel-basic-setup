@@ -5,43 +5,94 @@ declare(strict_types=1);
 use App\Constants\Auth\Permissions;
 use App\Livewire\Bases\BasePageComponent;
 use App\Models\EmailTemplate\EmailTemplate;
-use Livewire\Attributes\Locked;
 
 new class extends BasePageComponent {
-    #[Locked]
-    public string $modelId = '';
+    public ?string $pageSubtitle = null;
 
-    #[Locked]
-    public bool $isLayout = false;
+    protected string $placeholderType = 'card';
 
-    public ?EmailTemplate $model = null;
+    protected int $placeholderRows = 2;
 
-    public function mount(string $id): void
+    public ?EmailTemplate $template = null;
+
+    /**
+     * Mount the component and authorize access.
+     */
+    public function mount(EmailTemplate $template): void
     {
-        $this->modelId = $id;
-        $this->authorize(Permissions::VIEW_EMAIL_TEMPLATES);
+        $this->authorize(Permissions::VIEW_EMAIL_TEMPLATES());
 
-        $this->model = EmailTemplate::with(['layout', 'translations'])->findOrFail($id);
-        $this->isLayout = $this->model->is_layout;
-        $this->pageTitle = $this->model->name;
-        $this->pageSubtitle = $this->isLayout ? __('types.email_layout') : __('types.email_content');
+        $this->template = $template->load(['layout', 'translations']);
+        $this->pageSubtitle = $template->is_layout ? __('types.email_layout') : __('types.email_content');
+    }
+
+    public function getPageTitle(): string
+    {
+        return $this->template?->name ?? __('types.email_template');
     }
 }; ?>
 
-<x-layouts.app>
-    <x-layouts.page
-                    backHref="{{ $isLayout ? route('emailTemplates.layouts.index') : route('emailTemplates.contents.index') }}">
-        <x-slot:topActions>
-            <x-ui.button href="{{ route('emailTemplates.edit', ['id' => $modelId]) }}"
-                         color="primary"
-                         class="gap-2">
-                <x-ui.icon name="pencil"
-                           size="sm"></x-ui.icon>
-                {{ __('actions.edit') }}
-            </x-ui.button>
-        </x-slot:topActions>
+<x-layouts.page
+                backHref="{{ $template?->is_layout ? route('emailTemplates.layouts.index') : route('emailTemplates.contents.index') }}">
+    <x-slot:topActions>
+        <div class="flex gap-2"
+             x-data="{ showPreview: false }">
+            @if (!$template?->is_layout)
+                {{-- Preview Button --}}
+                <x-ui.button type="button"
+                             @click="showPreview = true"
+                             variant="ghost"
+                             class="gap-2">
+                    <x-ui.icon name="eye"
+                               size="sm"></x-ui.icon>
+                    {{ __('email_templates.preview.button') }}
+                </x-ui.button>
 
-        <div class="space-y-6">
+                {{-- Preview Modal Component --}}
+                <x-ui.base-modal open-state="showPreview"
+                                 :use-parent-state="true"
+                                 size="7xl">
+                    <x-slot:title>{{ __('email_templates.preview.title') }}</x-slot:title>
+
+                    <livewire:emailTemplates.preview :template-uuid="$template->uuid"
+                                                     lazy />
+
+                    <x-slot:actions>
+                        <x-ui.button type="button"
+                                     @click="showPreview = false"
+                                     variant="ghost">
+                            {{ __('actions.close') }}
+                        </x-ui.button>
+                    </x-slot:actions>
+                </x-ui.base-modal>
+            @endif
+
+            @can(Permissions::EDIT_BUILDER_EMAIL_TEMPLATES())
+                <x-ui.button href="{{ route('emailTemplates.builder.edit', $template) }}"
+                             variant="outline"
+                             wire:navigate
+                             class="gap-2">
+                    <x-ui.icon name="document-text"
+                               size="sm"></x-ui.icon>
+                    {{ __('email_templates.edit.edit_builder') }}
+                </x-ui.button>
+            @endcan
+
+            @can(Permissions::EDIT_EMAIL_TEMPLATES())
+                <x-ui.button href="{{ route('emailTemplates.settings.edit', $template) }}"
+                             color="primary"
+                             wire:navigate
+                             class="gap-2">
+                    <x-ui.icon name="cog-6-tooth"
+                               size="sm"></x-ui.icon>
+                    {{ __('email_templates.edit.edit_settings') }}
+                </x-ui.button>
+            @endcan
+        </div>
+    </x-slot:topActions>
+
+    <section class="mx-auto w-full max-w-6xl space-y-6">
+        @if ($template)
             {{-- Info Card --}}
             <div class="card bg-base-100 shadow-xl">
                 <div class="card-body">
@@ -50,35 +101,35 @@ new class extends BasePageComponent {
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div>
                             <span class="text-base-content/70 block text-sm font-medium">{{ __('fields.name') }}</span>
-                            <span class="block text-lg">{{ $model->name }}</span>
+                            <span class="block text-lg">{{ $template->name }}</span>
                         </div>
 
                         <div>
                             <span class="text-base-content/70 block text-sm font-medium">{{ __('fields.type') }}</span>
-                            <x-ui.badge :label="$model->type"
+                            <x-ui.badge :text="$template->type->label()"
                                         color="neutral"
                                         size="sm" />
                         </div>
 
-                        @if (!$isLayout)
+                        @if (!$template->is_layout)
                             <div>
                                 <span
                                       class="text-base-content/70 block text-sm font-medium">{{ __('email_templates.form.layout') }}</span>
-                                <span class="block">{{ $model->layout->name ?? __('common.none') }}</span>
+                                <span class="block">{{ $template->layout->name ?? __('common.none') }}</span>
                             </div>
                             <div>
                                 <span
                                       class="text-base-content/70 block text-sm font-medium">{{ __('fields.status') }}</span>
-                                <x-ui.badge :label="$model->status"
-                                            color="neutral"
+                                <x-ui.badge :text="$template->status->label()"
+                                            :color="$template->status->color()"
                                             size="sm" />
                             </div>
                         @else
                             <div>
                                 <span
                                       class="text-base-content/70 block text-sm font-medium">{{ __('email_templates.form.is_default') }}</span>
-                                <x-ui.badge :label="$model->is_default ? __('common.yes') : __('common.no')"
-                                            :color="$model->is_default ? 'success' : 'neutral'"
+                                <x-ui.badge :text="$template->is_default ? __('common.yes') : __('common.no')"
+                                            :color="$template->is_default ? 'success' : 'neutral'"
                                             size="sm" />
                             </div>
                         @endif
@@ -86,7 +137,7 @@ new class extends BasePageComponent {
                         <div class="col-span-1 md:col-span-2">
                             <span
                                   class="text-base-content/70 block text-sm font-medium">{{ __('fields.description') }}</span>
-                            <p class="text-base-content/80">{{ $model->description ?? '—' }}</p>
+                            <p class="text-base-content/80">{{ $template->description ?? '—' }}</p>
                         </div>
                     </div>
                 </div>
@@ -108,9 +159,9 @@ new class extends BasePageComponent {
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($model->translations as $translation)
+                                @foreach ($template->translations as $translation)
                                     <tr>
-                                        <td><x-ui.badge :label="__('locales.' . $translation->locale)"
+                                        <td><x-ui.badge :text="__('locales.' . $translation->locale)"
                                                         size="sm" /></td>
                                         <td>{{ $translation->subject ?? '—' }}</td>
                                         <td>{{ strlen($translation->html_content) }} {{ __('common.chars') }}</td>
@@ -121,7 +172,12 @@ new class extends BasePageComponent {
                         </table>
                     </div>
                 </div>
-            </div>
-        </div>
-    </x-layouts.page>
-</x-layouts.app>
+            @else
+                <div class="alert alert-error">
+                    <x-ui.icon name="exclamation-triangle"
+                               size="sm"></x-ui.icon>
+                    <span>{{ __('email_templates.not_found') }}</span>
+                </div>
+        @endif
+    </section>
+</x-layouts.page>

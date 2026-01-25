@@ -19,29 +19,27 @@ Route::prefix('email-templates')->name('emailTemplates.')->group(function () {
     // Contents routes
     Route::prefix('contents')->name('contents.')->group(function () {
         Route::view('/', 'pages.emailTemplates.index')
-            ->middleware('can:' . Permissions::VIEW_EMAIL_TEMPLATES)
+            ->middleware('can:' . Permissions::VIEW_EMAIL_TEMPLATES())
             ->name('index');
     });
 
     // Layouts routes
     Route::prefix('layouts')->name('layouts.')->group(function () {
         Route::view('/', 'pages.emailTemplates.index')
-            ->middleware('can:' . Permissions::VIEW_EMAIL_TEMPLATES)
+            ->middleware('can:' . Permissions::VIEW_EMAIL_TEMPLATES())
             ->name('index');
     });
 
-    // Unified Create
-    Route::livewire('/create', 'pages::emailTemplates.create')
-        ->middleware('can:' . Permissions::CREATE_EMAIL_TEMPLATES)
-        ->name('create');
+    // Unified Settings (Create + Edit)
+    Route::livewire('/settings/{template?}', 'pages::emailTemplates.edit-settings')
+        ->name('settings.edit');
 
-    // Unified Edit
-    Route::livewire('/{id}/edit', 'pages::emailTemplates.edit')
-        ->middleware('can:' . Permissions::EDIT_EMAIL_TEMPLATES)
-        ->name('edit');
+    // Unified Builder (Create + Edit)
+    Route::livewire('/builder/{template?}', 'pages::emailTemplates.edit-builder')
+        ->name('builder.edit');
 
     // Show Template
-    Route::livewire('/{id}', 'pages::emailTemplates.show')
-        ->middleware('can:' . Permissions::VIEW_EMAIL_TEMPLATES)
+    Route::livewire('/{template}', 'pages::emailTemplates.show')
+        ->middleware('can:' . Permissions::VIEW_EMAIL_TEMPLATES())
         ->name('show');
 });

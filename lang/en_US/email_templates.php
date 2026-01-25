@@ -32,11 +32,20 @@ return [
         'html_content' => 'HTML Content',
         'text_content' => 'Text Content',
         'is_default' => 'Default Layout',
+        'text_content_auto_generated' => 'Text content is automatically generated from HTML. Click "Customize Text Version" to edit manually.',
     ],
     'show' => [
         'basic_info' => 'Basic Information',
         'translations' => 'Translations',
         'html_length' => 'HTML Length',
+    ],
+    'edit' => [
+        'settings' => 'Settings',
+        'settings_description' => 'Update template basic information and configuration.',
+        'content' => 'Content',
+        'content_description' => 'Edit email template content and translations.',
+        'edit_builder' => 'Edit Builder',
+        'edit_settings' => 'Edit Settings',
     ],
     'merge_tags' => [
         'insert' => 'Insert Merge Tag',
@@ -50,7 +59,12 @@ return [
         'title' => 'Email Preview',
         'subject' => 'Subject',
         'error' => 'Unable to generate preview',
+        'modal_description' => 'Quick preview of email template translations and basic information.',
+        'no_translations' => 'No translations available for this template.',
+        'no_preview' => 'No preview available. Select a locale or verify translation exists.',
     ],
+    'translations_count' => '{0} No Translations|{1} :count Translation|[2,*] :count Translations',
     'cannot_delete_system' => 'Cannot delete system template.',
     'cannot_delete_default' => 'Cannot delete default layout.',
+    'not_found' => 'Email template not found.',
 ];

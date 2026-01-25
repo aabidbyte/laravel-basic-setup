@@ -12,20 +12,13 @@ use Illuminate\Support\Facades\Route;
 
 // Roles list
 Route::view('/roles', 'pages.roles.index')
-    ->middleware('can:' . Permissions::VIEW_ROLES)
+    ->middleware('can:' . Permissions::VIEW_ROLES())
     ->name('roles.index');
 
-// Role create
-Route::livewire('/roles/create', 'pages::roles.create')
-    ->middleware('can:' . Permissions::CREATE_ROLES)
-    ->name('roles.create');
+Route::livewire('/roles/edit/{role?}', 'pages::roles.edit')
+    ->name('roles.edit');
 
 // Role show
 Route::livewire('/roles/{role}', 'pages::roles.show')
-    ->middleware('can:' . Permissions::VIEW_ROLES)
+    ->middleware('can:' . Permissions::VIEW_ROLES())
     ->name('roles.show');
-
-// Role edit
-Route::livewire('/roles/{role}/edit', 'pages::roles.edit')
-    ->middleware('can:' . Permissions::EDIT_ROLES)
-    ->name('roles.edit');

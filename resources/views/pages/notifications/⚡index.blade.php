@@ -133,93 +133,95 @@ new class extends BasePageComponent {
     }
 }; ?>
 
-<div x-data="notificationCenter()"
-     x-on:notifications-changed.window="$wire.$refresh()"
-     wire:key="notification-center-{{ Auth::user()?->uuid ?? 'guest' }}"
-     class="flex flex-col gap-4">
-    @if ($this->totalCount > 0)
-        <div class="flex justify-end gap-2">
-            @if ($this->unreadCount > 0)
-                <x-ui.button variant="ghost"
+<x-layouts.page>
+    <div x-data="notificationCenter()"
+         x-on:notifications-changed.window="$wire.$refresh()"
+         wire:key="notification-center-{{ Auth::user()?->uuid ?? 'guest' }}"
+         class="flex flex-col gap-4">
+        @if ($this->totalCount > 0)
+            <div class="flex justify-end gap-2">
+                @if ($this->unreadCount > 0)
+                    <x-ui.button variant="ghost"
+                                 size="sm"
+                                 wire:click="markAllAsRead">
+                        {{ __('notifications.mark_all_read') }}
+                    </x-ui.button>
+                @endif
+                <x-ui.button color="error"
                              size="sm"
-                             wire:click="markAllAsRead">
-                    {{ __('notifications.mark_all_read') }}
-                </x-ui.button>
-            @endif
-            <x-ui.button color="error"
-                         size="sm"
-                         @click="openConfirmClearAll('{{ addslashes(__('notifications.clear_all')) }}', '{{ addslashes(__('modals.confirm.message')) }}')">
-                {{ __('notifications.clear_all') }} ({{ $this->totalCount }})
-            </x-ui.button>
-        </div>
-    @endif
-
-    <div wire:key="notifications-list">
-        <div wire:key="notifications-content-{{ $this->notifications->count() }}"
-             class="flex flex-col gap-4">
-            @if ($this->notifications->isEmpty())
-                <x-ui.empty-state icon="bell"
-                                  :description="__('notifications.empty')"></x-ui.empty-state>
-            @else
-                @foreach ($this->notifications as $notification)
-                    <div wire:key="notification-{{ $notification['id'] }}"
-                         x-intersect.once="delayedMarkAsRead('{{ $notification['id'] }}')"
-                         class="card bg-base-200 hover:bg-base-300 {{ $notification['isRead'] ? 'opacity-75' : '' }} transition-colors">
-                        <div class="card-body">
-                            <div class="flex items-start gap-3">
-                                <div wire:click="markAsRead('{{ $notification['id'] }}')"
-                                     class="{{ $notification['isRead'] ? 'opacity-50' : '' }} flex-shrink-0 cursor-pointer">
-                                    <x-ui.icon name="{{ $notification['icon']['name'] }}"
-                                               class="{{ $notification['icon']['class'] }}"></x-ui.icon>
-                                </div>
-                                <div wire:click="markAsRead('{{ $notification['id'] }}')"
-                                     class="flex-1 cursor-pointer">
-                                    <x-ui.title level="4"
-                                                class="{{ $notification['isRead'] ? '' : 'font-bold' }}">{{ $notification['title'] }}</x-ui.title>
-                                    @if ($notification['subtitle'])
-                                        <p class="mt-1 text-sm opacity-80">{{ $notification['subtitle'] }}</p>
-                                    @endif
-                                    @if ($notification['content'])
-                                        <div class="mt-2 text-sm">{!! $notification['content'] !!}</div>
-                                    @endif
-                                    @if ($notification['link'])
-                                        <x-ui.link href="{{ $notification['link'] }}"
-                                                   class="mt-2 inline-block text-sm"
-                                                   underline>{{ __('notifications.view') }}</x-ui.link>
-                                    @endif
-                                    <p class="mt-2 text-xs opacity-60">
-                                        {{ $notification['createdAt']->diffForHumans() }}</p>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    @if (!$notification['isRead'])
-                                        <x-ui.badge color="primary"
-                                                    size="sm">{{ __('notifications.unread') }}</x-ui.badge>
-                                    @endif
-                                    <x-ui.button variant="ghost"
-                                                 color="error"
-                                                 size="sm"
-                                                 @click.stop="openConfirmDelete('{{ $notification['id'] }}', '{{ addslashes(__('notifications.delete')) }}', '{{ addslashes(__('modals.confirm.message')) }}')">
-                                        <x-ui.icon name="trash"
-                                                   class="h-4 w-4"></x-ui.icon>
-                                    </x-ui.button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
-            @endif
-        </div>
-    </div>
-
-    <div wire:key="load-more-container">
-        @if ($this->remainingCount > 0)
-            <div class="flex justify-center pt-2">
-                <x-ui.button wire:click="loadMore"
-                             variant="ghost"
-                             size="sm">
-                    {{ __('notifications.see_previous') }} ({{ $this->remainingCount }})
+                             @click="openConfirmClearAll('{{ addslashes(__('notifications.clear_all')) }}', '{{ addslashes(__('modals.confirm.message')) }}')">
+                    {{ __('notifications.clear_all') }} ({{ $this->totalCount }})
                 </x-ui.button>
             </div>
         @endif
-    </div>
+
+        <div wire:key="notifications-list">
+            <div wire:key="notifications-content-{{ $this->notifications->count() }}"
+                 class="flex flex-col gap-4">
+                @if ($this->notifications->isEmpty())
+                    <x-ui.empty-state icon="bell"
+                                      :description="__('notifications.empty')"></x-ui.empty-state>
+                @else
+                    @foreach ($this->notifications as $notification)
+                        <div wire:key="notification-{{ $notification['id'] }}"
+                             x-intersect.once="delayedMarkAsRead('{{ $notification['id'] }}')"
+                             class="card bg-base-200 hover:bg-base-300 {{ $notification['isRead'] ? 'opacity-75' : '' }} transition-colors">
+                            <div class="card-body">
+                                <div class="flex items-start gap-3">
+                                    <div wire:click="markAsRead('{{ $notification['id'] }}')"
+                                         class="{{ $notification['isRead'] ? 'opacity-50' : '' }} flex-shrink-0 cursor-pointer">
+                                        <x-ui.icon name="{{ $notification['icon']['name'] }}"
+                                                   class="{{ $notification['icon']['class'] }}"></x-ui.icon>
+                                    </div>
+                                    <div wire:click="markAsRead('{{ $notification['id'] }}')"
+                                         class="flex-1 cursor-pointer">
+                                        <x-ui.title level="4"
+                                                    class="{{ $notification['isRead'] ? '' : 'font-bold' }}">{{ $notification['title'] }}</x-ui.title>
+                                        @if ($notification['subtitle'])
+                                            <p class="mt-1 text-sm opacity-80">{{ $notification['subtitle'] }}</p>
+                                        @endif
+                                        @if ($notification['content'])
+                                            <div class="mt-2 text-sm">{!! $notification['content'] !!}</div>
+                                        @endif
+                                        @if ($notification['link'])
+                                            <x-ui.link href="{{ $notification['link'] }}"
+                                                       class="mt-2 inline-block text-sm"
+                                                       underline>{{ __('notifications.view') }}</x-ui.link>
+                                        @endif
+                                        <p class="mt-2 text-xs opacity-60">
+                                            {{ $notification['createdAt']->diffForHumans() }}</p>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        @if (!$notification['isRead'])
+                                            <x-ui.badge color="primary"
+                                                        size="sm">{{ __('notifications.unread') }}</x-ui.badge>
+                                        @endif
+                                        <x-ui.button variant="ghost"
+                                                     color="error"
+                                                     size="sm"
+                                                     @click.stop="openConfirmDelete('{{ $notification['id'] }}', '{{ addslashes(__('notifications.delete')) }}', '{{ addslashes(__('modals.confirm.message')) }}')">
+                                            <x-ui.icon name="trash"
+                                                       class="h-4 w-4"></x-ui.icon>
+                                        </x-ui.button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                @endif
+            </div>
+        </div>
+</x-layouts.page>
+
+<div wire:key="load-more-container">
+    @if ($this->remainingCount > 0)
+        <div class="flex justify-center pt-2">
+            <x-ui.button wire:click="loadMore"
+                         variant="ghost"
+                         size="sm">
+                {{ __('notifications.see_previous') }} ({{ $this->remainingCount }})
+            </x-ui.button>
+        </div>
+    @endif
+</div>
 </div>

@@ -131,31 +131,12 @@ new class extends BasePageComponent {
     }
 }; ?>
 
-<section class="mx-auto w-full max-w-4xl space-y-6"
-         @confirm-restore.window="$wire.restore()">
-    @if ($model)
-        <div class="card bg-base-100 shadow-xl">
-            <div class="card-body">
-                {{-- Header with trashed badge --}}
-                <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                    <div class="flex items-center gap-4">
-                        <div class="bg-error/10 rounded-full p-3">
-                            <x-ui.icon name="trash"
-                                       size="lg"
-                                       class="text-error"></x-ui.icon>
-                        </div>
-                        <div>
-                            <x-ui.title level="2">{{ $model->label() }}</x-ui.title>
-                            <x-ui.badge color="error"
-                                        size="sm"
-                                        class="mt-1">
-                                <x-ui.icon name="trash"
-                                           size="xs"></x-ui.icon>
-                                {{ __('pages.trash.badge') }}
-                            </x-ui.badge>
-                        </div>
-                    </div>
-
+<x-layouts.page backHref="{{ route('trash.index', ['entityType' => $entityType]) }}">
+    <section class="mx-auto w-full max-w-4xl space-y-6"
+             @confirm-restore.window="$wire.restore()">
+        @if ($model)
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
                     {{-- Actions --}}
                     <div class="flex flex-wrap gap-2">
                         @can($entityConfig['restorePermission'])
@@ -256,59 +237,6 @@ new class extends BasePageComponent {
                                 </div>
                             @endif
                         </div>
-                    </div>
-                </div>
-
-                {{-- Back button --}}
-                <div class="mt-8 border-t pt-4">
-                    <x-ui.button href="{{ route('trash.index', ['entityType' => $entityType]) }}"
-                                 variant="ghost"
-                                 wire:navigate>
-                        <x-ui.icon name="arrow-left"
-                                   size="sm"></x-ui.icon>
-                        {{ __('actions.back_to_list') }}
-                    </x-ui.button>
-                </div>
-            </div>
-        </div>
-
-        {{-- Force Delete Confirmation Modal --}}
-        @if ($showForceDeleteModal)
-            <x-ui.base-modal title="{{ __('common.type_confirm.title') }}"
-                             color="danger"
-                             open
-                             @close="$wire.closeForceDeleteModal()">
-                <div class="space-y-4">
-                    <p class="text-base-content/70">
-                        {{ __('common.type_confirm.description') }}
-                    </p>
-
-                    {{-- Item name to confirm --}}
-                    <div class="bg-error/10 rounded-lg p-3 text-center">
-                        <span class="text-error font-mono text-lg font-bold">{{ $model->label() }}</span>
-                    </div>
-
-                    {{-- Confirmation input --}}
-                    <div class="form-control">
-                        <label class="label">
-                            <span class="label-text">{{ __('common.type_confirm.type_label') }}</span>
-                        </label>
-                        <input type="text"
-                               wire:model.live="confirmText"
-                               class="input input-bordered @if (!$this->isConfirmValid() && strlen($confirmText) > 0) input-error @endif w-full"
-                               placeholder="{{ __('common.type_confirm.placeholder') }}"
-                               autofocus />
-                    </div>
-                </div>
-
-                <x-slot:actions>
-                    <x-ui.button wire:click="closeForceDeleteModal"
-                                 variant="ghost">{{ __('actions.cancel') }}</x-ui.button>
-                    <x-ui.button wire:click="forceDelete"
-                                 color="error"
-                                 :disabled="!$this->isConfirmValid()">{{ __('actions.force_delete') }}</x-ui.button>
-                </x-slot:actions>
-            </x-ui.base-modal>
         @endif
     @else
         <div class="alert alert-error">
@@ -316,5 +244,6 @@ new class extends BasePageComponent {
                        size="sm"></x-ui.icon>
             <span>{{ __('pages.trash.show.not_found') }}</span>
         </div>
-    @endif
-</section>
+        @endif
+    </section>
+</x-layouts.page>

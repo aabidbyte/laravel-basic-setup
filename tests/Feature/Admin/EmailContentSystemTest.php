@@ -22,9 +22,9 @@ class EmailContentSystemTest extends TestCase
 
         $this->admin = User::factory()->create();
         $permissions = [
-            Permissions::VIEW_EMAIL_TEMPLATES,
-            Permissions::CREATE_EMAIL_TEMPLATES,
-            Permissions::EDIT_EMAIL_TEMPLATES,
+            Permissions::VIEW_EMAIL_TEMPLATES(),
+            Permissions::CREATE_EMAIL_TEMPLATES(),
+            Permissions::EDIT_EMAIL_TEMPLATES(),
         ];
 
         foreach ($permissions as $perm) {
@@ -51,7 +51,7 @@ class EmailContentSystemTest extends TestCase
     public function test_admin_can_view_create_page_for_content()
     {
         $this->actingAs($this->admin)
-            ->get(route('emailTemplates.create', ['type' => 'content']))
+            ->get(route('emailTemplates.settings.edit', ['type' => 'content']))
             ->assertStatus(200)
             ->assertSee('Create New Email Content');
     }
@@ -59,7 +59,7 @@ class EmailContentSystemTest extends TestCase
     public function test_admin_can_view_create_page_for_layout()
     {
         $this->actingAs($this->admin)
-            ->get(route('emailTemplates.create', ['type' => 'layout']))
+            ->get(route('emailTemplates.settings.edit', ['type' => 'layout']))
             ->assertStatus(200)
             ->assertSee('Create New Email Layout');
     }
@@ -74,7 +74,7 @@ class EmailContentSystemTest extends TestCase
         ]);
 
         $this->actingAs($this->admin)
-            ->get(route('emailTemplates.edit', ['id' => $content->id, 'type' => 'content']))
+            ->get(route('emailTemplates.settings.edit', $content))
             ->assertStatus(200)
             ->assertSee('Edit Email Content');
     }
@@ -89,7 +89,7 @@ class EmailContentSystemTest extends TestCase
         ]);
 
         $this->actingAs($this->admin)
-            ->get(route('emailTemplates.edit', ['id' => $layout->id, 'type' => 'layout']))
+            ->get(route('emailTemplates.settings.edit', $layout))
             ->assertStatus(200)
             ->assertSee('Edit Email Layout');
     }

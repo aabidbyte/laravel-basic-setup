@@ -65,7 +65,7 @@ class MailCredentialResolver
         }
 
         // Check if user has permission to use custom mail settings
-        if (! $user->can(Permissions::CONFIGURE_MAIL_SETTINGS)) {
+        if (! $user->can(Permissions::CONFIGURE_MAIL_SETTINGS())) {
             return null;
         }
 

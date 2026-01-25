@@ -51,7 +51,7 @@ it('prevents users from editing themselves', function () {
 
     // Add permission via role
     $role = Role::create(['name' => 'user-manager']);
-    $role->givePermissionTo(Permissions::EDIT_USERS);
+    $role->givePermissionTo(Permissions::EDIT_USERS());
     $user->assignRole($role);
 
     // User with edit permission still cannot edit themselves
@@ -64,7 +64,7 @@ it('prevents users from deleting themselves', function () {
 
     // Add permission via role
     $role = Role::create(['name' => 'user-manager']);
-    $role->givePermissionTo(Permissions::DELETE_USERS);
+    $role->givePermissionTo(Permissions::DELETE_USERS());
     $user->assignRole($role);
 
     // Test directly via policy since this is policy-specific logic
@@ -77,7 +77,7 @@ it('prevents deletion of user id 1', function () {
 
     // Add permission via role
     $role = Role::create(['name' => 'user-manager']);
-    $role->givePermissionTo(Permissions::DELETE_USERS);
+    $role->givePermissionTo(Permissions::DELETE_USERS());
     $admin->assignRole($role);
 
     // Test directly via policy since this is policy-specific logic
@@ -92,7 +92,7 @@ it('policy viewAny checks permission via hasPermissionTo', function () {
 
     // Add permission via role
     $role = Role::create(['name' => 'viewer']);
-    $role->givePermissionTo(Permissions::VIEW_USERS);
+    $role->givePermissionTo(Permissions::VIEW_USERS());
     $user->assignRole($role);
     $user->unsetRelation('roles');
 
@@ -107,7 +107,7 @@ it('policy view checks permission via hasPermissionTo', function () {
 
     // Add permission via role
     $role = Role::create(['name' => 'viewer']);
-    $role->givePermissionTo(Permissions::VIEW_USERS);
+    $role->givePermissionTo(Permissions::VIEW_USERS());
     $user->assignRole($role);
     $user->unsetRelation('roles');
 
@@ -121,7 +121,7 @@ it('policy create checks permission via hasPermissionTo', function () {
 
     // Add permission via role
     $role = Role::create(['name' => 'creator']);
-    $role->givePermissionTo(Permissions::CREATE_USERS);
+    $role->givePermissionTo(Permissions::CREATE_USERS());
     $user->assignRole($role);
     $user->unsetRelation('roles');
 

@@ -139,14 +139,15 @@ class DataTableQueryBuilder
         $relation = $model->{$relationshipName}();
         $relatedModel = $relation->getRelated();
         $relatedTable = $relatedModel->getTable();
-
         // Determine join type and keys based on relationship type
         $relationType = class_basename(get_class($relation));
 
+        $alias = $relatedTable === $parentTable ? "{$relatedTable}_{$relationshipName}" : $relatedTable;
+
         match ($relationType) {
-            'BelongsTo' => $this->applyBelongsToJoin($query, $relation, $parentTable, $relatedTable),
-            'HasOne', 'HasMany' => $this->applyHasJoin($query, $relation, $parentTable, $relatedTable),
-            'BelongsToMany' => $this->applyBelongsToManyJoin($query, $relation, $parentTable, $relatedTable),
+            'BelongsTo' => $this->applyBelongsToJoin($query, $relation, $parentTable, $relatedTable, $alias),
+            'HasOne', 'HasMany' => $this->applyHasJoin($query, $relation, $parentTable, $relatedTable, $alias),
+            'BelongsToMany' => $this->applyBelongsToManyJoin($query, $relation, $parentTable, $relatedTable, $alias),
             default => null,
         };
 
@@ -157,7 +158,7 @@ class DataTableQueryBuilder
             $this->joinRelationships(
                 $query,
                 $relationships,
-                $relatedTable,
+                $alias,
                 $relationshipName,
             );
         }
@@ -166,39 +167,46 @@ class DataTableQueryBuilder
     /**
      * Apply BelongsTo join
      */
-    private function applyBelongsToJoin($relation, $query, string $parentTable, string $relatedTable): void
+    /**
+     * Apply BelongsTo join
+     */
+    private function applyBelongsToJoin(Builder $query, $relation, string $parentTable, string $relatedTable, string $alias): void
     {
         $foreignKey = $relation->getForeignKeyName();
         $ownerKey = $relation->getOwnerKeyName();
 
+        $tableClause = $alias === $relatedTable ? $relatedTable : "{$relatedTable} as {$alias}";
+
         $query->leftJoin(
-            $relatedTable,
+            $tableClause,
             "{$parentTable}.{$foreignKey}",
             '=',
-            "{$relatedTable}.{$ownerKey}",
+            "{$alias}.{$ownerKey}",
         );
     }
 
     /**
      * Apply HasOne/HasMany join
      */
-    private function applyHasJoin($relation, $query, string $parentTable, string $relatedTable): void
+    private function applyHasJoin(Builder $query, $relation, string $parentTable, string $relatedTable, string $alias): void
     {
         $foreignKey = $relation->getForeignKeyName();
         $localKey = $relation->getLocalKeyName();
 
+        $tableClause = $alias === $relatedTable ? $relatedTable : "{$relatedTable} as {$alias}";
+
         $query->leftJoin(
-            $relatedTable,
+            $tableClause,
             "{$parentTable}.{$localKey}",
             '=',
-            "{$relatedTable}.{$foreignKey}",
+            "{$alias}.{$foreignKey}",
         );
     }
 
     /**
      * Apply BelongsToMany join (through pivot table)
      */
-    private function applyBelongsToManyJoin($relation, $query, string $parentTable, string $relatedTable): void
+    private function applyBelongsToManyJoin(Builder $query, $relation, string $parentTable, string $relatedTable, string $alias): void
     {
         $pivotTable = $relation->getTable();
         $foreignPivotKey = $relation->getForeignPivotKeyName();
@@ -214,12 +222,14 @@ class DataTableQueryBuilder
             "{$pivotTable}.{$foreignPivotKey}",
         );
 
+        $tableClause = $alias === $relatedTable ? $relatedTable : "{$relatedTable} as {$alias}";
+
         // Join related table
         $query->leftJoin(
-            $relatedTable,
+            $tableClause,
             "{$pivotTable}.{$relatedPivotKey}",
             '=',
-            "{$relatedTable}.{$relatedKey}",
+            "{$alias}.{$relatedKey}",
         );
     }
 

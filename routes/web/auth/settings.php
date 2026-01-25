@@ -29,5 +29,5 @@ Route::livewire('settings/notifications', 'pages::settings.notifications')
     ->name('settings.notifications');
 
 Route::livewire('settings/mail', 'pages::settings.mail')
-    ->middleware('can:' . Permissions::CONFIGURE_MAIL_SETTINGS)
+    ->middleware('can:' . Permissions::CONFIGURE_MAIL_SETTINGS())
     ->name('settings.mail');

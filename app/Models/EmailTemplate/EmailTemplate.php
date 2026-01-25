@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\EmailTemplate;
 
+use App\Enums\EmailTemplate\EmailTemplateKind;
 use App\Enums\EmailTemplate\EmailTemplateStatus;
 use App\Enums\EmailTemplate\EmailTemplateType;
 use App\Models\Base\BaseModel;
@@ -175,12 +176,17 @@ class EmailTemplate extends BaseModel
         return $this->name;
     }
 
-    /**
-     * Check if this is a layout.
-     */
     public function isLayout(): bool
     {
         return $this->is_layout === true;
+    }
+
+    /**
+     * Get the kind of validation.
+     */
+    public function kind(): EmailTemplateKind
+    {
+        return EmailTemplateKind::fromBoolean($this->isLayout());
     }
 
     /**

@@ -51,7 +51,7 @@
             </li>
 
             {{-- Mail Tab (Permission-gated) --}}
-            @can(Permissions::CONFIGURE_MAIL_SETTINGS)
+            @can(Permissions::CONFIGURE_MAIL_SETTINGS())
                 <li>
                     <a href="{{ route('settings.mail') }}"
                        wire:navigate

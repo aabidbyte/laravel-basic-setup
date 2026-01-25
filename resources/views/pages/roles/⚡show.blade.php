@@ -12,7 +12,6 @@ new class extends BasePageComponent {
 
     protected string $placeholderType = 'card';
 
-    #[Locked]
     public string $roleUuid = '';
 
     public ?Role $role = null;
@@ -22,7 +21,7 @@ new class extends BasePageComponent {
      */
     public function mount(Role $role): void
     {
-        $this->authorize(Permissions::VIEW_ROLES);
+        $this->authorize(Permissions::VIEW_ROLES());
 
         // Only super_admin can view the super_admin role
         if ($role->name === Roles::SUPER_ADMIN && !auth()->user()?->hasRole(Roles::SUPER_ADMIN)) {
@@ -51,90 +50,74 @@ new class extends BasePageComponent {
     }
 }; ?>
 
-<section class="mx-auto w-full max-w-6xl space-y-6">
-    {{-- Role Details Card --}}
-    <div class="card bg-base-100 shadow-xl">
-        <div class="card-body">
-            <div class="flex items-start justify-between">
-                <x-ui.title level="2"
-                            class="mb-6">{{ $this->getPageTitle() }}</x-ui.title>
+<x-layouts.page backHref="{{ route('roles.index') }}">
+    <x-slot:topActions>
+        @can(Permissions::EDIT_ROLES())
+            <x-ui.button href="{{ route('roles.edit', $roleUuid) }}"
+                         wire:navigate
+                         variant="ghost"
+                         class="gap-2">
+                <x-ui.icon name="pencil"
+                           size="sm"></x-ui.icon>
+                {{ __('actions.edit') }}
+            </x-ui.button>
+        @endcan
+    </x-slot:topActions>
 
-                @can(Permissions::EDIT_ROLES)
-                    <x-ui.button href="{{ route('roles.edit', $roleUuid) }}"
-                                 wire:navigate
-                                 variant="ghost"
-                                 class="gap-2">
-                        <x-ui.icon name="pencil"
-                                   size="sm"></x-ui.icon>
-                        {{ __('actions.edit') }}
-                    </x-ui.button>
-                @endcan
-            </div>
+    <section class="mx-auto w-full max-w-6xl space-y-6">
+        {{-- Role Details Card --}}
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <div class="grid grid-cols-1 gap-6">
+                    {{-- Basic Info --}}
+                    <div class="space-y-4">
+                        <x-ui.title level="3"
+                                    class="text-base-content/70">{{ __('roles.show.basic_info') }}</x-ui.title>
 
-            <div class="grid grid-cols-1 gap-6">
-                {{-- Basic Info --}}
-                <div class="space-y-4">
-                    <x-ui.title level="3"
-                                class="text-base-content/70">{{ __('roles.show.basic_info') }}</x-ui.title>
+                        <dl class="grid grid-cols-1 md:grid-cols-2">
 
-                    <dl class="grid grid-cols-1 md:grid-cols-2">
-                        <div>
-                            <dt class="text-base-content/60 text-sm font-medium">{{ __('roles.name') }}</dt>
-                            <dd class="text-base-content font-semibold">{{ $role->name }}</dd>
-                        </div>
-                        <div>
-                            <dt class="text-base-content/60 text-sm font-medium">{{ __('roles.display_name') }}</dt>
-                            <dd class="text-base-content">{{ $role->display_name ?? '-' }}</dd>
-                        </div>
-                        <div class="col-span-2">
-                            <dt class="text-base-content/60 text-sm font-medium">{{ __('roles.description') }}</dt>
-                            <dd class="text-base-content">{{ $role->description ?? '-' }}</dd>
-                        </div>
-                    </dl>
-                </div>
+                            <div>
+                                <dt class="text-base-content/60 text-sm font-medium">{{ __('roles.display_name') }}</dt>
+                                <dd class="text-base-content">{{ $role->display_name ?? '-' }}</dd>
+                            </div>
+                            <div class="col-span-2">
+                                <dt class="text-base-content/60 text-sm font-medium">{{ __('roles.description') }}</dt>
+                                <dd class="text-base-content">{{ $role->description ?? '-' }}</dd>
+                            </div>
+                        </dl>
+                    </div>
 
-                {{-- Permissions --}}
-                <div class="space-y-4">
-                    <x-ui.title level="3"
-                                class="text-base-content/70">{{ __('roles.permissions') }}
-                        ({{ $role->permissions->count() }})</x-ui.title>
+                    {{-- Permissions --}}
+                    <div class="space-y-4">
+                        <x-ui.title level="3"
+                                    class="text-base-content/70">{{ __('roles.permissions') }}
+                            ({{ $role->permissions->count() }})</x-ui.title>
 
-                    @if ($role->name === Roles::SUPER_ADMIN)
-                        <div class="alert alert-info">
-                            <x-ui.icon name="shield-check"
-                                       class="h-6 w-6"></x-ui.icon>
-                            <span>{{ __('roles.super_admin_all_permissions') }}</span>
-                        </div>
-                    @else
-                        <x-ui.permission-matrix :permissions="$this->permissions"
-                                                :selectedPermissions="$role->permissions->pluck('uuid')->toArray()"
-                                                :readonly="true"></x-ui.permission-matrix>
-                    @endif
+                        @if ($role->name === Roles::SUPER_ADMIN)
+                            <div class="alert alert-info">
+                                <x-ui.icon name="shield-check"
+                                           class="h-6 w-6"></x-ui.icon>
+                                <span>{{ __('roles.super_admin_all_permissions') }}</span>
+                            </div>
+                        @else
+                            <x-ui.permission-matrix :permissions="$this->permissions"
+                                                    :selectedPermissions="$role->permissions->pluck('uuid')->toArray()"
+                                                    :readonly="true"></x-ui.permission-matrix>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    {{-- Users with this Role --}}
-    <div class="card bg-base-100 shadow-xl">
-        <div class="card-body">
-            <x-ui.title level="3"
-                        class="mb-4">{{ __('roles.users_with_role') }}</x-ui.title>
+        {{-- Users with this Role --}}
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <x-ui.title level="3"
+                            class="mb-4">{{ __('roles.users_with_role') }}</x-ui.title>
 
-            <livewire:tables.role-user-table :role-uuid="$roleUuid"
-                                             lazy></livewire:tables.role-user-table>
+                <livewire:tables.role-user-table :role-uuid="$roleUuid"
+                                                 lazy></livewire:tables.role-user-table>
+            </div>
         </div>
-    </div>
-
-    {{-- Back Button --}}
-    <div class="flex justify-start">
-        <x-ui.button href="{{ route('roles.index') }}"
-                     wire:navigate
-                     variant="ghost"
-                     class="gap-2">
-            <x-ui.icon name="arrow-left"
-                       size="sm"></x-ui.icon>
-            {{ __('actions.back_to_list') }}
-        </x-ui.button>
-    </div>
-</section>
+    </section>
+</x-layouts.page>

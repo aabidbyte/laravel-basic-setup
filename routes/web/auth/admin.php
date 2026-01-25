@@ -9,7 +9,3 @@
 
 // Error Logs management
 require __DIR__ . '/admin/error-logs.php';
-
-// Email Templates & Layouts management
-// Email Templates & Layouts management
-// Moved to templateEmails.php

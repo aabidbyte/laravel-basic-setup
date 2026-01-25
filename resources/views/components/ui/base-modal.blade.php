@@ -2,67 +2,66 @@
     Base Modal Component
     - Class-based component: App\View\Components\Ui\BaseModal
     - Theme-aware overlay and colors (DaisyUI base-* / *-content)
+    - Always uses teleport to render modal in body
 --}}
+<template x-teleport="body">
+    <div x-cloak
+         x-show="{{ $openState }}"
+         {{ $attributes->merge($containerAttributeDefaults)->class([$containerBaseClasses, $class]) }}>
+        <div x-show="{{ $openState }}"
+             {{ $dialogAttributes }}
+             class="{{ $dialogClasses }}">
+            @if ($title || $showCloseButton)
+                <div class="{{ $headerClass }} {{ $paddingClass }} flex items-center justify-between gap-4">
+                    @if ($title)
+                        <x-ui.title level="3"
+                                    id="{{ $titleId }}"
+                                    class="text-lg font-bold">
+                            {{ $title }}
+                        </x-ui.title>
+                    @else
+                        <div></div>
+                    @endif
 
-<div x-cloak
-     x-show="{{ $openState }}"
-     {{ $attributes->merge($containerAttributeDefaults)->class([$containerBaseClasses, $class]) }}>
-    <div x-show="{{ $openState }}"
-         {{ $dialogAttributes }}
-         class="{{ $dialogClasses }}">
-        @if ($title || $showCloseButton)
-            <div class="{{ $headerClass }} flex items-center justify-between gap-4">
-                @if ($title)
-                    <h3 id="{{ $titleId }}"
-                        class="text-lg font-bold">
-                        {{ $title }}
-                    </h3>
-                @else
-                    <div></div>
-                @endif
+                    @if ($showCloseButton)
+                        <x-ui.button type="button"
+                                     x-on:click="{{ $closeAction }}"
+                                     variant="ghost"
+                                     size="sm"
+                                     circle
+                                     class="{{ $closeButtonClass }}"
+                                     aria-label="{{ $closeButtonLabel }}">
+                            <x-ui.icon name="x-mark"
+                                       size="sm"
+                                       aria-hidden="true"></x-ui.icon>
+                        </x-ui.button>
+                    @endif
+                </div>
+            @endif
 
-                @if ($showCloseButton)
-                    <button type="button"
-                            x-on:click="{{ $closeAction }}"
-                            class="btn btn-sm btn-circle btn-ghost {{ $closeButtonClass }}"
-                            aria-label="{{ $closeButtonLabel }}">
-                        <svg xmlns="http://www.w3.org/2000/svg"
-                             viewBox="0 0 24 24"
-                             aria-hidden="true"
-                             stroke="currentColor"
-                             fill="none"
-                             stroke-width="1.4"
-                             class="h-5 w-5">
-                            <path stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                  d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                @endif
+            @if ($description)
+                <x-ui.description id="{{ $descriptionId }}"
+                                  class="{{ $paddingClass }} mt-2">
+                    {{ $description }}
+                </x-ui.description>
+            @endif
+
+            <div class="{{ $bodyClass }} {{ $paddingClass }}">
+                {{ $slot }}
             </div>
-        @endif
 
-        @if ($description)
-            <p id="{{ $descriptionId }}"
-               class="text-base-content/70 mt-2 text-sm">
-                {{ $description }}
-            </p>
-        @endif
+            @if ($showFooter && (isset($footerActions) || isset($actions)))
+                <div
+                     class="{{ $footerClass }} {{ $backgroundClass }} {{ $paddingClass }} sticky inset-0 bottom-0 flex flex-row-reverse">
+                    @isset($footerActions)
+                        {{ $footerActions }}
+                    @endisset
 
-        <div class="{{ $bodyClass }}">
-            {{ $slot }}
+                    @isset($actions)
+                        {{ $actions }}
+                    @endisset
+                </div>
+            @endif
         </div>
-
-        @if ($showFooter && (isset($footerActions) || isset($actions)))
-            <div class="modal-action {{ $footerClass }}">
-                @isset($footerActions)
-                    {{ $footerActions }}
-                @endisset
-
-                @isset($actions)
-                    {{ $actions }}
-                @endisset
-            </div>
-        @endif
     </div>
-</div>
+</template>

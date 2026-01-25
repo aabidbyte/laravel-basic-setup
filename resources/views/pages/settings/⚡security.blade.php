@@ -301,160 +301,164 @@ new class extends BasePageComponent {
     }
 }; ?>
 
-<section class="w-full"
-         @confirm-revoke-session.window="$wire.revokeSession($event.detail.id)"
-         @confirm-revoke-all-sessions.window="$wire.revokeAllOtherSessions()">
-    <x-settings.layout>
-        <div class="space-y-8">
-            {{-- Two-Factor Authentication Section --}}
-            @if (Features::enabled(Features::twoFactorAuthentication()))
+<x-layouts.page>
+    <section class="w-full"
+             @confirm-revoke-session.window="$wire.revokeSession($event.detail.id)"
+             @confirm-revoke-all-sessions.window="$wire.revokeAllOtherSessions()">
+        <x-settings.layout>
+            <div class="space-y-8">
+                {{-- Two-Factor Authentication Section --}}
+                @if (Features::enabled(Features::twoFactorAuthentication()))
+                    <div>
+                        <h2 class="text-base-content mb-4 text-lg font-semibold">{{ __('settings.two_factor.title') }}
+                        </h2>
+
+                        @if ($twoFactorEnabled)
+                            <div class="card bg-base-200">
+                                <div class="card-body">
+                                    <div class="flex items-center gap-3">
+                                        <x-ui.badge color="success"
+                                                    size="lg">{{ __('settings.two_factor.enabled') }}</x-ui.badge>
+                                    </div>
+
+                                    <p class="text-base-content/70">
+                                        {{ __('settings.two_factor.enabled_description') }}
+                                    </p>
+
+                                    <livewire:settings.two-factor.recovery-codes
+                                                                                 :$requiresConfirmation></livewire:settings.two-factor.recovery-codes>
+
+                                    <div class="card-actions mt-4">
+                                        <x-ui.button type="button"
+                                                     wire:click="disableTwoFactor"
+                                                     color="error">
+                                            {{ __('settings.two_factor.disable_button') }}
+                                        </x-ui.button>
+                                    </div>
+                                </div>
+                            </div>
+                        @else
+                            <div class="card bg-base-200">
+                                <div class="card-body">
+                                    <div class="flex items-center gap-3">
+                                        <x-ui.badge color="error"
+                                                    size="lg">{{ __('settings.two_factor.disabled') }}</x-ui.badge>
+                                    </div>
+
+                                    <p class="text-base-content/70">
+                                        {{ __('settings.two_factor.disabled_description') }}
+                                    </p>
+
+                                    <div class="card-actions mt-4">
+                                        <x-ui.button type="button"
+                                                     wire:click="enableTwoFactor"
+                                                     color="primary">
+                                            {{ __('settings.two_factor.enable_button') }}
+                                        </x-ui.button>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+
+                    {{-- Two-Factor Setup Modal --}}
+                    <div x-data="twoFactorSetupTrigger()"
+                         x-show="showModal"
+                         style="display: none;">
+                        <livewire:settings.two-factor.setup-modal :modal-config="$this->modalConfig"
+                                                                  :qr-code-svg="$qrCodeSvg"
+                                                                  :manual-setup-key="$manualSetupKey"
+                                                                  lazy />
+                    </div>
+                @endif
+
+                <div class="divider"></div>
+
+                {{-- Active Sessions Section --}}
                 <div>
-                    <h2 class="text-base-content mb-4 text-lg font-semibold">{{ __('settings.two_factor.title') }}</h2>
+                    <h2 class="text-base-content mb-2 text-lg font-semibold">
+                        {{ __('settings.security.sessions_title') }}
+                    </h2>
+                    <p class="text-base-content/70 mb-4 text-sm">{{ __('settings.security.sessions_description') }}</p>
 
-                    @if ($twoFactorEnabled)
-                        <div class="card bg-base-200">
-                            <div class="card-body">
-                                <div class="flex items-center gap-3">
-                                    <x-ui.badge color="success"
-                                                size="lg">{{ __('settings.two_factor.enabled') }}</x-ui.badge>
-                                </div>
-
-                                <p class="text-base-content/70">
-                                    {{ __('settings.two_factor.enabled_description') }}
-                                </p>
-
-                                <livewire:settings.two-factor.recovery-codes
-                                                                             :$requiresConfirmation></livewire:settings.two-factor.recovery-codes>
-
-                                <div class="card-actions mt-4">
-                                    <x-ui.button type="button"
-                                                 wire:click="disableTwoFactor"
-                                                 color="error">
-                                        {{ __('settings.two_factor.disable_button') }}
-                                    </x-ui.button>
-                                </div>
-                            </div>
-                        </div>
-                    @else
-                        <div class="card bg-base-200">
-                            <div class="card-body">
-                                <div class="flex items-center gap-3">
-                                    <x-ui.badge color="error"
-                                                size="lg">{{ __('settings.two_factor.disabled') }}</x-ui.badge>
-                                </div>
-
-                                <p class="text-base-content/70">
-                                    {{ __('settings.two_factor.disabled_description') }}
-                                </p>
-
-                                <div class="card-actions mt-4">
-                                    <x-ui.button type="button"
-                                                 wire:click="enableTwoFactor"
-                                                 color="primary">
-                                        {{ __('settings.two_factor.enable_button') }}
-                                    </x-ui.button>
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-                </div>
-
-                {{-- Two-Factor Setup Modal --}}
-                <div x-data="twoFactorSetupTrigger()"
-                     x-show="showModal"
-                     style="display: none;">
-                    <livewire:settings.two-factor.setup-modal :modal-config="$this->modalConfig"
-                                                              :qr-code-svg="$qrCodeSvg"
-                                                              :manual-setup-key="$manualSetupKey"
-                                                              lazy />
-                </div>
-            @endif
-
-            <div class="divider"></div>
-
-            {{-- Active Sessions Section --}}
-            <div>
-                <h2 class="text-base-content mb-2 text-lg font-semibold">{{ __('settings.security.sessions_title') }}
-                </h2>
-                <p class="text-base-content/70 mb-4 text-sm">{{ __('settings.security.sessions_description') }}</p>
-
-                @if (config('session.driver') === 'database')
-                    <div class="space-y-3">
-                        @forelse ($this->sessions as $session)
-                            <div @class([
-                                'card bg-base-200',
-                                'border-2 border-primary' => $session['is_current'],
-                            ])>
-                                <div class="card-body px-4 py-3">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center gap-3">
-                                            <x-ui.icon name="computer-desktop"
-                                                       class="text-base-content/70 h-6 w-6"></x-ui.icon>
-                                            <div>
-                                                <div class="font-medium">
-                                                    {{ $session['user_agent']['browser'] }} on
-                                                    {{ $session['user_agent']['platform'] }}
-                                                    @if ($session['is_current'])
-                                                        <x-ui.badge color="primary"
-                                                                    size="sm"
-                                                                    class="ml-2">{{ __('settings.security.current_session') }}</x-ui.badge>
-                                                    @endif
-                                                </div>
-                                                <div class="text-base-content/70 text-sm">
-                                                    {{ $session['ip_address'] ?? __('common.unknown') }} •
-                                                    {{ $session['last_activity'] }}
+                    @if (config('session.driver') === 'database')
+                        <div class="space-y-3">
+                            @forelse ($this->sessions as $session)
+                                <div @class([
+                                    'card bg-base-200',
+                                    'border-2 border-primary' => $session['is_current'],
+                                ])>
+                                    <div class="card-body px-4 py-3">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center gap-3">
+                                                <x-ui.icon name="computer-desktop"
+                                                           class="text-base-content/70 h-6 w-6"></x-ui.icon>
+                                                <div>
+                                                    <div class="font-medium">
+                                                        {{ $session['user_agent']['browser'] }} on
+                                                        {{ $session['user_agent']['platform'] }}
+                                                        @if ($session['is_current'])
+                                                            <x-ui.badge color="primary"
+                                                                        size="sm"
+                                                                        class="ml-2">{{ __('settings.security.current_session') }}</x-ui.badge>
+                                                        @endif
+                                                    </div>
+                                                    <div class="text-base-content/70 text-sm">
+                                                        {{ $session['ip_address'] ?? __('common.unknown') }} •
+                                                        {{ $session['last_activity'] }}
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        @if (!$session['is_current'])
-                                            <x-ui.button type="button"
-                                                         @click="$dispatch('confirm-modal', {
+                                            @if (!$session['is_current'])
+                                                <x-ui.button type="button"
+                                                             @click="$dispatch('confirm-modal', {
                                                              title: '{{ __('actions.revoke') }}',
                                                              message: '{{ __('settings.security.revoke_confirm') }}',
                                                              confirmColor: 'error',
                                                              confirmEvent: 'confirm-revoke-session',
                                                              confirmData: { id: '{{ $session['id'] }}' }
                                                          })"
-                                                         variant="ghost"
-                                                         size="sm">
-                                                <x-ui.icon name="x-mark"
-                                                           class="h-4 w-4"></x-ui.icon>
-                                            </x-ui.button>
-                                        @endif
+                                                             variant="ghost"
+                                                             size="sm">
+                                                    <x-ui.icon name="x-mark"
+                                                               class="h-4 w-4"></x-ui.icon>
+                                                </x-ui.button>
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        @empty
-                            <div class="alert">
-                                <x-ui.icon name="information-circle"
-                                           class="h-5 w-5"></x-ui.icon>
-                                <span>{{ __('settings.security.no_sessions') }}</span>
-                            </div>
-                        @endforelse
+                            @empty
+                                <div class="alert">
+                                    <x-ui.icon name="information-circle"
+                                               class="h-5 w-5"></x-ui.icon>
+                                    <span>{{ __('settings.security.no_sessions') }}</span>
+                                </div>
+                            @endforelse
 
-                        @if ($this->sessions->count() > 1)
-                            <x-ui.button type="button"
-                                         @click="$dispatch('confirm-modal', {
+                            @if ($this->sessions->count() > 1)
+                                <x-ui.button type="button"
+                                             @click="$dispatch('confirm-modal', {
                                              title: '{{ __('settings.security.revoke_all_button') }}',
                                              message: '{{ __('settings.security.revoke_all_confirm') }}',
                                              confirmColor: 'error',
                                              confirmEvent: 'confirm-revoke-all-sessions'
                                          })"
-                                         color="error"
-                                         class="mt-4">
-                                {{ __('settings.security.revoke_all_button') }}
-                            </x-ui.button>
-                        @endif
-                    </div>
-                @else
-                    <div class="alert alert-warning">
-                        <x-ui.icon name="exclamation-triangle"
-                                   class="h-5 w-5"></x-ui.icon>
-                        <span>{{ __('settings.security.sessions_unavailable') }}</span>
-                    </div>
-                @endif
+                                             color="error"
+                                             class="mt-4">
+                                    {{ __('settings.security.revoke_all_button') }}
+                                </x-ui.button>
+                            @endif
+                        </div>
+                    @else
+                        <div class="alert alert-warning">
+                            <x-ui.icon name="exclamation-triangle"
+                                       class="h-5 w-5"></x-ui.icon>
+                            <span>{{ __('settings.security.sessions_unavailable') }}</span>
+                        </div>
+                    @endif
+                </div>
             </div>
-        </div>
-    </x-settings.layout>
-</section>
+        </x-settings.layout>
+    </section>
+</x-layouts.page>

@@ -9,13 +9,16 @@ use Illuminate\Support\Facades\File;
 class TranslationPruner
 {
     protected array $supportedLocales;
+
     protected array $protectedFiles;
+
     protected array $namespaces;
-    
+
     // Statistics
     protected int $keysPruned = 0;
 
     protected LocaleManager $localeManager;
+
     protected TranslationScanner $scanner;
 
     public function __construct(LocaleManager $localeManager, TranslationScanner $scanner)
@@ -35,7 +38,7 @@ class TranslationPruner
     {
         return $this->keysPruned;
     }
-    
+
     public function resetStats(): void
     {
         $this->keysPruned = 0;
@@ -91,9 +94,13 @@ class TranslationPruner
 
             if ($write) {
                 $this->localeManager->writeTranslationFile($filePath, $pruned);
-                if ($output) $output->info("Pruned {$prunedCount} keys from {$locale}/{$filename}.php");
+                if ($output) {
+                    $output->info("Pruned {$prunedCount} keys from {$locale}/{$filename}.php");
+                }
             } else {
-                if ($output) $output->line("Would prune {$prunedCount} keys from {$locale}/{$filename}.php");
+                if ($output) {
+                    $output->line("Would prune {$prunedCount} keys from {$locale}/{$filename}.php");
+                }
             }
         }
     }
@@ -159,7 +166,7 @@ class TranslationPruner
     {
         // Check if the full key is found in scanner results
         $foundKeys = $this->scanner->getFoundKeys();
-        
+
         if (isset($foundKeys[$fullKey])) {
             return true;
         }

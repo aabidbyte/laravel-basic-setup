@@ -56,6 +56,18 @@ Filter::make('status', __('Status'))
     ->options([...])
 ```
 
+### Handling Ambiguous Columns
+
+When joining tables, common column names like `status` or `type` can become ambiguous. Use `fieldMapping` to qualify them:
+
+```php
+Filter::make('status', __('Status'))
+    ->type('select')
+    ->options([...])
+    // Explicitly target the main table's status column
+    ->fieldMapping('users.status')
+```
+
 ## Custom Filter Logic
 
 ```php

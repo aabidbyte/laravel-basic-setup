@@ -63,12 +63,45 @@ See [Development Conventions](docs/AGENTS/development-conventions.md#translation
 
 See [Development Conventions](docs/AGENTS/development-conventions.md#enum-usage) for detailed enum patterns.
 
+### Livewire Route Model Binding (CRITICAL)
+**Always use the model name (singular, lowercase) as the route parameter for Livewire routes**, not `{uuid}` or `{id}`.
+
+**Examples:**
+- ✅ `Route::livewire('/users/{user}', ...)` with `mount(User $user)`
+- ✅ `Route::livewire('/{template}/edit', ...)` with `mount(EmailTemplate $template)`
+- ❌ `Route::livewire('/{uuid}', ...)` - breaks automatic binding
+
+**Why:** Livewire's automatic route model binding only works when the parameter name matches the model name. This enables type-hinted mount methods and automatic UUID resolution.
+
+See [Livewire Route Model Binding](docs/AGENTS/livewire-route-model-binding.md) for complete documentation.
+
+### No Layout Wrapper (Livewire Components Only)
+**Do NOT wrap full-page Livewire components in `<x-layouts.app>`.**
+Configuration `config/livewire.php` sets `'component_layout' => 'layouts::app'`, so Livewire wraps them automatically.
+
+**Exceptions (Standard Blade)**:
+Standard Blade views (controlled by Controllers/Routes returning `view()`) **MUST** still include `<x-layouts.app>`.
+
+**Example (Livewire Component):**
+```blade
+{{-- ❌ WRONG --}}
+<x-layouts.app>
+    <x-layouts.page>...</x-layouts.page>
+</x-layouts.app>
+
+{{-- ✅ CORRECT --}}
+<x-layouts.page>...</x-layouts.page>
+```
+
 ## Quick Links
+
 
 - **[Full Documentation](docs/AGENTS/index.md)** - Complete agent documentation with table of contents
 - **[Project Overview](docs/AGENTS/project-overview.md)**
 - **[Development Conventions](docs/AGENTS/development-conventions.md)**
 - **[Common Tasks](docs/AGENTS/common-tasks.md)**
 - **[Important Patterns](docs/AGENTS/important-patterns.md)**
+- **[Unified Create/Edit Pattern](docs/AGENTS/unified-create-edit-pattern.md)** - Refactoring pattern for consolidating create/edit workflows
+- **[Page Layout Title Pattern](docs/AGENTS/page-layout-title-pattern.md)** - Automatic title handling via layouts
 
 For the complete documentation, please see [docs/AGENTS/index.md](docs/AGENTS/index.md).

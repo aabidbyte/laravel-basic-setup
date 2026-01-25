@@ -1,8 +1,11 @@
 @php
     use App\Constants\Auth\Permissions;
 
-    $type = request()->routeIs('emailTemplates.layouts.index') ? 'layout' : 'content';
-    $title = $type === 'layout' ? __('types.email_layouts') : __('types.email_contents');
+    use App\Enums\EmailTemplate\EmailTemplateKind;
+
+    $kind = request()->routeIs('emailTemplates.layouts.index') ? EmailTemplateKind::LAYOUT : EmailTemplateKind::CONTENT;
+
+    $title = $kind === EmailTemplateKind::LAYOUT ? __('types.email_layouts') : __('types.email_contents');
 
     setPageTitle(
         __('pages.email_templates.index.title', ['default' => $title]),
@@ -14,8 +17,8 @@
     <x-layouts.page backHref="{{ route('dashboard') }}">
         <x-slot:topActions>
             <div class="flex gap-2">
-                @can(Permissions::CREATE_EMAIL_TEMPLATES)
-                    <x-ui.button href="{{ route('emailTemplates.create', ['type' => $type]) }}"
+                @can(Permissions::CREATE_EMAIL_TEMPLATES())
+                    <x-ui.button href="{{ route('emailTemplates.settings.edit', ['type' => $kind->value]) }}"
                                  wire:navigate
                                  color="primary"
                                  class="gap-2">
@@ -28,25 +31,8 @@
         </x-slot:topActions>
 
         <div class="space-y-6">
-            {{-- Tabs --}}
-            <div role="tablist"
-                 class="tabs tabs-bordered">
-                <a role="tab"
-                   class="tab {{ $type === 'content' ? 'tab-active' : '' }}"
-                   href="{{ route('emailTemplates.contents.index') }}"
-                   wire:navigate>
-                    {{ __('types.email_contents') }}
-                </a>
-                <a role="tab"
-                   class="tab {{ $type === 'layout' ? 'tab-active' : '' }}"
-                   href="{{ route('emailTemplates.layouts.index') }}"
-                   wire:navigate>
-                    {{ __('types.email_layouts') }}
-                </a>
-            </div>
-
             <section>
-                <livewire:tables.email-template.email-template-table :is-layout="$type === 'layout'"
+                <livewire:tables.email-template.email-template-table :kind-mode="$kind"
                                                                      lazy></livewire:tables.email-template.email-template-table>
             </section>
         </div>

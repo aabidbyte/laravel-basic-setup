@@ -1,48 +1,63 @@
 @props([
+    'name' => null,
     'label' => null,
     'description' => null,
     'checked' => false,
     'color' => 'primary',
     'value' => null,
     'size' => null,
+    'disabled' => false,
+    'labelPosition' => 'right', // left, right
 ])
 
 @php
     $id = $attributes->get('id') ?? uniqid('toggle-');
+    $model = $attributes->wire('model');
 
-    $colorClass = match ($color) {
-        'primary' => 'toggle-primary',
-        'secondary' => 'toggle-secondary',
-        'accent' => 'toggle-accent',
-        'success' => 'toggle-success',
-        'warning' => 'toggle-warning',
-        'error' => 'toggle-error',
-        'info' => 'toggle-info',
-        default => '',
-    };
-
-    $sizeClass = match ($size) {
-        'xs' => 'toggle-xs',
-        'sm' => 'toggle-sm',
-        'md' => 'toggle-md',
-        'lg' => 'toggle-lg',
-        default => '',
-    };
+    $classes = [
+        'toggle',
+        match ($color) {
+            'primary' => 'toggle-primary',
+            'secondary' => 'toggle-secondary',
+            'accent' => 'toggle-accent',
+            'success' => 'toggle-success',
+            'warning' => 'toggle-warning',
+            'error' => 'toggle-error',
+            'info' => 'toggle-info',
+            default => '',
+        },
+        match ($size) {
+            'xs' => 'toggle-xs',
+            'sm' => 'toggle-sm',
+            'md' => 'toggle-md',
+            'lg' => 'toggle-lg',
+            default => '',
+        },
+    ];
 @endphp
 
 <div class="form-control w-fit">
-    <label class="label cursor-pointer justify-start gap-3">
+    <label
+           class="label {{ $labelPosition === 'left' ? 'justify-between gap-3' : 'justify-start gap-4' }} cursor-pointer">
+        @if ($label && $labelPosition === 'left')
+            <span class="label-text {{ $disabled ? 'text-base-content/50' : '' }}">{{ $label }}</span>
+        @endif
+
         <input type="checkbox"
                id="{{ $id }}"
-               {{ $attributes->merge(['class' => trim("toggle {$colorClass} {$sizeClass}")]) }}
+               @if ($name) name="{{ $name }}" @endif
                @if ($value !== null) value="{{ $value }}" @endif
-               @if ($checked) checked @endif />
-        @if ($label)
-            <span class="label-text">{{ $label }}</span>
+               @if ($checked) checked @endif
+               @if ($disabled) disabled @endif
+               {{ $attributes->class($classes) }} />
+
+        @if ($label && $labelPosition === 'right')
+            <span class="label-text {{ $disabled ? 'text-base-content/50' : '' }}">{{ $label }}</span>
         @endif
     </label>
+
     @if ($description)
-        <div class="-mt-1 pl-14">
+        <div class="{{ $labelPosition === 'left' ? '' : 'pl-14' }} -mt-1">
             <span class="text-base-content/60 text-xs">{{ $description }}</span>
         </div>
     @endif

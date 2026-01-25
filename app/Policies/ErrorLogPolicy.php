@@ -35,7 +35,7 @@ class ErrorLogPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo(Permissions::VIEW_ERROR_LOGS);
+        return $user->hasPermissionTo(Permissions::VIEW_ERROR_LOGS());
     }
 
     /**
@@ -43,7 +43,7 @@ class ErrorLogPolicy
      */
     public function view(User $user, ErrorLog $errorLog): bool
     {
-        return $user->hasPermissionTo(Permissions::VIEW_ERROR_LOGS);
+        return $user->hasPermissionTo(Permissions::VIEW_ERROR_LOGS());
     }
 
     /**
@@ -51,7 +51,7 @@ class ErrorLogPolicy
      */
     public function resolve(User $user, ErrorLog $errorLog): bool
     {
-        return $user->hasPermissionTo(Permissions::RESOLVE_ERROR_LOGS);
+        return $user->hasPermissionTo(Permissions::RESOLVE_ERROR_LOGS());
     }
 
     /**
@@ -59,6 +59,6 @@ class ErrorLogPolicy
      */
     public function delete(User $user, ErrorLog $errorLog): bool
     {
-        return $user->hasPermissionTo(Permissions::DELETE_ERROR_LOGS);
+        return $user->hasPermissionTo(Permissions::DELETE_ERROR_LOGS());
     }
 }

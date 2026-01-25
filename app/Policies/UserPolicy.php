@@ -29,7 +29,7 @@ class UserPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo(Permissions::VIEW_USERS);
+        return $user->hasPermissionTo(Permissions::VIEW_USERS());
     }
 
     /**
@@ -37,7 +37,7 @@ class UserPolicy
      */
     public function view(User $user, User $model): bool
     {
-        return $user->hasPermissionTo(Permissions::VIEW_USERS);
+        return $user->hasPermissionTo(Permissions::VIEW_USERS());
     }
 
     /**
@@ -45,7 +45,7 @@ class UserPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo(Permissions::CREATE_USERS);
+        return $user->hasPermissionTo(Permissions::CREATE_USERS());
     }
 
     /**
@@ -58,7 +58,7 @@ class UserPolicy
             return false;
         }
 
-        return $user->hasPermissionTo(Permissions::EDIT_USERS);
+        return $user->hasPermissionTo(Permissions::EDIT_USERS());
     }
 
     /**
@@ -77,6 +77,6 @@ class UserPolicy
             return false;
         }
 
-        return $user->hasPermissionTo(Permissions::DELETE_USERS);
+        return $user->hasPermissionTo(Permissions::DELETE_USERS());
     }
 }

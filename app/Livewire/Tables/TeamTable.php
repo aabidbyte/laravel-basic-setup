@@ -22,7 +22,7 @@ class TeamTable extends Datatable
      */
     public function mount(): void
     {
-        $this->authorize(Permissions::VIEW_TEAMS);
+        $this->authorize(Permissions::VIEW_TEAMS());
     }
 
     /**
@@ -75,7 +75,7 @@ class TeamTable extends Datatable
                 ->icon('eye')
                 ->route(fn (Team $team) => route('teams.show', $team->uuid))
                 ->variant('ghost')
-                ->can(Permissions::VIEW_TEAMS, false);
+                ->can(Permissions::VIEW_TEAMS(), false);
         }
 
         if (Route::has('teams.edit')) {
@@ -83,7 +83,7 @@ class TeamTable extends Datatable
                 ->icon('pencil')
                 ->route(fn (Team $team) => route('teams.edit', $team->uuid))
                 ->variant('ghost')
-                ->can(Permissions::EDIT_TEAMS, false);
+                ->can(Permissions::EDIT_TEAMS(), false);
         }
 
         $actions[] = Action::make('delete', __('actions.delete'))
@@ -98,7 +98,7 @@ class TeamTable extends Datatable
                     ->success()
                     ->send();
             })
-            ->can(Permissions::DELETE_TEAMS, false);
+            ->can(Permissions::DELETE_TEAMS(), false);
 
         return $actions;
     }
@@ -117,7 +117,7 @@ class TeamTable extends Datatable
                 ->color('error')
                 ->confirm(__('actions.confirm_bulk_delete'))
                 ->execute(fn ($teams) => $teams->each->delete())
-                ->can(Permissions::DELETE_TEAMS),
+                ->can(Permissions::DELETE_TEAMS()),
         ];
     }
 
@@ -129,7 +129,7 @@ class TeamTable extends Datatable
         if (Route::has('teams.show')) {
             return Action::make()
                 ->route('teams.show', $uuid)
-                ->can(Permissions::VIEW_TEAMS, false);
+                ->can(Permissions::VIEW_TEAMS(), false);
         }
 
         return null;

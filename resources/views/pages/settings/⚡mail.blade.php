@@ -40,7 +40,7 @@ new class extends BasePageComponent {
      */
     public function mount(): void
     {
-        $this->authorize(Permissions::CONFIGURE_MAIL_SETTINGS);
+        $this->authorize(Permissions::CONFIGURE_MAIL_SETTINGS());
 
         $settings = MailSettings::getForUser(Auth::user());
 
@@ -88,7 +88,7 @@ new class extends BasePageComponent {
      */
     public function saveSettings(): void
     {
-        $this->authorize(Permissions::CONFIGURE_MAIL_SETTINGS);
+        $this->authorize(Permissions::CONFIGURE_MAIL_SETTINGS());
 
         $validated = $this->validate([
             'provider' => ['required', 'string', 'in:smtp,ses,postmark,resend'],
@@ -143,7 +143,7 @@ new class extends BasePageComponent {
      */
     public function testConnection(): void
     {
-        $this->authorize(Permissions::CONFIGURE_MAIL_SETTINGS);
+        $this->authorize(Permissions::CONFIGURE_MAIL_SETTINGS());
 
         try {
             // Create a temporary mailer config
@@ -181,7 +181,7 @@ new class extends BasePageComponent {
      */
     public function deleteSettings(): void
     {
-        $this->authorize(Permissions::CONFIGURE_MAIL_SETTINGS);
+        $this->authorize(Permissions::CONFIGURE_MAIL_SETTINGS());
 
         $settings = MailSettings::getForUser(Auth::user());
 
@@ -199,131 +199,133 @@ new class extends BasePageComponent {
     }
 }; ?>
 
-<section class="max-w-4xl space-y-6"
-         @confirm-delete-mail-settings.window="$wire.deleteSettings()">
-    <x-settings.layout>
-        <x-ui.form wire:submit="saveSettings"
-                   class="w-full space-y-6">
-            {{-- Provider Selection --}}
-            <div class="form-control w-full">
-                <label class="label">
-                    <span class="label-text font-medium">{{ __('settings.mail.provider_label') }}</span>
-                </label>
-                <select wire:model.live="provider"
-                        class="select select-bordered w-full">
-                    @foreach ($this->providers as $value => $label)
-                        <option value="{{ $value }}">{{ $label }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            {{-- SMTP Settings (only shown for SMTP provider) --}}
-            @if ($provider === 'smtp')
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <x-ui.input type="text"
-                                wire:model="host"
-                                name="host"
-                                :label="__('settings.mail.host_label')"
-                                placeholder="smtp.example.com"
-                                required></x-ui.input>
-
-                    <x-ui.input type="number"
-                                wire:model="port"
-                                name="port"
-                                :label="__('settings.mail.port_label')"
-                                placeholder="587"
-                                min="1"
-                                max="65535"
-                                required></x-ui.input>
-
-                    <x-ui.input type="text"
-                                wire:model="username"
-                                name="username"
-                                :label="__('settings.mail.username_label')"
-                                autocomplete="username"></x-ui.input>
-
-                    <x-ui.password wire:model="password"
-                                   name="password"
-                                   :label="__('settings.mail.password_label')"
-                                   :placeholder="$hasExistingSettings ? __('settings.mail.password_placeholder') : ''"
-                                   autocomplete="new-password"></x-ui.password>
-                </div>
-
+<x-layouts.page>
+    <section class="max-w-4xl space-y-6"
+             @confirm-delete-mail-settings.window="$wire.deleteSettings()">
+        <x-settings.layout>
+            <x-ui.form wire:submit="saveSettings"
+                       class="w-full space-y-6">
+                {{-- Provider Selection --}}
                 <div class="form-control w-full">
                     <label class="label">
-                        <span class="label-text font-medium">{{ __('settings.mail.encryption_label') }}</span>
+                        <span class="label-text font-medium">{{ __('settings.mail.provider_label') }}</span>
                     </label>
-                    <select wire:model="encryption"
+                    <select wire:model.live="provider"
                             class="select select-bordered w-full">
-                        @foreach ($this->encryptionOptions as $value => $label)
+                        @foreach ($this->providers as $value => $label)
                             <option value="{{ $value }}">{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>
-            @endif
 
-            <div class="divider"></div>
+                {{-- SMTP Settings (only shown for SMTP provider) --}}
+                @if ($provider === 'smtp')
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <x-ui.input type="text"
+                                    wire:model="host"
+                                    name="host"
+                                    :label="__('settings.mail.host_label')"
+                                    placeholder="smtp.example.com"
+                                    required></x-ui.input>
 
-            {{-- From Address Settings --}}
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <x-ui.input type="email"
-                            wire:model="fromAddress"
-                            name="fromAddress"
-                            :label="__('settings.mail.from_address_label')"
-                            placeholder="noreply@example.com"
-                            required></x-ui.input>
+                        <x-ui.input type="number"
+                                    wire:model="port"
+                                    name="port"
+                                    :label="__('settings.mail.port_label')"
+                                    placeholder="587"
+                                    min="1"
+                                    max="65535"
+                                    required></x-ui.input>
 
-                <x-ui.input type="text"
-                            wire:model="fromName"
-                            name="fromName"
-                            :label="__('settings.mail.from_name_label')"
-                            :placeholder="config('app.name')"
-                            required></x-ui.input>
-            </div>
+                        <x-ui.input type="text"
+                                    wire:model="username"
+                                    name="username"
+                                    :label="__('settings.mail.username_label')"
+                                    autocomplete="username"></x-ui.input>
 
-            {{-- Active Toggle --}}
-            <div class="form-control">
-                <label class="label cursor-pointer justify-start gap-4">
-                    <input type="checkbox"
-                           wire:model="isActive"
-                           class="toggle toggle-primary" />
-                    <div>
-                        <span class="label-text font-medium">{{ __('settings.mail.active_label') }}</span>
-                        <p class="text-base-content/70 text-sm">{{ __('settings.mail.active_help') }}</p>
+                        <x-ui.password wire:model="password"
+                                       name="password"
+                                       :label="__('settings.mail.password_label')"
+                                       :placeholder="$hasExistingSettings ? __('settings.mail.password_placeholder') : ''"
+                                       autocomplete="new-password"></x-ui.password>
                     </div>
-                </label>
-            </div>
 
-            {{-- Actions --}}
-            <div class="flex flex-wrap items-center gap-4 pt-4">
-                <x-ui.button type="submit"
-                             color="primary"
-                             data-test="save-mail-settings-button">
-                    {{ __('actions.save') }}
-                </x-ui.button>
+                    <div class="form-control w-full">
+                        <label class="label">
+                            <span class="label-text font-medium">{{ __('settings.mail.encryption_label') }}</span>
+                        </label>
+                        <select wire:model="encryption"
+                                class="select select-bordered w-full">
+                            @foreach ($this->encryptionOptions as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
 
-                <x-ui.button type="button"
-                             wire:click="testConnection"
-                             color="secondary">
-                    <x-ui.icon name="paper-airplane"
-                               class="h-4 w-4"></x-ui.icon>
-                    {{ __('settings.mail.test_button') }}
-                </x-ui.button>
+                <div class="divider"></div>
 
-                @if ($hasExistingSettings)
+                {{-- From Address Settings --}}
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <x-ui.input type="email"
+                                wire:model="fromAddress"
+                                name="fromAddress"
+                                :label="__('settings.mail.from_address_label')"
+                                placeholder="noreply@example.com"
+                                required></x-ui.input>
+
+                    <x-ui.input type="text"
+                                wire:model="fromName"
+                                name="fromName"
+                                :label="__('settings.mail.from_name_label')"
+                                :placeholder="config('app.name')"
+                                required></x-ui.input>
+                </div>
+
+                {{-- Active Toggle --}}
+                <div class="form-control">
+                    <label class="label cursor-pointer justify-start gap-4">
+                        <input type="checkbox"
+                               wire:model="isActive"
+                               class="toggle toggle-primary" />
+                        <div>
+                            <span class="label-text font-medium">{{ __('settings.mail.active_label') }}</span>
+                            <p class="text-base-content/70 text-sm">{{ __('settings.mail.active_help') }}</p>
+                        </div>
+                    </label>
+                </div>
+
+                {{-- Actions --}}
+                <div class="flex flex-wrap items-center gap-4 pt-4">
+                    <x-ui.button type="submit"
+                                 color="primary"
+                                 data-test="save-mail-settings-button">
+                        {{ __('actions.save') }}
+                    </x-ui.button>
+
                     <x-ui.button type="button"
-                                 @click="$dispatch('confirm-modal', {
+                                 wire:click="testConnection"
+                                 color="secondary">
+                        <x-ui.icon name="paper-airplane"
+                                   class="h-4 w-4"></x-ui.icon>
+                        {{ __('settings.mail.test_button') }}
+                    </x-ui.button>
+
+                    @if ($hasExistingSettings)
+                        <x-ui.button type="button"
+                                     @click="$dispatch('confirm-modal', {
                                      title: '{{ __('actions.delete') }}',
                                      message: '{{ __('settings.mail.delete_confirm') }}',
                                      confirmColor: 'error',
                                      confirmEvent: 'confirm-delete-mail-settings'
                                  })"
-                                 color="error"
-                                 variant="outline">
-                        {{ __('actions.delete') }}
-                    </x-ui.button>
-                @endif
-            </div>
-        </x-ui.form>
-    </x-settings.layout>
-</section>
+                                     color="error"
+                                     variant="outline">
+                            {{ __('actions.delete') }}
+                        </x-ui.button>
+                    @endif
+                </div>
+            </x-ui.form>
+        </x-settings.layout>
+    </section>
+</x-layouts.page>

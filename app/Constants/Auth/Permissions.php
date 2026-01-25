@@ -5,103 +5,164 @@ declare(strict_types=1);
 namespace App\Constants\Auth;
 
 use App\Services\Auth\PermissionMatrix;
+use Exception;
 
 /**
  * Permission constants for the RBAC system.
  *
- * This class provides constants for all permissions in the system.
+ * This class provides dynamic access to all permissions in the system via magic methods.
  * Permissions follow the pattern: "{action} {entity}" (e.g., "view users", "edit roles").
  *
- * The permissions are derived from the PermissionMatrix service which defines
- * which entities support which actions.
+ * The permissions are dynamically generated from the PermissionMatrix service which defines
+ * which entities support which actions. This is the single source of truth.
  *
- * CRITICAL RULE: All permission names must be defined here as constants.
- * NO HARDCODED STRINGS ARE ALLOWED for permission names throughout the application.
+ * USAGE:
+ *   Permissions::VIEW_USERS()          // returns 'view users'
+ *   Permissions::EDIT_ROLES()          // returns 'edit roles'
+ *   Permissions::DELETE_EMAIL_TEMPLATES()  // returns 'delete email_templates'
+ *
+ * CRITICAL RULE: Use these permission methods throughout the application.
+ * NO HARDCODED STRINGS ARE ALLOWED for permission names.
+ *
+ * @method static string VIEW_USERS()
+ * @method static string CREATE_USERS()
+ * @method static string EDIT_USERS()
+ * @method static string DELETE_USERS()
+ * @method static string ACTIVATE_USERS()
+ * @method static string EXPORT_USERS()
+ * @method static string GENERATE_ACTIVATION_USERS()
+ * @method static string RESTORE_USERS()
+ * @method static string FORCE_DELETE_USERS()
+ * @method static string VIEW_ROLES()
+ * @method static string CREATE_ROLES()
+ * @method static string EDIT_ROLES()
+ * @method static string DELETE_ROLES()
+ * @method static string RESTORE_ROLES()
+ * @method static string FORCE_DELETE_ROLES()
+ * @method static string VIEW_TEAMS()
+ * @method static string CREATE_TEAMS()
+ * @method static string EDIT_TEAMS()
+ * @method static string DELETE_TEAMS()
+ * @method static string RESTORE_TEAMS()
+ * @method static string FORCE_DELETE_TEAMS()
+ * @method static string VIEW_ERROR_LOGS()
+ * @method static string RESOLVE_ERROR_LOGS()
+ * @method static string DELETE_ERROR_LOGS()
+ * @method static string EXPORT_ERROR_LOGS()
+ * @method static string RESTORE_ERROR_LOGS()
+ * @method static string FORCE_DELETE_ERROR_LOGS()
+ * @method static string VIEW_TELESCOPE()
+ * @method static string VIEW_HORIZON()
+ * @method static string VIEW_MAIL_SETTINGS()
+ * @method static string CONFIGURE_MAIL_SETTINGS()
+ * @method static string VIEW_EMAIL_TEMPLATES()
+ * @method static string CREATE_EMAIL_TEMPLATES()
+ * @method static string EDIT_EMAIL_TEMPLATES()
+ * @method static string EDIT_BUILDER_EMAIL_TEMPLATES()
+ * @method static string DELETE_EMAIL_TEMPLATES()
+ * @method static string RESTORE_EMAIL_TEMPLATES()
+ * @method static string FORCE_DELETE_EMAIL_TEMPLATES()
+ * @method static string PUBLISH_EMAIL_TEMPLATES()
+ * @method static string VIEW_EMAIL_LAYOUTS()
+ * @method static string CREATE_EMAIL_LAYOUTS()
+ * @method static string EDIT_EMAIL_LAYOUTS()
+ * @method static string DELETE_EMAIL_LAYOUTS()
  */
 class Permissions
 {
-    // User permissions
-    public const VIEW_USERS = 'view users';
+    /**
+     * Cache for permission name lookups to avoid regenerating the matrix on every call.
+     */
+    private static ?array $cache = null;
 
-    public const CREATE_USERS = 'create users';
+    /**
+     * Singleton instance of PermissionMatrix to avoid recreating it.
+     */
+    private static ?PermissionMatrix $matrix = null;
 
-    public const EDIT_USERS = 'edit users';
+    /**
+     * Magic method to handle permission constant calls.
+     *
+     * Converts calls like Permissions::VIEW_USERS() to the permission string 'view users'.
+     *
+     * @param  string  $name  The method name (e.g., 'VIEW_USERS')
+     * @param  array  $arguments  Arguments (ignored, should be empty)
+     * @return string The permission name (e.g., 'view users')
+     *
+     * @throws Exception If the permission constant name is not found
+     */
+    public static function __callStatic(string $name, array $arguments): string
+    {
+        return self::get($name);
+    }
 
-    public const DELETE_USERS = 'delete users';
+    /**
+     * Get permission string from constant name.
+     *
+     * @param  string  $constantName  The constant name (e.g., 'VIEW_USERS')
+     * @return string The permission name (e.g., 'view users')
+     *
+     * @throws Exception If the permission is not found
+     */
+    private static function get(string $constantName): string
+    {
+        if (self::$cache === null) {
+            self::buildCache();
+        }
 
-    public const ACTIVATE_USERS = 'activate users';
+        if (! isset(self::$cache[$constantName])) {
+            throw new Exception("Unknown permission constant: {$constantName}. Check PermissionMatrix for valid permissions.");
+        }
 
-    public const EXPORT_USERS = 'export users';
+        return self::$cache[$constantName];
+    }
 
-    public const GENERATE_ACTIVATION_USERS = 'generate_activation users';
+    /**
+     * Build the cache of permission constants from the PermissionMatrix.
+     *
+     * This creates a mapping from constant names (e.g., 'VIEW_USERS') to
+     * permission strings (e.g., 'view users').
+     */
+    private static function buildCache(): void
+    {
+        $matrix = self::getMatrix();
+        self::$cache = [];
 
-    public const RESTORE_USERS = 'restore users';
+        foreach ($matrix->getPermissionsByEntity() as $entity => $permissions) {
+            foreach ($permissions as $permission) {
+                $constantName = self::permissionToConstantName($permission);
+                self::$cache[$constantName] = $permission;
+            }
+        }
+    }
 
-    public const FORCE_DELETE_USERS = 'force_delete users';
+    /**
+     * Convert a permission string to its constant name format.
+     *
+     * Examples:
+     *   'view users' => 'VIEW_USERS'
+     *   'edit roles' => 'EDIT_ROLES'
+     *   'edit email_template_builder' => 'EDIT_BUILDER_EMAIL_TEMPLATES'
+     *
+     * @param  string  $permission  The permission string
+     * @return string The constant name
+     */
+    private static function permissionToConstantName(string $permission): string
+    {
+        return strtoupper(str_replace(' ', '_', $permission));
+    }
 
-    // Role permissions
-    public const VIEW_ROLES = 'view roles';
+    /**
+     * Get the PermissionMatrix singleton instance.
+     */
+    private static function getMatrix(): PermissionMatrix
+    {
+        if (self::$matrix === null) {
+            self::$matrix = new PermissionMatrix;
+        }
 
-    public const CREATE_ROLES = 'create roles';
-
-    public const EDIT_ROLES = 'edit roles';
-
-    public const DELETE_ROLES = 'delete roles';
-
-    public const RESTORE_ROLES = 'restore roles';
-
-    public const FORCE_DELETE_ROLES = 'force_delete roles';
-
-    // Team permissions
-    public const VIEW_TEAMS = 'view teams';
-
-    public const CREATE_TEAMS = 'create teams';
-
-    public const EDIT_TEAMS = 'edit teams';
-
-    public const DELETE_TEAMS = 'delete teams';
-
-    public const RESTORE_TEAMS = 'restore teams';
-
-    public const FORCE_DELETE_TEAMS = 'force_delete teams';
-
-    // Error log permissions
-    public const VIEW_ERROR_LOGS = 'view error_logs';
-
-    public const RESOLVE_ERROR_LOGS = 'resolve error_logs';
-
-    public const DELETE_ERROR_LOGS = 'delete error_logs';
-
-    public const EXPORT_ERROR_LOGS = 'export error_logs';
-
-    public const RESTORE_ERROR_LOGS = 'restore error_logs';
-
-    public const FORCE_DELETE_ERROR_LOGS = 'force_delete error_logs';
-
-    // System access permissions
-    public const VIEW_TELESCOPE = 'view telescope';
-
-    public const VIEW_HORIZON = 'view horizon';
-
-    // Settings permissions
-    public const VIEW_MAIL_SETTINGS = 'view mail_settings';
-
-    public const CONFIGURE_MAIL_SETTINGS = 'configure mail_settings';
-
-    // Email template permissions
-    public const VIEW_EMAIL_TEMPLATES = 'view email_templates';
-
-    public const CREATE_EMAIL_TEMPLATES = 'create email_templates';
-
-    public const EDIT_EMAIL_TEMPLATES = 'edit email_templates';
-
-    public const DELETE_EMAIL_TEMPLATES = 'delete email_templates';
-
-    public const RESTORE_EMAIL_TEMPLATES = 'restore email_templates';
-
-    public const FORCE_DELETE_EMAIL_TEMPLATES = 'force_delete email_templates';
-
-    public const PUBLISH_EMAIL_TEMPLATES = 'publish email_templates';
+        return self::$matrix;
+    }
 
     /**
      * Get all permission names from the PermissionMatrix.
@@ -110,7 +171,7 @@ class Permissions
      */
     public static function all(): array
     {
-        return (new PermissionMatrix)->getAllPermissionNames();
+        return self::getMatrix()->getAllPermissionNames();
     }
 
     /**
@@ -120,7 +181,7 @@ class Permissions
      */
     public static function byEntity(): array
     {
-        return (new PermissionMatrix)->getPermissionsByEntity();
+        return self::getMatrix()->getPermissionsByEntity();
     }
 
     /**
@@ -131,7 +192,7 @@ class Permissions
      */
     public static function forEntity(string $entity): array
     {
-        $matrix = new PermissionMatrix;
+        $matrix = self::getMatrix();
 
         return array_map(
             fn (string $action) => $matrix->getPermissionName($entity, $action),
@@ -147,6 +208,16 @@ class Permissions
      */
     public static function make(string $entity, string $action): string
     {
-        return (new PermissionMatrix)->getPermissionName($entity, $action);
+        return self::getMatrix()->getPermissionName($entity, $action);
+    }
+
+    /**
+     * Clear the permission cache.
+     * Useful for testing or when the permission matrix is dynamically updated.
+     */
+    public static function clearCache(): void
+    {
+        self::$cache = null;
+        self::$matrix = null;
     }
 }

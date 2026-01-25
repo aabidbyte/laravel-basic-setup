@@ -72,8 +72,8 @@ class ActionModal extends LivewireBaseComponent
                 'content' => $viewProps['content'] ?? '',
                 'confirmLabel' => $viewProps['confirmLabel'] ?? __('actions.confirm'),
                 'cancelLabel' => $viewProps['cancelLabel'] ?? __('actions.cancel'),
-                'onConfirm' => '$wire.confirm()',
-                'onCancel' => '$wire.closeModal()',
+                'onConfirm' => 'confirmAction()',
+                'onCancel' => 'closeModal()',
                 // Explicitly preserve action keys
                 'actionKey' => $viewProps['actionKey'] ?? null,
                 'uuid' => $viewProps['uuid'] ?? null,
@@ -92,6 +92,7 @@ class ActionModal extends LivewireBaseComponent
     /**
      * Handle confirmation action
      */
+    #[On('datatable-confirm')]
     public function confirm(): void
     {
         // Extract action details from props
@@ -112,6 +113,10 @@ class ActionModal extends LivewireBaseComponent
     /**
      * Close the modal and reset state
      */
+    /**
+     * Close the modal and reset state
+     */
+    #[On('datatable-close-modal')]
     public function closeModal(): void
     {
         $this->isOpen = false;

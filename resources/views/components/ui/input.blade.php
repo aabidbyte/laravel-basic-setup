@@ -21,8 +21,13 @@
             @endisset
         </div>
     @endif
-    <input {{ $attributes->merge(['class' => 'input input-bordered w-full' . ($hasError ? ' input-error' : '')])->except(['label', 'error']) }}
-           id="{{ $inputId }}" />
+    @if ($attributes->get('type') === 'textarea')
+        <textarea {{ $attributes->merge(['class' => 'textarea textarea-bordered w-full' . ($hasError ? ' textarea-error' : '')])->except(['label', 'error']) }}
+                  id="{{ $inputId }}"></textarea>
+    @else
+        <input {{ $attributes->merge(['class' => 'input input-bordered w-full' . ($hasError ? ' input-error' : '')])->except(['label', 'error']) }}
+               id="{{ $inputId }}" />
+    @endif
     <x-ui.input-error :name="$attributes->get('name')"
                       :error="$error" />
 </label>

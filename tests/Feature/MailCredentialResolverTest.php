@@ -16,7 +16,7 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     // Create the permission and role
-    $permission = Permission::create(['name' => Permissions::CONFIGURE_MAIL_SETTINGS]);
+    $permission = Permission::create(['name' => Permissions::CONFIGURE_MAIL_SETTINGS()]);
     $this->mailConfigRole = Role::create(['name' => 'mail-config']);
     $this->mailConfigRole->givePermissionTo($permission);
 });

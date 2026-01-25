@@ -14,7 +14,7 @@ uses(RefreshDatabase::class);
 
 test('unauthenticated user cannot access teams pages', function () {
     $this->get(route('teams.index'))->assertRedirect(route('login'));
-    $this->get(route('teams.create'))->assertRedirect(route('login'));
+    $this->get(route('teams.edit'))->assertRedirect(route('login'));
 
     $team = Team::create(['name' => 'test-team']);
     $this->get(route('teams.edit', $team->uuid))->assertRedirect(route('login'));
@@ -25,7 +25,7 @@ test('unauthorized user cannot access teams pages', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)->get(route('teams.index'))->assertForbidden();
-    $this->actingAs($user)->get(route('teams.create'))->assertForbidden();
+    $this->actingAs($user)->get(route('teams.edit'))->assertForbidden();
 
     $team = Team::create(['name' => 'test-team']);
     $this->actingAs($user)->get(route('teams.edit', $team->uuid))->assertForbidden();
@@ -34,7 +34,7 @@ test('unauthorized user cannot access teams pages', function () {
 
 test('authorized user can list teams', function () {
     $user = User::factory()->create();
-    $permission = Permission::create(['name' => Permissions::VIEW_TEAMS]);
+    $permission = Permission::create(['name' => Permissions::VIEW_TEAMS()]);
     $role = Role::create(['name' => 'viewer']);
     $role->givePermissionTo($permission);
     $user->assignRole($role);
@@ -47,20 +47,20 @@ test('authorized user can list teams', function () {
 
 test('authorized user can create team', function () {
     $user = User::factory()->create();
-    $permission = Permission::create(['name' => Permissions::CREATE_TEAMS]);
+    $permission = Permission::create(['name' => Permissions::CREATE_TEAMS()]);
     $role = Role::create(['name' => 'creator']);
     $role->givePermissionTo($permission);
     $user->assignRole($role);
 
     $this->actingAs($user)
-        ->get(route('teams.create'))
+        ->get(route('teams.edit'))
         ->assertOk();
 
     Livewire::actingAs($user)
-        ->test('pages::teams.create')
+        ->test('pages::teams.edit', ['team' => null])
         ->set('name', 'New Team')
         ->set('description', 'Team Description')
-        ->call('createTeam')
+        ->call('create')
         ->assertRedirect(route('teams.index'));
 
     expect(Team::where('name', 'New Team')->exists())->toBeTrue()
@@ -69,7 +69,7 @@ test('authorized user can create team', function () {
 
 test('authorized user can edit team', function () {
     $user = User::factory()->create();
-    $permission = Permission::create(['name' => Permissions::EDIT_TEAMS]);
+    $permission = Permission::create(['name' => Permissions::EDIT_TEAMS()]);
     $role = Role::create(['name' => 'editor']);
     $role->givePermissionTo($permission);
     $user->assignRole($role);
@@ -83,15 +83,15 @@ test('authorized user can edit team', function () {
     Livewire::actingAs($user)
         ->test('pages::teams.edit', ['team' => $targetTeam])
         ->set('name', 'Updated Team')
-        ->call('updateTeam');
+        ->call('save');
 
     expect($targetTeam->fresh()->name)->toBe('Updated Team');
 });
 
 test('authorized user can delete team', function () {
     $user = User::factory()->create();
-    $permission = Permission::create(['name' => Permissions::DELETE_TEAMS]);
-    $viewerPermission = Permission::create(['name' => Permissions::VIEW_TEAMS]);
+    $permission = Permission::create(['name' => Permissions::DELETE_TEAMS()]);
+    $viewerPermission = Permission::create(['name' => Permissions::VIEW_TEAMS()]);
     $role = Role::create(['name' => 'deleter']);
     $role->givePermissionTo($permission, $viewerPermission);
     $user->assignRole($role);

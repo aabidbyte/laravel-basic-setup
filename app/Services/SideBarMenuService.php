@@ -53,19 +53,19 @@ class SideBarMenuService
                             ->title(__('navigation.users'))
                             ->route('users.index')
                             ->activeRoutes('users.*')
-                            ->show(Auth::user()?->can(Permissions::VIEW_USERS) ?? false),
+                            ->show(Auth::user()?->can(Permissions::VIEW_USERS()) ?? false),
 
                         NavigationItem::make()
                             ->title(__('navigation.roles'))
                             ->route('roles.index')
                             ->activeRoutes('roles.*')
-                            ->show(Auth::user()?->can(Permissions::VIEW_ROLES) ?? false),
+                            ->show(Auth::user()?->can(Permissions::VIEW_ROLES()) ?? false),
 
                         NavigationItem::make()
                             ->title(__('navigation.teams'))
                             ->route('teams.index')
                             ->activeRoutes('teams.*')
-                            ->show(Auth::user()?->can(Permissions::VIEW_TEAMS) ?? false),
+                            ->show(Auth::user()?->can(Permissions::VIEW_TEAMS()) ?? false),
                     ),
 
                 // Email Templates (Unified)
@@ -77,13 +77,13 @@ class SideBarMenuService
                             ->title(__('types.email_contents'))
                             ->route('emailTemplates.contents.index')
                             ->activeRoutes('emailTemplates.contents.*')
-                            ->show(Auth::user()?->can(Permissions::VIEW_EMAIL_TEMPLATES) ?? false),
+                            ->show(Auth::user()?->can(Permissions::VIEW_EMAIL_TEMPLATES()) ?? false),
 
                         NavigationItem::make()
                             ->title(__('types.email_layouts'))
                             ->route('emailTemplates.layouts.index')
                             ->activeRoutes('emailTemplates.layouts.*')
-                            ->show(Auth::user()?->can(Permissions::VIEW_EMAIL_TEMPLATES) ?? false),
+                            ->show(Auth::user()?->can(Permissions::VIEW_EMAIL_TEMPLATES()) ?? false),
                     ),
 
                 // Developer Tools group (collapsible, dev only)
@@ -115,7 +115,7 @@ class SideBarMenuService
                             ->route('admin.errors.index')
                             ->activeRoutes('admin.errors.*')
                             ->icon('exclamation-triangle')
-                            ->show(Auth::user()?->can(Permissions::VIEW_ERROR_LOGS) ?? false),
+                            ->show(Auth::user()?->can(Permissions::VIEW_ERROR_LOGS()) ?? false),
                     ),
 
                 // Trashed items group (collapsible)
@@ -128,25 +128,25 @@ class SideBarMenuService
                             ->title(__('types.users'))
                             ->route('trash.index', ['entityType' => 'users'])
                             ->active(fn () => request()->route('entityType') === 'users' && request()->routeIs('trash.*'))
-                            ->show(Auth::user()?->can(Permissions::VIEW_USERS) ?? false),
+                            ->show(Auth::user()?->can(Permissions::VIEW_USERS()) ?? false),
 
                         NavigationItem::make()
                             ->title(__('types.roles'))
                             ->route('trash.index', ['entityType' => 'roles'])
                             ->active(fn () => request()->route('entityType') === 'roles' && request()->routeIs('trash.*'))
-                            ->show(Auth::user()?->can(Permissions::VIEW_ROLES) ?? false),
+                            ->show(Auth::user()?->can(Permissions::VIEW_ROLES()) ?? false),
 
                         NavigationItem::make()
                             ->title(__('types.teams'))
                             ->route('trash.index', ['entityType' => 'teams'])
                             ->active(fn () => request()->route('entityType') === 'teams' && request()->routeIs('trash.*'))
-                            ->show(Auth::user()?->can(Permissions::VIEW_TEAMS) ?? false),
+                            ->show(Auth::user()?->can(Permissions::VIEW_TEAMS()) ?? false),
 
                         NavigationItem::make()
                             ->title(__('types.error_logs'))
                             ->route('trash.index', ['entityType' => 'error-logs'])
                             ->active(fn () => request()->route('entityType') === 'error-logs' && request()->routeIs('trash.*'))
-                            ->show(Auth::user()?->can(Permissions::VIEW_ERROR_LOGS) ?? false),
+                            ->show(Auth::user()?->can(Permissions::VIEW_ERROR_LOGS()) ?? false),
                     ),
             )
             ->toArray();
@@ -179,9 +179,9 @@ class SideBarMenuService
             return false;
         }
 
-        return $user->can(Permissions::VIEW_USERS)
-            || $user->can(Permissions::VIEW_ROLES)
-            || $user->can(Permissions::VIEW_TEAMS)
-            || $user->can(Permissions::VIEW_ERROR_LOGS);
+        return $user->can(Permissions::VIEW_USERS())
+            || $user->can(Permissions::VIEW_ROLES())
+            || $user->can(Permissions::VIEW_TEAMS())
+            || $user->can(Permissions::VIEW_ERROR_LOGS());
     }
 }

@@ -9,12 +9,16 @@ use Illuminate\Support\Facades\File;
 class LocaleManager
 {
     protected string $defaultLocale;
+
     protected array $supportedLocales;
+
     protected array $namespaces;
+
     protected string $extractedFile;
-    
+
     // Statistics for key additions
     protected int $keysAdded = 0;
+
     protected int $filesUpdated = 0;
 
     protected DynamicKeyResolver $dynamicKeyResolver;
@@ -36,7 +40,7 @@ class LocaleManager
     {
         return $this->keysAdded;
     }
-    
+
     public function getFilesUpdated(): int
     {
         return $this->filesUpdated;
@@ -85,7 +89,10 @@ class LocaleManager
         $defaultLangPath = lang_path($this->defaultLocale);
 
         if (! File::exists($defaultLangPath)) {
-            if ($output) $output->error("Default locale directory not found: {$defaultLangPath}");
+            if ($output) {
+                $output->error("Default locale directory not found: {$defaultLangPath}");
+            }
+
             return;
         }
 
@@ -121,7 +128,9 @@ class LocaleManager
 
         if (! File::exists($localePath)) {
             File::makeDirectory($localePath, 0755, true);
-            if ($output) $output->info("Created locale directory: {$locale}");
+            if ($output) {
+                $output->info("Created locale directory: {$locale}");
+            }
         }
 
         foreach ($translationFiles as $file) {
@@ -143,9 +152,13 @@ class LocaleManager
                 if ($write) {
                     $this->writeTranslationFile($localeFile, $merged);
                     $this->filesUpdated++;
-                    if ($output) $output->info("Updated: {$locale}/{$file}.php");
+                    if ($output) {
+                        $output->info("Updated: {$locale}/{$file}.php");
+                    }
                 } else {
-                    if ($output) $output->line("Would update: {$locale}/{$file}.php");
+                    if ($output) {
+                        $output->line("Would update: {$locale}/{$file}.php");
+                    }
                 }
 
                 $added = $this->countAddedKeys($localeTranslations, $merged);
@@ -189,9 +202,13 @@ class LocaleManager
                 if ($write) {
                     $this->writeTranslationFile($filePath, $updated);
                     $this->filesUpdated++;
-                    if ($output) $output->info("Updated default locale: {$this->defaultLocale}/{$filename}.php");
+                    if ($output) {
+                        $output->info("Updated default locale: {$this->defaultLocale}/{$filename}.php");
+                    }
                 } else {
-                    if ($output) $output->line("Would update default locale: {$this->defaultLocale}/{$filename}.php");
+                    if ($output) {
+                        $output->line("Would update default locale: {$this->defaultLocale}/{$filename}.php");
+                    }
                 }
             }
         }
@@ -398,7 +415,7 @@ class LocaleManager
             }
         }
     }
-    
+
     /**
      * Write translation file with proper formatting.
      */

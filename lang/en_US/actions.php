@@ -19,6 +19,7 @@ return [
     'cancel' => 'Cancel',
     'edit' => 'Edit',
     'view' => 'View',
+    'preview' => 'Preview',
     'view_details' => 'View Details',
     'activate_selected' => 'Activate',
     'deactivate_selected' => 'Deactivate',
@@ -53,4 +54,6 @@ return [
     'error' => 'Error',
     'success' => 'Success',
     'revoke' => 'Revoke',
+    'customize_text_version' => 'Customize Text Version',
+    'hide_text_version' => 'Hide Text Version',
 ];

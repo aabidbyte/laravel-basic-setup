@@ -80,6 +80,7 @@ class PermissionMatrix
                 PermissionAction::VIEW,
                 PermissionAction::CREATE,
                 PermissionAction::EDIT,
+                PermissionAction::EDIT_BUILDER,
                 PermissionAction::DELETE,
                 PermissionAction::RESTORE,
                 PermissionAction::FORCE_DELETE,

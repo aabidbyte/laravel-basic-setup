@@ -28,7 +28,7 @@ test('authenticated user with VIEW_USERS permission gets 200', function () {
     $user = User::factory()->create();
 
     // Create permission and role
-    $permission = Permission::create(['name' => Permissions::VIEW_USERS]);
+    $permission = Permission::create(['name' => Permissions::VIEW_USERS()]);
     $role = Role::create(['name' => 'viewer']);
     $role->givePermissionTo($permission);
 

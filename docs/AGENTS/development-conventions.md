@@ -452,6 +452,73 @@ These structural elements are acceptable without components:
 3.  **Documentation**: Usage is self-documenting via component names
 4.  **Refactoring**: Easy to update all instances at once
 
+### Clean Blade Templates (MANDATORY)
+
+> **CRITICAL RULE**: Blade templates MUST contain minimal logic. All conditional expressions, data transformations, and business logic MUST be in PHP methods/computed properties, NOT in Blade templates.
+
+#### Requirements
+
+-   **Blade is for structure only** - Templates should render data, not calculate or transform it
+-   **PHP methods for logic** - All ternaries, conditionals, and data manipulation MUST be in Livewire computed properties or methods
+-   **Single source of data** - Blade should receive clean, ready-to-display values from PHP
+-   **Avoid inline ternaries** - No `{{ $condition ? 'value1' : 'value2' }}` in templates
+
+#### Examples
+
+**❌ Incorrect - Logic in Blade:**
+```blade
+<x-ui.title>
+    {{ $isCreateMode 
+        ? __('pages.common.create.title', ['type' => $isLayout ? __('types.layout') : __('types.content')])
+        : __('pages.common.edit.title', ['type' => $isLayout ? __('types.layout') : __('types.content')]) 
+    }}
+</x-ui.title>
+
+<x-ui.button href="{{ $isCreateMode ? route('items.index') : route('items.show', $model) }}">
+    {{ $isCreateMode ? __('actions.create') : __('actions.save') }}
+</x-ui.button>
+```
+
+**✅ Correct - Logic in PHP, clean Blade:**
+```blade
+<x-ui.title>{{ $this->pageTitle }}</x-ui.title>
+
+<x-ui.button href="{{ $this->cancelUrl }}">
+    {{ $this->submitButtonText }}
+</x-ui.button>
+```
+
+```php
+// In PHP block
+public function getPageTitleProperty(): string
+{
+    $typeKey = $this->isLayout ? 'types.layout' : 'types.content';
+    $actionKey = $this->isCreateMode ? 'pages.common.create.title' : 'pages.common.edit.title';
+    return __($actionKey, ['type' => __($typeKey)]);
+}
+
+public function getCancelUrlProperty(): string
+{
+    return $this->isCreateMode
+        ? route('items.index')
+        : route('items.show', $this->model);
+}
+
+public function getSubmitButtonTextProperty(): string
+{
+    return $this->isCreateMode ? __('actions.create') : __('actions.save');
+}
+```
+
+#### Benefits
+
+1.  **Readability**: Templates are clean and easy to read
+2.  **Testability**: Logic in PHP methods can be unit tested
+3.  **Maintainability**: Business logic changes don't require touching templates
+4.  **Reusability**: Computed properties can be reused across multiple templates
+5.  **SRP**: Separates presentation (Blade) from logic (PHP)
+
+
 -   **Web Routes**: Use `Route::livewire()` for interactive pages (preferred method in Livewire 4)
 -   **Static Views**: Use `Route::view()` for simple pages
 -   **Named Routes**: Always use named routes with `route()` helper
@@ -583,6 +650,15 @@ These structural elements are acceptable without components:
         -   Checkbox values should use UUIDs: `value="{{ $role->id }}"` → `value="{{ $role->uuid }}"`
         -   Wire:model id arrays should contain UUIDs, not integer IDs
     -   **Exception**: Session IDs and notification IDs from Laravel's built-in systems may use their default format
+586: 
+587: #### Self-Joins & Ambiguity
+588: 
+589: -   **Ambiguous Columns Rule**: **ALWAYS qualify columns with the table name when using joins.**
+590:     -   When joining tables (especially self-joins), column names like `created_at`, `status`, or `type` become ambiguous.
+591:     -   **Correct**: `where('users.created_at', ...)`
+592:     -   **Incorrect**: `where('created_at', ...)`
+593: -   **DataTable Filters**: Use `->fieldMapping('table_name.column')` in DataTable Filters to implicitly fix ambiguity without changing the filter key.
+594: -   **Base Query**: In `baseQuery()`, always select `table_name.*` to ensure the primary model attributes are hydrated correctly and not overwritten by joined columns.
 
 ### Authentication
 
@@ -616,11 +692,13 @@ These structural elements are acceptable without components:
 -   **Middleware**: `App\Http\Middleware\Teams\TeamsPermission` - Sets team ID from session
 -   **Middleware Priority**: Registered in `AppServiceProvider` to run before `SubstituteBindings`
 -   **Documentation**: See `docs/spatie-permission/index.md` for complete rules, best practices, and guidelines
--   **Constants**: Always use `App\Constants\Permissions` and `App\Constants\Roles` - **NO HARDCODED STRINGS ALLOWED**
--   **Best Practice**: Always check for **permissions** (not roles) using `can()` and `@can` directives
--   **Team ID**: Set via `session(['team_id' => $team->id])` on login, accessed via `setPermissionsTeamId()`
--   **Important**: User model must NOT have `role`, `roles`, `permission`, or `permissions` properties/methods/relations
--   **Switching Teams**: Always call `$user->unsetRelation('roles')->unsetRelation('permissions')` before querying after switching teams
+-   **RBAC Permission System**:
+    -   **Single Source of Truth**: All permissions are defined in `App\Services\Auth\PermissionMatrix`
+    -   **Dynamic Access (MANDATORY)**: Always use the `Permissions` class magic methods to access permissions
+    -   **Example**: `Permissions::VIEW_USERS()` (Correct) vs `Permissions::VIEW_USERS` (Deprecated/Incorrect)
+    -   **Constants**: Entity and Action constants are defined in `App\Constants\Auth\PermissionEntity` and `App\Constants\Auth\PermissionAction`
+    -   **PHPDoc Generation**: Run `php artisan permissions:generate-phpdoc` after modifying the matrix to update IDE support
+    -   **Documentation**: See `docs/AGENTS/rbac-system.md` for full details
 -   **Super Admin Pattern**: Implemented via `Gate::before()` in `AppServiceProvider::boot()` - Users with `Roles::SUPER_ADMIN` role automatically have all permissions granted. This allows using permission-based controls (`@can()`, `$user->can()`) throughout the app without checking for Super Admin status. The pattern follows Spatie Permissions best practices. **Important**: Direct calls to `hasPermissionTo()`, `hasAnyPermission()`, etc. bypass the Gate and won't get Super Admin access - always use `can()` methods instead.
 
 ### Testing

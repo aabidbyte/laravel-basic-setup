@@ -143,7 +143,7 @@ class IconPackMapper
      * Render icon HTML.
      * Handles all sanitization, size mapping, and rendering with fallback.
      */
-    public function renderIcon(?string $name, ?string $pack = null, string $class = '', ?string $size = null): string
+    public function renderIcon(?string $name, ?string $pack = null, ?string $class = null, ?string $size = null): string
     {
         // Handle size prop for backward compatibility
         $sizeClass = $this->getSizeClass($size);

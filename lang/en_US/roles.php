@@ -3,6 +3,7 @@
 return [
     'name' => 'Name',
     'display_name' => 'Display Name',
+    'display_name_hint' => 'The internal system name will be auto-generated from this field.',
     'description' => 'Description',
     'permissions' => 'Permissions',
     'no_permissions' => 'No permissions assigned',

@@ -17,12 +17,12 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     // Create permissions
-    Permission::create(['name' => Permissions::CREATE_USERS]);
-    Permission::create(['name' => Permissions::EDIT_USERS]);
+    Permission::create(['name' => Permissions::CREATE_USERS()]);
+    Permission::create(['name' => Permissions::EDIT_USERS()]);
 
     // Create a role with permissions
     $adminRole = Role::create(['name' => 'admin']);
-    $adminRole->givePermissionTo(Permissions::CREATE_USERS, Permissions::EDIT_USERS);
+    $adminRole->givePermissionTo(Permissions::CREATE_USERS(), Permissions::EDIT_USERS());
 
     // Create a super-admin user to act as the creator
     $this->admin = User::factory()->create();

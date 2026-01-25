@@ -20,7 +20,7 @@ new class extends BasePageComponent {
 
     protected int $placeholderRows = 4;
 
-    public ?User $editUser = null;
+    public ?User $model = null;
 
     // Form fields
     public string $name = '';
@@ -30,37 +30,62 @@ new class extends BasePageComponent {
     public string $password_confirmation = '';
     public ?string $timezone = null;
     public ?string $locale = null;
+
+    // Create mode specific
+    public bool $sendActivation = false;
+
+    // Edit mode specific
     public bool $is_active = false;
 
-    /** @var array<string> Selected role UUIDs */
+    // Common (both modes)
     public array $selectedRoles = [];
-
-    /** @var array<string> Selected team UUIDs */
     public array $selectedTeams = [];
-
-    /** @var array<string> Selected direct permission UUIDs */
     public array $selectedDirectPermissions = [];
 
-    /**
-     * Mount the component and authorize access.
-     */
-    public function mount(string $user): void
+    public function mount(?User $user = null): void
     {
-        $this->authorize(Permissions::EDIT_USERS);
+        $this->authorizeAccess($user);
+        $this->initializeUnifiedModel($user, fn($u) => $this->loadExistingUser($u), fn() => $this->prepareNewUser());
+        $this->updatePageHeader();
+    }
 
-        $this->editUser = User::where('uuid', $user)->firstOrFail();
-        $this->pageSubtitle = __('pages.common.edit.description', ['type' => __('types.user')]);
+    protected function authorizeAccess(?User $user): void
+    {
+        $permission = $user ? Permissions::EDIT_USERS() : Permissions::CREATE_USERS();
 
-        // Populate form fields
-        $this->name = $this->editUser->name;
-        $this->username = $this->editUser->username;
-        $this->email = $this->editUser->email;
-        $this->timezone = $this->editUser->timezone ?? config('app.timezone');
-        $this->locale = $this->editUser->locale ?? config('app.locale');
-        $this->is_active = $this->editUser->is_active;
-        $this->selectedRoles = $this->editUser->roles->pluck('uuid')->toArray();
-        $this->selectedTeams = $this->editUser->teams->pluck('uuid')->toArray();
-        $this->selectedDirectPermissions = $this->editUser->permissions->pluck('uuid')->toArray();
+        $this->authorize($permission);
+    }
+
+    protected function loadExistingUser(User $user): void
+    {
+        $this->model = $user;
+        $this->name = $user->name;
+        $this->username = $user->username;
+        $this->email = $user->email;
+        $this->timezone = $user->timezone ?? config('app.timezone');
+        $this->locale = $user->locale ?? config('app.locale');
+        $this->is_active = $user->is_active;
+        $this->selectedRoles = $user->roles->pluck('uuid')->toArray();
+        $this->selectedTeams = $user->teams->pluck('uuid')->toArray();
+        $this->selectedDirectPermissions = $user->permissions->pluck('uuid')->toArray();
+    }
+
+    protected function prepareNewUser(): void
+    {
+        $this->model = new User();
+        $this->timezone = config('app.timezone');
+        $this->locale = config('app.locale');
+    }
+
+    protected function updatePageHeader(): void
+    {
+        if ($this->isCreateMode) {
+            $this->pageTitle = __('pages.common.create.title', ['type' => __('types.user')]);
+            $this->pageSubtitle = __('pages.common.create.description', ['type' => __('types.user')]);
+        } else {
+            $this->pageTitle = __('pages.common.edit.title', ['type' => __('types.user')]);
+            $this->pageSubtitle = __('pages.common.edit.description', ['type' => __('types.user')]);
+        }
     }
 
     /**
@@ -113,21 +138,12 @@ new class extends BasePageComponent {
         return \App\Models\Permission::orderBy('name')->get();
     }
 
-    /**
-     * Validation rules.
-     *
-     * @return array<string, mixed>
-     */
     protected function rules(): array
     {
-        return [
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
-            'username' => ['required', 'string', 'max:255', Rule::unique(User::class)->ignore($this->editUser->id)],
-            'email' => ['nullable', 'email', 'max:255', Rule::unique(User::class)->ignore($this->editUser->id)],
-            'password' => ['nullable', 'string', Password::defaults(), 'confirmed'],
             'timezone' => ['required', 'string', 'timezone'],
             'locale' => ['required', 'string', 'max:10'],
-            'is_active' => ['boolean'],
             'selectedRoles' => ['array'],
             'selectedRoles.*' => ['exists:roles,uuid'],
             'selectedTeams' => ['array'],
@@ -135,19 +151,63 @@ new class extends BasePageComponent {
             'selectedDirectPermissions' => ['array'],
             'selectedDirectPermissions.*' => ['exists:permissions,uuid'],
         ];
+
+        if ($this->isCreateMode) {
+            // Create mode validation
+            $rules['username'] = ['required', 'string', 'max:255', Rule::unique(User::class)];
+            $rules['email'] = ['nullable', 'email', 'max:255', Rule::unique(User::class)];
+
+            // If not sending activation, password is required
+            if (!$this->sendActivation) {
+                $rules['password'] = ['required', 'string', Password::defaults(), 'confirmed'];
+            }
+
+            // If sending activation, email is required
+            if ($this->sendActivation) {
+                $rules['email'] = ['required', 'email', 'max:255', Rule::unique(User::class)];
+            }
+        } else {
+            // Edit mode validation
+            $rules['username'] = ['required', 'string', 'max:255', Rule::unique(User::class)->ignore($this->model->id)];
+            $rules['email'] = ['nullable', 'email', 'max:255', Rule::unique(User::class)->ignore($this->model->id)];
+            $rules['password'] = ['nullable', 'string', Password::defaults(), 'confirmed'];
+            $rules['is_active'] = ['boolean'];
+        }
+
+        return $rules;
     }
 
-    /**
-     * Update the user.
-     */
-    public function updateUser(): void
+    public function create(): void
     {
         $validated = $this->validate();
 
         $userService = app(UserService::class);
+        $user = $userService->createUser(
+            data: [
+                'name' => $this->name,
+                'username' => $this->username,
+                'email' => $this->email,
+                'password' => $this->password ?: null,
+                'timezone' => $this->timezone,
+                'locale' => $this->locale,
+            ],
+            sendActivation: $this->sendActivation,
+            roleUuids: $this->selectedRoles,
+            teamUuids: $this->selectedTeams,
+            permissionUuids: $this->selectedDirectPermissions,
+        );
 
+        $this->sendSuccessNotification($user, 'pages.common.create.success');
+        $this->redirect(route('users.index'), navigate: true);
+    }
+
+    public function save(): void
+    {
+        $validated = $this->validate();
+
+        $userService = app(UserService::class);
         $user = $userService->updateUser(
-            user: $this->editUser,
+            user: $this->model,
             data: [
                 'name' => $this->name,
                 'username' => $this->username,
@@ -162,29 +222,51 @@ new class extends BasePageComponent {
             permissionUuids: $this->selectedDirectPermissions,
         );
 
-        NotificationBuilder::make()
-            ->title('pages.common.edit.success', ['name' => $user->name])
-            ->success()
-            ->persist()
-            ->send();
-
+        $this->sendSuccessNotification($user, 'pages.common.edit.success');
         $this->redirect(route('users.show', $user->uuid), navigate: true);
     }
 
-    public function getPageTitle(): string
+    // Lifecycle hook for create mode
+    public function updatedSendActivation(): void
     {
-        return __('pages.common.edit.title', ['type' => __('types.user')]);
+        if ($this->sendActivation) {
+            $this->password = '';
+            $this->password_confirmation = '';
+        }
+    }
+
+    // Computed properties
+    public function getCancelUrlProperty(): string
+    {
+        return $this->isCreateMode ? route('users.index') : route('users.show', $this->model->uuid);
+    }
+
+    public function getShowPasswordSectionProperty(): bool
+    {
+        // Create: show if not sending activation
+        // Edit: show only for Super Admin
+        return $this->isCreateMode ? !$this->sendActivation : Auth::user()?->hasRole(Roles::SUPER_ADMIN);
     }
 }; ?>
 
-<section class="mx-auto w-full max-w-4xl">
-    @if ($editUser)
+<x-layouts.page :backHref="$this->cancelUrl"
+                backLabel="{{ __('actions.cancel') }}">
+    <x-slot:bottomActions>
+        <x-ui.button type="submit"
+                     form="user-form"
+                     color="primary">
+            <x-ui.loading wire:loading
+                          wire:target="{{ $this->submitAction }}"
+                          size="sm"></x-ui.loading>
+            {{ $this->submitButtonText }}
+        </x-ui.button>
+    </x-slot:bottomActions>
+
+    <section class="mx-auto w-full max-w-4xl">
         <div class="card bg-base-100 shadow-xl">
             <div class="card-body">
-                <x-ui.title level="2"
-                            class="mb-6">{{ $this->getPageTitle() }}</x-ui.title>
-
-                <x-ui.form wire:submit="updateUser"
+                <x-ui.form wire:submit="{{ $this->submitAction }}"
+                           id="user-form"
                            class="space-y-6">
                     {{-- Basic Information --}}
                     <div class="space-y-4">
@@ -209,36 +291,68 @@ new class extends BasePageComponent {
                         <x-ui.input type="email"
                                     wire:model="email"
                                     name="email"
-                                    :label="__('users.email')"></x-ui.input>
-                        @if ($editUser->hasVerifiedEmail())
-                            <p class="text-info mt-1 text-sm">
-                                <x-ui.icon name="information-circle"
-                                           size="sm"
-                                           class="inline"></x-ui.icon>
-                                {{ __('users.edit.email_change_note') }}
-                            </p>
-                        @endif
-                        @if ($editUser->hasPendingEmailChange())
-                            <div class="alert alert-warning mt-2">
-                                <x-ui.icon name="clock"
-                                           size="sm"></x-ui.icon>
-                                <span>{{ __('users.edit.pending_email_note', ['email' => $editUser->pending_email]) }}</span>
-                            </div>
+                                    :label="__('users.email')"
+                                    :required="$isCreateMode && $sendActivation"></x-ui.input>
+
+                        @if (!$isCreateMode)
+                            @if ($model->hasVerifiedEmail())
+                                <p class="text-info mt-1 text-sm">
+                                    <x-ui.icon name="information-circle"
+                                               size="sm"
+                                               class="inline"></x-ui.icon>
+                                    {{ __('users.edit.email_change_note') }}
+                                </p>
+                            @endif
+
+                            @if ($model->hasPendingEmailChange())
+                                <div class="alert alert-warning mt-2">
+                                    <x-ui.icon name="clock"
+                                               size="sm"></x-ui.icon>
+                                    <span>{{ __('users.edit.pending_email_note', ['email' => $model->pending_email]) }}</span>
+                                </div>
+                            @endif
                         @endif
                     </div>
 
-                    {{-- Password (Super Admin only) --}}
-                    @if (Auth::user()->hasRole(Roles::SUPER_ADMIN))
+                    {{-- Activation Options (Create Only) --}}
+                    @if ($isCreateMode)
                         <div class="divider"></div>
                         <div class="space-y-4">
                             <x-ui.title level="3"
-                                        class="text-base-content/70">{{ __('users.edit.password') }}</x-ui.title>
-                            <p class="text-base-content/60 text-sm">{{ __('users.edit.password_hint') }}</p>
+                                        class="text-base-content/70">{{ __('users.create.activation') }}</x-ui.title>
+
+                            <div class="form-control">
+                                <label class="label cursor-pointer justify-start gap-4">
+                                    <input type="checkbox"
+                                           wire:model.live="sendActivation"
+                                           class="toggle toggle-primary">
+                                    <span class="label-text">{{ __('users.create.send_activation_email') }}</span>
+                                </label>
+                                <span class="text-base-content/60 ml-14 text-sm">
+                                    {{ __('users.create.activation_hint') }}
+                                </span>
+                            </div>
+                        </div>
+                    @endif
+
+                    {{-- Password --}}
+                    @if ($this->showPasswordSection)
+                        <div class="divider"></div>
+                        <div class="space-y-4">
+                            <x-ui.title level="3"
+                                        class="text-base-content/70">
+                                {{ $isCreateMode ? __('users.create.password') : __('users.edit.password') }}
+                            </x-ui.title>
+
+                            @if (!$isCreateMode)
+                                <p class="text-base-content/60 text-sm">{{ __('users.edit.password_hint') }}</p>
+                            @endif
 
                             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <x-ui.password wire:model="password"
                                                name="password"
                                                :label="__('users.password')"
+                                               :required="$isCreateMode && !$sendActivation"
                                                with-strength-meter
                                                with-generation
                                                autocomplete="new-password"></x-ui.password>
@@ -246,26 +360,29 @@ new class extends BasePageComponent {
                                 <x-ui.password wire:model="password_confirmation"
                                                name="password_confirmation"
                                                :label="__('users.password_confirmation')"
+                                               :required="$isCreateMode && !$sendActivation"
                                                autocomplete="new-password"></x-ui.password>
                             </div>
                         </div>
                     @endif
 
-                    {{-- Status --}}
-                    <div class="divider"></div>
-                    <div class="space-y-4">
-                        <x-ui.title level="3"
-                                    class="text-base-content/70">{{ __('users.edit.status') }}</x-ui.title>
+                    {{-- Status (Edit Only) --}}
+                    @if (!$isCreateMode)
+                        <div class="divider"></div>
+                        <div class="space-y-4">
+                            <x-ui.title level="3"
+                                        class="text-base-content/70">{{ __('users.edit.status') }}</x-ui.title>
 
-                        <div class="form-control">
-                            <label class="label cursor-pointer justify-start gap-4">
-                                <input type="checkbox"
-                                       wire:model="is_active"
-                                       class="toggle toggle-success">
-                                <span class="label-text">{{ __('users.edit.is_active') }}</span>
-                            </label>
+                            <div class="form-control">
+                                <label class="label cursor-pointer justify-start gap-4">
+                                    <input type="checkbox"
+                                           wire:model="is_active"
+                                           class="toggle toggle-success">
+                                    <span class="label-text">{{ __('users.edit.is_active') }}</span>
+                                </label>
+                            </div>
                         </div>
-                    </div>
+                    @endif
 
                     {{-- Preferences --}}
                     <div class="divider"></div>
@@ -359,29 +476,8 @@ new class extends BasePageComponent {
                                                 :selectedPermissions="$selectedDirectPermissions"
                                                 wireModel="selectedDirectPermissions"></x-ui.permission-matrix>
                     </div>
-
-                    {{-- Submit --}}
-                    <div class="divider"></div>
-                    <div class="flex justify-end gap-4">
-                        <x-ui.button href="{{ route('users.show', $editUser->uuid) }}"
-                                     variant="ghost"
-                                     wire:navigate>{{ __('actions.cancel') }}</x-ui.button>
-                        <x-ui.button type="submit"
-                                     color="primary">
-                            <x-ui.loading wire:loading
-                                          wire:target="updateUser"
-                                          size="sm"></x-ui.loading>
-                            {{ __('pages.common.edit.submit') }}
-                        </x-ui.button>
-                    </div>
                 </x-ui.form>
             </div>
         </div>
-    @else
-        <div class="alert alert-error">
-            <x-ui.icon name="exclamation-triangle"
-                       size="sm"></x-ui.icon>
-            <span>{{ __('users.user_not_found') }}</span>
-        </div>
-    @endif
-</section>
+    </section>
+</x-layouts.page>

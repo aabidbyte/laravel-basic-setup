@@ -45,6 +45,8 @@ class PermissionAction
 
     public const GENERATE_ACTIVATION = 'generate_activation';
 
+    public const EDIT_BUILDER = 'edit_builder';
+
     /**
      * Get all action constants as an array.
      *
@@ -66,6 +68,7 @@ class PermissionAction
             self::ACTIVATE,
             self::CONFIGURE,
             self::GENERATE_ACTIVATION,
+            self::EDIT_BUILDER,
         ];
     }
 

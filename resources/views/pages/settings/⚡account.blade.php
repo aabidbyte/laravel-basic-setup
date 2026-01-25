@@ -102,7 +102,7 @@ new class extends BasePageComponent {
     }
 }; ?>
 
-<section class="w-full">
+<x-layouts.page>
     <x-settings.layout>
         <div class="space-y-8">
             {{-- Profile Section --}}
@@ -186,4 +186,4 @@ new class extends BasePageComponent {
             </div>
         </div>
     </x-settings.layout>
-</section>
+</x-layouts.page>

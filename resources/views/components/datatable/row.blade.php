@@ -1,5 +1,6 @@
 <tr wire:key="row-{{ $row->uuid }}"
-    @if ($datatable->rowsAreClickable()) @click="@if ($datatable->rowClickOpensModal())window.dispatchEvent(new CustomEvent('datatable-modal-loading')); @endif$wire.handleRowClick('{{ $row->uuid }}')"
+    @if ($datatable->rowsAreClickable()) wire:click="handleRowClick('{{ $row->uuid }}')"
+        @if ($datatable->rowClickOpensModal()) @click="$dispatch('datatable-modal-loading')" @endif
     @endif
     @class([
         'bg-base-200' => $datatable->isSelected($row->uuid),

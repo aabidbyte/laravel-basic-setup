@@ -13,7 +13,7 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     // Create permission and role
-    $permission = Permission::create(['name' => Permissions::VIEW_USERS]);
+    $permission = Permission::create(['name' => Permissions::VIEW_USERS()]);
     $viewerRole = Role::create(['name' => 'viewer']);
     $viewerRole->givePermissionTo($permission);
 

@@ -5,11 +5,9 @@ namespace Tests\Feature\Console;
 use App\Services\Translation\TranslationScanner;
 use Illuminate\Support\Facades\File;
 
-
-
 test('scanner ignores empty translation keys', function () {
     // Setup
-    $scanner = new TranslationScanner();
+    $scanner = new TranslationScanner;
     $tempFile = base_path('tests/temp_empty_keys.blade.php');
     File::put($tempFile, '<div>{{ __("") }} {{ __(\'\') }} {{ __("valid.key") }}</div>');
 

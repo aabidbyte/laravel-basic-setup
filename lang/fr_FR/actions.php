@@ -14,6 +14,7 @@ return [
     'cancel' => 'Annuler',
     'edit' => 'Modifier',
     'view' => 'Voir',
+    'preview' => 'Aperçu',
     'activate_selected' => 'Activer',
     'deactivate_selected' => 'Désactiver',
     'deleted_successfully' => ':user supprimé avec succès',

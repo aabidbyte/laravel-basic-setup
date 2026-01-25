@@ -10,8 +10,8 @@
 <x-layouts.app>
     <x-layouts.page backHref="{{ route('dashboard') }}">
         <x-slot:topActions>
-            @can(Permissions::CREATE_ROLES)
-                <x-ui.button href="{{ route('roles.create') }}"
+            @can(Permissions::CREATE_ROLES())
+                <x-ui.button href="{{ route('roles.edit') }}"
                              wire:navigate
                              color="primary"
                              class="gap-2">

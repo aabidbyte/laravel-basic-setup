@@ -87,6 +87,8 @@ return [
             'all_types' => 'Toutes les catégories',
             'status' => 'Statut',
             'all_statuses' => 'Tous les statuts',
+            'layout' => '',
+            'all_layouts' => '',
         ],
     ],
     'copy_failed' => 'Échec de la copie dans le presse-papiers',

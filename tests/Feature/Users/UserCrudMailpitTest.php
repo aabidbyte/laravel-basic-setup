@@ -15,8 +15,8 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     // Create required permissions and roles
-    $createPerm = Permission::create(['name' => Permissions::CREATE_USERS]);
-    $editPerm = Permission::create(['name' => Permissions::EDIT_USERS]);
+    $createPerm = Permission::create(['name' => Permissions::CREATE_USERS()]);
+    $editPerm = Permission::create(['name' => Permissions::EDIT_USERS()]);
     $this->adminRole = Role::create(['name' => 'admin']);
     $this->adminRole->givePermissionTo($createPerm, $editPerm);
 

@@ -34,5 +34,6 @@ return [
         'activate' => 'Activate',
         'configure' => 'Configure',
         'generate_activation' => 'Generate Activation',
+        'edit_builder' => 'Edit Builder',
     ],
 ];

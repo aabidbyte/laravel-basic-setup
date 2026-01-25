@@ -10,6 +10,15 @@ export function actionModal() {
         _morphHookRemove: null,
         _wireId: null,
 
+        closeModal() {
+            this.modalIsOpen = false;
+            this.$dispatch('datatable-close-modal');
+        },
+
+        confirmAction() {
+            this.$dispatch('datatable-confirm');
+        },
+
         init() {
             // Store wire ID on init for later comparison
             this._wireId = this.$wire?.id;

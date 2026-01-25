@@ -103,7 +103,7 @@ class TeamUserTable extends Datatable
                 ->icon('eye')
                 ->route(fn (User $user) => route('users.show', $user->uuid))
                 ->variant('ghost')
-                ->can(Permissions::VIEW_USERS, false);
+                ->can(Permissions::VIEW_USERS(), false);
         }
 
         $actions[] = Action::make('detach', __('actions.detach'))
@@ -121,7 +121,7 @@ class TeamUserTable extends Datatable
                         ->send();
                 }
             })
-            ->can(Permissions::EDIT_TEAMS, false);
+            ->can(Permissions::EDIT_TEAMS(), false);
 
         return $actions;
     }
@@ -134,7 +134,7 @@ class TeamUserTable extends Datatable
         if (Route::has('users.show')) {
             return Action::make()
                 ->route('users.show', $uuid)
-                ->can(Permissions::VIEW_USERS, false);
+                ->can(Permissions::VIEW_USERS(), false);
         }
 
         return null;

@@ -137,7 +137,15 @@ Column::make(__('City'), 'address.city.name')
 2. Automatically joins related tables
 3. Handles `BelongsTo`, `HasOne`, `HasMany`, and `BelongsToMany`
 
-## Conditional Visibility
+### Self-Joins & Aliasing
+ 
+ When a table joins to itself (e.g. `EmailTemplate` -> `layout` which is also `EmailTemplate`), the system **automatically aliases** the joined table to prevent SQL errors.
+ 
+ - The alias format is usually `related_table_relationship_name` (e.g., `email_templates_layout`).
+ - This allows sorting and filtering on the self-joined relationship without ambiguity.
+ - **No manual action required** for standard relationship columns.
+
+ ## Conditional Visibility
 
 ```php
 Column::make(__('Admin Notes'), 'admin_notes')

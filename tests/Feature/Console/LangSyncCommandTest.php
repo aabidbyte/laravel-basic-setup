@@ -11,8 +11,6 @@ use Illuminate\Support\Facades\File;
 // Use 'pest' for testing
 use Mockery;
 
-use function Pest\Laravel\artisan;
-
 beforeEach(function () {
     // Setup temporary lang directory
     $this->tempLangPath = base_path('tests/temp_lang');
@@ -73,10 +71,10 @@ test('lang:sync command orchestrates strict services correctly', function () {
     // Manual instantiation to ensure mocks are used
     $command = new \App\Console\Commands\LangSyncCommand($scanner, $keyResolver, $localeManager, $pruner);
     $command->setLaravel($this->app);
-    
+
     // Run command
     $input = new \Symfony\Component\Console\Input\ArrayInput(['--write' => false], $command->getDefinition());
-    $output = new \Symfony\Component\Console\Output\BufferedOutput();
+    $output = new \Symfony\Component\Console\Output\BufferedOutput;
     $command->run($input, $output);
 });
 
@@ -116,6 +114,6 @@ test('lang:sync prunes when requested', function () {
 
     // Run command
     $input = new \Symfony\Component\Console\Input\ArrayInput(['--prune' => true], $command->getDefinition());
-    $output = new \Symfony\Component\Console\Output\BufferedOutput();
+    $output = new \Symfony\Component\Console\Output\BufferedOutput;
     $command->run($input, $output);
 });

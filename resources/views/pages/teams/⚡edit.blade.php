@@ -5,7 +5,6 @@ use App\Livewire\Bases\BasePageComponent;
 use App\Models\Team;
 use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Validation\Rule;
-use Livewire\Attributes\Locked;
 
 new class extends BasePageComponent {
     public ?string $pageSubtitle = null;
@@ -14,131 +13,135 @@ new class extends BasePageComponent {
 
     protected int $placeholderRows = 2;
 
-    #[Locked]
-    public string $teamUuid = '';
+    public ?Team $model = null;
 
     // Form fields
     public string $name = '';
-
     public ?string $description = null;
 
-    /**
-     * Mount the component and authorize access.
-     */
-    public function mount(Team $team): void
+    public function mount(?Team $team = null): void
     {
-        $this->authorize(Permissions::EDIT_TEAMS);
+        $this->authorizeAccess($team);
+        $this->initializeUnifiedModel($team, fn($t) => $this->loadExistingTeam($t), fn() => $this->prepareNewTeam());
+        $this->updatePageHeader();
+    }
 
-        $this->teamUuid = $team->uuid;
+    protected function authorizeAccess(?Team $team): void
+    {
+        $permission = $team ? Permissions::EDIT_TEAMS() : Permissions::CREATE_TEAMS();
+
+        $this->authorize($permission);
+    }
+
+    protected function loadExistingTeam(Team $team): void
+    {
+        $this->model = $team;
         $this->name = $team->name;
         $this->description = $team->description;
-
-        $this->pageSubtitle = __('pages.common.edit.description', ['type' => __('types.team')]);
     }
 
-    public function getPageTitle(): string
+    protected function prepareNewTeam(): void
     {
-        return __('pages.common.edit.title', ['type' => __('types.team'), 'name' => $this->name]);
+        $this->model = new Team();
     }
 
-    /**
-     * Get the team being edited.
-     */
-    protected function getTeam(): ?Team
+    protected function updatePageHeader(): void
     {
-        return Team::where('uuid', $this->teamUuid)->first();
+        if ($this->isCreateMode) {
+            $this->pageTitle = __('pages.common.create.title', ['type' => __('types.team')]);
+            $this->pageSubtitle = __('pages.common.create.description', ['type' => __('types.team')]);
+        } else {
+            $this->pageTitle = __('pages.common.edit.title', ['type' => __('types.team'), 'name' => $this->name]);
+            $this->pageSubtitle = __('pages.common.edit.description', ['type' => __('types.team')]);
+        }
     }
 
-    /**
-     * Validation rules.
-     *
-     * @return array<string, mixed>
-     */
     protected function rules(): array
     {
-        $team = $this->getTeam();
-
-        return [
-            'name' => ['required', 'string', 'max:255', Rule::unique(Team::class)->ignore($team?->id)],
+        $rules = [
             'description' => ['nullable', 'string', 'max:1000'],
         ];
+
+        if ($this->isCreateMode) {
+            $rules['name'] = ['required', 'string', 'max:255', Rule::unique(Team::class)];
+        } else {
+            $rules['name'] = ['required', 'string', 'max:255', Rule::unique(Team::class)->ignore($this->model->id)];
+        }
+
+        return $rules;
     }
 
-    /**
-     * Update the team.
-     */
-    public function updateTeam(): void
+    public function create(): void
     {
         $this->validate();
 
-        $team = $this->getTeam();
-
-        if (!$team) {
-            NotificationBuilder::make()
-                ->title('pages.common.not_found', ['type' => __('types.team')])
-                ->error()
-                ->send();
-
-            return;
-        }
-
-        $team->update([
+        $team = Team::create([
             'name' => $this->name,
             'description' => $this->description,
         ]);
 
-        NotificationBuilder::make()
-            ->title('pages.common.edit.success', ['name' => $team->label()])
-            ->success()
-            ->persist()
-            ->send();
+        $this->sendSuccessNotification($team, 'pages.common.create.success');
+        $this->redirect(route('teams.index'), navigate: true);
+    }
 
-        $this->redirect(route('teams.show', $team->uuid), navigate: true);
+    public function save(): void
+    {
+        $this->validate();
+
+        $this->model->update([
+            'name' => $this->name,
+            'description' => $this->description,
+        ]);
+
+        $this->sendSuccessNotification($this->model, 'pages.common.edit.success');
+        $this->redirect(route('teams.show', $this->model->uuid), navigate: true);
+    }
+
+    public function getCancelUrlProperty(): string
+    {
+        return $this->isCreateMode ? route('teams.index') : route('teams.show', $this->model->uuid);
     }
 }; ?>
 
-<section class="mx-auto w-full max-w-4xl">
-    <div class="card bg-base-100 shadow-xl">
-        <div class="card-body">
-            <x-ui.title level="2"
-                        class="mb-6">{{ $this->getPageTitle() }}</x-ui.title>
+<x-layouts.page :backHref="$this->cancelUrl"
+                backLabel="{{ __('actions.cancel') }}">
+    <x-slot:bottomActions>
+        <x-ui.button type="submit"
+                     form="team-form"
+                     color="primary">
+            <x-ui.loading wire:loading
+                          wire:target="{{ $this->submitAction }}"
+                          size="sm"></x-ui.loading>
+            {{ $this->submitButtonText }}
+        </x-ui.button>
+    </x-slot:bottomActions>
 
-            <x-ui.form wire:submit="updateTeam"
-                       class="space-y-6">
-                {{-- Basic Information --}}
-                <div class="space-y-4">
-                    <x-ui.title level="3"
-                                class="text-base-content/70">{{ __('teams.edit.basic_info') }}</x-ui.title>
+    <section class="mx-auto max-w-4xl">
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <x-ui.form wire:submit="{{ $this->submitAction }}"
+                           id="team-form"
+                           class="space-y-6">
+                    {{-- Basic Information --}}
+                    <div class="space-y-4">
+                        <x-ui.title level="3"
+                                    class="text-base-content/70">{{ __('teams.edit.basic_info') }}</x-ui.title>
 
-                    <x-ui.input type="text"
-                                wire:model="name"
-                                name="name"
-                                :label="__('teams.name')"
-                                required
-                                autofocus></x-ui.input>
+                        <x-ui.input type="text"
+                                    wire:model="name"
+                                    name="name"
+                                    :label="__('teams.name')"
+                                    required
+                                    autofocus></x-ui.input>
 
-                    <x-ui.input type="textarea"
-                                wire:model="description"
-                                name="description"
-                                :label="__('teams.description')"
-                                rows="3"></x-ui.input>
-                </div>
-
-                {{-- Submit --}}
-                <div class="divider"></div>
-                <div class="flex justify-end gap-4">
-                    <x-ui.button href="{{ route('teams.show', $teamUuid) }}"
-                                 variant="ghost"
-                                 wire:navigate>{{ __('actions.cancel') }}</x-ui.button>
-                    <x-ui.button type="submit"
-                                 color="primary">
-                        <x-ui.loading wire:loading
-                                      wire:target="updateTeam"
-                                      size="sm"></x-ui.loading>
-                        {{ __('pages.common.edit.submit', ['type' => __('types.team')]) }}
-                    </x-ui.button>
-                </div>
-            </x-ui.form>
+                        <x-ui.input type="textarea"
+                                    wire:model="description"
+                                    name="description"
+                                    :label="__('teams.description')"
+                                    rows="3"></x-ui.input>
+                    </div>
+                </x-ui.form>
+            </div>
         </div>
-    </div>
-</section>
+    </section>
+</x-layouts.page>

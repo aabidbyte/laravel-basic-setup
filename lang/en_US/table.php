@@ -82,6 +82,8 @@ return [
         'filters' => [
             'kind' => 'Kind',
             'all_kinds' => 'All Kinds',
+            'layout' => 'Layout',
+            'all_layouts' => 'All Layouts',
             'type' => 'Type',
             'all_types' => 'All Types',
             'status' => 'Status',

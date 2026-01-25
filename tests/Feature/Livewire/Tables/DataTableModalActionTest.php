@@ -11,7 +11,7 @@ use Livewire\Livewire;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $permission = Permission::firstOrCreate(['name' => Permissions::VIEW_USERS]);
+    $permission = Permission::firstOrCreate(['name' => Permissions::VIEW_USERS()]);
     $viewerRole = Role::firstOrCreate(['name' => 'viewer']);
     $viewerRole->givePermissionTo($permission);
 

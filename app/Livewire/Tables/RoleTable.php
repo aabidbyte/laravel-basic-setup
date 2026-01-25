@@ -23,7 +23,7 @@ class RoleTable extends Datatable
      */
     public function mount(): void
     {
-        $this->authorize(Permissions::VIEW_ROLES);
+        $this->authorize(Permissions::VIEW_ROLES());
     }
 
     /**
@@ -79,7 +79,7 @@ class RoleTable extends Datatable
                 ->icon('eye')
                 ->route(fn (Role $role) => route('roles.show', $role->uuid))
                 ->variant('ghost')
-                ->can(Permissions::VIEW_ROLES, false);
+                ->can(Permissions::VIEW_ROLES(), false);
         }
 
         if (Route::has('roles.edit')) {
@@ -87,7 +87,7 @@ class RoleTable extends Datatable
                 ->icon('pencil')
                 ->route(fn (Role $role) => route('roles.edit', $role->uuid))
                 ->variant('ghost')
-                ->can(Permissions::EDIT_ROLES, false);
+                ->can(Permissions::EDIT_ROLES(), false);
         }
 
         $actions[] = Action::make('delete', __('actions.delete'))
@@ -112,7 +112,7 @@ class RoleTable extends Datatable
                     ->success()
                     ->send();
             })
-            ->can(Permissions::DELETE_ROLES, false)
+            ->can(Permissions::DELETE_ROLES(), false)
             ->show(fn (Role $role) => ! in_array($role->name, [Roles::SUPER_ADMIN, Roles::ADMIN], true));
 
         return $actions;
@@ -136,7 +136,7 @@ class RoleTable extends Datatable
                     $roles->reject(fn ($role) => in_array($role->name, [Roles::SUPER_ADMIN, Roles::ADMIN], true))
                         ->each->delete();
                 })
-                ->can(Permissions::DELETE_ROLES),
+                ->can(Permissions::DELETE_ROLES()),
         ];
     }
 
@@ -148,7 +148,7 @@ class RoleTable extends Datatable
         if (Route::has('roles.show')) {
             return Action::make()
                 ->route('roles.show', $uuid)
-                ->can(Permissions::VIEW_ROLES, false);
+                ->can(Permissions::VIEW_ROLES(), false);
         }
 
         return null;

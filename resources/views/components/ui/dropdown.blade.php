@@ -80,8 +80,7 @@
                 {{ $trigger }}
             </div>
         @endisset
-        <div tabindex="-1"
-             @class($contentClasses)
+        <div @class($contentClasses)
              {{ $attributes->only(['aria-label', 'aria-labelledby']) }}>
             {{ $slot }}
         </div>

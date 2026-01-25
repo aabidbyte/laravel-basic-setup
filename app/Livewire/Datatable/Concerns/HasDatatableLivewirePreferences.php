@@ -17,7 +17,17 @@ trait HasDatatableLivewirePreferences
      */
     protected function getDatatableIdentifier(): string
     {
-        return static::class;
+        $identifier = static::class;
+
+        if (property_exists($this, 'datatableIdentifier')) {
+            $identifier = "{$identifier}:{$this->datatableIdentifier}";
+        }
+
+        if (method_exists($this, 'getPersonalisedDatatableIdentifier')) {
+            $identifier .= ':' . $this->getPersonalisedDatatableIdentifier();
+        }
+
+        return $identifier;
     }
 
     /**

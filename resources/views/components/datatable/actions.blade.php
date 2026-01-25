@@ -30,7 +30,8 @@
                 $actionType = 'link';
                 $actionHref = $action['route'];
             } elseif ($action['hasModal']) {
-                $actionClick = "window.dispatchEvent(new CustomEvent('datatable-modal-loading')); \$wire.openActionModal('{$action['key']}', '{$row->uuid}')";
+                $actionClick = "\$dispatch('datatable-modal-loading')";
+                $wireClick = "openActionModal('{$action['key']}', '{$row->uuid}')";
             } elseif ($action['confirm']) {
                 $actionClick = "executeActionWithConfirmation('{$action['key']}', '{$row->uuid}', false)";
             } else {

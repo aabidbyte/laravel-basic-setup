@@ -18,4 +18,5 @@ return [
         'type_label' => 'Type the name above to confirm',
         'placeholder' => 'Type name here...',
     ],
+    'select' => 'TRANSLATION_NEEDED: Please see context at resources/views/pages/emailTemplates/⚡edit-settings.blade.php:170',
 ];

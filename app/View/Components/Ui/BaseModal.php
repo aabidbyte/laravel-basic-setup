@@ -45,7 +45,7 @@ class BaseModal extends Component
         ?string $descriptionId = null,
         public string $variant = 'default',
         public ?string $color = null,
-        public string $maxWidth = 'md',
+        public ?string $size = null,
         public ?string $placement = null,
         public string $class = '',
         public string $dialogClass = '',
@@ -73,6 +73,10 @@ class BaseModal extends Component
         public int $backdropOpacity = 60,
         public string $backdropBlur = 'md',
         public string $backdropClass = '',
+        public bool $customClose = false,
+        public ?string $maxHeight = null,
+        public string $backgroundClass = 'bg-base-100',
+        public string $paddingClass = 'py-2 px-4',
     ) {
         $this->openState = $this->sanitizeAlpineIdentifier($this->openState, 'modalIsOpen');
         $this->placement = $this->sanitizePlacement($this->placement);
@@ -107,10 +111,14 @@ class BaseModal extends Component
             return '';
         }
 
+        if ($this->customClose) {
+            return $this->onClose ?? ($this->openState . ' = false');
+        }
+
         $closeAction = $this->openState . ' = false';
 
         if ($this->onClose) {
-            return $closeAction . ', ' . $this->onClose;
+            return $closeAction . '; ' . $this->onClose;
         }
 
         return $closeAction;
@@ -171,7 +179,7 @@ class BaseModal extends Component
 
     private function buildDialogClasses(): string
     {
-        $maxWidthClasses = match ($this->maxWidth) {
+        $maxWidthClasses = match ($this->size) {
             'xs' => 'max-w-xs',
             'sm' => 'max-w-sm',
             'md' => 'max-w-md',
@@ -183,7 +191,12 @@ class BaseModal extends Component
             '5xl' => 'max-w-5xl',
             '6xl' => 'max-w-6xl',
             '7xl' => 'max-w-7xl',
-            default => $this->maxWidth,
+            default => 'max-w-[80vw]',
+        };
+
+        $maxHeightClasses = match ($this->maxHeight) {
+            'screen' => 'max-h-screen',
+            default => 'max-h-[90vh]',
         };
 
         $colorClasses = match ($this->color) {
@@ -197,11 +210,11 @@ class BaseModal extends Component
         $classes = [
             'w-full',
             'rounded-box',
-            'bg-base-100',
             'text-base-content',
-            'p-6',
             'shadow-lg',
+            $this->backgroundClass,
             $maxWidthClasses,
+            $maxHeightClasses . ' overflow-y-auto',
             $colorClasses,
             $this->dialogClass,
         ];

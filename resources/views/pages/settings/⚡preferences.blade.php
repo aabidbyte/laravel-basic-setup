@@ -92,91 +92,93 @@ new class extends BasePageComponent {
     }
 }; ?>
 
-<section class="w-full">
-    <x-settings.layout>
-        <x-ui.form wire:submit="savePreferences"
-                   class="w-full space-y-6">
-            {{-- Theme Selection --}}
-            <div class="form-control w-full">
-                <label class="label">
-                    <span class="label-text font-medium">{{ __('settings.preferences.theme_label') }}</span>
-                </label>
-                <div class="flex gap-4">
-                    @foreach ($this->themes as $value => $label)
-                        <label class="flex cursor-pointer items-center gap-2">
-                            <input type="radio"
-                                   wire:model="theme"
-                                   name="theme"
-                                   value="{{ $value }}"
-                                   class="radio radio-primary" />
-                            <span class="flex items-center gap-2">
-                                @if ($value === 'light')
-                                    <x-ui.icon name="sun"
-                                               class="h-5 w-5"></x-ui.icon>
-                                @else
-                                    <x-ui.icon name="moon"
-                                               class="h-5 w-5"></x-ui.icon>
-                                @endif
-                                {{ $label }}
-                            </span>
+<x-layouts.page>
+    <section class="w-full">
+        <x-settings.layout>
+            <x-ui.form wire:submit="savePreferences"
+                       class="w-full space-y-6">
+                {{-- Theme Selection --}}
+                <div class="form-control w-full">
+                    <label class="label">
+                        <span class="label-text font-medium">{{ __('settings.preferences.theme_label') }}</span>
+                    </label>
+                    <div class="flex gap-4">
+                        @foreach ($this->themes as $value => $label)
+                            <label class="flex cursor-pointer items-center gap-2">
+                                <input type="radio"
+                                       wire:model="theme"
+                                       name="theme"
+                                       value="{{ $value }}"
+                                       class="radio radio-primary" />
+                                <span class="flex items-center gap-2">
+                                    @if ($value === 'light')
+                                        <x-ui.icon name="sun"
+                                                   class="h-5 w-5"></x-ui.icon>
+                                    @else
+                                        <x-ui.icon name="moon"
+                                                   class="h-5 w-5"></x-ui.icon>
+                                    @endif
+                                    {{ $label }}
+                                </span>
+                            </label>
+                        @endforeach
+                    </div>
+                    @error('theme')
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ $message }}</span>
                         </label>
-                    @endforeach
+                    @enderror
                 </div>
-                @error('theme')
-                    <label class="label">
-                        <span class="label-text-alt text-error">{{ $message }}</span>
-                    </label>
-                @enderror
-            </div>
 
-            {{-- Language Selection --}}
-            <div class="form-control w-full">
-                <label class="label">
-                    <span class="label-text font-medium">{{ __('settings.preferences.locale_label') }}</span>
-                </label>
-                <select wire:model="locale"
-                        class="select select-bordered w-full">
-                    @foreach ($this->locales as $code => $name)
-                        <option value="{{ $code }}">{{ $name }}</option>
-                    @endforeach
-                </select>
-                @error('locale')
+                {{-- Language Selection --}}
+                <div class="form-control w-full">
                     <label class="label">
-                        <span class="label-text-alt text-error">{{ $message }}</span>
+                        <span class="label-text font-medium">{{ __('settings.preferences.locale_label') }}</span>
                     </label>
-                @enderror
-            </div>
+                    <select wire:model="locale"
+                            class="select select-bordered w-full">
+                        @foreach ($this->locales as $code => $name)
+                            <option value="{{ $code }}">{{ $name }}</option>
+                        @endforeach
+                    </select>
+                    @error('locale')
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ $message }}</span>
+                        </label>
+                    @enderror
+                </div>
 
-            {{-- Timezone Selection --}}
-            <div class="form-control w-full">
-                <label class="label">
-                    <span class="label-text font-medium">{{ __('settings.preferences.timezone_label') }}</span>
-                </label>
-                <select wire:model="timezone"
-                        class="select select-bordered w-full">
-                    @foreach ($this->timezones as $tz)
-                        <option value="{{ $tz }}">{{ $tz }}</option>
-                    @endforeach
-                </select>
-                <label class="label">
-                    <span class="label-text-alt text-base-content/70">
-                        {{ __('settings.preferences.timezone_help') }}
-                    </span>
-                </label>
-                @error('timezone')
+                {{-- Timezone Selection --}}
+                <div class="form-control w-full">
                     <label class="label">
-                        <span class="label-text-alt text-error">{{ $message }}</span>
+                        <span class="label-text font-medium">{{ __('settings.preferences.timezone_label') }}</span>
                     </label>
-                @enderror
-            </div>
+                    <select wire:model="timezone"
+                            class="select select-bordered w-full">
+                        @foreach ($this->timezones as $tz)
+                            <option value="{{ $tz }}">{{ $tz }}</option>
+                        @endforeach
+                    </select>
+                    <label class="label">
+                        <span class="label-text-alt text-base-content/70">
+                            {{ __('settings.preferences.timezone_help') }}
+                        </span>
+                    </label>
+                    @error('timezone')
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ $message }}</span>
+                        </label>
+                    @enderror
+                </div>
 
-            <div class="flex items-center gap-4 pt-4">
-                <x-ui.button type="submit"
-                             color="primary"
-                             data-test="save-preferences-button">
-                    {{ __('actions.save') }}
-                </x-ui.button>
-            </div>
-        </x-ui.form>
-    </x-settings.layout>
-</section>
+                <div class="flex items-center gap-4 pt-4">
+                    <x-ui.button type="submit"
+                                 color="primary"
+                                 data-test="save-preferences-button">
+                        {{ __('actions.save') }}
+                    </x-ui.button>
+                </div>
+            </x-ui.form>
+        </x-settings.layout>
+    </section>
+</x-layouts.page>

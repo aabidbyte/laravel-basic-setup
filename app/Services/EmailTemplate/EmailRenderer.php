@@ -276,7 +276,7 @@ class EmailRenderer
     {
         return match (true) {
             str_contains($attribute, 'name') => 'John Doe',
-            str_contains($attribute, 'email') => 'john.doe@example.com',
+            str_contains($attribute, 'email') && ! str_ends_with($attribute, '_at') => 'john.doe@example.com',
             str_contains($attribute, 'username') => 'johndoe',
             str_contains($attribute, 'title') => 'Example Title',
             str_contains($attribute, 'description') => 'Sample description.',

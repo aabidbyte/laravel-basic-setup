@@ -1,7 +1,9 @@
-<div class="drawer lg:drawer-open">
+<div class="drawer lg:drawer-open"
+     x-data="{ drawerOpen: false }">
     <input id="sidebar-drawer"
            type="checkbox"
-           class="drawer-toggle" />
+           class="drawer-toggle"
+           x-model="drawerOpen" />
     <div class="drawer-content flex flex-col">
         <div class="navbar bg-base-200">
             <label for="sidebar-drawer"
@@ -12,11 +14,11 @@
             <x-layouts.app.header></x-layouts.app.header>
         </div>
 
-        <main class="flex-1 p-6">
+        <main class="flex-1">
             {{ $slot }}
         </main>
     </div>
-    <div class="drawer-side">
+    <div class="drawer-side z-40">
         <label for="sidebar-drawer"
                aria-label="close sidebar"
                class="drawer-overlay"></label>
