@@ -17,4 +17,5 @@ return [
         'basic_info' => 'Informations de base',
     ],
     'super_admin_all_permissions' => 'Le Super Admin dispose de toutes les permissions par défaut.',
+    'display_name_hint' => '',
 ];

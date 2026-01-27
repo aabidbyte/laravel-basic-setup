@@ -18,6 +18,11 @@ return [
     'actions' => [
         'publish' => 'Publish',
         'archive' => 'Archive',
+        'save_draft' => 'Save as Draft',
+        'archived_success' => 'Template archived successfully.',
+        'published_success' => 'Template published successfully.',
+        'confirm_restore' => 'Discard current draft and restore from published version?',
+        'restore_from_published' => 'Restore from Published',
     ],
     'form' => [
         'basic_info' => 'Basic Information',
@@ -62,9 +67,17 @@ return [
         'modal_description' => 'Quick preview of email template translations and basic information.',
         'no_translations' => 'No translations available for this template.',
         'no_preview' => 'No preview available. Select a locale or verify translation exists.',
+        'view_draft' => 'View Draft Version',
+        'layout_placeholder_title' => 'Content Placeholder',
+        'layout_placeholder_subtitle' => 'Content will be injected here',
     ],
     'translations_count' => '{0} No Translations|{1} :count Translation|[2,*] :count Translations',
     'cannot_delete_system' => 'Cannot delete system template.',
     'cannot_delete_default' => 'Cannot delete default layout.',
     'not_found' => 'Email template not found.',
+    'messages' => [
+        'restored_from_published' => 'Content restored from published version',
+        'draft_saved' => 'Draft saved successfully.',
+        'published' => 'Template published successfully.',
+    ],
 ];

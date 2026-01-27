@@ -41,6 +41,8 @@ return [
     'force_delete' => 'Permanently Delete',
     'force_delete_selected' => 'Permanently Delete',
     'confirm_restore' => 'Are you sure you want to restore this item?',
+    'confirm_archive' => 'Are you sure you want to archive this item?',
+    'confirm_publish' => 'Are you sure you want to publish this item?',
     'confirm_force_delete' => 'Are you sure you want to permanently delete this item? This action cannot be undone.',
     'confirm_bulk_force_delete' => 'Are you sure you want to permanently delete these items? This action cannot be undone.',
     'restored_successfully' => ':name has been restored',

@@ -46,6 +46,9 @@ new class extends BasePageComponent {
     {
         $this->authorizeAccess($user);
         $this->initializeUnifiedModel($user, fn($u) => $this->loadExistingUser($u), fn() => $this->prepareNewUser());
+
+        $this->modelTypeLabel = __('types.user');
+
         $this->updatePageHeader();
     }
 

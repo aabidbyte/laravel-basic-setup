@@ -78,9 +78,9 @@ class LangSyncCommand extends Command
             $this->warn('Running in dry-run mode. Use --write to apply changes.');
         }
 
-        // First, sync default locale with missing keys from codebase
-        $this->info('Syncing default locale with missing keys...');
-        $this->localeManager->syncDefaultLocale(
+        // First, sync source (fallback) locale with missing keys from codebase
+        $this->info("Syncing source locale ({$this->localeManager->getSourceLocale()}) with missing keys...");
+        $this->localeManager->syncSourceLocale(
             $this->scanner->getFoundKeys(),
             (bool) $this->option('write'),
             $this,
@@ -117,25 +117,20 @@ class LangSyncCommand extends Command
      */
     protected function loadConfiguration(): void
     {
-        $defaultLocale = config('i18n.default_locale', 'en_US');
+        $sourceLocale = config('i18n.fallback_locale', 'en_US');
         $supportedLocales = array_keys(config('i18n.supported_locales', []));
         $protectedFiles = config('i18n.protected_translation_files', []);
         $extractedFile = config('i18n.extracted_file', 'extracted');
 
-        // Load configured namespaces and merge with auto-discovered ones
-        // Discovery needs to happen inside LocaleManager or here.
-        // LocaleManager has discoverNamespaces method copied from original.
-        // But to call it, we need to set default locale first.
-
         // Configuration Injection
-        $this->localeManager->setConfiguration($defaultLocale, $supportedLocales, [], $extractedFile);
+        $this->localeManager->setConfiguration($sourceLocale, $supportedLocales, [], $extractedFile);
 
         $configuredNamespaces = config('i18n.namespaces', ['ui', 'messages']);
         $discoveredNamespaces = $this->localeManager->discoverNamespaces();
         $namespaces = array_unique(array_merge($configuredNamespaces, $discoveredNamespaces));
 
         // Re-configure LocaleManager with full namespaces
-        $this->localeManager->setConfiguration($defaultLocale, $supportedLocales, $namespaces, $extractedFile);
+        $this->localeManager->setConfiguration($sourceLocale, $supportedLocales, $namespaces, $extractedFile);
 
         // Configure Pruner
         $this->pruner->setConfiguration($supportedLocales, $protectedFiles, $namespaces);

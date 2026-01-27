@@ -75,6 +75,10 @@ class EmailTemplate extends BaseModel
         ];
     }
 
+    protected $attributes = [
+        'status' => EmailTemplateStatus::DRAFT->value,
+    ];
+
     // =========================================================================
     // RELATIONSHIPS
     // =========================================================================
@@ -249,13 +253,64 @@ class EmailTemplate extends BaseModel
     }
 
     /**
+     * Get content for a specific locale, prioritizing draft if requested.
+     */
+    public function getContent(string $locale, bool $preferDraft = false): array
+    {
+        $translation = $this->getTranslation($locale);
+        
+        if (!$translation) {
+            return [
+                'subject' => '',
+                'html_content' => '',
+                'text_content' => '',
+                'preheader' => '',
+            ];
+        }
+
+        if ($preferDraft && !empty($translation->draft_html_content)) {
+            return [
+                'subject' => $translation->draft_subject ?? $translation->subject,
+                'html_content' => $translation->draft_html_content,
+                'text_content' => $translation->draft_text_content,
+                'preheader' => $translation->draft_preheader ?? $translation->preheader,
+            ];
+        }
+
+        return [
+            'subject' => $translation->subject,
+            'html_content' => $translation->html_content,
+            'text_content' => $translation->text_content,
+            'preheader' => $translation->preheader,
+        ];
+    }
+
+    /**
      * Get available locales for this template.
      *
      * @return array<string>
      */
     public function getAvailableLocales(): array
     {
-        return $this->translations()->pluck('locale')->toArray();
+        return $this->translations->pluck('locale')->unique()->values()->toArray();
+    }
+
+
+
+    /**
+     * Check if the template has any draft content.
+     */
+    public function hasDraftContent(): bool
+    {
+        return $this->translations()->whereNotNull('draft_html_content')->exists();
+    }
+
+    /**
+     * Check if the template has any published content.
+     */
+    public function hasPublishedContent(): bool
+    {
+        return $this->translations()->whereNotNull('html_content')->exists();
     }
 
     // =========================================================================

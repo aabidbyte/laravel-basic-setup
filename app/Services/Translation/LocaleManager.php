@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\File;
 
 class LocaleManager
 {
-    protected string $defaultLocale;
+    protected string $sourceLocale;
 
     protected array $supportedLocales;
 
@@ -28,12 +28,17 @@ class LocaleManager
         $this->dynamicKeyResolver = $dynamicKeyResolver;
     }
 
-    public function setConfiguration(string $defaultLocale, array $supportedLocales, array $namespaces, string $extractedFile): void
+    public function setConfiguration(string $sourceLocale, array $supportedLocales, array $namespaces, string $extractedFile): void
     {
-        $this->defaultLocale = $defaultLocale;
+        $this->sourceLocale = $sourceLocale;
         $this->supportedLocales = $supportedLocales;
         $this->namespaces = $namespaces;
         $this->extractedFile = $extractedFile;
+    }
+
+    public function getSourceLocale(): string
+    {
+        return $this->sourceLocale;
     }
 
     public function getKeysAdded(): int
@@ -53,19 +58,19 @@ class LocaleManager
     }
 
     /**
-     * Auto-discover namespaces from default locale files.
+     * Auto-discover namespaces from source locale files.
      *
      * @return array<string>
      */
     public function discoverNamespaces(): array
     {
-        $defaultPath = lang_path($this->defaultLocale);
+        $sourcePath = lang_path($this->sourceLocale);
 
-        if (! File::exists($defaultPath)) {
+        if (! File::exists($sourcePath)) {
             return [];
         }
 
-        $files = File::files($defaultPath);
+        $files = File::files($sourcePath);
         $namespaces = [];
         $extractedFile = config('i18n.extracted_file', 'extracted');
 
@@ -82,25 +87,25 @@ class LocaleManager
     }
 
     /**
-     * Sync all locales with the default locale as source of truth.
+     * Sync all locales with the source locale as source of truth.
      */
     public function syncLocales(bool $write = false, bool $allowJson = false, $output = null): void
     {
-        $defaultLangPath = lang_path($this->defaultLocale);
+        $sourceLangPath = lang_path($this->sourceLocale);
 
-        if (! File::exists($defaultLangPath)) {
+        if (! File::exists($sourceLangPath)) {
             if ($output) {
-                $output->error("Default locale directory not found: {$defaultLangPath}");
+                $output->error("Source locale directory not found: {$sourceLangPath}");
             }
 
             return;
         }
 
-        // Get all translation files from default locale
-        $defaultFiles = File::files($defaultLangPath);
+        // Get all translation files from source locale
+        $sourceFiles = File::files($sourceLangPath);
         $translationFiles = [];
 
-        foreach ($defaultFiles as $file) {
+        foreach ($sourceFiles as $file) {
             $filename = $file->getFilenameWithoutExtension();
             if ($filename === 'extracted' && ! $allowJson) {
                 continue;
@@ -110,8 +115,8 @@ class LocaleManager
 
         // Sync each locale
         foreach ($this->supportedLocales as $locale) {
-            if ($locale === $this->defaultLocale) {
-                continue; // Skip default locale
+            if ($locale === $this->sourceLocale) {
+                continue; // Skip source locale
             }
 
             $this->syncLocale($locale, $translationFiles, $write, $output);
@@ -119,12 +124,12 @@ class LocaleManager
     }
 
     /**
-     * Sync a specific locale with the default locale.
+     * Sync a specific locale with the source locale.
      */
     public function syncLocale(string $locale, array $translationFiles, bool $write, $output = null): void
     {
         $localePath = lang_path($locale);
-        $defaultPath = lang_path($this->defaultLocale);
+        $sourcePath = lang_path($this->sourceLocale);
 
         if (! File::exists($localePath)) {
             File::makeDirectory($localePath, 0755, true);
@@ -134,18 +139,18 @@ class LocaleManager
         }
 
         foreach ($translationFiles as $file) {
-            $defaultFile = "{$defaultPath}/{$file}.php";
+            $sourceFile = "{$sourcePath}/{$file}.php";
             $localeFile = "{$localePath}/{$file}.php";
 
-            if (! File::exists($defaultFile)) {
+            if (! File::exists($sourceFile)) {
                 continue;
             }
 
-            $defaultTranslations = require $defaultFile;
+            $sourceTranslations = require $sourceFile;
             $localeTranslations = File::exists($localeFile) ? require $localeFile : [];
 
-            // Merge: add missing keys from default, keep existing locale values
-            $merged = $this->mergeTranslations($defaultTranslations, $localeTranslations, $file);
+            // Merge: add missing keys from source, keep existing locale values
+            $merged = $this->mergeTranslations($sourceTranslations, $localeTranslations, $file);
 
             // Check if there are changes
             if ($merged !== $localeTranslations) {
@@ -168,14 +173,14 @@ class LocaleManager
     }
 
     /**
-     * Sync default locale with missing keys from codebase scan.
+     * Sync source locale (fallback locale) with missing keys from codebase scan.
      */
-    public function syncDefaultLocale(array $foundKeys, bool $write, $output = null): void
+    public function syncSourceLocale(array $foundKeys, bool $write, $output = null): void
     {
-        $defaultLangPath = lang_path($this->defaultLocale);
+        $sourceLangPath = lang_path($this->sourceLocale);
 
-        if (! File::exists($defaultLangPath)) {
-            File::makeDirectory($defaultLangPath, 0755, true);
+        if (! File::exists($sourceLangPath)) {
+            File::makeDirectory($sourceLangPath, 0755, true);
         }
 
         // Group keys by namespace (file)
@@ -192,22 +197,22 @@ class LocaleManager
 
         // Sync each translation file
         foreach ($keysByFile as $filename => $keys) {
-            $filePath = "{$defaultLangPath}/{$filename}.php";
+            $filePath = "{$sourceLangPath}/{$filename}.php";
             $existingTranslations = File::exists($filePath) ? require $filePath : [];
 
             // Add missing keys with their usage locations
-            $updated = $this->addMissingKeysToDefault($existingTranslations, $keys, $filename);
+            $updated = $this->addMissingKeysToSource($existingTranslations, $keys, $filename);
 
             if ($updated !== $existingTranslations) {
                 if ($write) {
                     $this->writeTranslationFile($filePath, $updated);
                     $this->filesUpdated++;
                     if ($output) {
-                        $output->info("Updated default locale: {$this->defaultLocale}/{$filename}.php");
+                        $output->info("Updated source locale: {$this->sourceLocale}/{$filename}.php");
                     }
                 } else {
                     if ($output) {
-                        $output->line("Would update default locale: {$this->defaultLocale}/{$filename}.php");
+                        $output->line("Would update source locale: {$this->sourceLocale}/{$filename}.php");
                     }
                 }
             }
@@ -231,13 +236,13 @@ class LocaleManager
     }
 
     /**
-     * Add missing keys to default locale translations with usage locations.
+     * Add missing keys to source locale translations with usage locations.
      *
      * @param  array<string, mixed>  $translations
      * @param  array<string, array<string, array<int>>>  $keys
      * @return array<string, mixed>
      */
-    public function addMissingKeysToDefault(array $translations, array $keys, string $filename): array
+    public function addMissingKeysToSource(array $translations, array $keys, string $filename): array
     {
         $updated = $translations;
 
@@ -352,45 +357,39 @@ class LocaleManager
     }
 
     /**
-     * Merge translations, adding missing keys from default.
+     * Merge translations, adding missing keys from source.
      *
-     * @param  array<string, mixed>  $default
+     * @param  array<string, mixed>  $source
      * @param  array<string, mixed>  $locale
      * @return array<string, mixed>
      */
-    public function mergeTranslations(array $default, array $locale, string $filename = '', string $prefix = ''): array
+    public function mergeTranslations(array $source, array $locale, string $filename = '', string $prefix = ''): array
     {
         $merged = $locale;
 
-        foreach ($default as $key => $value) {
+        foreach ($source as $key => $value) {
             $fullKey = $prefix ? "{$prefix}.{$key}" : $key;
 
-            // Skip DYNAMIC_KEY and TRANSLATION_NEEDED entries - they should only be in default locale
-            if (is_string($value) && (str_starts_with($value, 'DYNAMIC_KEY:') || str_starts_with($value, 'TRANSLATION_NEEDED:'))) {
-                continue;
-            }
-
             if (! isset($merged[$key])) {
-                // Key missing in locale - set empty value
+                // Key missing in locale - set placeholder value
                 if (is_array($value)) {
-                    // If default value is an array, recursively merge with empty array
+                    // If source value is an array, recursively merge with empty array
                     $merged[$key] = $this->mergeTranslations($value, [], $filename, $fullKey);
                 } else {
-                    // For scalar values, set empty string
+                    // For scalar values, set empty string to allow fallback or manual translation
                     $merged[$key] = '';
                 }
             } elseif (is_array($value) && is_array($merged[$key])) {
                 // Both are arrays, recursively merge
                 $merged[$key] = $this->mergeTranslations($value, $merged[$key], $filename, $fullKey);
             } elseif (is_array($value) && ! is_array($merged[$key])) {
-                // Default is array but locale has scalar - replace with merged array
+                // Source is array but locale has scalar - replace with merged array
                 $merged[$key] = $this->mergeTranslations($value, [], $filename, $fullKey);
             }
         }
 
         return $merged;
     }
-
     /**
      * Count how many keys were added.
      */

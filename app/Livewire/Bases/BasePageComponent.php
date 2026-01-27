@@ -121,14 +121,22 @@ abstract class BasePageComponent extends LivewireBaseComponent
     }
 
     /**
+     * Optional label for the model type used in common translations.
+     * e.g., __('types.user')
+     */
+    public ?string $modelTypeLabel = null;
+
+    /**
      * Get submit button text based on mode.
      * Can be overridden for custom text.
      */
     public function getSubmitButtonTextProperty(): string
     {
+        $params = $this->modelTypeLabel ? ['type' => $this->modelTypeLabel] : [];
+
         return $this->isCreateMode
-            ? __('pages.common.create.submit')
-            : __('pages.common.edit.submit');
+            ? __('pages.common.create.submit', $params)
+            : __('pages.common.edit.submit', $params);
     }
 
     /**

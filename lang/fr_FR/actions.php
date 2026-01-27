@@ -54,4 +54,8 @@ return [
     'create_new' => 'Créer nouveau',
     'add_locale' => 'Ajouter une langue',
     'remove_locale' => 'Supprimer la langue',
+    'confirm_archive' => '',
+    'confirm_publish' => '',
+    'customize_text_version' => '',
+    'hide_text_version' => '',
 ];

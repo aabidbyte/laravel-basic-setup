@@ -18,6 +18,11 @@ return [
     'actions' => [
         'publish' => 'Publier',
         'archive' => 'Archiver',
+        'save_draft' => 'Enregistrer comme brouillon',
+        'archived_success' => 'Modèle archivé avec succès.',
+        'published_success' => 'Modèle publié avec succès.',
+        'confirm_restore' => 'Abandonner le brouillon actuel et restaurer à partir de la version publiée ?',
+        'restore_from_published' => 'Restaurer depuis la version publiée',
     ],
     'form' => [
         'basic_info' => 'Informations de base',
@@ -32,6 +37,7 @@ return [
         'html_content' => 'Contenu HTML',
         'text_content' => 'Contenu texte',
         'is_default' => 'Mise en page par défaut',
+        'text_content_auto_generated' => 'Le contenu texte est généré automatiquement à partir du HTML. Cliquez sur "Personnaliser la version texte" pour modifier manuellement.',
     ],
     'show' => [
         'basic_info' => 'Informations de base',
@@ -61,9 +67,18 @@ return [
         'modal_description' => 'Aperçu rapide des traductions et informations de base du modèle d\'e-mail.',
         'no_translations' => 'Aucune traduction disponible pour ce modèle.',
         'no_preview' => 'Aucun aperçu disponible. Sélectionnez une langue ou vérifiez que la traduction existe.',
+        'view_draft' => 'Voir la version brouillon',
+        'layout_placeholder_title' => 'Espace réservé au contenu',
+        'layout_placeholder_subtitle' => 'Le contenu sera injecté ici',
     ],
     'translations_count' => '{0} Aucune Traduction|{1} :count Traduction|[2,*] :count Traductions',
     'cannot_delete_system' => 'Impossible de supprimer un modèle système.',
     'cannot_delete_default' => 'Impossible de supprimer la mise en page par défaut.',
     'not_found' => 'Modèle d\'e-mail introuvable.',
+    'messages' => [
+        'restored_from_published' => 'Contenu restauré à partir de la version publiée',
+        'draft_saved' => 'Brouillon enregistré avec succès.',
+        'published' => 'Modèle publié avec succès.',
+        'test_placeholder' => '',
+    ],
 ];

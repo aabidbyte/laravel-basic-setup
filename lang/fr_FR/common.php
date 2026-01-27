@@ -18,4 +18,5 @@ return [
     ],
     'details' => 'Détails',
     'chars' => 'caractères',
+    'select' => 'Sélectionner...',
 ];

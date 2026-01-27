@@ -1,111 +1,136 @@
+{{--
+    Component: Merge Tag Picker
+    
+    Provides a modal-based search and selection interface for merge tags.
+    Integrates with Alpine.js registered component 'mergeTagPicker'.
+    
+    Props:
+    - target: The ID of the input/textarea where tags should be inserted.
+    - entityTypes: Array of entity types to discover tags for.
+    - contextVariables: Array of context variables to include as tags.
+--}}
 @props([
+    'target' => null,
     'entityTypes' => [],
     'contextVariables' => [],
-    'target' => null, // Alpine x-ref or input name to insert into
 ])
 
-@php
-    use App\Services\EmailTemplate\ColumnTagDiscovery;
-    use App\Services\EmailTemplate\EntityTypeRegistry;
 
-    $registry = app(EntityTypeRegistry::class);
-    $discovery = app(ColumnTagDiscovery::class);
 
-    // Discover tags for each entity type
-    $availableTags = [];
-    foreach ($entityTypes as $entityType) {
-        $tags = $discovery->getTagsForEntityType($entityType);
-        if (!empty($tags)) {
-            $availableTags[$entityType] = [
-                'label' => __("types.$entityType"),
-                'tags' => $tags,
-            ];
-        }
-    }
+<div x-data='mergeTagPicker({!! json_encode($availableTags, JSON_HEX_APOS) !!}, {!! json_encode($target, JSON_HEX_APOS) !!})'
+     {{ $attributes->merge(['class' => 'inline-block']) }}>
 
-    // Add context variables as a group
-    if (!empty($contextVariables)) {
-        $contextTags = [];
-        foreach ($contextVariables as $variable) {
-            $contextTags["context.{$variable}"] = [
-                'label' => \Illuminate\Support\Str::of($variable)->replace('_', ' ')->title()->toString(),
-                'type' => 'string',
-                'example' => 'Value',
-            ];
-        }
-        $availableTags['context'] = [
-            'label' => __('email_templates.merge_tags.context'),
-            'tags' => $contextTags,
-        ];
-    }
-@endphp
-
-<div x-data="mergeTagPicker(@js($availableTags), @js($target))"
-     {{ $attributes->merge(['class' => 'relative']) }}>
-    {{-- Toggle Button --}}
+    {{-- Trigger Button --}}
     <x-ui.button type="button"
                  variant="ghost"
                  size="sm"
-                 @click="isOpen = !isOpen"
+                 @click="openModal()"
                  class="gap-2">
         <x-ui.icon name="code-bracket"
                    size="sm"></x-ui.icon>
         {{ __('email_templates.merge_tags.insert') }}
     </x-ui.button>
 
-    {{-- Dropdown Panel --}}
-    <div x-show="isOpen"
-         x-cloak
-         @click.away="isOpen = false"
-         x-transition:enter="transition ease-out duration-150"
-         x-transition:enter-start="opacity-0 scale-95"
-         x-transition:enter-end="opacity-100 scale-100"
-         x-transition:leave="transition ease-in duration-100"
-         x-transition:leave-start="opacity-100 scale-100"
-         x-transition:leave-end="opacity-0 scale-95"
-         class="bg-base-100 border-base-300 absolute z-50 mt-2 w-80 rounded-lg border p-4 shadow-lg">
+    {{-- Modal Component --}}
+    <x-ui.base-modal id="mergeTagPickerModal_{{ Str::random(8) }}"
+                     open-state="isOpen"
+                     :use-parent-state="true"
+                     :title="__('email_templates.merge_tags.insert')"
+                     :close-action="'closeModal()'"
+                     max-width="2xl">
 
-        {{-- Search --}}
-        <div class="mb-3">
-            <x-ui.input type="text"
-                        x-model="search"
-                        :placeholder="__('email_templates.merge_tags.search')"
-                        size="sm"></x-ui.input>
-        </div>
-
-        {{-- Tag Groups --}}
-        <div class="max-h-64 space-y-4 overflow-y-auto">
-            <template x-for="(group, groupKey) in filteredTags"
-                      :key="groupKey">
-                <div>
-                    <h4 class="text-base-content/70 mb-2 text-sm font-semibold"
-                        x-text="group.label"></h4>
-                    <div class="flex flex-wrap gap-1">
-                        <template x-for="(tag, tagKey) in group.tags"
-                                  :key="tagKey">
-                            <button type="button"
-                                    class="badge badge-ghost hover:badge-primary cursor-pointer text-xs transition-colors"
-                                    @click="insertTag(tagKey)"
-                                    :title="tag.example">
-                                <span x-text="'{{ ' + tagKey + ' }}'"></span>
-                            </button>
-                        </template>
-                    </div>
-                </div>
-            </template>
-
-            {{-- Empty State --}}
-            <div x-show="Object.keys(filteredTags).length === 0"
-                 class="text-base-content/60 py-4 text-center text-sm">
-                {{ __('email_templates.merge_tags.no_tags') }}
+        {{-- View 1: Entity Types --}}
+        <div x-show="view === 'entities'"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 translate-x-4"
+             x-transition:enter-end="opacity-100 translate-x-0">
+            <div class="grid grid-cols-2 gap-3 p-1">
+                <template x-for="(group, key) in availableTags"
+                          :key="key">
+                    <x-ui.button type="button"
+                                 variant="outline"
+                                 class="flex h-auto flex-col items-center gap-2 py-4"
+                                 x-bind:class="{
+                                     'btn-primary': group.color === 'primary',
+                                     'btn-secondary': group.color === 'secondary',
+                                     'btn-accent': group.color === 'accent',
+                                     'btn-neutral': !['primary', 'secondary', 'accent'].includes(group.color)
+                                 }"
+                                 @click="selectEntity(key)">
+                        <div class="h-2 w-2 rounded-full"
+                             :class="'bg-' + group.color"></div>
+                        <span class="text-sm font-semibold"
+                              x-text="group.label"></span>
+                        <span class="text-xs opacity-70"
+                              x-text="'(' + group.count + ')'"></span>
+                    </x-ui.button>
+                </template>
             </div>
         </div>
 
-        {{-- Help Text --}}
-        <div class="border-base-300 mt-3 border-t pt-3">
-            <p class="text-base-content/60 text-xs">
+        {{-- View 2: Tags --}}
+        <div x-show="view === 'tags'"
+             x-cloak
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 translate-x-4"
+             x-transition:enter-end="opacity-100 translate-x-0">
+
+            {{-- Navigation --}}
+            <div class="mb-4 flex items-center gap-3">
+                <x-ui.button type="button"
+                             @click="goBack()"
+                             variant="ghost"
+                             size="sm"
+                             square>
+                    <x-ui.icon name="arrow-left"
+                               size="sm"></x-ui.icon>
+                </x-ui.button>
+                <div class="flex-1">
+                    {{-- Search Input (Only in Tags View) --}}
+                    <x-ui.search x-model="search"
+                                 :placeholder="__('email_templates.merge_tags.search')"
+                                 class="w-full"></x-ui.search>
+                </div>
+            </div>
+
+            {{-- Tag Groups (Filtered by selected entity) --}}
+            <div class="max-h-[50vh] space-y-6 overflow-y-auto px-1">
+                <template x-for="(group, groupKey) in filteredTags"
+                          :key="groupKey">
+                    <div>
+                        <div class="flex flex-wrap gap-2">
+                            <template x-for="(tag, tagKey) in group.tags"
+                                      :key="tagKey">
+                                <button type="button"
+                                        @click="insertTag(tagKey)"
+                                        class="group transition-transform active:scale-95"
+                                        :title="tag.example">
+                                    <x-ui.badge :text="'tag.label'"
+                                                x-text="tag.label"
+                                                x-bind:class="'badge-' + group.color"
+                                                variant="soft"
+                                                class="cursor-pointer py-3 text-xs transition-all group-hover:brightness-95"></x-ui.badge>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+
+                {{-- Empty State --}}
+                <div x-show="isEmpty"
+                     class="py-12 text-center opacity-60">
+                    <x-ui.icon name="magnifying-glass"
+                               class="mx-auto mb-2 h-8 w-8 opacity-50"></x-ui.icon>
+                    <p class="text-sm font-medium">{{ __('email_templates.merge_tags.no_tags') }}</p>
+                </div>
+            </div>
+        </div>
+
+        {{-- Footer Help Text --}}
+        <div class="border-base-200 mt-6 border-t pt-4">
+            <p class="text-xs opacity-60">
                 {{ __('email_templates.merge_tags.help') }}
             </p>
         </div>
-    </div>
+    </x-ui.base-modal>
 </div>

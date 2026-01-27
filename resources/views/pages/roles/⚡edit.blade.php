@@ -36,6 +36,9 @@ new class extends BasePageComponent {
         $this->authorizeAccess($role);
         $this->checkSuperAdminProtection($role);
         $this->initializeUnifiedModel($role, $this->loadExistingRole(...), $this->prepareNewRole(...));
+
+        $this->modelTypeLabel = __('types.role');
+
         $this->updatePageHeader();
     }
 

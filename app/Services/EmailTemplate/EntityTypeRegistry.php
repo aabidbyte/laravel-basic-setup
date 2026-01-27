@@ -26,6 +26,17 @@ class EntityTypeRegistry
     ];
 
     /**
+     * Map entity types to daisyUI badge colors.
+     *
+     * @var array<string, string>
+     */
+    protected array $colors = [
+        'user' => 'primary',
+        'team' => 'secondary',
+        'context' => 'accent', // Virtual entity for context vars
+    ];
+
+    /**
      * Get the model class for an entity type.
      *
      * @param  string  $entityType  The entity type name (e.g., 'user', 'team')
@@ -92,5 +103,13 @@ class EntityTypeRegistry
         }
 
         return (new $modelClass)->getTable();
+    }
+
+    /**
+     * Get the badge color for an entity type.
+     */
+    public function getColor(string $entityType): string
+    {
+        return $this->colors[$entityType] ?? 'neutral';
     }
 }

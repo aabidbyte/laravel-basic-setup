@@ -5,5 +5,5 @@ return [
     'status' => 'Status',
     'locale' => 'Locale',
     'en_US' => 'English (US)',
-    'fr_FR' => 'Français (FR)',
+    'fr_FR' => 'French (FR)',
 ];

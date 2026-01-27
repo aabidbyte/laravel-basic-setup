@@ -30,6 +30,10 @@ class EmailTranslation extends BaseModel
         'html_content',
         'text_content',
         'preheader',
+        'draft_subject',
+        'draft_html_content',
+        'draft_text_content',
+        'draft_preheader',
     ];
 
     /**

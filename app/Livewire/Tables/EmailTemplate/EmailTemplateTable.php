@@ -194,6 +194,23 @@ class EmailTemplateTable extends Datatable
                 ->can(Permissions::EDIT_EMAIL_TEMPLATES(), false);
         }
 
+        $actions[] = Action::make('publish', __('email_templates.actions.publish'))
+            ->icon('check-circle')
+            ->variant('ghost')
+            ->color('success')
+            ->confirm(__('actions.confirm_publish'))
+            ->execute(fn (EmailTemplate $template) => $template->update(['status' => EmailTemplateStatus::PUBLISHED]))
+            ->can(Permissions::EDIT_EMAIL_TEMPLATES(), false) // Using EDIT permission as PUBLISH might be overkill or same
+            ->show(fn (EmailTemplate $template) => ! $template->is_system && ! $template->is_default && $template->status === EmailTemplateStatus::DRAFT);
+
+        $actions[] = Action::make('archive', __('email_templates.actions.archive'))
+            ->icon('archive-box')
+            ->variant('ghost')
+            ->confirm(__('actions.confirm_archive'))
+            ->execute(fn (EmailTemplate $template) => $template->update(['status' => EmailTemplateStatus::ARCHIVED]))
+            ->can(Permissions::EDIT_EMAIL_TEMPLATES(), false)
+            ->show(fn (EmailTemplate $template) => ! $template->is_system && ! $template->is_default && $template->status !== EmailTemplateStatus::ARCHIVED);
+
         $actions[] = Action::make('delete', __('actions.delete'))
             ->icon('trash')
             ->variant('ghost')

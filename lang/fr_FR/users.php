@@ -27,7 +27,6 @@ return [
     'teams_count' => '{1} :count Équipe|[2,*] :count Équipes',
     'primary_team' => 'Équipe principale',
     'no_primary_team' => 'Aucune équipe principale',
-
     'create' => [
         'basic_info' => 'Informations de base',
         'activation' => 'Activation du compte',
@@ -35,6 +34,7 @@ return [
         'activation_hint' => 'Si activé, l\'utilisateur recevra un e-mail pour définir son mot de passe. Sinon, vous devez définir le mot de passe maintenant.',
         'preferences' => 'Préférences',
         'roles_teams' => 'Rôles et équipes',
+        'password' => '',
     ],
     'edit' => [
         'basic_info' => 'Informations de base',

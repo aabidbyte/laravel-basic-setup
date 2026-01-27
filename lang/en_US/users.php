@@ -27,7 +27,6 @@ return [
     'teams_count' => '{1} :count Team|[2,*] :count Teams',
     'primary_team' => 'Primary Team',
     'no_primary_team' => 'No Primary Team',
-
     'create' => [
         'basic_info' => 'Basic Information',
         'activation' => 'Account Activation',
@@ -35,6 +34,7 @@ return [
         'activation_hint' => 'If enabled, the user will receive an email to set their password. Otherwise, you must set the password now.',
         'preferences' => 'Preferences',
         'roles_teams' => 'Roles & Teams',
+        'password' => 'Password',
     ],
     'edit' => [
         'basic_info' => 'Basic Information',

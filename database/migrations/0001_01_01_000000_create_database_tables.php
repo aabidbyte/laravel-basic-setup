@@ -295,7 +295,7 @@ return new class extends Migration
             $table->string('type')->default('transactional');
             $table->json('entity_types')->nullable();
             $table->json('context_variables')->nullable();
-            $table->string('status')->default('published');
+            $table->string('status')->default('draft');
             $table->boolean('is_system')->default(false);
             $table->boolean('is_default')->default(false);
             $table->boolean('all_teams')->default(true);
@@ -325,9 +325,15 @@ return new class extends Migration
             $table->morphs('translatable'); // translatable_type, translatable_id
             $table->string('locale', 10);
             $table->string('subject')->nullable(); // Nullable for layouts
-            $table->longText('html_content');
+            $table->longText('html_content')->nullable();
             $table->longText('text_content')->nullable();
             $table->string('preheader')->nullable();
+
+            // Draft columns (for draft/publish workflow)
+            $table->string('draft_subject')->nullable();
+            $table->longText('draft_html_content')->nullable();
+            $table->longText('draft_text_content')->nullable();
+            $table->string('draft_preheader')->nullable();
             $table->timestamps();
             $table->softDeletes();
 

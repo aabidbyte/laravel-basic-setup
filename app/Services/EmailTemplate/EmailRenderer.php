@@ -36,11 +36,12 @@ class EmailRenderer
         array $entities = [],
         array $contextVariables = [],
         ?string $locale = null,
+        bool $preferDraft = false,
     ): RenderedEmail {
         $translation = $this->getTranslationForLocale($template, $locale);
         $this->configureTagEngine($entities, $contextVariables);
 
-        return $this->buildRenderedEmail($template, $translation, $locale);
+        return $this->buildRenderedEmail($template, $translation, $locale, $preferDraft);
     }
 
     /**
@@ -85,14 +86,21 @@ class EmailRenderer
         EmailTemplate $template,
         EmailTranslation $translation,
         ?string $locale,
+        bool $preferDraft = false,
     ): RenderedEmail {
         // Resolve metadata immediately (they don't use layout)
-        $subject = $this->mergeTagEngine->resolve($translation->subject);
-        $preheader = $translation->preheader ? $this->mergeTagEngine->resolve($translation->preheader) : null;
+        $rawSubject = ($preferDraft && $translation->draft_subject) ? $translation->draft_subject : $translation->subject;
+        $subject = $this->mergeTagEngine->resolve($rawSubject ?? '');
+
+        $rawPreheader = ($preferDraft && $translation->draft_preheader) ? $translation->draft_preheader : $translation->preheader;
+        $preheader = $rawPreheader ? $this->mergeTagEngine->resolve($rawPreheader) : null;
 
         // Get raw content (generating text from HTML if needed)
-        $rawHtml = $translation->html_content;
-        $rawText = $translation->text_content ?: $this->generatePlainText($rawHtml);
+        $rawHtml = ($preferDraft && $translation->draft_html_content) ? $translation->draft_html_content : $translation->html_content;
+        $rawHtml = $rawHtml ?? '';
+
+        $rawText = ($preferDraft && $translation->draft_text_content) ? $translation->draft_text_content : $translation->text_content;
+        $rawText = $rawText ?: $this->generatePlainText($rawHtml);
 
         // Compose with layout
         $composed = $this->composeWithLayout($template, ['html' => $rawHtml, 'text' => $rawText]);
@@ -159,10 +167,11 @@ class EmailRenderer
         array $entities = [],
         array $contextVariables = [],
         ?string $locale = null,
+        bool $preferDraft = false,
     ): RenderedEmail {
         $template = $this->findTemplateByName($templateName);
 
-        return $this->render($template, $entities, $contextVariables, $locale);
+        return $this->render($template, $entities, $contextVariables, $locale, $preferDraft);
     }
 
     /**
@@ -182,12 +191,41 @@ class EmailRenderer
     /**
      * Preview a template with mock data.
      */
-    public function preview(EmailTemplate $template, ?string $locale = null): RenderedEmail
+    public function preview(EmailTemplate $template, ?string $locale = null, bool $preferDraft = false): RenderedEmail
     {
         $mockEntities = $this->generateMockEntities($template->entity_types ?? []);
         $mockContext = $this->generateMockContext($template->context_variables ?? []);
 
-        return $this->render($template, $mockEntities, $mockContext, $locale);
+        $rendered = $this->render($template, $mockEntities, $mockContext, $locale, $preferDraft);
+
+        if ($template->is_layout) {
+            $title = __('email_templates.preview.layout_placeholder_title', [], $locale);
+            $subtitle = __('email_templates.preview.layout_placeholder_subtitle', [], $locale);
+
+            $placeholder = sprintf(
+                '<div style="border: 2px dashed #cbd5e1; padding: 32px; text-align: center; background: #f8fafc; color: #64748b; font-family: sans-serif; border-radius: 8px; margin: 20px;">
+                    <p style="margin: 0; font-weight: 600;">%s</p>
+                    <p style="margin: 4px 0 0 0; font-size: 0.875rem;">%s</p>
+                 </div>',
+                $title,
+                $subtitle,
+            );
+
+            // Match {{ $slot }} or {!! $slot !!}
+            $pattern = '/(\{\{\s*\$slot\s*\}\}|\{!!\s*\$slot\s*!!\})/';
+            $newHtml = preg_replace($pattern, $placeholder, $rendered->html);
+
+            return new RenderedEmail(
+                subject: $rendered->subject,
+                html: $newHtml,
+                text: $rendered->text,
+                preheader: $rendered->preheader,
+                locale: $rendered->locale,
+                templateName: $rendered->templateName,
+            );
+        }
+
+        return $rendered;
     }
 
     /**

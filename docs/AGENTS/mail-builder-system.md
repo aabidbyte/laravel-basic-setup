@@ -416,3 +416,39 @@ if ($mailpit->isAvailable()) {
 - [Notification Builder System](./notification-builder-system.md)
 - [User Management](./user-management.md)
 
+## 5. Draft & Publish Workflow (Content & Layouts)
+To prevent unfinished changes from affecting live emails, the system uses a **Draft/Publish** workflow for both **Email Contents** and **Layouts**.
+
+### Database Schema
+The `email_translations` table includes draft-specific columns:
+*   `draft_subject`
+*   `draft_html_content`
+*   `draft_text_content`
+*   `draft_preheader`
+
+### Workflow Logic
+1.  **Drafting**: When editing in the Builder (for Content or Layouts), changes are saved to the `draft_*` columns.
+2.  **Publishing**:
+    *   Triggered via `EmailTemplateService::publish()`.
+    *   Dispatches `EmailTemplatePublished` event.
+    *   **Listener (`PublishEmailTemplateContent`)**: Copies `draft_*` values to the main columns (`subject`, `html_content`, etc.) and sets `status` to `PUBLISHED` (if applicable).
+3.  **Restoring**:
+    *   Triggered via `EmailTemplateService::restoreToDraft()`.
+    *   Copies published values back to `draft_*` columns, discarding unsaved changes.
+    *   **Constraint**: The "Restore" action is only available if the template status is `DRAFT`. This ensures published templates must be explicitly moved to draft (or edited as draft) before restoration logic applies.
+
+### Layout Specifics
+*   **Placeholder Injection**: When **previewing a Draft Layout**, the system automatically injects a visual "Content Placeholder" block into the `{{ $slot }}` area.
+*   **Draft Visualization**: Layouts can be previewed in Draft mode to see changes before they go live across all linked templates.
+
+### Automated Text Generation
+*   **Event**: `EmailTemplateSaved`
+*   **Listener**: `GenerateTextVersion`
+*   **Behavior**: Automatically converts `draft_html_content` to `draft_text_content` (and `html_content` to `text_content`) whenever the template is saved.
+
+### Service Layer
+*   **`EmailTemplateService`**: The central entry point for these actions.
+    *   `saveDraft(EmailTemplate $template, array $translations)`
+    *   `publish(EmailTemplate $template)`
+    *   `restoreToDraft(EmailTemplate $template)`
+

@@ -12,7 +12,8 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 use Livewire\Attributes\Locked;
 
-new class extends BasePageComponent {
+new class extends BasePageComponent
+{
     public ?string $pageSubtitle = null;
 
     protected string $placeholderType = 'form';
@@ -32,8 +33,6 @@ new class extends BasePageComponent {
     // Content specific
     public EmailTemplateType $type = EmailTemplateType::TRANSACTIONAL;
 
-    public EmailTemplateStatus $status = EmailTemplateStatus::DRAFT;
-
     public ?int $layout_id = null;
 
     public array $entity_types = [];
@@ -46,7 +45,10 @@ new class extends BasePageComponent {
     public function mount(?EmailTemplate $template = null): void
     {
         $this->authorizeAccess($template);
-        $this->initializeUnifiedModel($template, fn($t) => $this->loadExistingTemplate($t), fn() => $this->prepareNewTemplate());
+        $this->initializeUnifiedModel($template, fn ($t) => $this->loadExistingTemplate($t), fn () => $this->prepareNewTemplate());
+
+        $this->modelTypeLabel = $this->isLayout ? __('types.email_layout') : __('types.email_content');
+
         $this->updatePageHeader();
     }
 
@@ -67,7 +69,7 @@ new class extends BasePageComponent {
     protected function prepareNewTemplate(): void
     {
         $this->isLayout = request()->query('type') === EmailTemplateKind::LAYOUT->value;
-        $this->model = new EmailTemplate();
+        $this->model = new EmailTemplate;
     }
 
     protected function updatePageHeader(): void
@@ -88,9 +90,8 @@ new class extends BasePageComponent {
         $this->name = $this->model->name;
         $this->description = $this->model->description;
 
-        if (!$this->isLayout) {
+        if (! $this->isLayout) {
             $this->type = $this->model->type;
-            $this->status = $this->model->status;
             $this->layout_id = $this->model->layout_id;
             $this->entity_types = $this->model->entity_types ?? [];
             $this->context_variables = $this->model->context_variables ?? [];
@@ -108,9 +109,8 @@ new class extends BasePageComponent {
             'description' => ['nullable', 'string', 'max:500'],
         ];
 
-        if (!$this->isLayout) {
+        if (! $this->isLayout) {
             $rules['type'] = ['required', new Enum(EmailTemplateType::class)];
-            $rules['status'] = ['required', new Enum(EmailTemplateStatus::class)];
             $rules['layout_id'] = ['nullable', 'exists:email_templates,id'];
             $rules['entity_types'] = ['array'];
             $rules['context_variables'] = ['array'];
@@ -125,22 +125,43 @@ new class extends BasePageComponent {
     {
         $this->validate();
 
-        $data = $this->prepareData();
-        $template = EmailTemplate::create($data);
+        $messageKey = $this->persistEmailTemplate();
 
-        $this->sendSuccessNotification($template, 'pages.common.create.success');
-        $this->redirectAfterCreate($template);
+        $this->handleSuccess($this->model, $messageKey);
     }
 
     public function save(): void
     {
         $this->validate();
 
-        $data = $this->prepareData();
-        $this->model->update($data);
+        $messageKey = $this->persistEmailTemplate();
 
-        $this->sendSuccessNotification($this->model, 'pages.common.edit.success');
-        $this->redirect(route('emailTemplates.show', $this->model), navigate: true);
+        $this->handleSuccess($this->model, $messageKey);
+    }
+
+    protected function persistEmailTemplate(): string
+    {
+        $data = $this->prepareData();
+
+        if ($this->isCreateMode) {
+            $this->model = EmailTemplate::create($data);
+            return 'pages.common.create.success';
+        }
+
+        $this->model->update($data);
+        return 'pages.common.edit.success';
+    }
+
+    protected function handleSuccess(EmailTemplate $template, string $messageKey): void
+    {
+        $this->sendSuccessNotification($template, $messageKey);
+
+        if ($this->isCreateMode) {
+            $this->redirect(route('emailTemplates.builder.edit', $template), navigate: true);
+            return;
+        }
+
+        $this->redirect(route('emailTemplates.show', $template), navigate: true);
     }
 
     protected function prepareData(): array
@@ -157,7 +178,6 @@ new class extends BasePageComponent {
         } else {
             $data['is_layout'] = false;
             $data['type'] = $this->type;
-            $data['status'] = $this->status;
             $data['layout_id'] = $this->layout_id;
             $data['entity_types'] = $this->entity_types;
             $data['context_variables'] = $this->context_variables;
@@ -166,27 +186,28 @@ new class extends BasePageComponent {
         return $data;
     }
 
-    protected function redirectAfterCreate(EmailTemplate $template): void
-    {
-        $this->redirect(route('emailTemplates.builder.edit', $template), navigate: true);
-    }
-
     public function getCancelUrlProperty(): string
     {
-        return $this->isCreateMode ? route('emailTemplates.contents.index') : route('emailTemplates.show', $this->model);
+        if (! $this->isCreateMode) {
+            return route('emailTemplates.show', $this->model);
+        }
+
+        return $this->isLayout
+            ? route('emailTemplates.layouts.index')
+            : route('emailTemplates.contents.index');
     }
 
     public function getAvailableLayoutsProperty(): array
     {
         $query = EmailTemplate::query()->where('is_layout', true)->orderBy('name');
 
-        if (!$this->isCreateMode && $this->layout_id) {
+        if (! $this->isCreateMode && $this->layout_id) {
             $query->where(function ($q) {
                 $q->where('is_default', false)->orWhere('id', $this->layout_id);
             });
         }
 
-        return ['' => __('common.select')] + $query->get()->mapWithKeys(fn($l) => [$l->id => $l->name])->toArray();
+        return ['' => __('common.select')] + $query->get()->mapWithKeys(fn ($l) => [$l->id => $l->name])->toArray();
     }
 
     public function getTypeOptionsProperty(): array
@@ -195,15 +216,6 @@ new class extends BasePageComponent {
             EmailTemplateType::TRANSACTIONAL->value => __('email_templates.types.transactional'),
             EmailTemplateType::MARKETING->value => __('email_templates.types.marketing'),
             EmailTemplateType::SYSTEM->value => __('email_templates.types.system'),
-        ];
-    }
-
-    public function getStatusOptionsProperty(): array
-    {
-        return [
-            EmailTemplateStatus::DRAFT->value => __('email_templates.status.draft'),
-            EmailTemplateStatus::PUBLISHED->value => __('email_templates.status.published'),
-            EmailTemplateStatus::ARCHIVED->value => __('email_templates.status.archived'),
         ];
     }
 }; ?>
@@ -276,17 +288,11 @@ new class extends BasePageComponent {
                                                :label="__('email_templates.form.is_default')"></x-ui.checkbox>
                             </div>
                         @else
-                            <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <x-ui.select wire:model="type"
                                              name="type"
                                              :label="__('email_templates.form.type')"
                                              :options="$this->typeOptions"
-                                             :prepend-empty="false"></x-ui.select>
-
-                                <x-ui.select wire:model="status"
-                                             name="status"
-                                             :label="__('email_templates.form.status')"
-                                             :options="$this->statusOptions"
                                              :prepend-empty="false"></x-ui.select>
 
                                 <x-ui.select wire:model="layout_id"

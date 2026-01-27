@@ -3,10 +3,12 @@
 declare(strict_types=1);
 
 use App\Constants\Auth\Permissions;
+use App\Enums\EmailTemplate\EmailTemplateStatus;
 use App\Livewire\Bases\BasePageComponent;
 use App\Models\EmailTemplate\EmailTemplate;
 
-new class extends BasePageComponent {
+new class extends BasePageComponent
+{
     public ?string $pageSubtitle = null;
 
     protected string $placeholderType = 'card';
@@ -30,6 +32,30 @@ new class extends BasePageComponent {
     {
         return $this->template?->name ?? __('types.email_template');
     }
+
+    public function archive(): void
+    {
+        $this->authorize(Permissions::EDIT_EMAIL_TEMPLATES());
+
+        if ($this->template->is_system || $this->template->is_default) {
+            return;
+        }
+
+        $this->template->update(['status' => EmailTemplateStatus::ARCHIVED]);
+        $this->sendSuccessNotification($this->template, 'email_templates.actions.archived_success');
+    }
+
+    public function publish(): void
+    {
+        $this->authorize(Permissions::EDIT_EMAIL_TEMPLATES());
+
+        if ($this->template->is_system || $this->template->is_default) {
+            return;
+        }
+
+        $this->template->update(['status' => EmailTemplateStatus::PUBLISHED]);
+        $this->sendSuccessNotification($this->template, 'email_templates.actions.published_success');
+    }
 }; ?>
 
 <x-layouts.page
@@ -37,7 +63,6 @@ new class extends BasePageComponent {
     <x-slot:topActions>
         <div class="flex gap-2"
              x-data="{ showPreview: false }">
-            @if (!$template?->is_layout)
                 {{-- Preview Button --}}
                 <x-ui.button type="button"
                              @click="showPreview = true"
@@ -51,7 +76,7 @@ new class extends BasePageComponent {
                 {{-- Preview Modal Component --}}
                 <x-ui.base-modal open-state="showPreview"
                                  :use-parent-state="true"
-                                 size="7xl">
+                                 max-width="7xl">
                     <x-slot:title>{{ __('email_templates.preview.title') }}</x-slot:title>
 
                     <livewire:emailTemplates.preview :template-uuid="$template->uuid"
@@ -65,7 +90,6 @@ new class extends BasePageComponent {
                         </x-ui.button>
                     </x-slot:actions>
                 </x-ui.base-modal>
-            @endif
 
             @can(Permissions::EDIT_BUILDER_EMAIL_TEMPLATES())
                 <x-ui.button href="{{ route('emailTemplates.builder.edit', $template) }}"
@@ -88,6 +112,37 @@ new class extends BasePageComponent {
                     {{ __('email_templates.edit.edit_settings') }}
                 </x-ui.button>
             @endcan
+
+
+            @if (!$template->is_layout && !$template->is_system)
+                @if ($template->status === EmailTemplateStatus::DRAFT)
+                    @can(Permissions::EDIT_EMAIL_TEMPLATES())
+                        <x-ui.button type="button"
+                                     wire:click="publish"
+                                     wire:confirm="{{ __('actions.confirm_publish') }}"
+                                     color="success"
+                                     class="gap-2">
+                            <x-ui.icon name="check-circle"
+                                       size="sm"></x-ui.icon>
+                            {{ __('email_templates.actions.publish') }}
+                        </x-ui.button>
+                    @endcan
+                @endif
+
+                @if ($template->status !== EmailTemplateStatus::ARCHIVED)
+                    @can(Permissions::EDIT_EMAIL_TEMPLATES())
+                        <x-ui.button type="button"
+                                     wire:click="archive"
+                                     wire:confirm="{{ __('actions.confirm_archive') }}"
+                                     variant="ghost"
+                                     class="gap-2 text-error">
+                            <x-ui.icon name="archive-box"
+                                       size="sm"></x-ui.icon>
+                            {{ __('email_templates.actions.archive') }}
+                        </x-ui.button>
+                    @endcan
+                @endif
+            @endif
         </div>
     </x-slot:topActions>
 
@@ -108,7 +163,7 @@ new class extends BasePageComponent {
                             <span class="text-base-content/70 block text-sm font-medium">{{ __('fields.type') }}</span>
                             <x-ui.badge :text="$template->type->label()"
                                         color="neutral"
-                                        size="sm" />
+                                        size="sm"></x-ui.badge>
                         </div>
 
                         @if (!$template->is_layout)
@@ -122,7 +177,7 @@ new class extends BasePageComponent {
                                       class="text-base-content/70 block text-sm font-medium">{{ __('fields.status') }}</span>
                                 <x-ui.badge :text="$template->status->label()"
                                             :color="$template->status->color()"
-                                            size="sm" />
+                                            size="sm"></x-ui.badge>
                             </div>
                         @else
                             <div>
@@ -130,7 +185,7 @@ new class extends BasePageComponent {
                                       class="text-base-content/70 block text-sm font-medium">{{ __('email_templates.form.is_default') }}</span>
                                 <x-ui.badge :text="$template->is_default ? __('common.yes') : __('common.no')"
                                             :color="$template->is_default ? 'success' : 'neutral'"
-                                            size="sm" />
+                                            size="sm"></x-ui.badge>
                             </div>
                         @endif
 
@@ -162,7 +217,7 @@ new class extends BasePageComponent {
                                 @foreach ($template->translations as $translation)
                                     <tr>
                                         <td><x-ui.badge :text="__('locales.' . $translation->locale)"
-                                                        size="sm" /></td>
+                                                        size="sm"></x-ui.badge></td>
                                         <td>{{ $translation->subject ?? '—' }}</td>
                                         <td>{{ strlen($translation->html_content) }} {{ __('common.chars') }}</td>
                                         <td>{{ $translation->updated_at->diffForHumans() }}</td>
@@ -172,7 +227,8 @@ new class extends BasePageComponent {
                         </table>
                     </div>
                 </div>
-            @else
+            </div>
+        @else
                 <div class="alert alert-error">
                     <x-ui.icon name="exclamation-triangle"
                                size="sm"></x-ui.icon>

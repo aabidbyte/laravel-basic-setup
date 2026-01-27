@@ -45,7 +45,7 @@ class BaseModal extends Component
         ?string $descriptionId = null,
         public string $variant = 'default',
         public ?string $color = null,
-        public ?string $size = null,
+        public ?string $maxWidth = null,
         public ?string $placement = null,
         public string $class = '',
         public string $dialogClass = '',
@@ -179,7 +179,7 @@ class BaseModal extends Component
 
     private function buildDialogClasses(): string
     {
-        $maxWidthClasses = match ($this->size) {
+        $maxWidthClasses = match ($this->maxWidth) {
             'xs' => 'max-w-xs',
             'sm' => 'max-w-sm',
             'md' => 'max-w-md',

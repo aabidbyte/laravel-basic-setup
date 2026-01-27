@@ -51,10 +51,11 @@ test('lang:sync command orchestrates strict services correctly', function () {
         ->andReturn(['ui', 'messages']);
 
     // LocaleManager Execution Expectations
-    $localeManager->shouldReceive('syncDefaultLocale')
+    $localeManager->shouldReceive('syncSourceLocale')
         ->once();
     $localeManager->shouldReceive('syncLocales')
         ->once();
+    $localeManager->shouldReceive('getSourceLocale')->andReturn('en_US');
     $localeManager->shouldReceive('getKeysAdded')->andReturn(5);
     $localeManager->shouldReceive('getFilesUpdated')->andReturn(2);
 
@@ -96,8 +97,9 @@ test('lang:sync prunes when requested', function () {
     $scanner->shouldReceive('getFoundKeys')->andReturn([]);
     $localeManager->shouldReceive('setConfiguration');
     $localeManager->shouldReceive('discoverNamespaces')->andReturn([]);
-    $localeManager->shouldReceive('syncDefaultLocale');
+    $localeManager->shouldReceive('syncSourceLocale');
     $localeManager->shouldReceive('syncLocales');
+    $localeManager->shouldReceive('getSourceLocale')->andReturn('en_US');
     $localeManager->shouldReceive('getKeysAdded')->andReturn(0);
     $localeManager->shouldReceive('getFilesUpdated')->andReturn(0);
 

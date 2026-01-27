@@ -50,5 +50,9 @@ return [
             fn ($case) => $case->value,
             EmailTemplateStatus::cases(),
         ),
+
+        // Entity types
+        'types.$type' => fn () => resolve(\App\Services\EmailTemplate\EntityTypeRegistry::class)->getAvailableEntityTypes(),
+        'types.$entityType' => fn () => resolve(\App\Services\EmailTemplate\EntityTypeRegistry::class)->getAvailableEntityTypes(),
     ],
 ];

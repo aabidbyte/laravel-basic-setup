@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 use App\Models\EmailTemplate\EmailTemplate;
 use App\Services\EmailTemplate\EmailRenderer;
-use Livewire\Attributes\Locked;
 use Livewire\Attributes\Lazy;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-new #[Lazy] class extends Component {
+new #[Lazy] class extends Component
+{
     #[Locked]
     public string $templateUuid = '';
 
@@ -20,11 +21,16 @@ new #[Lazy] class extends Component {
 
     public string $previewSubject = '';
 
+    public bool $preferDraft = true;
+
     public function mount(string $templateUuid): void
     {
         $this->templateUuid = $templateUuid;
         $this->loadTemplate();
         $this->selectedLocale = app()->getLocale();
+        // Check if there is actual draft content to show, otherwise default to false?
+        // Actually, prioritizing draft means if draft exists, show it.
+        // We can check if any translation has draft content.
         $this->generatePreview();
     }
 
@@ -39,7 +45,7 @@ new #[Lazy] class extends Component {
     {
         $locales = config('i18n.supported_locales');
 
-        if (empty($locales) || !is_array($locales)) {
+        if (empty($locales) || ! is_array($locales)) {
             return [app()->getLocale() => app()->getLocale()];
         }
 
@@ -55,13 +61,18 @@ new #[Lazy] class extends Component {
     {
         $renderer = app(EmailRenderer::class);
 
-        $rendered = $renderer->preview($this->template, $this->selectedLocale);
+        $rendered = $renderer->preview($this->template, $this->selectedLocale, $this->preferDraft);
 
         $this->previewHtml = $rendered->html;
         $this->previewSubject = $rendered->subject;
     }
 
     public function updatedSelectedLocale(): void
+    {
+        $this->generatePreview();
+    }
+
+    public function updatedPreferDraft(): void
     {
         $this->generatePreview();
     }
@@ -85,6 +96,18 @@ new #[Lazy] class extends Component {
             </div>
 
             <div class="flex items-center gap-4">
+                {{-- Draft Toggle --}}
+                @if ($template->status === \App\Enums\EmailTemplate\EmailTemplateStatus::DRAFT && $template->hasDraftContent())
+                    <div class="form-control">
+                        <label class="label cursor-pointer gap-2">
+                            <span class="label-text">{{ __('email_templates.preview.view_draft') }}</span>
+                            <x-ui.toggle wire:model.live="preferDraft"
+                                         size="sm"
+                                         color="primary" />
+                        </label>
+                    </div>
+                @endif
+
                 {{-- Device Selector --}}
                 @if ($previewHtml)
                     <div class="join">
