@@ -37,8 +37,8 @@
 @endphp
 
 <div class="form-control w-fit">
-    <label
-           class="label {{ $labelPosition === 'left' ? 'justify-between gap-3' : 'justify-start gap-4' }} cursor-pointer">
+    <x-ui.label class="{{ $labelPosition === 'left' ? 'justify-between gap-3' : 'justify-start gap-4' }} cursor-pointer"
+                variant="plain">
         @if ($label && $labelPosition === 'left')
             <span class="label-text {{ $disabled ? 'text-base-content/50' : '' }}">{{ $label }}</span>
         @endif
@@ -54,7 +54,7 @@
         @if ($label && $labelPosition === 'right')
             <span class="label-text {{ $disabled ? 'text-base-content/50' : '' }}">{{ $label }}</span>
         @endif
-    </label>
+    </x-ui.label>
 
     @if ($description)
         <div class="{{ $labelPosition === 'left' ? '' : 'pl-14' }} -mt-1">

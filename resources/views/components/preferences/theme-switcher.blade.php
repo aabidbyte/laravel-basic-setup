@@ -6,7 +6,8 @@
            name="theme"
            x-ref="themeInput"
            :value="currentTheme === 'dark' ? 'dark' : 'light'">
-    <label class="swap swap-rotate">
+    <x-ui.label variant="plain"
+                class="swap swap-rotate">
         <input type="checkbox"
                @checked($currentTheme === 'dark')
                @change="toggle($event)" />
@@ -22,5 +23,5 @@
             <x-ui.icon name="moon"
                        class="h-5 w-5 fill-current"></x-ui.icon>
         </div>
-    </label>
+    </x-ui.label>
 </form>

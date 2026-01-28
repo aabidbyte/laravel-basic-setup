@@ -17,7 +17,7 @@ class EmailTemplateWorkflowTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Seed permissions required for tests
         $permissions = [
             Permissions::VIEW_EMAIL_TEMPLATES(),
@@ -38,15 +38,16 @@ class EmailTemplateWorkflowTest extends TestCase
     {
         $user = User::factory()->create();
         foreach ($permissions as $perm) {
-             $permission = \App\Models\Permission::where('name', '=', $perm)->first();
-             if ($permission) {
-                 if (method_exists($user, 'givePermissionTo')) {
-                     $user->givePermissionTo($permission);
-                 } else {
-                     $user->permissions()->attach($permission);
-                 }
+            $permission = \App\Models\Permission::where('name', '=', $perm)->first();
+            if ($permission) {
+                if (method_exists($user, 'givePermissionTo')) {
+                    $user->givePermissionTo($permission);
+                } else {
+                    $user->permissions()->attach($permission);
+                }
             }
         }
+
         return $user;
     }
 
@@ -55,7 +56,7 @@ class EmailTemplateWorkflowTest extends TestCase
         $template = EmailTemplate::create([
             'name' => 'Test Template',
             'is_layout' => false,
-            'type' => \App\Enums\EmailTemplate\EmailTemplateType::TRANSACTIONAL, 
+            'type' => \App\Enums\EmailTemplate\EmailTemplateType::TRANSACTIONAL,
         ]);
 
         $this->assertEquals(EmailTemplateStatus::DRAFT, $template->refresh()->status);
@@ -65,7 +66,7 @@ class EmailTemplateWorkflowTest extends TestCase
     {
         $user = $this->createUserWithPermissions([
             Permissions::VIEW_EMAIL_TEMPLATES(),
-            Permissions::EDIT_EMAIL_TEMPLATES()
+            Permissions::EDIT_EMAIL_TEMPLATES(),
         ]);
         $this->actingAs($user);
 
@@ -86,7 +87,7 @@ class EmailTemplateWorkflowTest extends TestCase
     {
         $user = $this->createUserWithPermissions([
             Permissions::VIEW_EMAIL_TEMPLATES(),
-            Permissions::EDIT_EMAIL_TEMPLATES()
+            Permissions::EDIT_EMAIL_TEMPLATES(),
         ]);
         $this->actingAs($user);
 
@@ -107,7 +108,7 @@ class EmailTemplateWorkflowTest extends TestCase
     {
         $user = $this->createUserWithPermissions([
             Permissions::VIEW_EMAIL_TEMPLATES(),
-            Permissions::EDIT_EMAIL_TEMPLATES()
+            Permissions::EDIT_EMAIL_TEMPLATES(),
         ]);
         $this->actingAs($user);
 
@@ -129,7 +130,7 @@ class EmailTemplateWorkflowTest extends TestCase
     {
         $user = $this->createUserWithPermissions([
             Permissions::VIEW_EMAIL_TEMPLATES(),
-            Permissions::EDIT_EMAIL_TEMPLATES()
+            Permissions::EDIT_EMAIL_TEMPLATES(),
         ]);
         $this->actingAs($user);
 
@@ -151,7 +152,7 @@ class EmailTemplateWorkflowTest extends TestCase
     {
         $user = $this->createUserWithPermissions([
             Permissions::EDIT_BUILDER_EMAIL_TEMPLATES(),
-            Permissions::VIEW_EMAIL_TEMPLATES()
+            Permissions::VIEW_EMAIL_TEMPLATES(),
         ]);
         $this->actingAs($user);
 
@@ -163,9 +164,9 @@ class EmailTemplateWorkflowTest extends TestCase
         ]);
 
         Livewire::test('pages::emailTemplates.edit-builder', ['template' => $template])
-             ->set('translations.en_US.html_content', '<p>New Content</p>')
-             ->set('translations.en_US.subject', 'Draft Subject')
-             ->call('saveAsDraft');
+            ->set('translations.en_US.html_content', '<p>New Content</p>')
+            ->set('translations.en_US.subject', 'Draft Subject')
+            ->call('saveAsDraft');
 
         $template->refresh()->load('translations');
         $this->assertEquals(EmailTemplateStatus::DRAFT, $template->status);
@@ -191,13 +192,14 @@ class EmailTemplateWorkflowTest extends TestCase
         ]);
 
         Livewire::test('pages::emailTemplates.edit-builder', ['template' => $template])
-             ->set('translations.en_US.html_content', '<p>Published Content</p>')
-             ->set('translations.en_US.subject', 'Subject')
-             ->call('publish');
+            ->set('translations.en_US.html_content', '<p>Published Content</p>')
+            ->set('translations.en_US.subject', 'Subject')
+            ->call('publish');
 
         $template->refresh();
         $this->assertEquals(EmailTemplateStatus::PUBLISHED, $template->status);
     }
+
     public function test_builder_can_restore_draft_from_published(): void
     {
         $user = $this->createUserWithPermissions([
@@ -217,14 +219,14 @@ class EmailTemplateWorkflowTest extends TestCase
         $template->translations()->create([
             'locale' => 'en_US',
             'subject' => 'Published Subject',
-            'html_content' => '<p>Published HTML</p>', 
+            'html_content' => '<p>Published HTML</p>',
             'draft_subject' => 'Draft Subject',
             'draft_html_content' => '<p>Draft HTML</p>',
         ]);
 
         Livewire::test('pages::emailTemplates.edit-builder', ['template' => $template])
-             ->assertSet('canRestore', true)
-             ->call('restoreToDraft');
+            ->assertSet('canRestore', true)
+            ->call('restoreToDraft');
 
         $template->refresh();
         $translation = $template->translations->first();
@@ -248,13 +250,13 @@ class EmailTemplateWorkflowTest extends TestCase
             'name' => 'Test Layout',
             'status' => EmailTemplateStatus::DRAFT,
             'is_layout' => true,
-            'type' => \App\Enums\EmailTemplate\EmailTemplateType::TRANSACTIONAL, 
+            'type' => \App\Enums\EmailTemplate\EmailTemplateType::TRANSACTIONAL,
         ]);
 
         // 2. Save as Draft
         Livewire::test('pages::emailTemplates.edit-builder', ['template' => $layout])
-             ->set('translations.en_US.html_content', '<html><body>{{ $slot }}</body></html>')
-             ->call('saveAsDraft');
+            ->set('translations.en_US.html_content', '<html><body>{{ $slot }}</body></html>')
+            ->call('saveAsDraft');
 
         $layout->refresh();
         $this->assertEquals(EmailTemplateStatus::DRAFT, $layout->status);
@@ -262,24 +264,24 @@ class EmailTemplateWorkflowTest extends TestCase
 
         // 3. Publish
         Livewire::test('pages::emailTemplates.edit-builder', ['template' => $layout])
-             ->call('publish');
-        
+            ->call('publish');
+
         $layout->refresh();
         $this->assertEquals(EmailTemplateStatus::PUBLISHED, $layout->status);
         $this->assertStringContainsString('{{ $slot }}', $layout->translations->first()->html_content);
 
         // 4. Modify Draft again
         Livewire::test('pages::emailTemplates.edit-builder', ['template' => $layout])
-             ->set('translations.en_US.html_content', '<html><body>Modified Draft {{ $slot }}</body></html>')
-             ->call('saveAsDraft');
-             
+            ->set('translations.en_US.html_content', '<html><body>Modified Draft {{ $slot }}</body></html>')
+            ->call('saveAsDraft');
+
         $layout->refresh();
         $this->assertStringContainsString('Modified Draft', $layout->translations->first()->draft_html_content);
         $this->assertStringNotContainsString('Modified Draft', $layout->translations->first()->html_content); // Original published content remains
 
         // 5. Restore (Discard Draft) - SHOULD NOT BE AVAILABLE FOR PUBLISHED TEMPLATES (Per User Rule)
         $test = Livewire::test('pages::emailTemplates.edit-builder', ['template' => $layout]);
-        
+
         $test->assertSet('canRestore', false);
 
         // 6. Restore (Discard Draft) - AVAILABLE IF STATUS IS DRAFT (and has history)
@@ -287,8 +289,8 @@ class EmailTemplateWorkflowTest extends TestCase
         $layout->refresh();
 
         Livewire::test('pages::emailTemplates.edit-builder', ['template' => $layout])
-             ->assertSet('canRestore', true)
-             ->call('restoreToDraft');
+            ->assertSet('canRestore', true)
+            ->call('restoreToDraft');
 
         $layout->refresh();
         // Draft content should now match published content
@@ -305,12 +307,12 @@ class EmailTemplateWorkflowTest extends TestCase
             'is_layout' => false,
             'type' => \App\Enums\EmailTemplate\EmailTemplateType::TRANSACTIONAL,
         ]);
-        
+
         $template->translations()->create([
             'locale' => 'en_US',
             'subject' => 'Published Subject',
             'html_content' => '<p>Published Content</p>',
-            'draft_subject' => 'Draft Subject', 
+            'draft_subject' => 'Draft Subject',
             'draft_html_content' => '<p>Draft Content</p>',
         ]);
 
@@ -326,7 +328,6 @@ class EmailTemplateWorkflowTest extends TestCase
         $this->assertEquals('Draft Subject', $previewDraft->subject);
         $this->assertStringContainsString('Draft Content', $previewDraft->html);
 
-
         // 2. Test Layout Preview (Placeholder Injection)
         $layout = EmailTemplate::create([
             'name' => 'Layout Preview Test',
@@ -341,11 +342,11 @@ class EmailTemplateWorkflowTest extends TestCase
             'draft_html_content' => '<body>Draft Layout {{ $slot }}</body>',
         ]);
 
-        // Published (should fallback to draft if published is empty? No, renderer throws or returns empty. 
+        // Published (should fallback to draft if published is empty? No, renderer throws or returns empty.
         // But here we want to test placeholder injection specifically on Draft since we set status DRAFT)
-        
+
         $previewLayout = $renderer->preview($layout, 'en_US', preferDraft: true);
-        
+
         // Assert Placeholder is injected
         $this->assertStringContainsString('Content Placeholder', $previewLayout->html);
         $this->assertStringContainsString('Draft Layout', $previewLayout->html);

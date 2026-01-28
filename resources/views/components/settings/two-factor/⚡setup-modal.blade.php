@@ -88,9 +88,7 @@ new class extends LivewireBaseComponent {
              style="display: none;">
             <div class="space-y-4">
                 <div class="form-control">
-                    <label class="label">
-                        <span class="label-text">{{ __('settings.two_factor.setup.otp_label') }}</span>
-                    </label>
+                    <x-ui.label :text="__('settings.two_factor.setup.otp_label')"></x-ui.label>
                     <input type="text"
                            wire:model="code"
                            maxlength="6"

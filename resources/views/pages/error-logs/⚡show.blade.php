@@ -62,7 +62,7 @@ new class extends BasePageComponent {
         $this->showResolveModal = false;
         $this->resolveNotes = '';
 
-        NotificationBuilder::make()->title(__('errors.management.resolve_success'))->success()->send();
+        NotificationBuilder::make()->title('errors.management.resolve_success')->success()->send();
     }
 
     /**
@@ -74,7 +74,7 @@ new class extends BasePageComponent {
 
         $this->errorLog->delete();
 
-        NotificationBuilder::make()->title(__('errors.management.deleted_successfully'))->success()->send();
+        NotificationBuilder::make()->title('errors.management.deleted_successfully')->success()->send();
 
         $this->redirect(route('admin.errors.index'), navigate: true);
     }

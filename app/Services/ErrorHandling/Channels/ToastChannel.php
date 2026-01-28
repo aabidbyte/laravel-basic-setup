@@ -26,26 +26,30 @@ class ToastChannel implements ChannelInterface
     {
         $isProduction = $context['is_production'] ?? app()->isProduction();
 
-        $title = __('errors.generic_title');
+        $title = 'errors.generic_title';
 
         if ($isProduction) {
             // Production: user-friendly message with reference ID
-            $subtitle = __('errors.reference', ['id' => $context['reference_id']]);
-            $content = __('errors.generic_message');
+            $subtitle = 'errors.reference';
+            $subtitleParams = ['id' => $context['reference_id']];
+            $content = 'errors.generic_message';
+            $contentParams = [];
         } else {
             // Development: show full exception details
             $subtitle = $e->getMessage();
+            $subtitleParams = [];
             $content = sprintf(
                 '%s:%d',
                 basename($e->getFile()),
                 $e->getLine(),
             );
+            $contentParams = [];
         }
 
         $notification = NotificationBuilder::make()
             ->title($title)
-            ->subtitle($subtitle)
-            ->content($content)
+            ->subtitle($subtitle, $subtitleParams)
+            ->content($content, $contentParams)
             ->sticky();
 
         // Use warning for authorization exceptions, error for everything else

@@ -9,18 +9,17 @@
     $hasError = $error || ($errors->has($attributes->get('name')) ?? false);
 @endphp
 
-<label class="flex flex-col gap-2">
+<div class="flex flex-col gap-1">
     @if ($label)
-        <div class="label">
-            <span class="label-text">{{ $label }}@if ($required)
-                    <span class="text-error">*</span>
-                @endif
-            </span>
+        <x-ui.label :for="$inputId"
+                    :text="$label"
+                    :required="$required">
             @isset($labelAppend)
-                {{ $labelAppend }}
+                <x-slot:labelAppend>{{ $labelAppend }}</x-slot:labelAppend>
             @endisset
-        </div>
+        </x-ui.label>
     @endif
+
     @if ($attributes->get('type') === 'textarea')
         <textarea {{ $attributes->merge(['class' => 'textarea textarea-bordered w-full' . ($hasError ? ' textarea-error' : '')])->except(['label', 'error']) }}
                   id="{{ $inputId }}"></textarea>
@@ -28,6 +27,7 @@
         <input {{ $attributes->merge(['class' => 'input input-bordered w-full' . ($hasError ? ' input-error' : '')])->except(['label', 'error']) }}
                id="{{ $inputId }}" />
     @endif
+
     <x-ui.input-error :name="$attributes->get('name')"
                       :error="$error" />
-</label>
+</div>

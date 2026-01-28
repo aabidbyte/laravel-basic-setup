@@ -7,8 +7,7 @@ use App\Enums\EmailTemplate\EmailTemplateStatus;
 use App\Livewire\Bases\BasePageComponent;
 use App\Models\EmailTemplate\EmailTemplate;
 
-new class extends BasePageComponent
-{
+new class extends BasePageComponent {
     public ?string $pageSubtitle = null;
 
     protected string $placeholderType = 'card';
@@ -63,33 +62,33 @@ new class extends BasePageComponent
     <x-slot:topActions>
         <div class="flex gap-2"
              x-data="{ showPreview: false }">
-                {{-- Preview Button --}}
-                <x-ui.button type="button"
-                             @click="showPreview = true"
-                             variant="ghost"
-                             class="gap-2">
-                    <x-ui.icon name="eye"
-                               size="sm"></x-ui.icon>
-                    {{ __('email_templates.preview.button') }}
-                </x-ui.button>
+            {{-- Preview Button --}}
+            <x-ui.button type="button"
+                         @click="showPreview = true"
+                         variant="ghost"
+                         class="gap-2">
+                <x-ui.icon name="eye"
+                           size="sm"></x-ui.icon>
+                {{ __('email_templates.preview.button') }}
+            </x-ui.button>
 
-                {{-- Preview Modal Component --}}
-                <x-ui.base-modal open-state="showPreview"
-                                 :use-parent-state="true"
-                                 max-width="7xl">
-                    <x-slot:title>{{ __('email_templates.preview.title') }}</x-slot:title>
+            {{-- Preview Modal Component --}}
+            <x-ui.base-modal open-state="showPreview"
+                             :use-parent-state="true"
+                             max-width="7xl">
+                <x-slot:title>{{ __('email_templates.preview.title') }}</x-slot:title>
 
-                    <livewire:emailTemplates.preview :template-uuid="$template->uuid"
-                                                     lazy />
+                <livewire:emailTemplates.preview :template-uuid="$template->uuid"
+                                                 lazy />
 
-                    <x-slot:actions>
-                        <x-ui.button type="button"
-                                     @click="showPreview = false"
-                                     variant="ghost">
-                            {{ __('actions.close') }}
-                        </x-ui.button>
-                    </x-slot:actions>
-                </x-ui.base-modal>
+                <x-slot:actions>
+                    <x-ui.button type="button"
+                                 @click="showPreview = false"
+                                 variant="ghost">
+                        {{ __('actions.close') }}
+                    </x-ui.button>
+                </x-slot:actions>
+            </x-ui.base-modal>
 
             @can(Permissions::EDIT_BUILDER_EMAIL_TEMPLATES())
                 <x-ui.button href="{{ route('emailTemplates.builder.edit', $template) }}"
@@ -113,7 +112,6 @@ new class extends BasePageComponent
                 </x-ui.button>
             @endcan
 
-
             @if (!$template->is_layout && !$template->is_system)
                 @if ($template->status === EmailTemplateStatus::DRAFT)
                     @can(Permissions::EDIT_EMAIL_TEMPLATES())
@@ -135,7 +133,7 @@ new class extends BasePageComponent
                                      wire:click="archive"
                                      wire:confirm="{{ __('actions.confirm_archive') }}"
                                      variant="ghost"
-                                     class="gap-2 text-error">
+                                     class="text-error gap-2">
                             <x-ui.icon name="archive-box"
                                        size="sm"></x-ui.icon>
                             {{ __('email_templates.actions.archive') }}
@@ -229,11 +227,11 @@ new class extends BasePageComponent
                 </div>
             </div>
         @else
-                <div class="alert alert-error">
-                    <x-ui.icon name="exclamation-triangle"
-                               size="sm"></x-ui.icon>
-                    <span>{{ __('email_templates.not_found') }}</span>
-                </div>
+            <div class="alert alert-error">
+                <x-ui.icon name="exclamation-triangle"
+                           size="sm"></x-ui.icon>
+                <span>{{ __('email_templates.not_found') }}</span>
+            </div>
         @endif
     </section>
 </x-layouts.page>

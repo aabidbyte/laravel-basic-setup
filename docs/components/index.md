@@ -14,6 +14,7 @@ This documentation is organized into sections for easy navigation. Each section 
 - [Checkbox](checkbox.md)
 - [Toggle](toggle.md)
 - [Input](input.md)
+- [Label](label.md)
 - [Password](password.md)
 - [Select](select.md)
 - [Share Button](share-button.md)

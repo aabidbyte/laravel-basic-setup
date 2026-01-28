@@ -390,6 +390,7 @@ class LocaleManager
 
         return $merged;
     }
+
     /**
      * Count how many keys were added.
      */

@@ -31,7 +31,7 @@
 @endphp
 
 <div class="form-control w-fit">
-    <label class="label cursor-pointer justify-start gap-3">
+    <x-ui.label variant="inline">
         <input type="checkbox"
                id="{{ $id }}"
                {{ $attributes->merge(['class' => trim("checkbox {$colorClass} {$sizeClass}")]) }}
@@ -40,7 +40,7 @@
         @if ($label)
             <span class="label-text">{{ $label }}</span>
         @endif
-    </label>
+    </x-ui.label>
     @if ($description)
         <div class="-mt-1 pl-9">
             <span class="text-base-content/60 text-xs">{{ $description }}</span>

@@ -58,4 +58,5 @@ return [
     'revoke' => 'Revoke',
     'customize_text_version' => 'Customize Text Version',
     'hide_text_version' => 'Hide Text Version',
+    'required' => 'Required',
 ];

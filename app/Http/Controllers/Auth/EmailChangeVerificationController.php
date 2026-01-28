@@ -24,8 +24,8 @@ class EmailChangeVerificationController extends Controller
 
         if (! $user) {
             NotificationBuilder::make()
-                ->title(__('actions.error'))
-                ->content(__('authentication.verify_email.invalid_token'))
+                ->title('actions.error')
+                ->content('authentication.verify_email.invalid_token')
                 ->error()
                 ->send();
 
@@ -34,8 +34,8 @@ class EmailChangeVerificationController extends Controller
 
         if ($user->isPendingEmailExpired()) {
             NotificationBuilder::make()
-                ->title(__('actions.error'))
-                ->content(__('authentication.verify_email.expired_token'))
+                ->title('actions.error')
+                ->content('authentication.verify_email.expired_token')
                 ->error()
                 ->send();
 
@@ -47,8 +47,8 @@ class EmailChangeVerificationController extends Controller
         });
 
         NotificationBuilder::make()
-            ->title(__('actions.success'))
-            ->content(__('authentication.verify_email.success'))
+            ->title('actions.success')
+            ->content('authentication.verify_email.success')
             ->success()
             ->send();
 

@@ -348,7 +348,7 @@ class ErrorHandler
         $message = is_array($firstError) ? $firstError[0] : $firstError;
 
         NotificationBuilder::make()
-            ->title(__('errors.validation_failed'))
+            ->title('errors.validation_failed')
             ->subtitle($message)
             ->error()
             ->send();
@@ -360,8 +360,8 @@ class ErrorHandler
     protected function sendAuthenticationToast(): void
     {
         NotificationBuilder::make()
-            ->title(__('errors.unauthorized'))
-            ->subtitle(__('errors.please_login'))
+            ->title('errors.unauthorized')
+            ->subtitle('errors.please_login')
             ->error()
             ->send();
     }

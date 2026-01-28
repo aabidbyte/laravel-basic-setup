@@ -98,7 +98,7 @@ new class extends BasePageComponent {
      */
     public function getRolesProperty()
     {
-        return Role::orderBy('name')->get();
+        return Role::orderBy('name', 'asc')->get();
     }
 
     /**
@@ -108,7 +108,7 @@ new class extends BasePageComponent {
      */
     public function getTeamsProperty()
     {
-        return Team::orderBy('name')->get();
+        return Team::orderBy('name', 'asc')->get();
     }
 
     /**
@@ -138,7 +138,7 @@ new class extends BasePageComponent {
      */
     public function getPermissionsProperty()
     {
-        return \App\Models\Permission::orderBy('name')->get();
+        return \App\Models\Permission::orderBy('name', 'asc')->get();
     }
 
     protected function rules(): array
@@ -324,17 +324,10 @@ new class extends BasePageComponent {
                             <x-ui.title level="3"
                                         class="text-base-content/70">{{ __('users.create.activation') }}</x-ui.title>
 
-                            <div class="form-control">
-                                <label class="label cursor-pointer justify-start gap-4">
-                                    <input type="checkbox"
-                                           wire:model.live="sendActivation"
-                                           class="toggle toggle-primary">
-                                    <span class="label-text">{{ __('users.create.send_activation_email') }}</span>
-                                </label>
-                                <span class="text-base-content/60 ml-14 text-sm">
-                                    {{ __('users.create.activation_hint') }}
-                                </span>
-                            </div>
+                            <x-ui.toggle wire:model.live="sendActivation"
+                                         :label="__('users.create.send_activation_email')"
+                                         :description="__('users.create.activation_hint')"
+                                         color="primary" />
                         </div>
                     @endif
 
@@ -376,14 +369,9 @@ new class extends BasePageComponent {
                             <x-ui.title level="3"
                                         class="text-base-content/70">{{ __('users.edit.status') }}</x-ui.title>
 
-                            <div class="form-control">
-                                <label class="label cursor-pointer justify-start gap-4">
-                                    <input type="checkbox"
-                                           wire:model="is_active"
-                                           class="toggle toggle-success">
-                                    <span class="label-text">{{ __('users.edit.is_active') }}</span>
-                                </label>
-                            </div>
+                            <x-ui.toggle wire:model="is_active"
+                                         :label="__('users.edit.is_active')"
+                                         color="success" />
                         </div>
                     @endif
 
@@ -395,9 +383,7 @@ new class extends BasePageComponent {
 
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div class="form-control w-full">
-                                <label class="label">
-                                    <span class="label-text">{{ __('users.timezone') }}</span>
-                                </label>
+                                <x-ui.label :text="__('users.timezone')"></x-ui.label>
                                 <select wire:model="timezone"
                                         class="select select-bordered w-full">
                                     @foreach ($this->timezones as $value => $label)
@@ -407,9 +393,7 @@ new class extends BasePageComponent {
                             </div>
 
                             <div class="form-control w-full">
-                                <label class="label">
-                                    <span class="label-text">{{ __('users.locale') }}</span>
-                                </label>
+                                <x-ui.label :text="__('users.locale')"></x-ui.label>
                                 <select wire:model="locale"
                                         class="select select-bordered w-full">
                                     @foreach ($this->locales as $value => $label)
@@ -430,38 +414,34 @@ new class extends BasePageComponent {
                         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                             {{-- Roles --}}
                             <div class="space-y-2">
-                                <label class="label">
-                                    <span class="label-text font-medium">{{ __('users.roles') }}</span>
-                                </label>
+                                <x-ui.label :text="__('users.roles')"></x-ui.label>
                                 <div class="border-base-300 max-h-48 space-y-2 overflow-y-auto rounded-lg border p-2">
                                     @foreach ($this->roles as $role)
-                                        <label
-                                               class="hover:bg-base-200 flex cursor-pointer items-center gap-3 rounded p-2">
+                                        <x-ui.label class="hover:bg-base-200 flex cursor-pointer items-center gap-3 rounded p-2"
+                                                    variant="plain">
                                             <input type="checkbox"
                                                    wire:model="selectedRoles"
                                                    value="{{ $role->uuid }}"
                                                    class="checkbox checkbox-sm checkbox-primary">
                                             <span class="label-text">{{ $role->name }}</span>
-                                        </label>
+                                        </x-ui.label>
                                     @endforeach
                                 </div>
                             </div>
 
                             {{-- Teams --}}
                             <div class="space-y-2">
-                                <label class="label">
-                                    <span class="label-text font-medium">{{ __('users.teams') }}</span>
-                                </label>
+                                <x-ui.label :text="__('users.teams')"></x-ui.label>
                                 <div class="border-base-300 max-h-48 space-y-2 overflow-y-auto rounded-lg border p-2">
                                     @foreach ($this->teams as $team)
-                                        <label
-                                               class="hover:bg-base-200 flex cursor-pointer items-center gap-3 rounded p-2">
+                                        <x-ui.label class="hover:bg-base-200 flex cursor-pointer items-center gap-3 rounded p-2"
+                                                    variant="plain">
                                             <input type="checkbox"
                                                    wire:model="selectedTeams"
                                                    value="{{ $team->uuid }}"
                                                    class="checkbox checkbox-sm checkbox-secondary">
                                             <span class="label-text">{{ $team->name }}</span>
-                                        </label>
+                                        </x-ui.label>
                                     @endforeach
                                 </div>
                             </div>

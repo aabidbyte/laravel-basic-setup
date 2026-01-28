@@ -64,9 +64,9 @@ NotificationBuilder::make()
 
 The `NotificationBuilder` provides the following fluent methods:
 
--   **`title(string $title)`**: Set the notification title (required)
--   **`subtitle(?string $subtitle)`**: Set optional subtitle
--   **`content(string $content)`**: Set plain text content
+-   **`title(string $title, ?array $params = null)`**: Set the notification title (supports translation keys)
+-   **`subtitle(?string $subtitle, ?array $params = null)`**: Set optional subtitle (supports translation keys)
+-   **`content(string $content, ?array $params = null)`**: Set plain text content (supports translation keys)
 -   **`html(string|\Illuminate\Contracts\Support\Htmlable $html)`**: Set HTML content (trusted)
 -   **`view(string $view, array $data = [])`**: Set content from a Blade view
 -   **`success()`**: Set toast type to success (green)
@@ -375,7 +375,7 @@ public function updateProfileInformation(): void
     $user->save();
 
     NotificationBuilder::make()
-        ->title(__('ui.settings.profile.save_success'))
+        ->title('ui.settings.profile.save_success')
         ->success()
         ->send();
 }
@@ -396,7 +396,7 @@ NotificationBuilder::make()
 
 ```php
 NotificationBuilder::make()
-    ->title(__('ui.auth.reset_password.success'))
+    ->title('ui.auth.reset_password.success')
     ->success()
     ->send();
 ```

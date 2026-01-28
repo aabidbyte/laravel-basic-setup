@@ -12,8 +12,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 use Livewire\Attributes\Locked;
 
-new class extends BasePageComponent
-{
+new class extends BasePageComponent {
     public ?string $pageSubtitle = null;
 
     protected string $placeholderType = 'form';
@@ -45,7 +44,7 @@ new class extends BasePageComponent
     public function mount(?EmailTemplate $template = null): void
     {
         $this->authorizeAccess($template);
-        $this->initializeUnifiedModel($template, fn ($t) => $this->loadExistingTemplate($t), fn () => $this->prepareNewTemplate());
+        $this->initializeUnifiedModel($template, fn($t) => $this->loadExistingTemplate($t), fn() => $this->prepareNewTemplate());
 
         $this->modelTypeLabel = $this->isLayout ? __('types.email_layout') : __('types.email_content');
 
@@ -69,7 +68,7 @@ new class extends BasePageComponent
     protected function prepareNewTemplate(): void
     {
         $this->isLayout = request()->query('type') === EmailTemplateKind::LAYOUT->value;
-        $this->model = new EmailTemplate;
+        $this->model = new EmailTemplate();
     }
 
     protected function updatePageHeader(): void
@@ -90,7 +89,7 @@ new class extends BasePageComponent
         $this->name = $this->model->name;
         $this->description = $this->model->description;
 
-        if (! $this->isLayout) {
+        if (!$this->isLayout) {
             $this->type = $this->model->type;
             $this->layout_id = $this->model->layout_id;
             $this->entity_types = $this->model->entity_types ?? [];
@@ -109,7 +108,7 @@ new class extends BasePageComponent
             'description' => ['nullable', 'string', 'max:500'],
         ];
 
-        if (! $this->isLayout) {
+        if (!$this->isLayout) {
             $rules['type'] = ['required', new Enum(EmailTemplateType::class)];
             $rules['layout_id'] = ['nullable', 'exists:email_templates,id'];
             $rules['entity_types'] = ['array'];
@@ -188,26 +187,24 @@ new class extends BasePageComponent
 
     public function getCancelUrlProperty(): string
     {
-        if (! $this->isCreateMode) {
+        if (!$this->isCreateMode) {
             return route('emailTemplates.show', $this->model);
         }
 
-        return $this->isLayout
-            ? route('emailTemplates.layouts.index')
-            : route('emailTemplates.contents.index');
+        return $this->isLayout ? route('emailTemplates.layouts.index') : route('emailTemplates.contents.index');
     }
 
     public function getAvailableLayoutsProperty(): array
     {
         $query = EmailTemplate::query()->where('is_layout', true)->orderBy('name');
 
-        if (! $this->isCreateMode && $this->layout_id) {
+        if (!$this->isCreateMode && $this->layout_id) {
             $query->where(function ($q) {
                 $q->where('is_default', false)->orWhere('id', $this->layout_id);
             });
         }
 
-        return ['' => __('common.select')] + $query->get()->mapWithKeys(fn ($l) => [$l->id => $l->name])->toArray();
+        return ['' => __('common.select')] + $query->get()->mapWithKeys(fn($l) => [$l->id => $l->name])->toArray();
     }
 
     public function getTypeOptionsProperty(): array

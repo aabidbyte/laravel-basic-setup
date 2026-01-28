@@ -31,13 +31,17 @@ class PasswordResetResponse implements PasswordResetResponseContract
      */
     public function toResponse($request): JsonResponse|RedirectResponse
     {
-        $message = __('authentication.reset_password.success') ?: __('messages.auth.password_reset');
+        $titleKey = \Illuminate\Support\Facades\Lang::has('authentication.reset_password.success')
+            ? 'authentication.reset_password.success'
+            : 'messages.auth.password_reset';
 
         // Send notification to guest user (via session channel)
         NotificationBuilder::make()
-            ->title($message)
+            ->title($titleKey)
             ->success()
             ->send();
+
+        $message = __($titleKey);
 
         return $request->wantsJson()
             ? response()->json(['message' => $message])

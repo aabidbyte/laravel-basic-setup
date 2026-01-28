@@ -92,8 +92,8 @@ class EnsureIdempotentRequest
 
         // Web request - show notification and redirect back
         NotificationBuilder::make()
-            ->title(__('errors.idempotency.title'))
-            ->subtitle(__('errors.idempotency.subtitle'))
+            ->title('errors.idempotency.title')
+            ->subtitle('errors.idempotency.subtitle')
             ->error()
             ->send();
 

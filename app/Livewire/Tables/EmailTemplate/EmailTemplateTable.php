@@ -232,7 +232,7 @@ class EmailTemplateTable extends Datatable
     {
         if ($template->is_system) {
             NotificationBuilder::make()
-                ->title(__('email_templates.cannot_delete_system'))
+                ->title('email_templates.cannot_delete_system')
                 ->error()
                 ->send();
 
@@ -241,7 +241,7 @@ class EmailTemplateTable extends Datatable
 
         if ($template->is_default) {
             NotificationBuilder::make()
-                ->title(__('email_templates.cannot_delete_default'))
+                ->title('email_templates.cannot_delete_default')
                 ->error()
                 ->send();
 
@@ -250,7 +250,7 @@ class EmailTemplateTable extends Datatable
 
         $template->delete();
         NotificationBuilder::make()
-            ->title(__('actions.deleted_successfully', ['name' => $template->name]))
+            ->title('actions.deleted_successfully', ['name' => $template->name])
             ->success()
             ->send();
     }

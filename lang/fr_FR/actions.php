@@ -54,8 +54,9 @@ return [
     'create_new' => 'Créer nouveau',
     'add_locale' => 'Ajouter une langue',
     'remove_locale' => 'Supprimer la langue',
-    'confirm_archive' => '',
-    'confirm_publish' => '',
-    'customize_text_version' => '',
-    'hide_text_version' => '',
+    'confirm_archive' => 'Êtes-vous sûr de vouloir archiver cet élément ?',
+    'confirm_publish' => 'Êtes-vous sûr de vouloir publier cet élément ?',
+    'customize_text_version' => 'Personnaliser la version texte',
+    'hide_text_version' => 'Masquer la version texte',
+    'required' => 'Requis',
 ];

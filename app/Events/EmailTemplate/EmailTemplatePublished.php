@@ -11,12 +11,14 @@ use Illuminate\Queue\SerializesModels;
 
 class EmailTemplatePublished
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable;
+    use InteractsWithSockets;
+    use SerializesModels;
 
     /**
      * Create a new event instance.
      */
     public function __construct(
-        public EmailTemplate $template
+        public EmailTemplate $template,
     ) {}
 }

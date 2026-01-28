@@ -258,8 +258,8 @@ class EmailTemplate extends BaseModel
     public function getContent(string $locale, bool $preferDraft = false): array
     {
         $translation = $this->getTranslation($locale);
-        
-        if (!$translation) {
+
+        if (! $translation) {
             return [
                 'subject' => '',
                 'html_content' => '',
@@ -268,7 +268,7 @@ class EmailTemplate extends BaseModel
             ];
         }
 
-        if ($preferDraft && !empty($translation->draft_html_content)) {
+        if ($preferDraft && ! empty($translation->draft_html_content)) {
             return [
                 'subject' => $translation->draft_subject ?? $translation->subject,
                 'html_content' => $translation->draft_html_content,
@@ -294,8 +294,6 @@ class EmailTemplate extends BaseModel
     {
         return $this->translations->pluck('locale')->unique()->values()->toArray();
     }
-
-
 
     /**
      * Check if the template has any draft content.

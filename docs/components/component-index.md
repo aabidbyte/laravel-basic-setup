@@ -6,6 +6,7 @@
 -   **Confirm Modal** (`confirm-modal.blade.php`) - Reusable confirmation modal with Alpine.js event handling
 -   **Button** (`button.blade.php`) - Styled buttons with variants and sizes
 -   **Input** (`input.blade.php`) - Form inputs with labels and error handling
+-   **Label** (`label.blade.php`) - Semantic form labels with required indicators
 -   **Search** (`search.blade.php`) - Search input with magnifying glass icon
 -   **Password** (`password.blade.php`) - Password input with show/hide toggle functionality
 -   **Form** (`form.blade.php`) - Form wrapper with automatic CSRF and method spoofing

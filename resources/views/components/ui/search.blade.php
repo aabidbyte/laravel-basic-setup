@@ -9,18 +9,17 @@
     $hasError = $error || ($errors->has($attributes->get('name')) ?? false);
 @endphp
 
-<label class="flex flex-col gap-2">
+<div class="flex flex-col gap-1">
     @if ($label)
-        <div class="label">
-            <span class="label-text">{{ $label }}@if ($required)
-                    <span class="text-error">*</span>
-                @endif
-            </span>
+        <x-ui.label :for="$inputId"
+                    :text="$label"
+                    :required="$required">
             @isset($labelAppend)
-                {{ $labelAppend }}
+                <x-slot:labelAppend>{{ $labelAppend }}</x-slot:labelAppend>
             @endisset
-        </div>
+        </x-ui.label>
     @endif
+
     <div class="relative">
         <div class="pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center pl-2">
             <x-ui.icon name="magnifying-glass"
@@ -30,6 +29,7 @@
         <input {{ $attributes->merge(['class' => 'input input-bordered w-full pl-10' . ($hasError ? ' input-error' : '')])->except(['label', 'error']) }}
                id="{{ $inputId }}" />
     </div>
+
     <x-ui.input-error :name="$attributes->get('name')"
                       :error="$error" />
-</label>
+</div>

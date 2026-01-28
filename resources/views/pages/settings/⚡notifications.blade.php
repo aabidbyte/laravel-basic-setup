@@ -74,36 +74,16 @@ new class extends BasePageComponent {
 
                     <div class="space-y-4">
                         {{-- Email Notifications --}}
-                        <div class="form-control">
-                            <label class="label cursor-pointer justify-start gap-4">
-                                <input type="checkbox"
-                                       wire:model="emailNotifications"
-                                       class="toggle toggle-primary" />
-                                <div>
-                                    <span
-                                          class="label-text font-medium">{{ __('settings.notifications.email_label') }}</span>
-                                    <p class="text-base-content/70 text-sm">
-                                        {{ __('settings.notifications.email_help') }}
-                                    </p>
-                                </div>
-                            </label>
-                        </div>
+                        <x-ui.toggle wire:model="emailNotifications"
+                                     :label="__('settings.notifications.email_label')"
+                                     :description="__('settings.notifications.email_help')"
+                                     color="primary" />
 
                         {{-- Browser Notifications --}}
-                        <div class="form-control">
-                            <label class="label cursor-pointer justify-start gap-4">
-                                <input type="checkbox"
-                                       wire:model="browserNotifications"
-                                       class="toggle toggle-primary" />
-                                <div>
-                                    <span
-                                          class="label-text font-medium">{{ __('settings.notifications.browser_label') }}</span>
-                                    <p class="text-base-content/70 text-sm">
-                                        {{ __('settings.notifications.browser_help') }}
-                                    </p>
-                                </div>
-                            </label>
-                        </div>
+                        <x-ui.toggle wire:model="browserNotifications"
+                                     :label="__('settings.notifications.browser_label')"
+                                     :description="__('settings.notifications.browser_help')"
+                                     color="primary" />
                     </div>
                 </div>
 
@@ -116,52 +96,22 @@ new class extends BasePageComponent {
 
                     <div class="space-y-4">
                         {{-- System Notifications --}}
-                        <div class="form-control">
-                            <label class="label cursor-pointer justify-start gap-4">
-                                <input type="checkbox"
-                                       wire:model="systemNotifications"
-                                       class="toggle toggle-secondary" />
-                                <div>
-                                    <span
-                                          class="label-text font-medium">{{ __('settings.notifications.system_label') }}</span>
-                                    <p class="text-base-content/70 text-sm">
-                                        {{ __('settings.notifications.system_help') }}
-                                    </p>
-                                </div>
-                            </label>
-                        </div>
+                        <x-ui.toggle wire:model="systemNotifications"
+                                     :label="__('settings.notifications.system_label')"
+                                     :description="__('settings.notifications.system_help')"
+                                     color="secondary" />
 
                         {{-- Security Notifications --}}
-                        <div class="form-control">
-                            <label class="label cursor-pointer justify-start gap-4">
-                                <input type="checkbox"
-                                       wire:model="securityNotifications"
-                                       class="toggle toggle-secondary" />
-                                <div>
-                                    <span
-                                          class="label-text font-medium">{{ __('settings.notifications.security_label') }}</span>
-                                    <p class="text-base-content/70 text-sm">
-                                        {{ __('settings.notifications.security_help') }}
-                                    </p>
-                                </div>
-                            </label>
-                        </div>
+                        <x-ui.toggle wire:model="securityNotifications"
+                                     :label="__('settings.notifications.security_label')"
+                                     :description="__('settings.notifications.security_help')"
+                                     color="secondary" />
 
                         {{-- Team Notifications --}}
-                        <div class="form-control">
-                            <label class="label cursor-pointer justify-start gap-4">
-                                <input type="checkbox"
-                                       wire:model="teamNotifications"
-                                       class="toggle toggle-secondary" />
-                                <div>
-                                    <span
-                                          class="label-text font-medium">{{ __('settings.notifications.team_label') }}</span>
-                                    <p class="text-base-content/70 text-sm">
-                                        {{ __('settings.notifications.team_help') }}
-                                    </p>
-                                </div>
-                            </label>
-                        </div>
+                        <x-ui.toggle wire:model="teamNotifications"
+                                     :label="__('settings.notifications.team_label')"
+                                     :description="__('settings.notifications.team_help')"
+                                     color="secondary" />
                     </div>
                 </div>
 

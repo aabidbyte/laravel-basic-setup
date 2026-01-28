@@ -7,9 +7,9 @@ use App\Enums\EmailTemplate\EmailTemplateKind;
 use App\Enums\EmailTemplate\EmailTemplateStatus;
 use App\Livewire\Bases\BasePageComponent;
 use App\Models\EmailTemplate\EmailTemplate;
+use App\Services\Notifications\NotificationBuilder;
 
-new class extends BasePageComponent
-{
+new class extends BasePageComponent {
     public ?string $pageSubtitle = null;
 
     protected string $placeholderType = 'form';
@@ -36,7 +36,7 @@ new class extends BasePageComponent
     public function mount(?EmailTemplate $template = null): void
     {
         $this->authorizeAccess($template);
-        $this->initializeUnifiedModel($template, fn ($t) => $this->loadExistingTemplate($t), fn () => $this->prepareNewTemplate());
+        $this->initializeUnifiedModel($template, fn($t) => $this->loadExistingTemplate($t), fn() => $this->prepareNewTemplate());
 
         $this->modelTypeLabel = $this->isLayout ? __('types.email_layout') : __('types.email_content');
 
@@ -61,7 +61,7 @@ new class extends BasePageComponent
     protected function prepareNewTemplate(): void
     {
         $this->isLayout = request()->query('type') === EmailTemplateKind::LAYOUT->value;
-        $this->model = new EmailTemplate;
+        $this->model = new EmailTemplate();
     }
 
     protected function updatePageHeader(): void
@@ -79,7 +79,7 @@ new class extends BasePageComponent
 
     protected function fillFromModel(): void
     {
-        if (! $this->isLayout) {
+        if (!$this->isLayout) {
             $this->entity_types = $this->model->entity_types ?? [];
             $this->context_variables = $this->model->context_variables ?? [];
         }
@@ -98,7 +98,7 @@ new class extends BasePageComponent
         }
 
         $this->activeLocale = app()->getLocale();
-        if (! isset($this->translations[$this->activeLocale])) {
+        if (!isset($this->translations[$this->activeLocale])) {
             $this->activeLocale = array_key_first($this->translations) ?? 'en_US';
         }
     }
@@ -110,7 +110,7 @@ new class extends BasePageComponent
             'translations.*.html_content' => ['required', 'string'],
         ];
 
-        if (! $this->isLayout) {
+        if (!$this->isLayout) {
             $rules['translations.*.subject'] = ['required', 'string', 'max:255'];
         }
 
@@ -119,7 +119,7 @@ new class extends BasePageComponent
 
     public function addLocale(string $locale): void
     {
-        if (! isset($this->translations[$locale])) {
+        if (!isset($this->translations[$locale])) {
             $this->translations[$locale] = [
                 'subject' => '',
                 'preheader' => '',
@@ -146,7 +146,7 @@ new class extends BasePageComponent
         $this->validate();
 
         // Ensure model exists before saving draft translations
-        if (! $this->model->exists) {
+        if (!$this->model->exists) {
             $this->persistEmailTemplate(EmailTemplateStatus::DRAFT);
         }
 
@@ -162,7 +162,7 @@ new class extends BasePageComponent
         $this->validate();
 
         // Ensure model exists
-        if (! $this->model->exists) {
+        if (!$this->model->exists) {
             $this->persistEmailTemplate(EmailTemplateStatus::DRAFT);
         }
 
@@ -185,11 +185,7 @@ new class extends BasePageComponent
         // Reload model and form
         $this->loadExistingTemplate($this->model->refresh());
 
-        $this->dispatch('notify',
-            variant: 'success',
-            title: __('actions.success'),
-            message: __('email_templates.messages.restored_from_published'),
-        );
+        NotificationBuilder::make()->title('actions.success')->subtitle('email_templates.messages.restored_from_published')->success()->send();
     }
 
     public function save(): void
@@ -206,7 +202,7 @@ new class extends BasePageComponent
         $messageKey = $this->persistEmailTemplate($status);
         $this->persistTranslations($this->model);
 
-        if (! $this->isCreateMode) {
+        if (!$this->isCreateMode) {
             $this->cleanupOrphanedTranslations($this->model);
         }
 
@@ -224,7 +220,7 @@ new class extends BasePageComponent
             return 'pages.common.create.success';
         }
 
-        $this->model->update($modelData);
+        $this->model->fill($modelData)->save();
 
         return 'pages.common.edit.success';
     }
@@ -270,10 +266,7 @@ new class extends BasePageComponent
         // 2. Status is DRAFT
         // 3. Has draft content to discard
         // 4. Has published content to restore FROM (safety check)
-        return ! $this->isCreateMode
-            && $this->model->status === EmailTemplateStatus::DRAFT
-            && $this->model->hasDraftContent()
-            && $this->model->hasPublishedContent();
+        return !$this->isCreateMode && $this->model->status === EmailTemplateStatus::DRAFT && $this->model->hasDraftContent() && $this->model->hasPublishedContent();
     }
 
     public function getSupportedLocalesProperty(): array
@@ -283,13 +276,11 @@ new class extends BasePageComponent
 
     public function getCancelUrlProperty(): string
     {
-        if (! $this->isCreateMode) {
+        if (!$this->isCreateMode) {
             return route('emailTemplates.show', $this->model);
         }
 
-        return $this->isLayout
-            ? route('emailTemplates.layouts.index')
-            : route('emailTemplates.contents.index');
+        return $this->isLayout ? route('emailTemplates.layouts.index') : route('emailTemplates.contents.index');
     }
 }; ?>
 
@@ -297,10 +288,10 @@ new class extends BasePageComponent
                 backLabel="{{ __('actions.cancel') }}">
     <x-slot:bottomActions>
         <div class="flex items-center gap-2">
-            @if($this->showSaveActions)
+            @if ($this->showSaveActions)
                 <!-- Restore Action -->
-                @if($this->canRestore)
-                     <x-ui.button type="button"
+                @if ($this->canRestore)
+                    <x-ui.button type="button"
                                  wire:click="restoreToDraft"
                                  wire:confirm="{{ __('email_templates.actions.confirm_restore') }}"
                                  variant="ghost"
@@ -308,7 +299,7 @@ new class extends BasePageComponent
                         {{ __('email_templates.actions.restore_from_published') }}
                     </x-ui.button>
                 @endif
-            
+
                 <x-ui.button type="button"
                              wire:click="saveAsDraft"
                              wire:loading.attr="disabled"
@@ -371,12 +362,13 @@ new class extends BasePageComponent
                     {{-- Locale Adder --}}
                     @if (count($translations) < count($this->supportedLocales))
                         <div class="dropdown dropdown-end">
-                            <label tabindex="0"
-                                   class="btn btn-sm btn-ghost gap-2">
+                            <x-ui.label tabindex="0"
+                                        variant="plain"
+                                        class="btn btn-sm btn-ghost gap-2">
                                 <x-ui.icon name="plus"
                                            size="sm"></x-ui.icon>
                                 {{ __('actions.add_locale') }}
-                            </label>
+                            </x-ui.label>
                             <ul tabindex="0"
                                 class="dropdown-content menu bg-base-100 rounded-box w-52 p-2 shadow">
                                 @foreach ($this->supportedLocales as $locale => $data)
@@ -393,7 +385,7 @@ new class extends BasePageComponent
                 <div class="card shadow">
                     <div class="card-body">
                         {{-- Active Tab Content --}}
-                        @if (isset($translations[$activeLocale]))
+                        @if (isset($translations[(string) $activeLocale]))
                             <div class="space-y-4">
                                 @if (!$isLayout)
                                     <div class="grid grid-cols-1 gap-4">
@@ -409,8 +401,9 @@ new class extends BasePageComponent
 
                                 <div class="relative">
                                     <div class="mb-2 flex items-center justify-between">
-                                        <label
-                                               class="label-text font-medium">{{ __('email_templates.form.html_content') }}</label>
+                                        <x-ui.label for="html_content_{{ $activeLocale }}"
+                                                    :text="__('email_templates.form.html_content')"
+                                                    required></x-ui.label>
                                         @if (!$isLayout)
                                             <x-ui.merge-tag-picker :entity-types="$entity_types"
                                                                    :context-variables="$context_variables"
@@ -427,8 +420,8 @@ new class extends BasePageComponent
                                 @if (!$isLayout)
                                     <div class="relative">
                                         <div class="flex flex-col gap-4">
-                                            <label
-                                                   class="label-text font-medium">{{ __('email_templates.form.text_content') }}</label>
+                                            <x-ui.label for="text_content_{{ $activeLocale }}"
+                                                        :text="__('email_templates.form.text_content')"></x-ui.label>
                                             <div class="alert alert-info mb-2 py-2 text-xs">
                                                 <x-ui.icon name="information-circle"
                                                            size="xs"></x-ui.icon>

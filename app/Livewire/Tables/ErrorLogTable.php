@@ -190,7 +190,7 @@ class ErrorLogTable extends Datatable
                     'resolver_name' => Auth::user()?->name,
                 ]);
                 NotificationBuilder::make()
-                    ->title(__('errors.management.resolve_success'))
+                    ->title('errors.management.resolve_success')
                     ->success()
                     ->send();
             })
@@ -206,7 +206,7 @@ class ErrorLogTable extends Datatable
             ->execute(function (ErrorLog $errorLog) {
                 $errorLog->delete();
                 NotificationBuilder::make()
-                    ->title(__('errors.management.deleted_successfully'))
+                    ->title('errors.management.deleted_successfully')
                     ->success()
                     ->send();
             })
@@ -235,7 +235,7 @@ class ErrorLogTable extends Datatable
                         'resolver_name' => Auth::user()?->name,
                     ]));
                     NotificationBuilder::make()
-                        ->title(__('errors.management.bulk_resolved_successfully', ['count' => $count]))
+                        ->title('errors.management.bulk_resolved_successfully', ['count' => $count])
                         ->success()
                         ->send();
                 })
@@ -250,7 +250,7 @@ class ErrorLogTable extends Datatable
                     $count = $errorLogs->count();
                     $errorLogs->each->delete();
                     NotificationBuilder::make()
-                        ->title(__('errors.management.bulk_deleted_successfully', ['count' => $count]))
+                        ->title('errors.management.bulk_deleted_successfully', ['count' => $count])
                         ->success()
                         ->send();
                 })

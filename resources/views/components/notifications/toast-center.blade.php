@@ -2,7 +2,7 @@
     <div x-data="toastCenter"
          x-init="init()"
          aria-live="assertive"
-         class="pointer-events-none fixed z-[9999] flex max-w-sm flex-col gap-2 p-6"
+         class="pointer-events-none fixed z-[99999] flex max-w-sm flex-col gap-2 p-6"
          :class="getContainerPosition()"
          @mouseenter="$dispatch('pause-auto-dismiss')"
          @mouseleave="$dispatch('resume-auto-dismiss')">

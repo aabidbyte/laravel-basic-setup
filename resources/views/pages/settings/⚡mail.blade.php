@@ -122,7 +122,7 @@ new class extends BasePageComponent {
         }
 
         if ($settings) {
-            $settings->update($data);
+            $settings->fill($data)->save();
         } else {
             $user->mailSettings()->create(
                 array_merge($data, [
@@ -207,9 +207,7 @@ new class extends BasePageComponent {
                        class="w-full space-y-6">
                 {{-- Provider Selection --}}
                 <div class="form-control w-full">
-                    <label class="label">
-                        <span class="label-text font-medium">{{ __('settings.mail.provider_label') }}</span>
-                    </label>
+                    <x-ui.label :text="__('settings.mail.provider_label')"></x-ui.label>
                     <select wire:model.live="provider"
                             class="select select-bordered w-full">
                         @foreach ($this->providers as $value => $label)
@@ -251,9 +249,7 @@ new class extends BasePageComponent {
                     </div>
 
                     <div class="form-control w-full">
-                        <label class="label">
-                            <span class="label-text font-medium">{{ __('settings.mail.encryption_label') }}</span>
-                        </label>
+                        <x-ui.label :text="__('settings.mail.encryption_label')"></x-ui.label>
                         <select wire:model="encryption"
                                 class="select select-bordered w-full">
                             @foreach ($this->encryptionOptions as $value => $label)
@@ -283,17 +279,10 @@ new class extends BasePageComponent {
                 </div>
 
                 {{-- Active Toggle --}}
-                <div class="form-control">
-                    <label class="label cursor-pointer justify-start gap-4">
-                        <input type="checkbox"
-                               wire:model="isActive"
-                               class="toggle toggle-primary" />
-                        <div>
-                            <span class="label-text font-medium">{{ __('settings.mail.active_label') }}</span>
-                            <p class="text-base-content/70 text-sm">{{ __('settings.mail.active_help') }}</p>
-                        </div>
-                    </label>
-                </div>
+                <x-ui.toggle wire:model="isActive"
+                             :label="__('settings.mail.active_label')"
+                             :description="__('settings.mail.active_help')"
+                             color="primary" />
 
                 {{-- Actions --}}
                 <div class="flex flex-wrap items-center gap-4 pt-4">

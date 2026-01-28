@@ -35,9 +35,7 @@
 
         {{-- Confirmation input --}}
         <div class="form-control">
-            <label class="label">
-                <span class="label-text">{{ __('common.type_confirm.type_label') }}</span>
-            </label>
+            <x-ui.label :text="__('common.type_confirm.type_label')"></x-ui.label>
             <input type="text"
                    x-model="confirmText"
                    @keyup.enter="confirm()"

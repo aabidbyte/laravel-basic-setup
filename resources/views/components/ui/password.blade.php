@@ -10,18 +10,17 @@
     $hasError = $error || ($errors->has($attributes->get('name')) ?? false);
 @endphp
 
-<label class="flex flex-col gap-2">
+<div class="flex flex-col gap-1">
     @if ($label)
-        <div class="label">
-            <span class="label-text">{{ $label }}@if ($required)
-                    <span class="text-error">*</span>
-                @endif
-            </span>
+        <x-ui.label :for="$inputId"
+                    :text="$label"
+                    :required="$required">
             @isset($labelAppend)
-                {{ $labelAppend }}
+                <x-slot:labelAppend>{{ $labelAppend }}</x-slot:labelAppend>
             @endisset
-        </div>
+        </x-ui.label>
     @endif
+
     <div class="relative overflow-visible"
          x-data="passwordVisibility()">
         <input type="password"
@@ -29,6 +28,7 @@
                x-bind:type="showPassword ? 'text' : 'password'"
                {{ $attributes->merge(['class' => 'input input-bordered w-full pr-10' . ($hasError ? ' input-error' : '')])->except(['label', 'error', 'type']) }}
                id="{{ $inputId }}" />
+
         <button type="button"
                 @click.stop="toggle()"
                 class="btn btn-ghost btn-sm btn-circle absolute right-2 top-1/2 z-10 h-8 min-h-0 w-8 -translate-y-1/2 p-0"
@@ -57,6 +57,7 @@
             </button>
         @endif
     </div>
+
     <x-ui.input-error :name="$attributes->get('name')"
                       :error="$error" />
 
@@ -65,4 +66,4 @@
             <x-ui.password-strength :target-id="$inputId" />
         </div>
     @endif
-</label>
+</div>

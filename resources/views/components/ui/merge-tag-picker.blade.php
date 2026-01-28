@@ -15,8 +15,6 @@
     'contextVariables' => [],
 ])
 
-
-
 <div x-data='mergeTagPicker({!! json_encode($availableTags, JSON_HEX_APOS) !!}, {!! json_encode($target, JSON_HEX_APOS) !!})'
      {{ $attributes->merge(['class' => 'inline-block']) }}>
 

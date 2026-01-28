@@ -7,11 +7,13 @@ use App\Services\EmailTemplate\EmailRenderer;
 use Livewire\Attributes\Lazy;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
+use App\Services\Notifications\NotificationBuilder;
 
-new #[Lazy] class extends Component
-{
+new #[Lazy] class extends Component {
     #[Locked]
     public string $templateUuid = '';
+
+    public ?int $temporaryLayoutId = null;
 
     public ?EmailTemplate $template = null;
 
@@ -28,6 +30,7 @@ new #[Lazy] class extends Component
         $this->templateUuid = $templateUuid;
         $this->loadTemplate();
         $this->selectedLocale = app()->getLocale();
+        $this->temporaryLayoutId = $this->template->layout_id;
         // Check if there is actual draft content to show, otherwise default to false?
         // Actually, prioritizing draft means if draft exists, show it.
         // We can check if any translation has draft content.
@@ -36,7 +39,8 @@ new #[Lazy] class extends Component
 
     protected function loadTemplate(): void
     {
-        $this->template = EmailTemplate::where('uuid', $this->templateUuid)
+        $this->template = EmailTemplate::query()
+            ->where('uuid', $this->templateUuid)
             ->with(['translations', 'layout'])
             ->firstOrFail();
     }
@@ -45,7 +49,7 @@ new #[Lazy] class extends Component
     {
         $locales = config('i18n.supported_locales');
 
-        if (empty($locales) || ! is_array($locales)) {
+        if (empty($locales) || !is_array($locales)) {
             return [app()->getLocale() => app()->getLocale()];
         }
 
@@ -55,6 +59,30 @@ new #[Lazy] class extends Component
         }
 
         return $options;
+    }
+
+    public function getLayoutsProperty(): array
+    {
+        return EmailTemplate::query()->layouts()->published()->pluck('name', 'id')->toArray();
+    }
+
+    public function updatedTemporaryLayoutId($value): void
+    {
+        if ($value) {
+            $this->template->layout_id = (int) $value;
+            $this->template->load('layout');
+        } else {
+            $this->template->layout_id = null;
+            $this->template->unsetRelation('layout');
+        }
+        $this->generatePreview();
+    }
+
+    public function saveLayout(): void
+    {
+        $this->template->fill(['layout_id' => $this->temporaryLayoutId])->save();
+
+        NotificationBuilder::make()->title('actions.success')->subtitle('email_templates.messages.published')->success()->send();
     }
 
     public function generatePreview(): void
@@ -98,14 +126,11 @@ new #[Lazy] class extends Component
             <div class="flex items-center gap-4">
                 {{-- Draft Toggle --}}
                 @if ($template->status === \App\Enums\EmailTemplate\EmailTemplateStatus::DRAFT && $template->hasDraftContent())
-                    <div class="form-control">
-                        <label class="label cursor-pointer gap-2">
-                            <span class="label-text">{{ __('email_templates.preview.view_draft') }}</span>
-                            <x-ui.toggle wire:model.live="preferDraft"
-                                         size="sm"
-                                         color="primary" />
-                        </label>
-                    </div>
+                    <x-ui.toggle wire:model.live="preferDraft"
+                                 size="sm"
+                                 color="primary"
+                                 :label="__('email_templates.preview.view_draft')"
+                                 labelPosition="left" />
                 @endif
 
                 {{-- Device Selector --}}
@@ -158,6 +183,30 @@ new #[Lazy] class extends Component
             </p>
         @endif
     </div>
+    {{-- Layout Selector --}}
+    @if (!$template->is_layout)
+        <div class="flex items-center gap-2">
+            <x-ui.label for="temporaryLayoutId">
+                {{ __('email_templates.preview.change_layout') }}
+            </x-ui.label>
+            <x-ui.select wire:model.live="temporaryLayoutId"
+                         :options="$this->layouts"
+                         placeholder="{{ __('email_templates.preview.select_layout') }}"
+                         size="sm"
+                         class="w-48" />
+
+            @if ($temporaryLayoutId !== $template->getRawOriginal('layout_id'))
+                <x-ui.button type="button"
+                             wire:click="saveLayout"
+                             size="sm"
+                             color="success">
+                    <x-ui.icon name="check"
+                               size="sm" />
+                    {{ __('email_templates.preview.apply_layout') }}
+                </x-ui.button>
+            @endif
+        </div>
+    @endif
 
     {{-- HTML Preview --}}
     @if ($previewHtml)

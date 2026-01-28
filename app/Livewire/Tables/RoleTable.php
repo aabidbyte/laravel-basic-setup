@@ -98,7 +98,7 @@ class RoleTable extends Datatable
             ->execute(function (Role $role) {
                 if (in_array($role->name, [Roles::SUPER_ADMIN, Roles::ADMIN], true)) {
                     NotificationBuilder::make()
-                        ->title(__('actions.error'))
+                        ->title('actions.error')
                         ->content('Cannot delete protected role.')
                         ->error()
                         ->send();

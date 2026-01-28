@@ -82,7 +82,7 @@ new class extends BasePageComponent {
         // Update timezone
         $user = Auth::user();
         if ($user) {
-            $user->timezone = $this->timezone;
+            $user->setAttribute('timezone', $this->timezone);
             $user->save();
         }
 
@@ -99,12 +99,11 @@ new class extends BasePageComponent {
                        class="w-full space-y-6">
                 {{-- Theme Selection --}}
                 <div class="form-control w-full">
-                    <label class="label">
-                        <span class="label-text font-medium">{{ __('settings.preferences.theme_label') }}</span>
-                    </label>
+                    <x-ui.label :text="__('settings.preferences.theme_label')"></x-ui.label>
                     <div class="flex gap-4">
                         @foreach ($this->themes as $value => $label)
-                            <label class="flex cursor-pointer items-center gap-2">
+                            <x-ui.label class="flex cursor-pointer items-center gap-2"
+                                        variant="plain">
                                 <input type="radio"
                                        wire:model="theme"
                                        name="theme"
@@ -120,21 +119,19 @@ new class extends BasePageComponent {
                                     @endif
                                     {{ $label }}
                                 </span>
-                            </label>
+                            </x-ui.label>
                         @endforeach
                     </div>
                     @error('theme')
-                        <label class="label">
+                        <x-ui.label variant="plain">
                             <span class="label-text-alt text-error">{{ $message }}</span>
-                        </label>
+                        </x-ui.label>
                     @enderror
                 </div>
 
                 {{-- Language Selection --}}
                 <div class="form-control w-full">
-                    <label class="label">
-                        <span class="label-text font-medium">{{ __('settings.preferences.locale_label') }}</span>
-                    </label>
+                    <x-ui.label :text="__('settings.preferences.locale_label')"></x-ui.label>
                     <select wire:model="locale"
                             class="select select-bordered w-full">
                         @foreach ($this->locales as $code => $name)
@@ -142,32 +139,30 @@ new class extends BasePageComponent {
                         @endforeach
                     </select>
                     @error('locale')
-                        <label class="label">
+                        <x-ui.label variant="plain">
                             <span class="label-text-alt text-error">{{ $message }}</span>
-                        </label>
+                        </x-ui.label>
                     @enderror
                 </div>
 
                 {{-- Timezone Selection --}}
                 <div class="form-control w-full">
-                    <label class="label">
-                        <span class="label-text font-medium">{{ __('settings.preferences.timezone_label') }}</span>
-                    </label>
+                    <x-ui.label :text="__('settings.preferences.timezone_label')"></x-ui.label>
                     <select wire:model="timezone"
                             class="select select-bordered w-full">
                         @foreach ($this->timezones as $tz)
                             <option value="{{ $tz }}">{{ $tz }}</option>
                         @endforeach
                     </select>
-                    <label class="label">
+                    <x-ui.label variant="plain">
                         <span class="label-text-alt text-base-content/70">
                             {{ __('settings.preferences.timezone_help') }}
                         </span>
-                    </label>
+                    </x-ui.label>
                     @error('timezone')
-                        <label class="label">
+                        <x-ui.label variant="plain">
                             <span class="label-text-alt text-error">{{ $message }}</span>
-                        </label>
+                        </x-ui.label>
                     @enderror
                 </div>
 

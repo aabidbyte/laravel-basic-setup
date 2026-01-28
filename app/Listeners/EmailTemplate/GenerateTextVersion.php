@@ -16,12 +16,12 @@ class GenerateTextVersion implements ShouldQueue
     public function handle(EmailTemplateSaved $event): void
     {
         $template = $event->template;
-        
+
         // Eager load translations if not loaded
-        if (!$template->relationLoaded('translations')) {
+        if (! $template->relationLoaded('translations')) {
             $template->load('translations');
         }
-        
+
         foreach ($template->translations as $translation) {
             // Only convert if the locale matches the event locale (if provided) or for all if null
             if ($event->locale && $translation->locale !== $event->locale) {
@@ -29,18 +29,18 @@ class GenerateTextVersion implements ShouldQueue
             }
 
             $hasChanges = false;
-            
+
             // Convert draft HTML to draft Text
-            if (!empty($translation->draft_html_content)) {
+            if (! empty($translation->draft_html_content)) {
                 $textContent = $this->convertHtmlToText($translation->draft_html_content);
                 if ($translation->draft_text_content !== $textContent) {
                     $translation->draft_text_content = $textContent;
                     $hasChanges = true;
                 }
             }
-            
+
             // Also ensure published text is consistent if published HTML exists
-            if (!empty($translation->html_content)) {
+            if (! empty($translation->html_content)) {
                 $textContent = $this->convertHtmlToText($translation->html_content);
                 if ($translation->text_content !== $textContent) {
                     $translation->text_content = $textContent;

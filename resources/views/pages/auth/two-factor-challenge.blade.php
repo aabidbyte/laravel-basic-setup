@@ -22,10 +22,8 @@
                 <div class="space-y-5 text-center">
                     <div x-show="!showRecoveryInput">
                         <div class="form-control">
-                            <label for="code"
-                                   class="label">
-                                <span class="label-text">{{ __('settings.two_factor.setup.otp_label') }}</span>
-                            </label>
+                            <x-ui.label for="code"
+                                        :text="__('settings.two_factor.setup.otp_label')"></x-ui.label>
                             <input type="text"
                                    x-model="code"
                                    name="code"
