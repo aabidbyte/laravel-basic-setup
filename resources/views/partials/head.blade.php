@@ -18,6 +18,7 @@
       type="image/svg+xml" />
 <link rel="apple-touch-icon"
       href="/apple-touch-icon.png" />
+@stack('beginHead')
 
 <script type="text/javascript"
         @cspNonce>
@@ -34,3 +35,4 @@
 @vite($allAssets)
 
 @livewireStyles(['nonce' => cspNonce()])
+@stack('endHead')

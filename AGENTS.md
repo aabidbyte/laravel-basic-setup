@@ -31,6 +31,23 @@ catch (Exception $e)
 
 See [Development Conventions](docs/AGENTS/development-conventions.md#no-leading-import-slashes) for details.
 
+### Global Namespace for Built-in Functions
+**All PHP built-in functions MUST be called in the global namespace (prefix with `\`) when inside a namespaced file.**
+
+```php
+// ❌ FORBIDDEN
+if (is_array($data)) {
+    return count($data);
+}
+
+// ✅ REQUIRED
+if (\is_array($data)) {
+    return \count($data);
+}
+```
+
+See [Development Conventions](docs/AGENTS/development-conventions.md#global-namespace-for-built-in-functions) for details.
+
 ### Mandatory Translations
 **When adding new translation keys, you MUST add them to all supported language directories in the `lang/` folder (currently `en_US` and `fr_FR`).** Never leave keys missing or with placeholders in any language.
 

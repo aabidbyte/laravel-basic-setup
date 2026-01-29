@@ -48,6 +48,9 @@
     -   Always use explicit return type declarations
     -   Use appropriate type hints for method parameters
     -   **Always use function guards and early returns** - Check for invalid conditions first and return early to reduce nesting and improve readability
+    -   **Global Namespace for Built-in Functions**: All PHP built-in functions (e.g., `is_array`, `count`, `array_merge`, `in_array`, `json_encode`, `json_decode`, etc.) MUST be called in the global namespace by prefixing them with a backslash (`\`) when used inside a namespaced file. This improves performance by avoiding a namespace lookup.
+        -   **✅ Correct**: `\count($items)`, `\json_encode($data)`
+        -   **❌ Incorrect**: `count($items)`, `json_encode($data)`
 -   **PHPDoc**: **Always add comprehensive PHPDoc comments to all methods and functions when possible** - This enables better IDE autocomplete, type checking, and code documentation. Include:
     -   `@param` annotations with types and descriptions for all parameters
     -   `@return` annotations with return types

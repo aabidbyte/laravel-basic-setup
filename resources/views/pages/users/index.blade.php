@@ -22,6 +22,7 @@
             @endcan
         </x-slot:topActions>
 
+        <livewire:charts.users.users-charts-index lazy></livewire:charts.users.users-charts-index>
         <livewire:tables.user-table lazy></livewire:tables.user-table>
     </x-layouts.page>
 </x-layouts.app>

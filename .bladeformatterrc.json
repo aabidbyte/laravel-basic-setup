@@ -3,7 +3,7 @@
 
   "wrapAttributes": "force-aligned",
   "wrapLineLength": 120,
-  "wrapAttributesMinAttrs": 1,
+  "wrapAttributesMinAttrs": 2,
 
   "indentInnerHtml": true,
 

@@ -6,6 +6,7 @@ namespace App\Livewire\Tables;
 
 use App\Constants\Auth\PolicyAbilities;
 use App\Constants\DataTable\DataTableUi;
+use App\Enums\DataTable\DataTableFilterType;
 use App\Livewire\DataTable\Datatable;
 use App\Models\Role;
 use App\Models\User;
@@ -98,13 +99,13 @@ class UserTable extends Datatable
         return [
             Filter::make('role', __('table.users.filters.role'))
                 ->placeholder(__('table.users.filters.all_roles'))
-                ->type('select')
+                ->type(DataTableFilterType::SELECT)
                 ->relationship('roles', 'name')
                 ->options($this->getRoleOptions()), // Use memoized options
 
             Filter::make('is_active', __('table.users.filters.status'))
                 ->placeholder(__('table.users.filters.all_status'))
-                ->type('select')
+                ->type(DataTableFilterType::SELECT)
                 ->options([
                     '1' => __('table.users.status_active'),
                     '0' => __('table.users.status_inactive'),
@@ -113,13 +114,42 @@ class UserTable extends Datatable
 
             Filter::make('email_verified_at', __('table.users.filters.verified'))
                 ->placeholder(__('table.users.filters.all_status'))
-                ->type('select')
+                ->type(DataTableFilterType::SELECT)
                 ->options([
                     '1' => __('table.users.verified_yes'),
                     '0' => __('table.users.verified_no'),
                 ])
                 ->valueMapping(['1' => 'not_null', '0' => 'null']),
+
+            Filter::make('created_at', __('Created At'))
+                ->type(DataTableFilterType::DATE_RANGE)
+                ->execute(function (Builder $query, $value) {
+                    $from = $value['from'] ?? null;
+                    $to = $value['to'] ?? null;
+
+                    if ($from) {
+                        $query->whereDate('created_at', '>=', $from);
+                    }
+                    if ($to) {
+                        $query->whereDate('created_at', '<=', $to);
+                    }
+                }),
         ];
+    }
+
+    public function updatedFilters(): void
+    {
+        parent::updatedFilters();
+
+        $createdAt = $this->filters['created_at'] ?? null;
+        if ($createdAt) {
+            $from = $createdAt['from'] ?? null;
+            $to = $createdAt['to'] ?? null;
+
+            // Dispatch to generic charts and specifically to UsersChartsIndex
+            $this->dispatch('date-range-changed:UsersChartsIndex', from: $from, to: $to);
+            // $this->dispatch('date-range-changed', from: $from, to: $to); // Optional: if we want to update global charts too
+        }
     }
 
     /**

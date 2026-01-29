@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\DataTable\Builders;
 
+use App\Enums\DataTable\DataTableFilterType;
 use Closure;
 
 /**
@@ -36,7 +37,7 @@ class Filter
     /**
      * Filter type (select, date_range, etc.)
      */
-    private string $type = 'select';
+    private DataTableFilterType $type = DataTableFilterType::SELECT;
 
     /**
      * Static options array (associative array: value => label)
@@ -115,12 +116,16 @@ class Filter
     /**
      * Set the filter type
      *
-     * @param  string  $type  Filter type (select, date_range, etc.)
+     * @param  DataTableFilterType|string  $type  Filter type (select, date_range, etc.)
      * @return $this
      */
-    public function type(string $type): self
+    public function type(DataTableFilterType|string $type): self
     {
-        $this->type = $type;
+        if (is_string($type)) {
+            $this->type = DataTableFilterType::tryFrom($type) ?? DataTableFilterType::SELECT;
+        } else {
+            $this->type = $type;
+        }
 
         return $this;
     }
@@ -247,7 +252,7 @@ class Filter
     /**
      * Get the filter type
      */
-    public function getType(): string
+    public function getType(): DataTableFilterType
     {
         return $this->type;
     }

@@ -32,6 +32,7 @@
 *   **Enums:** Use **backed Enums** instead of class constants for status/types. Located in `app/Enums/`.
 *   **Translations:** **Mandatory** for all user-facing text. Add keys to both `en_US` and `fr_FR` in `lang/`.
 *   **Imports:** No leading slashes in `use` statements (e.g., `use App\Models\User;` not `use \App\Models\User;`).
+*   **Global Namespace for Built-in Functions:** Prefix all PHP built-in functions with `\` when inside a namespaced file (e.g., `\count()`, `\is_array()`).
 
 ### Frontend (Blade/Livewire/Alpine)
 *   **CSP Safety:** All Alpine.js logic must be extracted to registered components. **Avoid inline event handlers** that violate CSP.

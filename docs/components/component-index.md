@@ -12,9 +12,12 @@
 -   **Form** (`form.blade.php`) - Form wrapper with automatic CSRF and method spoofing
 -   **Icon** (`icon.blade.php`) - Dynamic icon component with multiple icon pack support and security validation
 -   **Dropdown** (`dropdown.blade.php`) - Flexible dropdown component with CSS focus pattern, multiple placements, and menu support
+-   **[Accordion](accordion.md)** (`accordion.blade.php`) - DaisyUI collapse wrapper with support for radio/checkbox groups
 -   **Badge** (`badge.blade.php`) - Flexible badge component with support for all DaisyUI styles, colors, and sizes
 -   **Icon Placeholder** (`icon-placeholder.blade.php`) - Placeholder for icons
 -   **Placeholder** (`placeholder.blade.php`) - Generic placeholder component
+-   **[Chart](chart.md)** (`chart.blade.php`) - Wrapper for Chart.js charts (Class Component) with CSP support
+-   **[Stat Card](stats-card.md)** (`stats/card.blade.php`) - Metric card component with trend indicators and variants
 
 ### Table Components (`resources/views/components/table/`)
 

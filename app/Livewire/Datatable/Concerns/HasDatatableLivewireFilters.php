@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\DataTable\Concerns;
 
+use App\Enums\DataTable\DataTableFilterType;
 use App\Services\DataTable\Builders\Filter;
 
 /**
@@ -87,11 +88,11 @@ trait HasDatatableLivewireFilters
                 }
 
                 // Get the label for the value
-                $valueLabel = $value;
-                if ($filter->getType() === 'select') {
-                    $options = $filter->getOptions();
-                    $valueLabel = $options[$value] ?? $value;
-                }
+                $valueLabel = match ($filter->getType()) {
+                    DataTableFilterType::SELECT => $filter->getOptions()[$value] ?? $value,
+                    DataTableFilterType::DATE_RANGE => \is_array($value) ? $this->formatDateRangeLabel($value) : $value,
+                    default => \is_array($value) ? implode(', ', $value) : $value,
+                };
 
                 return [
                     'key' => $key,
@@ -130,5 +131,26 @@ trait HasDatatableLivewireFilters
         return view('components.datatable.filters', [
             'datatable' => $this,
         ])->render();
+    }
+
+    /**
+     * Format date range label
+     *
+     * @param  array{from?: string|null, to?: string|null}  $range
+     */
+    protected function formatDateRangeLabel(array $range): string
+    {
+        $from = $range['from'] ?? null;
+        $to = $range['to'] ?? null;
+
+        if ($from && $to) {
+            return "{$from} - {$to}";
+        } elseif ($from) {
+            return "From {$from}";
+        } elseif ($to) {
+            return "To {$to}";
+        }
+
+        return '';
     }
 }

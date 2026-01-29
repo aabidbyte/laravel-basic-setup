@@ -11,13 +11,20 @@ use Livewire\Component;
  * Provides centralized placeholder functionality with typed skeletons.
  * All Livewire components should extend this class.
  */
+use App\Enums\Ui\PlaceholderType;
+
+/**
+ * Base component for all Livewire components.
+ *
+ * Provides centralized placeholder functionality with typed skeletons.
+ * All Livewire components should extend this class.
+ */
 abstract class LivewireBaseComponent extends Component
 {
     /**
      * Placeholder type for lazy loading skeleton.
-     * Options: 'default', 'table', 'form', 'card', 'list'
      */
-    protected string $placeholderType = 'default';
+    protected PlaceholderType $placeholderType = PlaceholderType::DEFAULT;
 
     /**
      * Number of rows for the skeleton placeholder.

@@ -44,6 +44,8 @@ class MyCspPreset implements Preset
             // Font sources
             ->add(Directive::FONT, Keyword::SELF)
             ->add(Directive::FONT, Scheme::DATA)
+            ->add(Directive::FONT, 'https://unpkg.com') // GrapeJS Fonts
+            ->add(Directive::FONT, 'https://cdnjs.cloudflare.com') // FontAwesome
 
             // Form actions - prevents form hijacking
             ->add(Directive::FORM_ACTION, Keyword::SELF)
@@ -54,6 +56,7 @@ class MyCspPreset implements Preset
             // Image sources - allow data: for inline images
             ->add(Directive::IMG, Keyword::SELF)
             ->add(Directive::IMG, Scheme::DATA)
+            ->add(Directive::IMG, 'https://unpkg.com') // GrapeJS Images
 
             // Media sources
             ->add(Directive::MEDIA, Keyword::SELF)
@@ -75,12 +78,16 @@ class MyCspPreset implements Preset
         // Script sources - allow self + inline (for Livewire wire:navigate)
         $policy
             ->add(Directive::SCRIPT, Keyword::SELF)
-            ->add(Directive::SCRIPT, Keyword::UNSAFE_INLINE);
+            ->add(Directive::SCRIPT, Keyword::UNSAFE_INLINE)
+            ->add(Directive::SCRIPT, 'https://unpkg.com') // GrapeJS CDN
+            ->add(Directive::SCRIPT, 'https://cdn.jsdelivr.net'); // Chart.js CDN
 
         // Style sources - allow self + inline (for Livewire wire:navigate)
         $policy
             ->add(Directive::STYLE, Keyword::SELF)
-            ->add(Directive::STYLE, Keyword::UNSAFE_INLINE);
+            ->add(Directive::STYLE, Keyword::UNSAFE_INLINE)
+            ->add(Directive::STYLE, 'https://unpkg.com') // GrapeJS CDN
+            ->add(Directive::STYLE, 'https://cdnjs.cloudflare.com'); // FontAwesome for GrapeJS
 
         // Allow inline style/script ATTRIBUTES for Alpine.js
         // (:class="...", @click="...", x-bind:style="...", etc.)
@@ -108,7 +115,10 @@ class MyCspPreset implements Preset
     protected function configureConnectSources(Policy $policy): void
     {
         // Allow connections to self
-        $policy->add(Directive::CONNECT, Keyword::SELF);
+        $policy->add(Directive::CONNECT, Keyword::SELF)
+            ->add(Directive::CONNECT, 'https://unpkg.com') // GrapeJS Maps
+            ->add(Directive::CONNECT, 'https://app.grapesjs.com') // GrapeJS Telemetry
+            ->add(Directive::CONNECT, 'https://cdn.jsdelivr.net'); // Chart.js Source Maps
 
         if (isLocal()) {
             // Vite dev server connections (HMR)

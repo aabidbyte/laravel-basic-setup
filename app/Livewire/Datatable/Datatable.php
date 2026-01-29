@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\DataTable;
 
+use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\LivewireBaseComponent;
 use App\Livewire\DataTable\Concerns\HasDatatableLivewireActions;
 use App\Livewire\DataTable\Concerns\HasDatatableLivewireFilters;
@@ -42,7 +43,7 @@ abstract class Datatable extends LivewireBaseComponent
     /**
      * Placeholder type for lazy loading skeleton.
      */
-    protected string $placeholderType = 'table';
+    protected PlaceholderType $placeholderType = PlaceholderType::TABLE;
 
     /**
      * Number of rows for the table skeleton placeholder.

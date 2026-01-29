@@ -1,3 +1,5 @@
+@use('App\Enums\DataTable\DataTableFilterType')
+
 {{-- Header with Search and Filters --}}
 <div class="mb-6 flex flex-col gap-4">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -125,12 +127,18 @@
 
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                     @foreach ($datatable->getFilters() as $filter)
-                        @if ($filter['type'] === 'select')
+                        @if ($filter['type'] === DataTableFilterType::SELECT)
                             <x-ui.select wire:model.live="filters.{{ $filter['key'] }}"
                                          :label="$filter['label']"
                                          class="select-md"
                                          :options="$filter['options']">
                             </x-ui.select>
+                        @elseif ($filter['type'] === DataTableFilterType::DATE_RANGE)
+                             <x-ui.date-range
+                                 :label="$filter['label']"
+                                 wire:model.from.live="filters.{{ $filter['key'] }}.from"
+                                 wire:model.to.live="filters.{{ $filter['key'] }}.to"
+                             />
                         @endif
                     @endforeach
                 </div>

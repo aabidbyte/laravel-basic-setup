@@ -29,6 +29,21 @@ export default (availableTags, targetRef) => ({
             console.error('MergeTagPicker: Failed to parse inputs', e);
             this.availableTags = {};
         }
+
+        // Listen for external open events (e.g. from GrapesJS RTE)
+        this.openModalHandler = () => {
+            this.openModal();
+        };
+        window.addEventListener('open-merge-tag-modal', this.openModalHandler);
+    },
+
+    destroy() {
+        if (this.openModalHandler) {
+            window.removeEventListener(
+                'open-merge-tag-modal',
+                this.openModalHandler,
+            );
+        }
     },
 
     openModal() {
@@ -128,6 +143,14 @@ export default (availableTags, targetRef) => ({
                 ) {
                     this.insertAtCursor(target, tagText);
                     this.syncWithLivewire(target);
+                } else if (target) {
+                    // Dispatch custom event for complex editors (like GrapeJS)
+                    target.dispatchEvent(
+                        new CustomEvent('insert-text', {
+                            detail: { text: tagText },
+                            bubbles: true,
+                        }),
+                    );
                 } else {
                     this.copyToClipboard(tagText);
                 }

@@ -19,15 +19,17 @@ Typed skeleton placeholders for Livewire lazy loading using DaisyUI skeleton cla
 
 {{-- List skeleton --}}
 <x-ui.placeholder type="list" rows="5"></x-ui.placeholder>
+{{-- Chart Dashboard Skeleton --}}
+<x-ui.placeholder type="charts_stats"></x-ui.placeholder>
 ```
 
 ## Props
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `type` | `string` | `default` | Skeleton type: `default`, `table`, `form`, `card`, `list` |
+| `type` | `string`\|`PlaceholderType` | `default` | Skeleton type. See `App\Enums\Ui\PlaceholderType` |
 | `rows` | `int` | `3` | Number of skeleton rows |
-| `columns` | `int` | `4` | Number of table columns (table type only) |
+| `columns` | `int` | `4` | Number of table columns (or grid columns for charts) |
 | `class` | `string` | `''` | Additional container classes |
 
 ## Skeleton Types
@@ -39,6 +41,9 @@ Typed skeleton placeholders for Livewire lazy loading using DaisyUI skeleton cla
 | `form` | Labels + input field skeletons + submit button |
 | `card` | Avatar + title + content sections |
 | `list` | Stacked card items with icons |
+| `stats` | Grid of metric cards. Use `columns` prop to set grid cols. |
+| `charts` | Grid of chart areas. Use `columns` prop to set grid cols. |
+| `charts_stats` | Mixed Dashboard: Top row of stats, bottom row of charts. |
 
 ## Using with Livewire SFCs
 

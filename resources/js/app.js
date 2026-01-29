@@ -22,6 +22,8 @@ import permissionMatrix from './alpine/data/permission-matrix';
 import confirmModal from './alpine/data/confirm-modal';
 import submitForm from './alpine/data/submit-form';
 import mergeTagPicker from './alpine/merge-tag-picker';
+import grapeEditor from './alpine/grape-editor';
+import chartUi from './alpine/chart-ui';
 
 // Register Alpine plugins when initialized
 document.addEventListener('alpine:init', () => {
@@ -34,6 +36,8 @@ document.addEventListener('alpine:init', () => {
     window.Alpine.data('confirmModal', confirmModal);
     window.Alpine.data('submitForm', submitForm);
     window.Alpine.data('mergeTagPicker', mergeTagPicker);
+    window.Alpine.data('grapeEditor', grapeEditor);
+    window.Alpine.data('chartUi', chartUi);
 });
 
 // Also register immediately if Alpine is already available
@@ -47,4 +51,6 @@ if (window.Alpine) {
     window.Alpine.data('confirmModal', confirmModal);
     window.Alpine.data('submitForm', submitForm);
     window.Alpine.data('mergeTagPicker', mergeTagPicker);
+    window.Alpine.data('grapeEditor', grapeEditor);
+    window.Alpine.data('chartUi', chartUi);
 }

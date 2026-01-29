@@ -452,3 +452,31 @@ The `email_translations` table includes draft-specific columns:
     *   `publish(EmailTemplate $template)`
     *   `restoreToDraft(EmailTemplate $template)`
 
+## 6. Editor Architecture (GrapeJS)
+
+The system uses [GrapeJS](https://grapesjs.com/) for the visual HTML editor, integrated via a custom Alpine.js wrapper.
+
+### Loading Strategy (CDN)
+The editor resources are loaded via CDN (`unpkg.com`) to minimize bundle size and complexity.
+*   **CSS**: Loaded via `<link>` tags in the Blade component using `@once`.
+*   **JS**: Loaded via `<script>` tags pushed to the `endBody` stack using `@once`.
+
+### Components
+*   **Wrapper**: `resources/js/alpine/grape-editor.js` - Handles initialization using `window.grapesjs`, state sync, and event listening.
+*   **Blade Component**: `<x-ui.grape-editor>` - Reusable UI component wrapping the Alpine logic and handling asset loading.
+*   **State Management**: Uses `@entangle` to sync HTML content with Livewire properties in real-time.
+
+### CSP Configuration
+The `MyCspPreset` has been updated to allow resources from `https://unpkg.com`.
+*   **Directives**: `script-src`, `style-src`, `font-src`, `img-src`.
+
+### Merge Tag Integration
+The editor supports the system's unified merge tags via the `merge-tag-picker` component.
+*   **Interaction**: The picker dispatches a custom `insert-text` event when a tag is selected.
+*   **Listener**: The GrapeJS wrapper listens for this event and inserts the tag at the cursor position.
+
+### Asset Handling
+*   **CSS**: Tailwind and other site styles should be injected into the GrapeJS canvas via the `canvas.styles` configuration in `grape-editor.js`.
+*   **Images**: Currently configured to use Base64 (embedded) images.
+
+

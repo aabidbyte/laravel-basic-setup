@@ -410,11 +410,10 @@ new class extends BasePageComponent {
                                                                    target="{{ 'html_content_' . $activeLocale }}"></x-ui.merge-tag-picker>
                                         @endif
                                     </div>
-                                    <x-ui.input type="textarea"
-                                                wire:model="translations.{{ $activeLocale }}.html_content"
-                                                rows="15"
-                                                id="html_content_{{ $activeLocale }}"
-                                                class="font-mono text-sm"></x-ui.input>
+                                    <x-ui.grape-editor wire:model="translations.{{ $activeLocale }}.html_content"
+                                                       id="html_content_{{ $activeLocale }}"
+                                                       lang="{{ str_replace('_', '-', $activeLocale) }}"
+                                                       dir="{{ $this->supportedLocales[$activeLocale]['direction'] ?? 'ltr' }}"></x-ui.grape-editor>
                                 </div>
 
                                 @if (!$isLayout)

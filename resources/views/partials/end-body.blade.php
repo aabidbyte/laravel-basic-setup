@@ -11,3 +11,5 @@
 @if ($layout === 'app')
     <livewire:datatable.action-modal></livewire:datatable.action-modal>
 @endif
+
+@stack('endBody')
