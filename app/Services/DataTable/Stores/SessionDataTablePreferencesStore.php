@@ -56,7 +56,7 @@ class SessionDataTablePreferencesStore implements DataTablePreferencesStore
     {
         $sessionKey = DataTableConstants::getSessionKey($entityKey);
         $existing = $this->all($entityKey);
-        $merged = array_merge($existing, $preferences);
+        $merged = \array_merge($existing, $preferences);
         $this->session->put($sessionKey, $merged);
     }
 

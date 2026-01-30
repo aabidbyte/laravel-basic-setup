@@ -37,7 +37,7 @@ trait HasDatatableLivewireSorting
         }
 
         // Save preferences without resetting page
-        if (method_exists($this, 'savePreferences')) {
+        if (\method_exists($this, 'savePreferences')) {
             $this->savePreferences();
         }
 

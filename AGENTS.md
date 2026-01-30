@@ -10,6 +10,11 @@ The full documentation is now organized into sections for easier navigation and 
 **All Alpine.js components with methods/functions MUST be extracted to registered components.**
 
 See [CSP Safety Guide](docs/AGENTS/csp-safety.md) and [Important Patterns](docs/AGENTS/important-patterns.md#csp-safe-alpinejs-development-critical) for full CSP documentation.
+
+### Colocated Scripts (MANDATORY)
+**Component-specific JavaScript logic MUST be colocated with the Blade component using the `@assets` directive.** Do not create new global JS files for single components.
+
+See [Colocated Scripts Pattern](docs/AGENTS/colocated-scripts.md) for details.
  
 ### No Blade Directives in Component Tags (CRITICAL)
 **NEVER use Blade directives (e.g., `@if`, `@foreach`) inside component opening tags.** This causes syntax errors in the Blade compiler. Use conditional attribute binding (`:attr="$val ?: null"`) instead.

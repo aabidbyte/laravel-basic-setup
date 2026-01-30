@@ -2,6 +2,7 @@
 
 use App\Constants\Auth\Permissions;
 use App\Constants\Auth\Roles;
+use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\BasePageComponent;
 use App\Models\Permission;
 use App\Models\Role;
@@ -11,7 +12,7 @@ use Livewire\Attributes\Locked;
 new class extends BasePageComponent {
     public ?string $pageSubtitle = null;
 
-    protected string $placeholderType = 'form';
+    protected PlaceholderType $placeholderType = PlaceholderType::FORM;
 
     protected int $placeholderRows = 3;
 

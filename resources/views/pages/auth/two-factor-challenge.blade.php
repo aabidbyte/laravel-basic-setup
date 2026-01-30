@@ -72,3 +72,38 @@
         </div>
     </div>
 </x-layouts.auth>
+
+@assets
+    <script>
+        (function() {
+            const register = () => {
+                Alpine.data('twoFactorChallenge', (config = {}) => ({
+                    showRecoveryInput: config.showRecoveryInput || false,
+                    code: '',
+                    recovery_code: '',
+
+                    toggleInput() {
+                        this.showRecoveryInput = !this.showRecoveryInput;
+                        this.code = '';
+                        this.recovery_code = '';
+
+                        this.$nextTick(() => {
+                            if (this.showRecoveryInput) {
+                                this.$refs.recovery_code?.focus();
+                            } else {
+                                const codeInput = document.getElementById('code');
+                                codeInput?.focus();
+                            }
+                        });
+                    },
+                }));
+            };
+
+            if (window.Alpine) {
+                register();
+            } else {
+                document.addEventListener('alpine:init', register);
+            }
+        })();
+    </script>
+@endassets

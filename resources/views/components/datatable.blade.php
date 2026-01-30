@@ -74,3 +74,110 @@
         {{-- Modal is now global: see components/datatable/action-modal.blade.php --}}
     </div>
 </div>
+
+@assets
+    <script>
+        (function() {
+            const register = () => {
+                Alpine.data('dataTable', (id = null) => ({
+                    id: id,
+                    openFilters: false,
+                    pendingAction: null,
+
+                    init() {
+                        this._scrollListener = () => this.$el.scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                        this._cleanUrlListener = () => window.history.replaceState({}, document.title,
+                            window.location.pathname);
+
+                        window.addEventListener(`datatable:scroll-to-top:${this.id}`, this
+                            ._scrollListener);
+                        window.addEventListener(`datatable:clean-url:${this.id}`, this
+                            ._cleanUrlListener);
+                    },
+
+                    destroy() {
+                        window.removeEventListener(`datatable:scroll-to-top:${this.id}`, this
+                            ._scrollListener);
+                        window.removeEventListener(`datatable:clean-url:${this.id}`, this
+                            ._cleanUrlListener);
+                    },
+
+                    toggleFilters() {
+                        this.openFilters = !this.openFilters;
+                    },
+                    closeFilters() {
+                        this.openFilters = false;
+                    },
+
+                    executeActionWithConfirmation(actionKey, uuid = null, isBulk = false) {
+                        const wire = this.$wire || this.$el.closest('[wire\\:id]')?.__livewire;
+                        if (!wire) return;
+
+                        const method = isBulk ? 'getBulkActionConfirmation' : 'getActionConfirmation';
+
+                        wire[method](actionKey, uuid).then((config) => {
+                            if (config?.required) {
+                                this.pendingAction = {
+                                    actionKey,
+                                    uuid,
+                                    isBulk
+                                };
+                                window.dispatchEvent(new CustomEvent('open-datatable-modal', {
+                                    detail: {
+                                        viewType: 'confirm',
+                                        viewProps: {
+                                            title: config.title || 'Confirm Action',
+                                            content: config.message || config
+                                                .content ||
+                                                'Are you sure you want to proceed?',
+                                            confirmLabel: config.confirmText ||
+                                                'Confirm',
+                                            cancelLabel: config.cancelText ||
+                                                'Cancel',
+                                            actionKey,
+                                            uuid,
+                                            isBulk,
+                                        },
+                                        viewTitle: config.title || 'Confirm Action',
+                                        datatableId: this.id,
+                                    },
+                                    bubbles: true,
+                                }));
+                            } else {
+                                if (isBulk) wire.executeBulkAction(actionKey);
+                                else wire.executeAction(actionKey, uuid);
+                            }
+                        }).catch(() => {});
+                    },
+
+                    cancelAction() {
+                        this.pendingAction = null;
+                    },
+                }));
+
+                Alpine.data('infiniteScroll', () => ({
+                    init() {
+                        const observer = new IntersectionObserver((entries) => {
+                            if (entries[0].isIntersecting) {
+                                this.$wire.loadMore();
+                            }
+                        }, {
+                            root: null,
+                            rootMargin: '1200px',
+                            threshold: 0
+                        });
+                        observer.observe(this.$el);
+                    },
+                }));
+            };
+
+            if (window.Alpine) {
+                register();
+            } else {
+                document.addEventListener('alpine:init', register);
+            }
+        })();
+    </script>
+@endassets

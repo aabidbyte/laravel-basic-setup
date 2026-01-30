@@ -1,6 +1,7 @@
 <?php
 
 use App\Constants\Auth\Permissions;
+use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\BasePageComponent;
 use App\Models\Team;
 use App\Services\Notifications\NotificationBuilder;
@@ -9,7 +10,7 @@ use Illuminate\Validation\Rule;
 new class extends BasePageComponent {
     public ?string $pageSubtitle = null;
 
-    protected string $placeholderType = 'form';
+    protected PlaceholderType $placeholderType = PlaceholderType::FORM;
 
     protected int $placeholderRows = 2;
 

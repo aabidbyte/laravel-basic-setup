@@ -23,7 +23,7 @@ it('automatically generates a UUID when creating a model', function (): void {
 
     expect($model->uuid)->not->toBeEmpty()
         ->and($model->uuid)->toBeString()
-        ->and(strlen($model->uuid))->toBe(36); // UUID v4 format
+        ->and(\strlen($model->uuid))->toBe(36); // UUID v4 format
 });
 
 it('generates unique UUIDs for different models', function (): void {

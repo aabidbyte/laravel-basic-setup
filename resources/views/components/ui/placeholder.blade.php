@@ -127,7 +127,7 @@
 
         @case(PlaceholderType::STATS->value)
             {{-- Stats Grid Only --}}
-            <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-{{ $columns }}">
+            <div class="lg:grid-cols-{{ $columns }} grid grid-cols-1 gap-6 md:grid-cols-2">
                 @for ($i = 0; $i < $columns; $i++)
                     <div class="card bg-base-100 border-base-200 border p-4 shadow-sm">
                         <div class="skeleton mb-2 h-4 w-20"></div>
@@ -138,14 +138,14 @@
         @break
 
         @case(PlaceholderType::CHARTS->value)
-             {{-- Charts Grid Only --}}
-             <div class="grid grid-cols-1 gap-6 md:grid-cols-{{ $columns > 1 ? 2 : 1 }} lg:grid-cols-{{ $columns }}">
+            {{-- Charts Grid Only --}}
+            <div class="md:grid-cols-{{ $columns > 1 ? 2 : 1 }} lg:grid-cols-{{ $columns }} grid grid-cols-1 gap-6">
                 @for ($i = 0; $i < $columns; $i++)
                     <div class="card bg-base-100 border-base-200 h-64 border p-4 shadow-sm">
                         <div class="skeleton h-full w-full rounded-lg"></div>
                     </div>
                 @endfor
-             </div>
+            </div>
         @break
 
         @case(PlaceholderType::CHARTS_STATS->value)
@@ -174,7 +174,8 @@
         @default
             {{-- Default: centered loading spinner --}}
             <div class="flex items-center justify-center">
-                <x-ui.loading size="lg" color="neutral" />
+                <x-ui.loading size="lg"
+                              color="neutral" />
             </div>
     @endswitch
 </div>

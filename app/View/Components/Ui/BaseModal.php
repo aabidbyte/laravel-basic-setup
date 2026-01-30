@@ -141,13 +141,13 @@ class BaseModal extends Component
 
         $backdropClasses = $this->backdropClass !== ''
             ? $this->backdropClass
-            : trim(sprintf(
+            : \trim(\sprintf(
                 'bg-base-300/%d %s',
                 $this->backdropOpacity,
                 $this->backdropBlur === 'none' ? '' : $this->backdropBlur,
             ));
 
-        return trim(implode(' ', [...$base, $placementClasses, $backdropClasses]));
+        return \trim(\implode(' ', [...$base, $placementClasses, $backdropClasses]));
     }
 
     private function buildPlacementClasses(string $placement): string
@@ -155,8 +155,8 @@ class BaseModal extends Component
         $row = 'center';
         $col = 'center';
 
-        if (str_contains($placement, '-')) {
-            [$row, $col] = explode('-', $placement, 2);
+        if (\str_contains($placement, '-')) {
+            [$row, $col] = \explode('-', $placement, 2);
         } else {
             $row = 'center';
             $col = 'center';
@@ -219,7 +219,7 @@ class BaseModal extends Component
             $this->dialogClass,
         ];
 
-        return trim(implode(' ', array_filter($classes)));
+        return \trim(\implode(' ', array_filter($classes)));
     }
 
     private function buildDialogAttributes(): ComponentAttributeBag
@@ -230,7 +230,7 @@ class BaseModal extends Component
 
         [$durationClass, $delayClass] = $this->buildDurationAndDelayClasses($this->transitionDuration, $this->transitionDelay);
 
-        $transitionEnter = trim(match ($this->transition) {
+        $transitionEnter = \trim(match ($this->transition) {
             'fade-in' => 'transition ease-out ' . $durationClass,
             default => 'transition ease-out ' . $durationClass . ' ' . $delayClass,
         });
@@ -258,10 +258,10 @@ class BaseModal extends Component
         };
 
         return new ComponentAttributeBag([
-            'x-transition:enter' => trim($transitionEnter . ' motion-reduce:transition-opacity'),
+            'x-transition:enter' => \trim($transitionEnter . ' motion-reduce:transition-opacity'),
             'x-transition:enter-start' => $transitionEnterStart,
             'x-transition:enter-end' => $transitionEnterEnd,
-            'x-transition:leave' => trim($transitionLeave . ' motion-reduce:transition-opacity'),
+            'x-transition:leave' => \trim($transitionLeave . ' motion-reduce:transition-opacity'),
             'x-transition:leave-start' => 'opacity-100 scale-100',
             'x-transition:leave-end' => 'opacity-0 scale-95',
         ]);
@@ -316,7 +316,7 @@ class BaseModal extends Component
             $xInitParts[] = '$watch(\'' . $this->openState . '\', (value) => { if (value) { ' . $this->onOpen . ' } })';
         }
         if (! empty($xInitParts)) {
-            $defaults['x-init'] = implode('; ', $xInitParts);
+            $defaults['x-init'] = \implode('; ', $xInitParts);
         }
 
         if ($this->trapFocus) {
@@ -359,13 +359,13 @@ class BaseModal extends Component
 
     private function sanitizeAlpineIdentifier(string $value, string $fallback): string
     {
-        $value = trim($value);
+        $value = \trim($value);
 
         if ($value === '') {
             return $fallback;
         }
 
-        if (! preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $value)) {
+        if (! \preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $value)) {
             return $fallback;
         }
 
@@ -378,7 +378,7 @@ class BaseModal extends Component
             return null;
         }
 
-        $placement = trim($placement);
+        $placement = \trim($placement);
         if ($placement === '') {
             return null;
         }
@@ -395,12 +395,12 @@ class BaseModal extends Component
             'bottom-right',
         ];
 
-        return in_array($placement, $allowed, true) ? $placement : null;
+        return \in_array($placement, $allowed, true) ? $placement : null;
     }
 
     private function sanitizeTransition(string $transition): string
     {
-        $transition = trim($transition);
+        $transition = \trim($transition);
 
         $allowed = [
             'fade-in',
@@ -412,18 +412,18 @@ class BaseModal extends Component
             'none',
         ];
 
-        return in_array($transition, $allowed, true) ? $transition : 'scale-up';
+        return \in_array($transition, $allowed, true) ? $transition : 'scale-up';
     }
 
     private function sanitizeVariant(string $variant): string
     {
-        $variant = trim($variant);
+        $variant = \trim($variant);
 
         $allowed = [
             'default',
         ];
 
-        return in_array($variant, $allowed, true) ? $variant : 'default';
+        return \in_array($variant, $allowed, true) ? $variant : 'default';
     }
 
     private function sanitizeColor(?string $color): ?string
@@ -432,7 +432,7 @@ class BaseModal extends Component
             return null;
         }
 
-        $color = trim($color);
+        $color = \trim($color);
 
         $allowed = [
             'success',
@@ -442,7 +442,7 @@ class BaseModal extends Component
             'error',
         ];
 
-        return in_array($color, $allowed, true) ? $color : null;
+        return \in_array($color, $allowed, true) ? $color : null;
     }
 
     private function sanitizeOpacity(int $opacity): int
@@ -460,7 +460,7 @@ class BaseModal extends Component
 
     private function sanitizeBackdropBlur(string $backdropBlur): string
     {
-        $backdropBlur = trim($backdropBlur);
+        $backdropBlur = \trim($backdropBlur);
 
         return match ($backdropBlur) {
             'none' => 'none',

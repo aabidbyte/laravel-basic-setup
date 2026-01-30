@@ -84,8 +84,8 @@ class EmailLayoutComposer
         // Simple string replacement for {{ $slot }}
         // We use split/implode to handle the placeholder robustly without executing
         // the rest of the content as Blade code.
-        $parts = preg_split('/(\{\{\s*\$slot\s*\}\}|\{!!\s*\$slot\s*!!\})/', $layoutContent);
+        $parts = \preg_split('/(\{\{\s*\$slot\s*\}\}|\{!!\s*\$slot\s*!!\})/', $layoutContent);
 
-        return implode($content, $parts);
+        return \implode($content, $parts);
     }
 }

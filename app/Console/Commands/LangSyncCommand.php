@@ -70,7 +70,7 @@ class LangSyncCommand extends Command
 
         $this->info('Scanning codebase for translation usage...');
         $this->scanner->scanCodebase();
-        $this->stats['keys_found'] = count($this->scanner->getFoundKeys());
+        $this->stats['keys_found'] = \count($this->scanner->getFoundKeys());
 
         $this->info("Found {$this->stats['keys_found']} translation keys in codebase.");
 
@@ -118,7 +118,7 @@ class LangSyncCommand extends Command
     protected function loadConfiguration(): void
     {
         $sourceLocale = config('i18n.fallback_locale', 'en_US');
-        $supportedLocales = array_keys(config('i18n.supported_locales', []));
+        $supportedLocales = \array_keys(config('i18n.supported_locales', []));
         $protectedFiles = config('i18n.protected_translation_files', []);
         $extractedFile = config('i18n.extracted_file', 'extracted');
 
@@ -127,7 +127,7 @@ class LangSyncCommand extends Command
 
         $configuredNamespaces = config('i18n.namespaces', ['ui', 'messages']);
         $discoveredNamespaces = $this->localeManager->discoverNamespaces();
-        $namespaces = array_unique(array_merge($configuredNamespaces, $discoveredNamespaces));
+        $namespaces = array_unique(\array_merge($configuredNamespaces, $discoveredNamespaces));
 
         // Re-configure LocaleManager with full namespaces
         $this->localeManager->setConfiguration($sourceLocale, $supportedLocales, $namespaces, $extractedFile);

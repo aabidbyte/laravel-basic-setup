@@ -47,7 +47,7 @@ class DevEmailRedirectListener
         $allowedRoles = $this->getAllowedRoles();
         if (! empty($allowedRoles)) {
             $allowedRecipients = $this->filterAllowedRecipients($originalRecipients, $allowedRoles);
-            if (count($allowedRecipients) === count($originalRecipients)) {
+            if (\count($allowedRecipients) === \count($originalRecipients)) {
                 // All recipients are allowed through
                 return;
             }
@@ -56,14 +56,14 @@ class DevEmailRedirectListener
         // Store original recipients in header for debugging
         $message->getHeaders()->addTextHeader(
             'X-Original-To',
-            implode(', ', $originalRecipients),
+            \implode(', ', $originalRecipients),
         );
 
         // Clear all recipients
         $this->clearRecipients($message);
 
         // Set new redirect recipients
-        $redirectEmails = array_map('trim', explode(',', $redirectTo));
+        $redirectEmails = array_map('trim', \explode(',', $redirectTo));
         foreach ($redirectEmails as $email) {
             if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $message->addTo(new Address($email, 'Dev Redirect'));
@@ -105,7 +105,7 @@ class DevEmailRedirectListener
             return [];
         }
 
-        return array_map('trim', explode(',', $roles));
+        return array_map('trim', \explode(',', $roles));
     }
 
     /**

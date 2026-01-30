@@ -32,7 +32,7 @@ function shouldSkipRoute(string $uri, ?string $name = null): bool
     ];
 
     foreach ($skipPrefixes as $prefix) {
-        if (str_starts_with($uri, $prefix)) {
+        if (\str_starts_with($uri, $prefix)) {
             return true;
         }
     }
@@ -55,7 +55,7 @@ function shouldSkipRoute(string $uri, ?string $name = null): bool
         ];
 
         foreach ($skipNamePrefixes as $prefix) {
-            if (str_starts_with($name, $prefix)) {
+            if (\str_starts_with($name, $prefix)) {
                 return true;
             }
         }
@@ -78,7 +78,7 @@ it('has no duplicate route names', function () {
     }
 
     expect($duplicates)->toBeEmpty(
-        'Duplicate route names found: ' . implode(', ', $duplicates),
+        'Duplicate route names found: ' . \implode(', ', $duplicates),
     );
 });
 
@@ -95,7 +95,7 @@ it('has no route URI collisions for same HTTP method', function () {
         foreach ($methods as $method) {
             // Normalize the URI by replacing parameter names with a placeholder
             // e.g., /users/{user} and /users/{id} would both become /users/{param}
-            $normalizedUri = preg_replace('/\{[^}]+\}/', '{param}', $uri);
+            $normalizedUri = \preg_replace('/\{[^}]+\}/', '{param}', $uri);
             $key = $method . ':' . $normalizedUri;
 
             if (isset($urisByMethod[$key])) {
@@ -104,7 +104,7 @@ it('has no route URI collisions for same HTTP method', function () {
                 $currentAction = $route->getActionName();
 
                 if ($existingAction !== $currentAction) {
-                    $collisions[] = sprintf(
+                    $collisions[] = \sprintf(
                         '%s %s (defined in %s, conflicts with %s)',
                         $method,
                         $uri,
@@ -122,7 +122,7 @@ it('has no route URI collisions for same HTTP method', function () {
     }
 
     expect($collisions)->toBeEmpty(
-        'Route URI collisions found: ' . PHP_EOL . implode(PHP_EOL, $collisions),
+        'Route URI collisions found: ' . PHP_EOL . \implode(PHP_EOL, $collisions),
     );
 });
 
@@ -141,13 +141,13 @@ it('all routes have names', function () {
         }
 
         if (empty($name)) {
-            $methods = implode('|', $route->methods());
+            $methods = \implode('|', $route->methods());
             $unnamedRoutes[] = "{$methods} {$uri}";
         }
     }
 
     expect($unnamedRoutes)->toBeEmpty(
-        'Unnamed routes found (all routes should have names): ' . PHP_EOL . implode(PHP_EOL, $unnamedRoutes),
+        'Unnamed routes found (all routes should have names): ' . PHP_EOL . \implode(PHP_EOL, $unnamedRoutes),
     );
 });
 
@@ -165,13 +165,13 @@ it('route names follow naming conventions', function () {
         }
 
         // Route names should be lowercase with dots as separators (or camelCase for legacy reasons)
-        if (! preg_match('/^[a-zA-Z0-9]+(\.([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*))*$/', $name)) {
+        if (! \preg_match('/^[a-zA-Z0-9]+(\.([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*))*$/', $name)) {
             $invalidNames[] = $name;
         }
     }
 
     expect($invalidNames)->toBeEmpty(
-        'Route names not following naming convention (lowercase/camelCase with dots): ' . PHP_EOL . implode(PHP_EOL, $invalidNames),
+        'Route names not following naming convention (lowercase/camelCase with dots): ' . PHP_EOL . \implode(PHP_EOL, $invalidNames),
     );
 });
 
@@ -194,8 +194,8 @@ it('protected routes have appropriate middleware', function () {
         }
 
         foreach ($protectedPrefixes as $prefix) {
-            if (str_starts_with($uri, $prefix) || str_starts_with($uri, $prefix . '/')) {
-                if (! in_array('auth', $middleware, true)) {
+            if (\str_starts_with($uri, $prefix) || \str_starts_with($uri, $prefix . '/')) {
+                if (! \in_array('auth', $middleware, true)) {
                     $routeName = $route->getName() ?? $uri;
                     $unprotectedRoutes[] = "{$routeName} ({$uri}) - missing 'auth' middleware";
                 }
@@ -205,6 +205,6 @@ it('protected routes have appropriate middleware', function () {
     }
 
     expect($unprotectedRoutes)->toBeEmpty(
-        'Protected routes missing auth middleware: ' . PHP_EOL . implode(PHP_EOL, $unprotectedRoutes),
+        'Protected routes missing auth middleware: ' . PHP_EOL . \implode(PHP_EOL, $unprotectedRoutes),
     );
 });

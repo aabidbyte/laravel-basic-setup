@@ -281,7 +281,7 @@ class BulkAction
      */
     public function isVisible(): bool
     {
-        if (is_bool($this->show)) {
+        if (\is_bool($this->show)) {
             return $this->show;
         }
 
@@ -399,7 +399,7 @@ class BulkAction
             $result = ($this->confirmMessage)($models);
 
             // If closure returns array with title/content, use it
-            if (is_array($result)) {
+            if (\is_array($result)) {
                 return [
                     'type' => 'config',
                     'title' => $result['title'] ?? __('actions.confirm'),
@@ -440,7 +440,7 @@ class BulkAction
             'modal' => $this->modal,
             'modalProps' => $this->modalProps,
             'confirm' => $this->confirm,
-            'confirmMessage' => is_string($this->confirmMessage) ? $this->confirmMessage : null,
+            'confirmMessage' => \is_string($this->confirmMessage) ? $this->confirmMessage : null,
             'hasConfirmClosure' => $this->confirmMessage instanceof Closure,
             'confirmView' => $this->confirmView,
             'confirmViewProps' => $this->confirmViewProps,

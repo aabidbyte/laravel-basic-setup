@@ -1,6 +1,7 @@
 <?php
 
 use App\Constants\Auth\Permissions;
+use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\BasePageComponent;
 use App\Models\MailSettings;
 use App\Services\Notifications\NotificationBuilder;
@@ -11,7 +12,7 @@ new class extends BasePageComponent {
 
     public ?string $pageSubtitle = 'settings.mail.description';
 
-    protected string $placeholderType = 'form';
+    protected PlaceholderType $placeholderType = PlaceholderType::FORM;
 
     protected int $placeholderRows = 5;
 
@@ -125,7 +126,7 @@ new class extends BasePageComponent {
             $settings->fill($data)->save();
         } else {
             $user->mailSettings()->create(
-                array_merge($data, [
+                \array_merge($data, [
                     'settable_type' => get_class($user),
                     'settable_id' => $user->id,
                 ]),

@@ -19,7 +19,7 @@ class DynamicKeyResolver
     public function isDynamicKey(string $key): bool
     {
         // Match {$var}, {$var->prop}, {$var['key']}, or direct $var patterns
-        return preg_match('/\{\$[a-zA-Z_]|\$[a-zA-Z_]/', $key) === 1;
+        return \preg_match('/\{\$[a-zA-Z_]|\$[a-zA-Z_]/', $key) === 1;
     }
 
     /**
@@ -56,14 +56,14 @@ class DynamicKeyResolver
         try {
             $resolver = $resolvers[$key];
 
-            if (! is_callable($resolver)) {
+            if (! \is_callable($resolver)) {
                 return null;
             }
 
             // Execute the resolver
             $values = $resolver();
 
-            if (! is_array($values) || empty($values)) {
+            if (! \is_array($values) || empty($values)) {
                 return null;
             }
 
@@ -79,14 +79,14 @@ class DynamicKeyResolver
      */
     protected function extractContext(string $content, int $lineNum): array
     {
-        $lines = explode("\n", $content);
+        $lines = \explode("\n", $content);
         $startLine = max(0, $lineNum - 10);
-        $endLine = min(count($lines), $lineNum + 10);
+        $endLine = min(\count($lines), $lineNum + 10);
 
         $contextLines = array_slice($lines, $startLine, $endLine - $startLine);
 
         return [
-            'code_block' => implode("\n", $contextLines),
+            'code_block' => \implode("\n", $contextLines),
             'line_number' => $lineNum,
         ];
     }
@@ -99,14 +99,14 @@ class DynamicKeyResolver
         $codeBlock = $context['code_block'];
 
         // Pattern 1: Foreach loops with iterable source
-        if (preg_match('/@foreach\s*\(\s*([^)]+?)\s+as\s+(?:\$\w+\s*=>\s*)?\$(\w+)\s*\)/', $codeBlock, $match)) {
-            $source = trim($match[1]);
+        if (\preg_match('/@foreach\s*\(\s*([^)]+?)\s+as\s+(?:\$\w+\s*=>\s*)?\$(\w+)\s*\)/', $codeBlock, $match)) {
+            $source = \trim($match[1]);
 
             return $this->resolveIterableSource($source, $fullContent);
         }
 
         // Pattern 2: Model property access (e.g., $template->type)
-        if (preg_match('/\$(\w+)->(\w+)/', $key, $match)) {
+        if (\preg_match('/\$(\w+)->(\w+)/', $key, $match)) {
             $varName = $match[1];
             $propertyName = $match[2];
 
@@ -131,8 +131,8 @@ class DynamicKeyResolver
     protected function resolveIterableSource(string $source, string $fullContent): ?array
     {
         // Pattern: app(ServiceClass::class)->method()
-        if (preg_match('/app\s*\(\s*([^)]+)\s*\)\s*->\s*(\w+)\s*\(\s*\)/', $source, $match)) {
-            $service = trim($match[1], '\'"');
+        if (\preg_match('/app\s*\(\s*([^)]+)\s*\)\s*->\s*(\w+)\s*\(\s*\)/', $source, $match)) {
+            $service = \trim($match[1], '\'"');
             $method = $match[2];
 
             return [
@@ -143,7 +143,7 @@ class DynamicKeyResolver
         }
 
         // Pattern: ClassName::method()
-        if (preg_match('/([A-Z]\w+)::(\w+)\s*\(\s*\)/', $source, $match)) {
+        if (\preg_match('/([A-Z]\w+)::(\w+)\s*\(\s*\)/', $source, $match)) {
             $className = $match[1];
             $method = $match[2];
 
@@ -157,7 +157,7 @@ class DynamicKeyResolver
         }
 
         // Pattern: $variable->method() - need to find the variable's type
-        if (preg_match('/\$(\w+)->(\w+)\s*\(\s*\)/', $source, $match)) {
+        if (\preg_match('/\$(\w+)->(\w+)\s*\(\s*\)/', $source, $match)) {
             $varName = $match[1];
             $method = $match[2];
 
@@ -182,7 +182,7 @@ class DynamicKeyResolver
     {
         // Check for use statements
         $pattern = '/use\s+([^;]+\\\\' . preg_quote($className) . ')\s*;/';
-        if (preg_match($pattern, $fileContent, $match)) {
+        if (\preg_match($pattern, $fileContent, $match)) {
             return $match[1];
         }
 
@@ -196,7 +196,7 @@ class DynamicKeyResolver
 
         foreach ($commonNamespaces as $namespace) {
             $fqn = $namespace . $className;
-            if (class_exists($fqn)) {
+            if (\class_exists($fqn)) {
                 return $fqn;
             }
         }
@@ -210,12 +210,12 @@ class DynamicKeyResolver
     protected function findVariableType(string $varName, string $context, string $fullContent): ?string
     {
         // Pattern: Type $varName (method parameter)
-        if (preg_match('/([A-Z]\w+)\s+\$' . preg_quote($varName) . '\b/', $context, $match)) {
+        if (\preg_match('/([A-Z]\w+)\s+\$' . preg_quote($varName) . '\b/', $context, $match)) {
             return $this->resolveClassName($match[1], $fullContent);
         }
 
         // Pattern: $varName = new ClassName()
-        if (preg_match('/\$' . preg_quote($varName) . '\s*=\s*new\s+([A-Z]\w+)/', $context, $match)) {
+        if (\preg_match('/\$' . preg_quote($varName) . '\s*=\s*new\s+([A-Z]\w+)/', $context, $match)) {
             return $this->resolveClassName($match[1], $fullContent);
         }
 
@@ -231,13 +231,13 @@ class DynamicKeyResolver
             $command = null;
 
             if ($resolver['type'] === 'service_method') {
-                $command = sprintf(
+                $command = \sprintf(
                     'echo json_encode(array_keys(app(%s)->%s()));',
                     $resolver['service'],
                     $resolver['method'],
                 );
             } elseif ($resolver['type'] === 'static_method' || $resolver['type'] === 'instance_method') {
-                $command = sprintf(
+                $command = \sprintf(
                     'echo json_encode(%s::%s());',
                     $resolver['class'],
                     $resolver['method'],
@@ -252,14 +252,14 @@ class DynamicKeyResolver
             }
 
             $result = Process::timeout(10)->run(
-                sprintf('php artisan tinker --execute="%s"', addslashes($command)),
+                \sprintf('php artisan tinker --execute="%s"', addslashes($command)),
             );
 
             if ($result->successful()) {
-                $output = trim($result->output());
-                $decoded = json_decode($output, true);
+                $output = \trim($result->output());
+                $decoded = \json_decode($output, true);
 
-                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                if (json_last_error() === JSON_ERROR_NONE && \is_array($decoded)) {
                     return $decoded;
                 }
             }
@@ -275,7 +275,7 @@ class DynamicKeyResolver
      */
     protected function buildEnumCommand(array $resolver): ?string
     {
-        return sprintf(
+        return \sprintf(
             '\$reflection = new \\ReflectionClass(%s); ' .
             '\$casts = \$reflection->hasMethod(\'casts\') ? (new %s)->casts() : []; ' .
             'if (isset(\$casts[\'%s\']) && enum_exists(\$casts[\'%s\'])) { ' .
@@ -297,13 +297,13 @@ class DynamicKeyResolver
     {
         $value = (string) $value;
         // Replace {$var->property} patterns (e.g., {$translation->locale})
-        $expanded = preg_replace('/\{\$[\w>-]+\}/', $value, $pattern);
+        $expanded = \preg_replace('/\{\$[\w>-]+\}/', $value, $pattern);
 
         // Replace {$var} patterns
-        $expanded = preg_replace('/\{\$\w+\}/', $value, $expanded);
+        $expanded = \preg_replace('/\{\$\w+\}/', $value, $expanded);
 
         // Replace $var patterns (e.g., $type, $code)
-        $expanded = preg_replace('/\$\w+/', $value, $expanded);
+        $expanded = \preg_replace('/\$\w+/', $value, $expanded);
 
         return $expanded;
     }
@@ -314,11 +314,11 @@ class DynamicKeyResolver
     public function generateTranslationValue(string $key): string
     {
         // Get the last part of the key
-        $parts = explode('.', $key);
+        $parts = \explode('.', $key);
         $value = end($parts);
 
         // Convert snake_case or kebab-case to Title Case
-        $value = str_replace(['_', '-'], ' ', $value);
+        $value = \str_replace(['_', '-'], ' ', $value);
         $value = ucwords($value);
 
         return $value;
@@ -329,11 +329,11 @@ class DynamicKeyResolver
      */
     public function isRawLocationValue(mixed $value): bool
     {
-        if (! is_string($value)) {
+        if (! \is_string($value)) {
             return false;
         }
 
         // Check for common file extensions and line number pattern: .php:123 or .blade.php:123
-        return preg_match('/\.php:\d+/', $value) === 1 || preg_match('/\.blade\.php:\d+/', $value) === 1;
+        return \preg_match('/\.php:\d+/', $value) === 1 || \preg_match('/\.blade\.php:\d+/', $value) === 1;
     }
 }

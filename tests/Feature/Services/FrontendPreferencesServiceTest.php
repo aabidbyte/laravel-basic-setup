@@ -136,7 +136,7 @@ test('refresh reloads preferences from database and syncs to session', function 
 
     // Update in database directly using fresh query
     User::where('id', $user->id)->update([
-        'frontend_preferences' => json_encode([
+        'frontend_preferences' => \json_encode([
             'theme' => 'dark',
         ]),
     ]);

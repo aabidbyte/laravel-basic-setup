@@ -65,7 +65,7 @@ trait HasRolesAndPermissions
     {
         $userRoleNames = $this->roles->pluck('name')->toArray();
 
-        return count(array_intersect($roles, $userRoleNames)) === count($roles);
+        return \count(array_intersect($roles, $userRoleNames)) === \count($roles);
     }
 
     /**
@@ -102,7 +102,7 @@ trait HasRolesAndPermissions
             if ($role instanceof Role) {
                 return $role->id;
             }
-            if (is_numeric($role)) {
+            if (\is_numeric($role)) {
                 return (int) $role;
             }
 
@@ -169,7 +169,7 @@ trait HasRolesAndPermissions
             if ($permission instanceof Permission) {
                 return $permission->id;
             }
-            if (is_numeric($permission)) {
+            if (\is_numeric($permission)) {
                 return (int) $permission;
             }
 

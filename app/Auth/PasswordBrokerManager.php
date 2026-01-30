@@ -18,8 +18,8 @@ class PasswordBrokerManager extends BasePasswordBrokerManager
     {
         $key = $this->app['config']['app.key'];
 
-        if (str_starts_with($key, 'base64:')) {
-            $key = base64_decode(substr($key, 7), true);
+        if (\str_starts_with($key, 'base64:')) {
+            $key = base64_decode(\substr($key, 7), true);
         }
 
         if (isset($config['driver']) && $config['driver'] === 'cache') {

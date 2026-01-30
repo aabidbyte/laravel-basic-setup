@@ -49,6 +49,6 @@ class EmailTranslation extends BaseModel
      */
     public function label(): string
     {
-        return sprintf('%s (%s)', $this->translatable?->name ?? 'Unknown', $this->locale);
+        return \sprintf('%s (%s)', $this->translatable?->name ?? 'Unknown', $this->locale);
     }
 }

@@ -52,7 +52,7 @@ class SessionPreferencesStore implements PreferencesStore
     public function setMany(array $preferences): void
     {
         $existing = $this->all();
-        $merged = array_merge($existing, $preferences);
+        $merged = \array_merge($existing, $preferences);
         $this->session->put(FrontendPreferences::SESSION_KEY, $merged);
     }
 

@@ -96,7 +96,7 @@ class RoleTable extends Datatable
             ->color('error')
             ->confirm(__('actions.confirm_delete'))
             ->execute(function (Role $role) {
-                if (in_array($role->name, [Roles::SUPER_ADMIN, Roles::ADMIN], true)) {
+                if (\in_array($role->name, [Roles::SUPER_ADMIN, Roles::ADMIN], true)) {
                     NotificationBuilder::make()
                         ->title('actions.error')
                         ->content('Cannot delete protected role.')
@@ -113,7 +113,7 @@ class RoleTable extends Datatable
                     ->send();
             })
             ->can(Permissions::DELETE_ROLES(), false)
-            ->show(fn (Role $role) => ! in_array($role->name, [Roles::SUPER_ADMIN, Roles::ADMIN], true));
+            ->show(fn (Role $role) => ! \in_array($role->name, [Roles::SUPER_ADMIN, Roles::ADMIN], true));
 
         return $actions;
     }
@@ -133,7 +133,7 @@ class RoleTable extends Datatable
                 ->confirm(__('actions.confirm_bulk_delete'))
                 ->confirm(__('actions.confirm_bulk_delete'))
                 ->execute(function ($roles) {
-                    $roles->reject(fn ($role) => in_array($role->name, [Roles::SUPER_ADMIN, Roles::ADMIN], true))
+                    $roles->reject(fn ($role) => \in_array($role->name, [Roles::SUPER_ADMIN, Roles::ADMIN], true))
                         ->each->delete();
                 })
                 ->can(Permissions::DELETE_ROLES()),

@@ -40,7 +40,7 @@ class EmailTemplateWorkflowTest extends TestCase
         foreach ($permissions as $perm) {
             $permission = \App\Models\Permission::where('name', '=', $perm)->first();
             if ($permission) {
-                if (method_exists($user, 'givePermissionTo')) {
+                if (\method_exists($user, 'givePermissionTo')) {
                     $user->givePermissionTo($permission);
                 } else {
                     $user->permissions()->attach($permission);

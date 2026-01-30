@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\BasePageComponent;
 use App\Services\FrontendPreferences\FrontendPreferencesService;
 use App\Services\I18nService;
@@ -11,7 +12,7 @@ new class extends BasePageComponent {
 
     public ?string $pageSubtitle = 'settings.preferences.description';
 
-    protected string $placeholderType = 'form';
+    protected PlaceholderType $placeholderType = PlaceholderType::FORM;
 
     protected int $placeholderRows = 3;
 

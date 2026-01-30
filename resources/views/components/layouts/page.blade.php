@@ -31,8 +31,8 @@
     {{-- Top Row: Back Button + Actions --}}
     @if (!$showBottomBar)
         <div
-             class="sticky top-0 z-30 flex flex-col gap-3 p-2 backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:gap-2">
-            <div>
+             class="sticky top-0 z-30 px-4 flex py-2 backdrop-blur flex-row items-center justify-between gap-2 w-full">
+            <div class="flex-1">
                 @if ($backHref)
                     <x-ui.button href="{{ $backHref }}"
                                  wire:navigate
@@ -47,21 +47,22 @@
             </div>
 
             @if (isset($topActions))
-                <div class="flex flex-wrap items-center gap-2">
+                <div class="flex-wrap items-center gap-2 flex justify-center *:flex-1 *:whitespace-nowrap">
                     {{ $topActions }}
                 </div>
             @endif
         </div>
+
     @endif
     {{-- Content Slot --}}
-    <div class="flex-1 px-4">
+    <div class="page-content">
         {{ $slot }}
     </div>
 
     {{-- Bottom Row: Back Button + Actions (Optional) --}}
     @if ($showBottomBar)
         <div
-             class="border-base-300 sticky bottom-0 z-30 flex flex-col gap-3 border-t p-2 backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:gap-2">
+             class="border-base-300 sticky bottom-0 z-30 px-4 flex flex-col gap-3 border-t py-2 backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:gap-2">
             <div>
                 @if (isset($bottomLeft))
                     {{ $bottomLeft }}

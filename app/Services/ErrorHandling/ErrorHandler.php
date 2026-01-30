@@ -285,8 +285,8 @@ class ErrorHandler
 
         // Truncate long values and redact sensitive patterns
         return array_map(function ($value) {
-            if (is_string($value) && strlen($value) > 500) {
-                return substr($value, 0, 500) . '...[truncated]';
+            if (\is_string($value) && \strlen($value) > 500) {
+                return \substr($value, 0, 500) . '...[truncated]';
             }
 
             return $value;
@@ -345,7 +345,7 @@ class ErrorHandler
     {
         $errors = $e->errors();
         $firstError = reset($errors);
-        $message = is_array($firstError) ? $firstError[0] : $firstError;
+        $message = \is_array($firstError) ? $firstError[0] : $firstError;
 
         NotificationBuilder::make()
             ->title('errors.validation_failed')

@@ -153,7 +153,7 @@ class NotificationBuilder
             return null;
         }
 
-        if (is_array($value) && isset($value['key'])) {
+        if (\is_array($value) && isset($value['key'])) {
             return __($value['key'], $value['params'] ?? []);
         }
 
@@ -288,7 +288,7 @@ class NotificationBuilder
      */
     public function toUser(User|Authenticatable|string $user): static
     {
-        $this->userId = $user instanceof User ? $user->uuid : (is_string($user) ? $user : $user->getAuthIdentifier());
+        $this->userId = $user instanceof User ? $user->uuid : (\is_string($user) ? $user : $user->getAuthIdentifier());
         $this->teamId = null;
         $this->global = false;
         $this->userTeams = false;
@@ -341,7 +341,7 @@ class NotificationBuilder
             }
         }
 
-        $this->userId = $user instanceof User ? $user->uuid : (is_string($user) ? $user : $user->getAuthIdentifier());
+        $this->userId = $user instanceof User ? $user->uuid : (\is_string($user) ? $user : $user->getAuthIdentifier());
         $this->teamId = null;
         $this->global = false;
         $this->userTeams = true;
@@ -393,7 +393,7 @@ class NotificationBuilder
     {
         // Resolve title to string for validation
         $resolvedTitle = $this->resolveValue($this->title);
-        if ($resolvedTitle === null || trim($resolvedTitle) === '') {
+        if ($resolvedTitle === null || \trim($resolvedTitle) === '') {
             throw new InvalidArgumentException('Notification title is required.');
         }
 
@@ -429,7 +429,7 @@ class NotificationBuilder
 
         // For session channel, also store in session as fallback
         // This ensures notifications aren't lost during redirects (WebSocket messages are real-time)
-        if (str_starts_with($channel, 'public-notifications.session.')) {
+        if (\str_starts_with($channel, 'public-notifications.session.')) {
             session()->push('pending_toast_notifications', $payload->toArray());
         }
 
@@ -476,7 +476,7 @@ class NotificationBuilder
             throw new RuntimeException('Cannot send to user teams: no user ID available.');
         }
 
-        $user = is_string($targetUserId) ? User::where('uuid', $targetUserId)->first() : User::find($targetUserId);
+        $user = \is_string($targetUserId) ? User::where('uuid', $targetUserId)->first() : User::find($targetUserId);
         if (! $user) {
             throw new RuntimeException('Cannot send to user teams: user not found.');
         }
@@ -652,7 +652,7 @@ class NotificationBuilder
         ];
 
         // Store title - either as translatable array or plain string
-        if (is_array($this->title) && isset($this->title['key'])) {
+        if (\is_array($this->title) && isset($this->title['key'])) {
             $data['title'] = __($this->title['key'], $this->title['params'] ?? []); // For backwards compatibility
             $data['titleKey'] = $this->title['key'];
             $data['titleParams'] = $this->title['params'];
@@ -661,7 +661,7 @@ class NotificationBuilder
         }
 
         // Store subtitle - either as translatable array or plain string
-        if (is_array($this->subtitle) && isset($this->subtitle['key'])) {
+        if (\is_array($this->subtitle) && isset($this->subtitle['key'])) {
             $data['subtitle'] = __($this->subtitle['key'], $this->subtitle['params'] ?? []);
             $data['subtitleKey'] = $this->subtitle['key'];
             $data['subtitleParams'] = $this->subtitle['params'];

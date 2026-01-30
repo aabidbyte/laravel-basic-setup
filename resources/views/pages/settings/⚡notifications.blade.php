@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\BasePageComponent;
 use App\Models\User;
 use App\Services\Notifications\NotificationBuilder;
@@ -10,7 +11,7 @@ new class extends BasePageComponent {
 
     public ?string $pageSubtitle = 'settings.notifications.description';
 
-    protected string $placeholderType = 'form';
+    protected PlaceholderType $placeholderType = PlaceholderType::FORM;
 
     protected int $placeholderRows = 3;
 

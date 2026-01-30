@@ -6,6 +6,7 @@ use App\Constants\Auth\Permissions;
 use App\Enums\EmailTemplate\EmailTemplateKind;
 use App\Enums\EmailTemplate\EmailTemplateStatus;
 use App\Enums\EmailTemplate\EmailTemplateType;
+use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\BasePageComponent;
 use App\Models\EmailTemplate\EmailTemplate;
 use Illuminate\Validation\Rule;
@@ -15,7 +16,7 @@ use Livewire\Attributes\Locked;
 new class extends BasePageComponent {
     public ?string $pageSubtitle = null;
 
-    protected string $placeholderType = 'form';
+    protected PlaceholderType $placeholderType = PlaceholderType::FORM;
 
     protected int $placeholderRows = 2;
 

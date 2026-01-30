@@ -232,7 +232,7 @@ class DatabaseSetup
 
             // Provide brief guidance for common MySQL errors
             $errorMessage = $e->getMessage();
-            if (str_contains($errorMessage, 'mysql_native_password')) {
+            if (\str_contains($errorMessage, 'mysql_native_password')) {
                 info('💡 MySQL authentication plugin issue detected.');
                 info('   Update your MySQL user to use caching_sha2_password (default for MySQL 8.0+):');
                 $connection = Config::get('database.default');
@@ -241,14 +241,14 @@ class DatabaseSetup
                 $dbPassword = Config::get('database.connections.' . $connection . '.password');
                 info('   ALTER USER \'' . $dbUsername . '\'@\'' . $dbHost . '\' IDENTIFIED WITH caching_sha2_password BY \'' . $dbPassword . '\';');
                 info('   FLUSH PRIVILEGES;');
-            } elseif (str_contains($errorMessage, 'Access denied')) {
+            } elseif (\str_contains($errorMessage, 'Access denied')) {
                 // Check if this is a Docker connection issue
-                if (preg_match('/@\'?(\d+\.\d+\.\d+\.\d+)\'?/', $errorMessage, $matches)) {
+                if (\preg_match('/@\'?(\d+\.\d+\.\d+\.\d+)\'?/', $errorMessage, $matches)) {
                     $connectingFrom = $matches[1];
                     // Check if it's a Docker network IP (common ranges: 172.16-31.x.x, 192.168.x.x, 10.x.x.x)
-                    if (preg_match('/^172\.(1[6-9]|2[0-9]|3[0-1])\./', $connectingFrom) ||
-                        preg_match('/^192\.168\./', $connectingFrom) ||
-                        preg_match('/^10\./', $connectingFrom)) {
+                    if (\preg_match('/^172\.(1[6-9]|2[0-9]|3[0-1])\./', $connectingFrom) ||
+                        \preg_match('/^192\.168\./', $connectingFrom) ||
+                        \preg_match('/^10\./', $connectingFrom)) {
                         info('💡 Docker network detected. The connection is coming from: ' . $connectingFrom);
                         $connection = Config::get('database.default');
                         $dbHost = Config::get('database.connections.' . $connection . '.host');
@@ -278,7 +278,7 @@ class DatabaseSetup
                 } else {
                     info('💡 Please verify your database username and password are correct.');
                 }
-            } elseif (str_contains($errorMessage, 'Unknown database')) {
+            } elseif (\str_contains($errorMessage, 'Unknown database')) {
                 info('💡 The database does not exist. Please create it first.');
             }
 
@@ -319,7 +319,7 @@ class DatabaseSetup
 
             // Provide brief guidance for common MySQL errors
             $errorMessage = $e->getMessage();
-            if (str_contains($errorMessage, 'mysql_native_password')) {
+            if (\str_contains($errorMessage, 'mysql_native_password')) {
                 info('💡 MySQL authentication plugin issue detected.');
                 info('   Update your MySQL user to use caching_sha2_password (default for MySQL 8.0+):');
                 $connection = Config::get('database.default');
@@ -328,14 +328,14 @@ class DatabaseSetup
                 $dbPassword = Config::get('database.connections.' . $connection . '.password');
                 info('   ALTER USER \'' . $dbUsername . '\'@\'' . $dbHost . '\' IDENTIFIED WITH caching_sha2_password BY \'' . $dbPassword . '\';');
                 info('   FLUSH PRIVILEGES;');
-            } elseif (str_contains($errorMessage, 'Access denied')) {
+            } elseif (\str_contains($errorMessage, 'Access denied')) {
                 // Check if this is a Docker connection issue
-                if (preg_match('/@\'?(\d+\.\d+\.\d+\.\d+)\'?/', $errorMessage, $matches)) {
+                if (\preg_match('/@\'?(\d+\.\d+\.\d+\.\d+)\'?/', $errorMessage, $matches)) {
                     $connectingFrom = $matches[1];
                     // Check if it's a Docker network IP (common ranges: 172.16-31.x.x, 192.168.x.x, 10.x.x.x)
-                    if (preg_match('/^172\.(1[6-9]|2[0-9]|3[0-1])\./', $connectingFrom) ||
-                        preg_match('/^192\.168\./', $connectingFrom) ||
-                        preg_match('/^10\./', $connectingFrom)) {
+                    if (\preg_match('/^172\.(1[6-9]|2[0-9]|3[0-1])\./', $connectingFrom) ||
+                        \preg_match('/^192\.168\./', $connectingFrom) ||
+                        \preg_match('/^10\./', $connectingFrom)) {
                         info('💡 Docker network detected. The connection is coming from: ' . $connectingFrom);
                         $connection = Config::get('database.default');
                         $dbHost = Config::get('database.connections.' . $connection . '.host');
@@ -365,7 +365,7 @@ class DatabaseSetup
                 } else {
                     info('💡 Please verify your database username and password are correct.');
                 }
-            } elseif (str_contains($errorMessage, 'Unknown database')) {
+            } elseif (\str_contains($errorMessage, 'Unknown database')) {
                 info('💡 The database does not exist. Please create it first.');
             }
 

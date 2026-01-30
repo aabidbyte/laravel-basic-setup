@@ -21,8 +21,8 @@ class EnvFileManager
             $formattedValue = $this->formatValue($value);
 
             // Replace existing value or add new one
-            if (preg_match("/^{$key}=.*/m", $envContent)) {
-                $envContent = preg_replace(
+            if (\preg_match("/^{$key}=.*/m", $envContent)) {
+                $envContent = \preg_replace(
                     "/^{$key}=.*/m",
                     "{$key}={$formattedValue}",
                     $envContent,
@@ -47,10 +47,10 @@ class EnvFileManager
         }
 
         // Escape backslashes and dollar signs
-        $escaped = str_replace(['\\', '$'], ['\\\\', '\\$'], $value);
+        $escaped = \str_replace(['\\', '$'], ['\\\\', '\\$'], $value);
 
         // If value contains spaces, special characters, or starts with a number, wrap in quotes
-        if (preg_match('/[\s#=]|^\d/', $escaped)) {
+        if (\preg_match('/[\s#=]|^\d/', $escaped)) {
             return '"' . $escaped . '"';
         }
 

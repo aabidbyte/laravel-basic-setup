@@ -131,7 +131,7 @@ class DataTableQueryBuilder
         }
 
         // Get relationship
-        if (! method_exists($model, $relationshipName)) {
+        if (! \method_exists($model, $relationshipName)) {
             // Relationship doesn't exist, skip
             return;
         }
@@ -333,7 +333,7 @@ class DataTableQueryBuilder
             }
 
             // Default filter behavior
-            if (is_array($value)) {
+            if (\is_array($value)) {
                 $query->whereIn($field, $value);
             } else {
                 $query->where($field, $value);
@@ -384,7 +384,7 @@ class DataTableQueryBuilder
         $model = $query->getModel();
 
         foreach ($relationships as $relationshipName) {
-            if (! method_exists($model, $relationshipName)) {
+            if (! \method_exists($model, $relationshipName)) {
                 // Relationship doesn't exist, return base table
                 return $model->getTable();
             }

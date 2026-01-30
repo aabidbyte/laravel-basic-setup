@@ -54,7 +54,7 @@ class EntityTypeRegistry
      */
     public function getAvailableEntityTypes(): array
     {
-        return array_keys($this->entities);
+        return \array_keys($this->entities);
     }
 
     /**

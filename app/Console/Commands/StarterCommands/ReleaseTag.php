@@ -66,7 +66,7 @@ class ReleaseTag extends Command
         // Check if there are uncommitted changes
         $force = $this->option('force');
         $statusCheck = Process::run('git status --porcelain');
-        if ($statusCheck->successful() && ! empty(trim($statusCheck->output()))) {
+        if ($statusCheck->successful() && ! empty(\trim($statusCheck->output()))) {
             if (! $force) {
                 warning('⚠️  You have uncommitted changes.');
                 if (! confirm('Do you want to continue anyway?', default: false)) {
@@ -93,7 +93,7 @@ class ReleaseTag extends Command
 
         // Check if tag already exists
         $tagExists = Process::run("git tag -l {$tagName}");
-        if ($tagExists->successful() && ! empty(trim($tagExists->output()))) {
+        if ($tagExists->successful() && ! empty(\trim($tagExists->output()))) {
             error("Tag {$tagName} already exists!");
 
             return self::FAILURE;
@@ -192,18 +192,18 @@ class ReleaseTag extends Command
     {
         // Get all tags sorted by version
         $tags = Process::run('git tag -l --sort=-version:refname');
-        if (! $tags->successful() || empty(trim($tags->output()))) {
+        if (! $tags->successful() || empty(\trim($tags->output()))) {
             return null;
         }
 
-        $tagList = array_filter(explode("\n", trim($tags->output())));
+        $tagList = array_filter(\explode("\n", \trim($tags->output())));
         if (empty($tagList)) {
             return null;
         }
 
         // Get the first (latest) tag and remove 'v' prefix if present
-        $latestTag = trim($tagList[0]);
-        $latestTag = ltrim($latestTag, 'v');
+        $latestTag = \trim($tagList[0]);
+        $latestTag = \ltrim($latestTag, 'v');
 
         return $latestTag;
     }
@@ -214,18 +214,18 @@ class ReleaseTag extends Command
     protected function incrementMinorVersion(string $version): string
     {
         // Remove 'v' prefix if present
-        $version = ltrim($version, 'v');
+        $version = \ltrim($version, 'v');
 
         // Parse version parts
-        $parts = explode('.', $version);
+        $parts = \explode('.', $version);
 
         // Ensure we have at least major.minor
-        if (count($parts) < 2) {
-            $parts = array_merge($parts, array_fill(0, 2 - count($parts), '0'));
+        if (\count($parts) < 2) {
+            $parts = \array_merge($parts, array_fill(0, 2 - \count($parts), '0'));
         }
 
         // Ensure we have patch version
-        if (count($parts) < 3) {
+        if (\count($parts) < 3) {
             $parts[] = '0';
         }
 
@@ -235,7 +235,7 @@ class ReleaseTag extends Command
         // Reset patch version to 0 when incrementing minor
         $parts[2] = '0';
 
-        return implode('.', array_slice($parts, 0, 3));
+        return \implode('.', array_slice($parts, 0, 3));
     }
 
     /**
@@ -244,23 +244,23 @@ class ReleaseTag extends Command
     protected function incrementMajorVersion(string $version): string
     {
         // Remove 'v' prefix if present
-        $version = ltrim($version, 'v');
+        $version = \ltrim($version, 'v');
 
         // Parse version parts
-        $parts = explode('.', $version);
+        $parts = \explode('.', $version);
 
         // Ensure we have at least major
-        if (count($parts) < 1) {
+        if (\count($parts) < 1) {
             $parts = ['0'];
         }
 
         // Ensure we have minor version
-        if (count($parts) < 2) {
+        if (\count($parts) < 2) {
             $parts[] = '0';
         }
 
         // Ensure we have patch version
-        if (count($parts) < 3) {
+        if (\count($parts) < 3) {
             $parts[] = '0';
         }
 
@@ -271,7 +271,7 @@ class ReleaseTag extends Command
         $parts[1] = '0';
         $parts[2] = '0';
 
-        return implode('.', array_slice($parts, 0, 3));
+        return \implode('.', array_slice($parts, 0, 3));
     }
 
     /**
@@ -280,25 +280,25 @@ class ReleaseTag extends Command
     protected function incrementPatchVersion(string $version): string
     {
         // Remove 'v' prefix if present
-        $version = ltrim($version, 'v');
+        $version = \ltrim($version, 'v');
 
         // Parse version parts
-        $parts = explode('.', $version);
+        $parts = \explode('.', $version);
 
         // Ensure we have at least major.minor
-        if (count($parts) < 2) {
-            $parts = array_merge($parts, array_fill(0, 2 - count($parts), '0'));
+        if (\count($parts) < 2) {
+            $parts = \array_merge($parts, array_fill(0, 2 - \count($parts), '0'));
         }
 
         // Ensure we have patch version
-        if (count($parts) < 3) {
+        if (\count($parts) < 3) {
             $parts[] = '0';
         }
 
         // Increment patch version
         $parts[2] = (string) ((int) $parts[2] + 1);
 
-        return implode('.', array_slice($parts, 0, 3));
+        return \implode('.', array_slice($parts, 0, 3));
     }
 
     /**
@@ -307,9 +307,9 @@ class ReleaseTag extends Command
     protected function isValidVersion(string $version): bool
     {
         // Remove 'v' prefix if present for validation
-        $version = ltrim($version, 'v');
+        $version = \ltrim($version, 'v');
 
         // Match semantic versioning pattern: major.minor.patch
-        return (bool) preg_match('/^\d+\.\d+\.\d+$/', $version);
+        return (bool) \preg_match('/^\d+\.\d+\.\d+$/', $version);
     }
 }

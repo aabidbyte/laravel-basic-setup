@@ -46,7 +46,7 @@ class MergeTagPicker extends Component
                     'label' => __("types.$entityType"),
                     'color' => $this->registry->getColor($entityType),
                     'tags' => $foundTags,
-                    'count' => count($foundTags),
+                    'count' => \count($foundTags),
                 ];
             }
         }
@@ -71,7 +71,7 @@ class MergeTagPicker extends Component
             'label' => __('email_templates.merge_tags.context'),
             'color' => $this->registry->getColor('context'),
             'tags' => $contextTags,
-            'count' => count($contextTags),
+            'count' => \count($contextTags),
         ];
     }
 }

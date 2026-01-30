@@ -1,4 +1,3 @@
-@push('endBody')
     <div x-data="toastCenter"
          x-init="init()"
          aria-live="assertive"
@@ -100,4 +99,3 @@
             </div>
         </template>
     </div>
-@endpush

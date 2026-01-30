@@ -38,7 +38,7 @@ test('reset password link can be requested', function () {
         $mailData = $notification->toMail($notifiable);
         $rendered = $mailData->render();
 
-        return str_contains($rendered, 'identifier=' . urlencode($user->email));
+        return \str_contains($rendered, 'identifier=' . urlencode($user->email));
     });
 });
 

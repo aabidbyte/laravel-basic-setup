@@ -26,3 +26,25 @@
 
     {{ $slot }}
 </form>
+
+@assets
+    <script>
+        (function() {
+            const register = () => {
+                Alpine.data('submitForm', () => ({
+                    init() {
+                        this.$el.addEventListener('submit', () => {
+                            this.$el.classList.add('form-submitting');
+                        });
+                    },
+                }));
+            };
+
+            if (window.Alpine) {
+                register();
+            } else {
+                document.addEventListener('alpine:init', register);
+            }
+        })();
+    </script>
+@endassets

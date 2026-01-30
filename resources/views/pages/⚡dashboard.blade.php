@@ -1,11 +1,12 @@
 <?php
 
+use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\BasePageComponent;
 
 new class extends BasePageComponent {
     public ?string $pageTitle = 'pages.dashboard';
 
-    protected string $placeholderType = 'card';
+    protected PlaceholderType $placeholderType = PlaceholderType::CARD;
 }; ?>
 
 <x-layouts.page>

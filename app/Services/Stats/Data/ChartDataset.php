@@ -17,7 +17,7 @@ readonly class ChartDataset implements Arrayable, JsonSerializable
 
     public function toArray(): array
     {
-        return array_merge([
+        return \array_merge([
             'label' => __($this->label),
             'data' => $this->data,
         ], $this->options);

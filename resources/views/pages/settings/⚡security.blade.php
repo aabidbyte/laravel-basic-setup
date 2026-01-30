@@ -1,6 +1,7 @@
 <?php
 
 use App\Constants\Auth\Permissions;
+use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\BasePageComponent;
 use App\Services\Notifications\NotificationBuilder;
 use Carbon\Carbon;
@@ -22,7 +23,7 @@ new class extends BasePageComponent {
 
     public ?string $pageSubtitle = 'settings.security.description';
 
-    protected string $placeholderType = 'form';
+    protected PlaceholderType $placeholderType = PlaceholderType::FORM;
 
     protected int $placeholderRows = 3;
 
@@ -51,7 +52,7 @@ new class extends BasePageComponent {
 
         // Handle two-factor authentication
         if (Features::enabled(Features::twoFactorAuthentication())) {
-            if (Features::optionEnabled(Features::twoFactorAuthentication(), 'confirm') && is_null($user->two_factor_confirmed_at)) {
+            if (Features::optionEnabled(Features::twoFactorAuthentication(), 'confirm') && \is_null($user->two_factor_confirmed_at)) {
                 $disableTwoFactorAuthentication($user);
             }
 
@@ -103,27 +104,27 @@ new class extends BasePageComponent {
 
         // Simple browser detection
         $browser = __('common.unknown');
-        if (str_contains($userAgent, 'Firefox')) {
+        if (\str_contains($userAgent, 'Firefox')) {
             $browser = 'Firefox';
-        } elseif (str_contains($userAgent, 'Chrome') && !str_contains($userAgent, 'Edg')) {
+        } elseif (\str_contains($userAgent, 'Chrome') && !\str_contains($userAgent, 'Edg')) {
             $browser = 'Chrome';
-        } elseif (str_contains($userAgent, 'Safari') && !str_contains($userAgent, 'Chrome')) {
+        } elseif (\str_contains($userAgent, 'Safari') && !\str_contains($userAgent, 'Chrome')) {
             $browser = 'Safari';
-        } elseif (str_contains($userAgent, 'Edg')) {
+        } elseif (\str_contains($userAgent, 'Edg')) {
             $browser = 'Edge';
         }
 
         // Simple platform detection
         $platform = __('common.unknown');
-        if (str_contains($userAgent, 'Windows')) {
+        if (\str_contains($userAgent, 'Windows')) {
             $platform = 'Windows';
-        } elseif (str_contains($userAgent, 'Mac')) {
+        } elseif (\str_contains($userAgent, 'Mac')) {
             $platform = 'macOS';
-        } elseif (str_contains($userAgent, 'Linux')) {
+        } elseif (\str_contains($userAgent, 'Linux')) {
             $platform = 'Linux';
-        } elseif (str_contains($userAgent, 'iPhone') || str_contains($userAgent, 'iPad')) {
+        } elseif (\str_contains($userAgent, 'iPhone') || \str_contains($userAgent, 'iPad')) {
             $platform = 'iOS';
-        } elseif (str_contains($userAgent, 'Android')) {
+        } elseif (\str_contains($userAgent, 'Android')) {
             $platform = 'Android';
         }
 
@@ -462,3 +463,30 @@ new class extends BasePageComponent {
         </x-settings.layout>
     </section>
 </x-layouts.page>
+
+@assets
+    <script>
+        (function() {
+            const register = () => {
+                Alpine.data('twoFactorSetupTrigger', () => ({
+                    showModal: false,
+
+                    init() {
+                        this.$wire.on('open-two-factor-setup-modal', () => {
+                            this.showModal = true;
+                        });
+                        this.$wire.on('close-two-factor-setup-modal', () => {
+                            this.showModal = false;
+                        });
+                    },
+                }));
+            };
+
+            if (window.Alpine) {
+                register();
+            } else {
+                document.addEventListener('alpine:init', register);
+            }
+        })();
+    </script>
+@endassets

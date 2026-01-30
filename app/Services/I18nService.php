@@ -20,7 +20,7 @@ class I18nService
      */
     public function getHtmlLangAttribute(): string
     {
-        return str_replace('_', '-', $this->getLocale());
+        return \str_replace('_', '-', $this->getLocale());
     }
 
     /**

@@ -35,4 +35,5 @@
 @vite($allAssets)
 
 @livewireStyles(['nonce' => cspNonce()])
+
 @stack('endHead')

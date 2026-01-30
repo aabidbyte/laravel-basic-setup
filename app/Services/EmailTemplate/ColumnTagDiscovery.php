@@ -110,7 +110,7 @@ class ColumnTagDiscovery
             }
 
             $type = $this->getColumnType($table, $column);
-            if (! in_array($type, $this->allowedTypes, true)) {
+            if (! \in_array($type, $this->allowedTypes, true)) {
                 continue;
             }
 
@@ -131,13 +131,13 @@ class ColumnTagDiscovery
     protected function isExcludedColumn(string $column): bool
     {
         // Check direct exclusion list
-        if (in_array($column, $this->excludedColumns, true)) {
+        if (\in_array($column, $this->excludedColumns, true)) {
             return true;
         }
 
         // Check patterns
         foreach ($this->excludedPatterns as $pattern) {
-            if (preg_match($pattern, $column)) {
+            if (\preg_match($pattern, $column)) {
                 return true;
             }
         }
@@ -238,7 +238,7 @@ class ColumnTagDiscovery
      */
     public function excludeColumn(string $column): void
     {
-        if (! in_array($column, $this->excludedColumns, true)) {
+        if (! \in_array($column, $this->excludedColumns, true)) {
             $this->excludedColumns[] = $column;
         }
     }
@@ -248,7 +248,7 @@ class ColumnTagDiscovery
      */
     public function excludePattern(string $pattern): void
     {
-        if (! in_array($pattern, $this->excludedPatterns, true)) {
+        if (! \in_array($pattern, $this->excludedPatterns, true)) {
             $this->excludedPatterns[] = $pattern;
         }
     }

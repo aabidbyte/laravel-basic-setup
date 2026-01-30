@@ -46,21 +46,21 @@ class HtmlSanitizer
     public function sanitize(string $html): string
     {
         // Remove script tags and event handlers
-        $html = preg_replace('/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/mi', '', $html);
-        $html = preg_replace('/on\w+\s*=\s*["\'][^"\']*["\']/i', '', $html);
-        $html = preg_replace('/on\w+\s*=\s*[^\s>]*/i', '', $html);
+        $html = \preg_replace('/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/mi', '', $html);
+        $html = \preg_replace('/on\w+\s*=\s*["\'][^"\']*["\']/i', '', $html);
+        $html = \preg_replace('/on\w+\s*=\s*[^\s>]*/i', '', $html);
 
         // Remove javascript: and data: URLs (replace with safe values) - do this BEFORE strip_tags
         // Use a more robust regex that handles nested quotes by matching until the closing quote of the same type
-        $html = preg_replace('/href\s*=\s*"javascript:[^"]*"/i', 'href="#"', $html);
-        $html = preg_replace('/href\s*=\s*\'javascript:[^\']*\'/i', "href='#'", $html);
-        $html = preg_replace('/href\s*=\s*"data:[^"]*"/i', 'href="#"', $html);
-        $html = preg_replace('/href\s*=\s*\'data:[^\']*\'/i', "href='#'", $html);
-        $html = preg_replace('/src\s*=\s*"data:[^"]*"/i', '', $html);
-        $html = preg_replace('/src\s*=\s*\'data:[^\']*\'/i', '', $html);
+        $html = \preg_replace('/href\s*=\s*"javascript:[^"]*"/i', 'href="#"', $html);
+        $html = \preg_replace('/href\s*=\s*\'javascript:[^\']*\'/i', "href='#'", $html);
+        $html = \preg_replace('/href\s*=\s*"data:[^"]*"/i', 'href="#"', $html);
+        $html = \preg_replace('/href\s*=\s*\'data:[^\']*\'/i', "href='#'", $html);
+        $html = \preg_replace('/src\s*=\s*"data:[^"]*"/i', '', $html);
+        $html = \preg_replace('/src\s*=\s*\'data:[^\']*\'/i', '', $html);
 
         // Use strip_tags with allowed tags
-        $allowedTagsString = '<' . implode('><', self::ALLOWED_TAGS) . '>';
+        $allowedTagsString = '<' . \implode('><', self::ALLOWED_TAGS) . '>';
 
         // First pass: strip all tags except allowed ones (strip_tags preserves attributes)
         $html = strip_tags($html, $allowedTagsString);
@@ -68,7 +68,7 @@ class HtmlSanitizer
         // Second pass: remove disallowed attributes (this preserves href="#" from above)
         $html = $this->removeDisallowedAttributes($html);
 
-        return trim($html);
+        return \trim($html);
     }
 
     /**
@@ -96,12 +96,12 @@ class HtmlSanitizer
                 $filteredAttrs = [];
                 foreach ($attrMatches as $attrMatch) {
                     $attrName = strtolower($attrMatch[1]);
-                    if (in_array($attrName, $allowedAttrs, true)) {
+                    if (\in_array($attrName, $allowedAttrs, true)) {
                         $filteredAttrs[] = $attrMatch[0];
                     }
                 }
 
-                $filteredAttrsString = ! empty($filteredAttrs) ? ' ' . implode(' ', $filteredAttrs) : '';
+                $filteredAttrsString = ! empty($filteredAttrs) ? ' ' . \implode(' ', $filteredAttrs) : '';
 
                 return '<' . $tag . $filteredAttrsString . '>';
             },

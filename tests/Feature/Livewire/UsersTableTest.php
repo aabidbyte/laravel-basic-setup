@@ -67,7 +67,7 @@ test('bulk select page sets selected to current page UUIDs', function () {
 
     // Should have selected users from current page
     expect($component->get('selected'))->toBeArray()
-        ->and(count($component->get('selected')))->toBeLessThanOrEqual(3);
+        ->and(\count($component->get('selected')))->toBeLessThanOrEqual(3);
 });
 
 test('clear selection empties selected array', function () {

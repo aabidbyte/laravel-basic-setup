@@ -26,7 +26,7 @@ trait HasDatatableLivewireQueryParameters
      */
     public function updatedSearch(): void
     {
-        if (method_exists($this, 'applyChanges')) {
+        if (\method_exists($this, 'applyChanges')) {
             $this->applyChanges();
         }
     }
@@ -71,7 +71,7 @@ trait HasDatatableLivewireQueryParameters
         $queryParams = [];
 
         // If this is a Livewire update request, get query string from referer
-        if ($referer && preg_match('#/livewire-[^/]+/update#', $currentUrl)) {
+        if ($referer && \preg_match('#/livewire-[^/]+/update#', $currentUrl)) {
             $parsedReferer = parse_url($referer);
             if (isset($parsedReferer['query'])) {
                 parse_str($parsedReferer['query'], $queryParams);
@@ -99,7 +99,7 @@ trait HasDatatableLivewireQueryParameters
         $directionKey = $this->getQueryParamName(DataTableConstants::QUERY_PARAM_DIRECTION);
         if (isset($queryParams[$directionKey]) && $queryParams[$directionKey] !== null) {
             $direction = (string) $queryParams[$directionKey];
-            if (in_array($direction, ['asc', 'desc'], true)) {
+            if (\in_array($direction, ['asc', 'desc'], true)) {
                 $this->sortDirection = $direction;
                 $this->queryStringLoaded[DataTableConstants::QUERY_PARAM_DIRECTION] = true;
             }
@@ -130,15 +130,15 @@ trait HasDatatableLivewireQueryParameters
         $filtersParam = $this->getQueryParamName(DataTableConstants::QUERY_PARAM_FILTERS);
 
         // Check if filters exist as a nested array (from parse_str)
-        if (isset($queryParams[$filtersParam]) && is_array($queryParams[$filtersParam])) {
+        if (isset($queryParams[$filtersParam]) && \is_array($queryParams[$filtersParam])) {
             $filters = $queryParams[$filtersParam];
         } else {
             // Fallback: check for filters[key] format in flat array
             $filtersPrefix = $filtersParam . '[';
             foreach ($queryParams as $key => $value) {
-                if (str_starts_with($key, $filtersPrefix) && str_ends_with($key, ']')) {
+                if (\str_starts_with($key, $filtersPrefix) && \str_ends_with($key, ']')) {
                     // Extract filter key from filters[key] format
-                    $filterKey = substr($key, strlen($filtersPrefix), -1); // Remove "filters[" and "]"
+                    $filterKey = \substr($key, \strlen($filtersPrefix), -1); // Remove "filters[" and "]"
                     if ($value !== null && $value !== '') {
                         $filters[$filterKey] = $value;
                     }
@@ -165,7 +165,7 @@ trait HasDatatableLivewireQueryParameters
         $referer = request()->header('Referer');
         $currentUrl = url()->current();
 
-        if (preg_match('#/livewire-[^/]+/update#', $currentUrl)) {
+        if (\preg_match('#/livewire-[^/]+/update#', $currentUrl)) {
             if ($referer) {
                 $parsedReferer = parse_url($referer);
                 $url = ($parsedReferer['scheme'] ?? 'http') . '://'

@@ -16,7 +16,7 @@ function isProduction(): bool
 {
     $env = strtolower(appEnv());
 
-    return in_array($env, ['production', 'prod'], true);
+    return \in_array($env, ['production', 'prod'], true);
 }
 
 /**
@@ -26,7 +26,7 @@ function isDevelopment(): bool
 {
     $env = strtolower(appEnv());
 
-    return in_array($env, ['local', 'development', 'dev'], true);
+    return \in_array($env, ['local', 'development', 'dev'], true);
 }
 
 /**
@@ -36,7 +36,7 @@ function isStaging(): bool
 {
     $env = strtolower(appEnv());
 
-    return in_array($env, ['staging', 'stage'], true);
+    return \in_array($env, ['staging', 'stage'], true);
 }
 
 /**

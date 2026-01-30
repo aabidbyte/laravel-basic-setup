@@ -50,7 +50,7 @@ class ViewportVisibility
             }
         }
 
-        return implode(' ', $classes);
+        return \implode(' ', $classes);
     }
 
     /**
@@ -68,6 +68,6 @@ class ViewportVisibility
      */
     public static function getValidViewports(): array
     {
-        return array_keys(self::BREAKPOINT_ORDER);
+        return \array_keys(self::BREAKPOINT_ORDER);
     }
 }

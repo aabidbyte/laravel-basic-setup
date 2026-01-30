@@ -330,7 +330,7 @@ class MailBuilder
             $mailable = $this->mailable;
 
             // Set recipient if not already set on mailable
-            if (method_exists($mailable, 'to') && $this->to !== null) {
+            if (\method_exists($mailable, 'to') && $this->to !== null) {
                 $recipient = $this->resolveRecipient();
                 $mailable->to($recipient);
             }

@@ -152,7 +152,7 @@ describe('ErrorHandler', function () {
 
         expect($response->getStatusCode())->toBe(500);
 
-        $data = json_decode($response->getContent(), true);
+        $data = \json_decode($response->getContent(), true);
         expect($data)->toHaveKey('message')
             ->and($data)->toHaveKey('reference');
     });

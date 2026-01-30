@@ -44,7 +44,7 @@ trait HasDatatableLivewireSelection
             $this->selected = $this->normalizeArray(array_diff($this->selected, $currentPageUuids));
         } else {
             // Select all UUIDs on current page
-            $this->selected = $this->normalizeArray(array_unique(array_merge($this->selected, $currentPageUuids)));
+            $this->selected = $this->normalizeArray(array_unique(\array_merge($this->selected, $currentPageUuids)));
         }
     }
 
@@ -55,7 +55,7 @@ trait HasDatatableLivewireSelection
      */
     public function isSelected(string $uuid): bool
     {
-        return in_array($uuid, $this->selected, true);
+        return \in_array($uuid, $this->selected, true);
     }
 
     /**
@@ -81,7 +81,7 @@ trait HasDatatableLivewireSelection
      */
     protected function normalizeArray(array $array): array
     {
-        return array_values($array);
+        return \array_values($array);
     }
 
     /**
@@ -98,7 +98,7 @@ trait HasDatatableLivewireSelection
     #[Computed]
     public function selectedCount(): int
     {
-        return count($this->selected);
+        return \count($this->selected);
     }
 
     /**
@@ -107,7 +107,7 @@ trait HasDatatableLivewireSelection
     #[Computed]
     public function hasSelection(): bool
     {
-        return count($this->selected) > 0;
+        return \count($this->selected) > 0;
     }
 
     /**
@@ -126,6 +126,6 @@ trait HasDatatableLivewireSelection
             return false;
         }
 
-        return count(array_intersect($currentPageUuids, $this->selected)) === count($currentPageUuids);
+        return \count(array_intersect($currentPageUuids, $this->selected)) === \count($currentPageUuids);
     }
 }

@@ -71,7 +71,7 @@ class NavigationItem implements Arrayable
             fn (NavigationItem $item) => $item->isVisible(),
         );
 
-        return array_values(
+        return \array_values(
             array_map(
                 fn (NavigationItem $item) => $item->toArray(),
                 $visibleItems,
@@ -205,7 +205,7 @@ class NavigationItem implements Arrayable
      */
     public function activeRoutes(array|string $routes): static
     {
-        $this->activeRoutes = is_array($routes) ? $routes : [$routes];
+        $this->activeRoutes = \is_array($routes) ? $routes : [$routes];
 
         return $this;
     }
@@ -305,7 +305,7 @@ class NavigationItem implements Arrayable
      */
     public function getItems(): array
     {
-        return array_values(
+        return \array_values(
             array_filter($this->items, fn (NavigationItem $item) => $item->isVisible()),
         );
     }
@@ -317,7 +317,7 @@ class NavigationItem implements Arrayable
      */
     public function hasItems(): bool
     {
-        return count($this->getItems()) > 0;
+        return \count($this->getItems()) > 0;
     }
 
     /**
@@ -347,7 +347,7 @@ class NavigationItem implements Arrayable
         }
 
         // For numeric badges, don't show if the value is 0
-        if (is_numeric($badge) && (int) $badge === 0) {
+        if (\is_numeric($badge) && (int) $badge === 0) {
             return false;
         }
 
@@ -421,7 +421,7 @@ class NavigationItem implements Arrayable
             'icon' => $this->icon,
             'isExternal' => $this->external ?? false,
             'isActive' => $this->isActive(),
-            'hasItems' => count($visibleItems) > 0,
+            'hasItems' => \count($visibleItems) > 0,
             'items' => array_map(fn (NavigationItem $item) => $item->toArray(), $visibleItems),
             'hasBadge' => $hasBadge,
             'badge' => $hasBadge ? $badge : null,

@@ -35,7 +35,7 @@ class ToastBroadcasted implements ShouldBroadcastNow
     {
         // Session channels are public (session ID acts as security mechanism)
         // All other channels are private (require authentication)
-        if (str_starts_with($this->channel, 'public-notifications.session.')) {
+        if (\str_starts_with($this->channel, 'public-notifications.session.')) {
             return [
                 new Channel($this->channel),
             ];

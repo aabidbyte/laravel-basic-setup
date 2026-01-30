@@ -151,7 +151,7 @@ class TrashRegistry
      */
     public function getEntityTypes(): array
     {
-        return array_keys($this->getEntities());
+        return \array_keys($this->getEntities());
     }
 
     /**
@@ -167,6 +167,6 @@ class TrashRegistry
      */
     public function getRoutePattern(): string
     {
-        return implode('|', $this->getEntityTypes());
+        return \implode('|', $this->getEntityTypes());
     }
 }

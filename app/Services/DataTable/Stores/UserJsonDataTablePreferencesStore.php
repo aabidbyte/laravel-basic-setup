@@ -61,7 +61,7 @@ class UserJsonDataTablePreferencesStore implements DataTablePreferencesStore
         $userPrefKey = DataTableConstants::getUserPreferenceKey($entityKey);
         $userPrefs = $this->user->frontend_preferences ?? [];
         $existing = $userPrefs[$userPrefKey] ?? [];
-        $merged = array_merge($existing, $preferences);
+        $merged = \array_merge($existing, $preferences);
         $userPrefs[$userPrefKey] = $merged;
         $this->user->frontend_preferences = $userPrefs;
         $this->user->save();

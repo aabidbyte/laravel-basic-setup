@@ -1,6 +1,7 @@
 <?php
 
 use App\Constants\Auth\Permissions;
+use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\BasePageComponent;
 use App\Models\ErrorLog;
 use App\Services\Notifications\NotificationBuilder;
@@ -11,7 +12,7 @@ new class extends BasePageComponent {
 
     public ?string $pageSubtitle = 'errors.management.description';
 
-    protected string $placeholderType = 'card';
+    protected PlaceholderType $placeholderType = PlaceholderType::CARD;
 
     protected int $placeholderRows = 4;
 
@@ -98,8 +99,8 @@ new class extends BasePageComponent {
         }
 
         // Extract first line of stack trace which usually contains file:line
-        $firstLine = explode("\n", $this->errorLog->stack_trace)[0] ?? '';
-        if (preg_match('/in ([^ ]+):(\d+)/', $firstLine, $matches)) {
+        $firstLine = \explode("\n", $this->errorLog->stack_trace)[0] ?? '';
+        if (\preg_match('/in ([^ ]+):(\d+)/', $firstLine, $matches)) {
             return basename($matches[1]) . ':' . $matches[2];
         }
 

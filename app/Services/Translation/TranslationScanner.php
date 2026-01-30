@@ -45,7 +45,7 @@ class TranslationScanner
             $files = File::allFiles($path);
             foreach ($files as $file) {
                 $extension = $file->getExtension();
-                if (! in_array($extension, ['php', 'blade.php'], true)) {
+                if (! \in_array($extension, ['php', 'blade.php'], true)) {
                     continue;
                 }
 
@@ -60,8 +60,8 @@ class TranslationScanner
     public function scanFile(string $filePath): void
     {
         $content = File::get($filePath);
-        $lines = explode("\n", $content);
-        $relativePath = str_replace(base_path() . '/', '', $filePath);
+        $lines = \explode("\n", $content);
+        $relativePath = \str_replace(base_path() . '/', '', $filePath);
 
         // Get comment ranges to exclude matches within comments
         $commentRanges = $this->getCommentRanges($content);
@@ -97,7 +97,7 @@ class TranslationScanner
     protected function getCommentRanges(string $content): array
     {
         $ranges = [];
-        $length = strlen($content);
+        $length = \strlen($content);
         $i = 0;
 
         while ($i < $length) {
@@ -198,7 +198,7 @@ class TranslationScanner
 
         // $matches[0] contains full matches, $matches[1] contains captured groups
         foreach ($matches[0] as $index => $fullMatch) {
-            if (! is_array($fullMatch) || ! isset($fullMatch[0], $fullMatch[1])) {
+            if (! \is_array($fullMatch) || ! isset($fullMatch[0], $fullMatch[1])) {
                 continue;
             }
 
@@ -216,7 +216,7 @@ class TranslationScanner
             }
 
             // Get the captured key from $matches[1]
-            if (! isset($matches[1][$index]) || ! is_array($matches[1][$index])) {
+            if (! isset($matches[1][$index]) || ! \is_array($matches[1][$index])) {
                 continue;
             }
 
@@ -229,12 +229,12 @@ class TranslationScanner
             $keyOffset = (int) $keyMatch[1];
 
             // Skip empty keys
-            if (trim($key) === '') {
+            if (\trim($key) === '') {
                 continue;
             }
 
             // Calculate line number from key offset
-            $lineNum = substr_count(substr($content, 0, $keyOffset), "\n") + 1;
+            $lineNum = substr_count(\substr($content, 0, $keyOffset), "\n") + 1;
 
             // Initialize key if not exists
             if (! isset($this->foundKeys[$key])) {
@@ -247,7 +247,7 @@ class TranslationScanner
             }
 
             // Add line number if not already present
-            if (! in_array($lineNum, $this->foundKeys[$key][$filePath], true)) {
+            if (! \in_array($lineNum, $this->foundKeys[$key][$filePath], true)) {
                 $this->foundKeys[$key][$filePath][] = $lineNum;
             }
         }
@@ -264,16 +264,16 @@ class TranslationScanner
     protected function isInEnumLabelMethod(string $content, int $offset, string $filePath = ''): bool
     {
         // Check if file is in app/Enums/ directory
-        if (! str_contains($filePath, 'app/Enums/')) {
+        if (! \str_contains($filePath, 'app/Enums/')) {
             return false;
         }
 
         // Check if the surrounding content contains {$this->value}
-        $before = substr($content, max(0, $offset - 100), min(100, $offset));
-        $after = substr($content, $offset, 100);
+        $before = \substr($content, max(0, $offset - 100), min(100, $offset));
+        $after = \substr($content, $offset, 100);
         $context = $before . $after;
 
         // If we find {$this->value} in the pattern, it's an enum label method
-        return str_contains($context, '{$this->value}');
+        return \str_contains($context, '{$this->value}');
     }
 }

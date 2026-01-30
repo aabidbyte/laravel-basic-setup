@@ -38,7 +38,7 @@ class ToastChannel implements ChannelInterface
             // Development: show full exception details
             $subtitle = $e->getMessage();
             $subtitleParams = [];
-            $content = sprintf(
+            $content = \sprintf(
                 '%s:%d',
                 basename($e->getFile()),
                 $e->getLine(),

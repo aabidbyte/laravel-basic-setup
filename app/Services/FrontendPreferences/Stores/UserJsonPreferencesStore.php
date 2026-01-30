@@ -52,7 +52,7 @@ class UserJsonPreferencesStore implements PreferencesStore
     public function setMany(array $preferences): void
     {
         $existing = $this->all();
-        $merged = array_merge($existing, $preferences);
+        $merged = \array_merge($existing, $preferences);
         $this->user->frontend_preferences = $merged;
         $this->user->save();
     }

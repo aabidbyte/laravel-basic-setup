@@ -100,7 +100,7 @@ class ErrorLogTable extends Datatable
             : '';
 
         // Truncate long URLs
-        $displayUrl = strlen($url) > 40 ? substr($url, 0, 40) . '...' : $url;
+        $displayUrl = \strlen($url) > 40 ? \substr($url, 0, 40) . '...' : $url;
 
         return $methodBadge . '<span class="text-xs">' . e($displayUrl) . '</span>';
     }

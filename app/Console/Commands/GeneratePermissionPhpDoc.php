@@ -39,13 +39,13 @@ class GeneratePermissionPhpDoc extends Command
 
         $permissionsFile = app_path('Constants/Auth/Permissions.php');
 
-        if (! file_exists($permissionsFile)) {
+        if (! \file_exists($permissionsFile)) {
             $this->error("Permissions file not found: {$permissionsFile}");
 
             return self::FAILURE;
         }
 
-        $currentContent = file_get_contents($permissionsFile);
+        $currentContent = \file_get_contents($permissionsFile);
         $newContent = $this->generatePhpDoc($currentContent);
 
         if ($this->option('check')) {
@@ -60,7 +60,7 @@ class GeneratePermissionPhpDoc extends Command
             return self::FAILURE;
         }
 
-        file_put_contents($permissionsFile, $newContent);
+        \file_put_contents($permissionsFile, $newContent);
 
         $this->info('✓ PHPDoc annotations generated successfully');
         $this->newLine();
@@ -85,12 +85,12 @@ class GeneratePermissionPhpDoc extends Command
             }
         }
 
-        $methodsString = implode("\n", $methods);
+        $methodsString = \implode("\n", $methods);
 
         // Find the class docblock and replace @method annotations
         $pattern = '/(\/\*\*.*?CRITICAL RULE:.*?\*\n)(.*?)(\s+\*\/\nclass Permissions)/s';
 
-        if (! preg_match($pattern, $currentContent)) {
+        if (! \preg_match($pattern, $currentContent)) {
             $this->error('Could not find docblock pattern to replace');
 
             return $currentContent;
@@ -98,7 +98,7 @@ class GeneratePermissionPhpDoc extends Command
 
         $replacement = "$1 *\n{$methodsString}\n$3";
 
-        return preg_replace($pattern, $replacement, $currentContent);
+        return \preg_replace($pattern, $replacement, $currentContent);
     }
 
     /**
@@ -106,6 +106,6 @@ class GeneratePermissionPhpDoc extends Command
      */
     private function permissionToConstantName(string $permission): string
     {
-        return strtoupper(str_replace(' ', '_', $permission));
+        return strtoupper(\str_replace(' ', '_', $permission));
     }
 }

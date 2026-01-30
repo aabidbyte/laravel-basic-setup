@@ -185,3 +185,50 @@ new class extends LivewireBaseComponent {
         </x-slot:footer-actions>
     </x-ui.base-modal>
 </div>
+
+@assets
+    <script>
+        (function() {
+            const register = () => {
+                Alpine.data('twoFactorSetup', (config = {}) => ({
+                    modalStateId: config.modalStateId || 'twoFactorSetupModalOpen',
+                    showVerificationStep: false,
+                    modalId: 'two-factor-setup',
+                    modalConfig: config.initialModalConfig || {},
+                    verificationModalConfig: config.verificationModalConfig || {},
+
+                    isOpen: true,
+
+                    init() {
+                        this.$watch('isOpen', (val) => {
+                            if (!val) {
+                                this.closeModal();
+                            }
+                        });
+
+                        this.$wire.on('show-verification-step', () => {
+                            this.showVerificationStep = true;
+                            this.modalConfig = this.verificationModalConfig;
+                        });
+
+                        this.$wire.on('hide-verification-step', () => {
+                            this.showVerificationStep = false;
+                            this.modalConfig = config.initialModalConfig;
+                        });
+                    },
+
+                    closeModal() {
+                        this.isOpen = false;
+                        this.$wire.$parent.closeModal();
+                    },
+                }));
+            };
+
+            if (window.Alpine) {
+                register();
+            } else {
+                document.addEventListener('alpine:init', register);
+            }
+        })();
+    </script>
+@endassets

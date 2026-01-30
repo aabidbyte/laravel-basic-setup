@@ -37,10 +37,10 @@ class IdempotencyService
             $identity,
             $request->method(),
             $request->path(),
-            json_encode($request->except(['_token', '_method'])),
+            \json_encode($request->except(['_token', '_method'])),
         ];
 
-        return hash('sha256', implode('|', $components));
+        return hash('sha256', \implode('|', $components));
     }
 
     /**
@@ -109,7 +109,7 @@ class IdempotencyService
 
         // Skip excluded methods
         $excludedMethods = config('idempotency.excluded_methods', ['GET', 'HEAD', 'OPTIONS']);
-        if (in_array($request->method(), $excludedMethods, true)) {
+        if (\in_array($request->method(), $excludedMethods, true)) {
             return false;
         }
 

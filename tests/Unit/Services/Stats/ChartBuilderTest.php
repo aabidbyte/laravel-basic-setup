@@ -61,8 +61,8 @@ class ChartBuilderTest extends TestCase
             ->dataset('D1', [10])
             ->build();
 
-        $json = json_encode($payload);
-        $array = json_decode($json, true);
+        $json = \json_encode($payload);
+        $array = \json_decode($json, true);
 
         $this->assertEquals('bar', $array['type']);
         $this->assertEquals(['A'], $array['data']['labels']);

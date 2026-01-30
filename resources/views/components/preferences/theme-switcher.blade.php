@@ -25,3 +25,28 @@
         </div>
     </x-ui.label>
 </form>
+
+@assets
+    <script>
+        (function() {
+            const register = () => {
+                Alpine.data('themeSwitcher', (initialTheme = 'light') => ({
+                    currentTheme: initialTheme,
+
+                    toggle(event) {
+                        const isDark = event.target.checked;
+                        this.currentTheme = isDark ? 'dark' : 'light';
+                        this.$refs.themeInput.value = this.currentTheme;
+                        this.$refs.themeInput.form.submit();
+                    },
+                }));
+            };
+
+            if (window.Alpine) {
+                register();
+            } else {
+                document.addEventListener('alpine:init', register);
+            }
+        })();
+    </script>
+@endassets

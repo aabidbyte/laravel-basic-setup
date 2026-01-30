@@ -305,7 +305,7 @@ class Column
      */
     public function isSortable(): bool
     {
-        return is_bool($this->sortable) ? $this->sortable : (bool) ($this->sortable)();
+        return \is_bool($this->sortable) ? $this->sortable : (bool) ($this->sortable)();
     }
 
     /**
@@ -321,7 +321,7 @@ class Column
      */
     public function isSearchable(): bool
     {
-        return is_bool($this->searchable) ? $this->searchable : (bool) ($this->searchable)();
+        return \is_bool($this->searchable) ? $this->searchable : (bool) ($this->searchable)();
     }
 
     /**
@@ -371,7 +371,7 @@ class Column
      */
     public function isHidden(mixed $row = null): bool
     {
-        if (is_bool($this->hidden)) {
+        if (\is_bool($this->hidden)) {
             return $this->hidden;
         }
 
@@ -457,9 +457,9 @@ class Column
             return ['relationships' => [], 'column' => ''];
         }
 
-        $parts = explode('.', $this->field);
+        $parts = \explode('.', $this->field);
 
-        if (count($parts) === 1) {
+        if (\count($parts) === 1) {
             return ['relationships' => [], 'column' => $parts[0]];
         }
 
@@ -476,7 +476,7 @@ class Column
      */
     public function hasRelationship(): bool
     {
-        return str_contains((string) $this->field, '.');
+        return \str_contains((string) $this->field, '.');
     }
 
     /**

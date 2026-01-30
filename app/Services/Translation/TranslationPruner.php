@@ -60,13 +60,13 @@ class TranslationPruner
                 $filename = $file->getFilenameWithoutExtension();
 
                 // Skip protected files
-                if (in_array($filename, $this->protectedFiles, true)) {
+                if (\in_array($filename, $this->protectedFiles, true)) {
                     continue;
                 }
 
                 // Skip ui.php and messages.php unless --prune-all is set
                 // Note: namespaces check needs configured namespaces.
-                if (! $pruneAll && in_array($filename, $this->namespaces, true)) {
+                if (! $pruneAll && \in_array($filename, $this->namespaces, true)) {
                     continue;
                 }
 
@@ -119,7 +119,7 @@ class TranslationPruner
             $isUsed = $this->isKeyUsed($fullKey, $translations, $key, $value);
 
             if ($isUsed) {
-                if (is_array($value)) {
+                if (\is_array($value)) {
                     $nestedPruned = $this->pruneNestedTranslations($value, $fullKey);
                     if (! empty($nestedPruned)) {
                         $pruned[$key] = $nestedPruned;
@@ -145,7 +145,7 @@ class TranslationPruner
             $isUsed = $this->isKeyUsed($fullKey, $translations, $key, $value);
 
             if ($isUsed) {
-                if (is_array($value)) {
+                if (\is_array($value)) {
                     $nestedPruned = $this->pruneNestedTranslations($value, $fullKey);
                     if (! empty($nestedPruned)) {
                         $pruned[$key] = $nestedPruned;
@@ -172,7 +172,7 @@ class TranslationPruner
         }
 
         // For nested arrays, check if any child keys are used
-        if (is_array($value)) {
+        if (\is_array($value)) {
             foreach ($value as $nestedKey => $nestedValue) {
                 $nestedFullKey = "{$fullKey}.{$nestedKey}";
                 if ($this->isKeyUsed($nestedFullKey, $context, $nestedKey, $nestedValue)) {
@@ -203,7 +203,7 @@ class TranslationPruner
         foreach ($old as $key => $value) {
             if (! isset($new[$key])) {
                 $count++;
-            } elseif (is_array($value) && is_array($new[$key])) {
+            } elseif (\is_array($value) && \is_array($new[$key])) {
                 $this->countPrunedKeysRecursive($value, $new[$key], $count);
             }
         }

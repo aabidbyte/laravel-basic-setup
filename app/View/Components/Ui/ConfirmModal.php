@@ -30,7 +30,7 @@ class ConfirmModal extends Component
         public bool $closeOnEscape = true,
         public bool $backdropTransition = true,
     ) {
-        $this->modalStateId = $this->openState ?? ('confirmModalIsOpen_' . str_replace('-', '_', $this->id));
+        $this->modalStateId = $this->openState ?? ('confirmModalIsOpen_' . \str_replace('-', '_', $this->id));
         $this->useExternalState = $this->openState !== null;
     }
 

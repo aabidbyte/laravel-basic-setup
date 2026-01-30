@@ -85,7 +85,7 @@ class Role extends BaseModel
             if ($permission instanceof Permission) {
                 return $permission->id;
             }
-            if (is_numeric($permission)) {
+            if (\is_numeric($permission)) {
                 return (int) $permission;
             }
 

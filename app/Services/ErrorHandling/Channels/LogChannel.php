@@ -26,7 +26,7 @@ class LogChannel implements ChannelInterface
         $logChannel = config('error-handling.channels.log.channel', 'error');
 
         Log::channel($logChannel)->error(
-            sprintf('[%s] %s: %s', $context['reference_id'], class_basename($e), $e->getMessage()),
+            \sprintf('[%s] %s: %s', $context['reference_id'], class_basename($e), $e->getMessage()),
             [
                 'reference_id' => $context['reference_id'],
                 'exception_class' => $context['exception_class'],

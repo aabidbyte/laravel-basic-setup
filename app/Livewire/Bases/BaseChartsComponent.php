@@ -125,10 +125,10 @@ abstract class BaseChartsComponent extends LivewireBaseComponent
         if ($schema !== null) {
             foreach ($schema as $key => $config) {
                 // Handle non-associative array (just method name)
-                $methodName = is_int($key) ? $config : $key;
-                $itemConfig = is_array($config) ? $config : [];
+                $methodName = \is_int($key) ? $config : $key;
+                $itemConfig = \is_array($config) ? $config : [];
 
-                if (! method_exists($this, $methodName)) {
+                if (! \method_exists($this, $methodName)) {
                     continue;
                 }
 

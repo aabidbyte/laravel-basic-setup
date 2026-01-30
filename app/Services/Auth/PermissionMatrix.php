@@ -102,7 +102,7 @@ class PermissionMatrix
      */
     public function getEntities(): array
     {
-        return array_keys($this->getMatrix());
+        return \array_keys($this->getMatrix());
     }
 
     /**
@@ -114,10 +114,10 @@ class PermissionMatrix
     {
         $actions = [];
         foreach ($this->getMatrix() as $entityActions) {
-            $actions = array_merge($actions, $entityActions);
+            $actions = \array_merge($actions, $entityActions);
         }
 
-        return array_values(array_unique($actions));
+        return \array_values(array_unique($actions));
     }
 
     /**
@@ -139,7 +139,7 @@ class PermissionMatrix
      */
     public function entitySupportsAction(string $entity, string $action): bool
     {
-        return in_array($action, $this->getActionsForEntity($entity), true);
+        return \in_array($action, $this->getActionsForEntity($entity), true);
     }
 
     /**
@@ -200,7 +200,7 @@ class PermissionMatrix
     {
         $entities = [];
         foreach ($this->getMatrix() as $entity => $actions) {
-            if (in_array($action, $actions, true)) {
+            if (\in_array($action, $actions, true)) {
                 $entities[] = $entity;
             }
         }
@@ -216,8 +216,8 @@ class PermissionMatrix
      */
     public function parsePermissionName(string $permissionName): ?array
     {
-        $parts = explode(' ', $permissionName, 2);
-        if (count($parts) !== 2) {
+        $parts = \explode(' ', $permissionName, 2);
+        if (\count($parts) !== 2) {
             return null;
         }
 
@@ -241,7 +241,7 @@ class PermissionMatrix
         foreach ($this->getMatrix() as $entity => $supportedActions) {
             $actionsMap = [];
             foreach ($allActions as $action) {
-                $actionsMap[$action] = in_array($action, $supportedActions, true);
+                $actionsMap[$action] = \in_array($action, $supportedActions, true);
             }
 
             $result[] = [

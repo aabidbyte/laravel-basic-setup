@@ -34,13 +34,13 @@ class MacroServiceProvider extends ServiceProvider
                 return $this;
             }
 
-            $columns = is_array($columns) ? $columns : [$columns];
+            $columns = \is_array($columns) ? $columns : [$columns];
 
             return $this->where(function (Builder $builder) use ($query, $columns) {
                 foreach ($columns as $column) {
                     // Handle relation.column syntax
-                    if (str_contains($column, '.')) {
-                        [$relation, $relationColumn] = explode('.', $column, 2);
+                    if (\str_contains($column, '.')) {
+                        [$relation, $relationColumn] = \explode('.', $column, 2);
                         $builder->orWhereHas($relation, function (Builder $relationQuery) use ($relationColumn, $query) {
                             $relationQuery->where($relationColumn, 'LIKE', "%{$query}%");
                         });

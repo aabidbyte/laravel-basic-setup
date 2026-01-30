@@ -95,7 +95,7 @@ class FrontendPreferencesService
             }
         }
 
-        $merged = array_merge($defaults, $sessionPrefs);
+        $merged = \array_merge($defaults, $sessionPrefs);
 
         return $merged[$key] ?? $default;
     }
@@ -164,7 +164,7 @@ class FrontendPreferencesService
             }
         }
 
-        return array_merge($defaults, $sessionPrefs);
+        return \array_merge($defaults, $sessionPrefs);
     }
 
     /**
@@ -258,7 +258,7 @@ class FrontendPreferencesService
         $timezone = $this->get(FrontendPreferences::KEY_TIMEZONE, FrontendPreferences::DEFAULT_TIMEZONE);
 
         // Validate timezone
-        if (in_array($timezone, DateTimeZone::listIdentifiers(), true)) {
+        if (\in_array($timezone, DateTimeZone::listIdentifiers(), true)) {
             return $timezone;
         }
 
@@ -273,7 +273,7 @@ class FrontendPreferencesService
     public function setTimezone(string $timezone): void
     {
         // Validate timezone
-        if (in_array($timezone, DateTimeZone::listIdentifiers(), true)) {
+        if (\in_array($timezone, DateTimeZone::listIdentifiers(), true)) {
             $this->set(FrontendPreferences::KEY_TIMEZONE, $timezone);
         } else {
             $this->set(FrontendPreferences::KEY_TIMEZONE, FrontendPreferences::DEFAULT_TIMEZONE);
@@ -290,7 +290,7 @@ class FrontendPreferencesService
     {
         $allDatatables = $this->get(FrontendPreferences::KEY_DATATABLES, [], $request);
 
-        return is_array($allDatatables) && isset($allDatatables[$identifier]) && is_array($allDatatables[$identifier])
+        return \is_array($allDatatables) && isset($allDatatables[$identifier]) && \is_array($allDatatables[$identifier])
             ? $allDatatables[$identifier]
             : [];
     }
@@ -305,7 +305,7 @@ class FrontendPreferencesService
     {
         $allDatatables = $this->get(FrontendPreferences::KEY_DATATABLES, []);
 
-        if (! is_array($allDatatables)) {
+        if (! \is_array($allDatatables)) {
             $allDatatables = [];
         }
 
@@ -375,28 +375,28 @@ class FrontendPreferencesService
 
         // Parse Accept-Language header (e.g., "en-US,en;q=0.9,fr;q=0.8")
         $languages = [];
-        $parts = explode(',', $acceptLanguage);
+        $parts = \explode(',', $acceptLanguage);
 
         foreach ($parts as $part) {
-            $part = trim($part);
+            $part = \trim($part);
             if (empty($part)) {
                 continue;
             }
 
             // Extract language code (e.g., "en-US" or "en")
-            if (str_contains($part, ';')) {
-                [$lang, $q] = explode(';', $part, 2);
-                $lang = trim($lang);
-                $q = trim($q);
+            if (\str_contains($part, ';')) {
+                [$lang, $q] = \explode(';', $part, 2);
+                $lang = \trim($lang);
+                $q = \trim($q);
 
                 // Extract quality value (e.g., "q=0.9")
-                if (preg_match('/q=([\d.]+)/', $q, $matches)) {
+                if (\preg_match('/q=([\d.]+)/', $q, $matches)) {
                     $quality = (float) $matches[1];
                 } else {
                     $quality = 1.0; // Default quality if not specified
                 }
             } else {
-                $lang = trim($part);
+                $lang = \trim($part);
                 $quality = 1.0; // First language has highest priority
             }
 
@@ -418,15 +418,15 @@ class FrontendPreferencesService
             $code = $lang['code'];
 
             // Try exact match first (e.g., "en_US")
-            $normalized = str_replace('-', '_', $code);
+            $normalized = \str_replace('-', '_', $code);
             if (isset($supportedLocales[$normalized])) {
                 return $normalized;
             }
 
             // Try language code only (e.g., "en" from "en-US")
-            $langOnly = explode('_', $normalized)[0];
+            $langOnly = \explode('_', $normalized)[0];
             foreach ($supportedLocales as $locale => $metadata) {
-                $localeLang = explode('_', $locale)[0];
+                $localeLang = \explode('_', $locale)[0];
                 if ($localeLang === $langOnly) {
                     return $locale;
                 }

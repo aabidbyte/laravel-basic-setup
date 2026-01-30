@@ -59,11 +59,11 @@ class SlackChannel implements ChannelInterface
         return [
             'username' => config('error-handling.channels.slack.username', 'Error Handler'),
             'icon_emoji' => config('error-handling.channels.slack.emoji', ':rotating_light:'),
-            'text' => sprintf(':rotating_light: Error in *%s* (%s)', $appName, $environment),
+            'text' => \sprintf(':rotating_light: Error in *%s* (%s)', $appName, $environment),
             'attachments' => [
                 [
                     'color' => 'danger',
-                    'title' => sprintf('Error: %s', $context['reference_id']),
+                    'title' => \sprintf('Error: %s', $context['reference_id']),
                     'title_link' => $context['url'] ?? null,
                     'fields' => [
                         [
@@ -103,7 +103,7 @@ class SlackChannel implements ChannelInterface
                         ],
                         [
                             'title' => 'File',
-                            'value' => sprintf(
+                            'value' => \sprintf(
                                 '%s:%d',
                                 basename($context['file'] ?? 'unknown'),
                                 $context['line'] ?? 0,
@@ -111,7 +111,7 @@ class SlackChannel implements ChannelInterface
                             'short' => false,
                         ],
                     ],
-                    'footer' => sprintf('Reference: %s', $context['reference_id']),
+                    'footer' => \sprintf('Reference: %s', $context['reference_id']),
                     'ts' => now()->timestamp,
                 ],
             ],
@@ -127,10 +127,10 @@ class SlackChannel implements ChannelInterface
      */
     protected function truncate(string $text, int $maxLength): string
     {
-        if (strlen($text) <= $maxLength) {
+        if (\strlen($text) <= $maxLength) {
             return $text;
         }
 
-        return substr($text, 0, $maxLength - 3) . '...';
+        return \substr($text, 0, $maxLength - 3) . '...';
     }
 }

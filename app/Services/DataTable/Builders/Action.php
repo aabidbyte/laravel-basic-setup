@@ -329,7 +329,7 @@ class Action
     public function getRoute(): string|Closure|null
     {
         // If parameters were provided and route is a string (route name), resolve it
-        if ($this->routeParameters !== null && is_string($this->route)) {
+        if ($this->routeParameters !== null && \is_string($this->route)) {
             return route($this->route, $this->routeParameters);
         }
 
@@ -416,7 +416,7 @@ class Action
         // Class-level check (e.g., 'create' which doesn't need a model)
         // If model is null/string, try to get class, otherwise assume model is the check target if it's a string (class name)
         $target = $model;
-        if (is_object($model)) {
+        if (\is_object($model)) {
             $target = get_class($model);
         } elseif ($model === null && $this->abilityRequiresModel === false) {
             // If we don't have a model but need a target class, this might be tricky without context.
@@ -455,7 +455,7 @@ class Action
      */
     public function isVisible(mixed $model = null): bool
     {
-        if (is_bool($this->show)) {
+        if (\is_bool($this->show)) {
             return $this->show;
         }
 
@@ -532,7 +532,7 @@ class Action
             $result = ($this->confirmMessage)($model);
 
             // If closure returns array with title/content, use it
-            if (is_array($result)) {
+            if (\is_array($result)) {
                 return [
                     'type' => 'config',
                     'title' => $result['title'] ?? __('actions.confirm'),
@@ -571,11 +571,11 @@ class Action
             'hasExecute' => $this->execute !== null,
             'hasModal' => $this->modal !== null,
             'modal' => $this->modal,
-            'modalProps' => is_array($this->modalProps) ? $this->modalProps : [],
+            'modalProps' => \is_array($this->modalProps) ? $this->modalProps : [],
             'hasModalClosure' => $this->modalProps instanceof Closure,
             'modalType' => $this->modalType,
             'confirm' => $this->confirm,
-            'confirmMessage' => is_string($this->confirmMessage) ? $this->confirmMessage : null,
+            'confirmMessage' => \is_string($this->confirmMessage) ? $this->confirmMessage : null,
             'hasConfirmClosure' => $this->confirmMessage instanceof Closure,
             'confirmView' => $this->confirmView,
             'confirmViewProps' => $this->confirmViewProps,

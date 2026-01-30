@@ -9,7 +9,8 @@
     // Generate URL if not provided
     $shareUrl = $url ?? request()->fullUrl();
     $tooltipText = $tooltipText ?? __('table.share_page');
-    $copiedText = __('table.url_copied');
+    // We don't use the copied text in the tooltip anymore, we specific toast or just tooltip change
+$copiedText = __('table.url_copied');
 @endphp
 
 <div x-data="shareButton({
@@ -18,24 +19,57 @@
     copiedText: @js($copiedText),
     copyFailedText: @js(__('table.copy_failed') ?? 'Copy failed')
 })"
-     class="relative">
-    <div class="tooltip tooltip-top"
-         x-bind:data-tip="tooltipText">
-        <button @click="copyUrl()"
-                type="button"
-                class="btn btn-{{ $style }} btn-{{ $size }} btn-square data-loading:opacity-50 data-loading:pointer-events-none"
-                aria-label="{{ $tooltipText }}">
-            <svg class="h-5 w-5"
-                 fill="none"
-                 stroke="currentColor"
-                 viewBox="0 0 24 24"
-                 xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z">
-                </path>
-            </svg>
-        </button>
-    </div>
-</div>
+     class="relative inline-block">
+    <x-ui.tooltip :text="$tooltipText"
+                  placement="top">
+        <x-ui.button @click="copyUrl()"
+                     type="button"
+                     variant="{{ $style }}"
+                     size="{{ $size }}"
+                     class="btn-square data-loading:opacity-50 data-loading:pointer-events-none"
+                     aria-label="{{ $tooltipText }}">
+            <x-ui.icon name="share"
+                       class="h-5 w-5" />
+        </x-ui.button>
+    </x-ui.tooltip>
+
+    @assets
+        <script>
+            (function() {
+                const register = () => {
+                    Alpine.data('shareButton', (config) => ({
+                        url: config.url,
+                        tooltipText: config.initialTooltip,
+
+                        async copyUrl() {
+                            try {
+                                await navigator.clipboard.writeText(this.url);
+
+                                const originalText = config.initialTooltip;
+                                this.tooltipText = config.copiedText;
+
+                                setTimeout(() => {
+                                    this.tooltipText = originalText;
+                                }, 2000);
+                            } catch (err) {
+                                console.error('Failed to copy text: ', err);
+
+                                const originalText = config.initialTooltip;
+                                this.tooltipText = config.copyFailedText;
+
+                                setTimeout(() => {
+                                    this.tooltipText = originalText;
+                                }, 2000);
+                            }
+                        }
+                    }));
+                };
+
+                if (window.Alpine) {
+                    register();
+                } else {
+                    document.addEventListener('alpine:init', register);
+                }
+            })();
+        </script>
+    @endassets

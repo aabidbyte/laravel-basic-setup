@@ -202,7 +202,7 @@ class EmailRenderer
             $title = __('email_templates.preview.layout_placeholder_title', [], $locale);
             $subtitle = __('email_templates.preview.layout_placeholder_subtitle', [], $locale);
 
-            $placeholder = sprintf(
+            $placeholder = \sprintf(
                 '<div style="border: 2px dashed #cbd5e1; padding: 32px; text-align: center; background: #f8fafc; color: #64748b; font-family: sans-serif; border-radius: 8px; margin: 20px;">
                     <p style="margin: 0; font-weight: 600;">%s</p>
                     <p style="margin: 4px 0 0 0; font-size: 0.875rem;">%s</p>
@@ -213,7 +213,7 @@ class EmailRenderer
 
             // Match {{ $slot }} or {!! $slot !!}
             $pattern = '/(\{\{\s*\$slot\s*\}\}|\{!!\s*\$slot\s*!!\})/';
-            $newHtml = preg_replace($pattern, $placeholder, $rendered->html);
+            $newHtml = \preg_replace($pattern, $placeholder, $rendered->html);
 
             return new RenderedEmail(
                 subject: $rendered->subject,
@@ -313,11 +313,11 @@ class EmailRenderer
     protected function getMockValueForAttribute(string $attribute): ?string
     {
         return match (true) {
-            str_contains($attribute, 'name') => 'John Doe',
-            str_contains($attribute, 'email') && ! str_ends_with($attribute, '_at') => 'john.doe@example.com',
-            str_contains($attribute, 'username') => 'johndoe',
-            str_contains($attribute, 'title') => 'Example Title',
-            str_contains($attribute, 'description') => 'Sample description.',
+            \str_contains($attribute, 'name') => 'John Doe',
+            \str_contains($attribute, 'email') && ! \str_ends_with($attribute, '_at') => 'john.doe@example.com',
+            \str_contains($attribute, 'username') => 'johndoe',
+            \str_contains($attribute, 'title') => 'Example Title',
+            \str_contains($attribute, 'description') => 'Sample description.',
             default => null,
         };
     }
@@ -333,7 +333,7 @@ class EmailRenderer
         $context = [];
 
         foreach ($contextVariables as $key) {
-            $context[$key] = 'https://example.com/action/' . str_replace('_', '-', $key);
+            $context[$key] = 'https://example.com/action/' . \str_replace('_', '-', $key);
         }
 
         return $context;
@@ -346,7 +346,7 @@ class EmailRenderer
     {
         $text = html_entity_decode(strip_tags($html), ENT_QUOTES, 'UTF-8');
 
-        return trim(preg_replace('/\s+/', ' ', $text));
+        return \trim(\preg_replace('/\s+/', ' ', $text));
     }
 
     /**
@@ -379,18 +379,18 @@ class EmailRenderer
         $entityTypes = $template->entity_types ?? [];
         $contextKeys = $template->context_variables ?? [];
 
-        $errors['subject'] = array_merge(
+        $errors['subject'] = \array_merge(
             $errors['subject'],
             $this->mergeTagEngine->validateTags($translation->subject, $entityTypes, $contextKeys),
         );
 
-        $errors['html'] = array_merge(
+        $errors['html'] = \array_merge(
             $errors['html'],
             $this->mergeTagEngine->validateTags($translation->html_content, $entityTypes, $contextKeys),
         );
 
         if ($translation->text_content) {
-            $errors['text'] = array_merge(
+            $errors['text'] = \array_merge(
                 $errors['text'],
                 $this->mergeTagEngine->validateTags($translation->text_content, $entityTypes, $contextKeys),
             );
@@ -408,9 +408,9 @@ class EmailRenderer
     protected function deduplicateErrors(array $errors): array
     {
         return [
-            'subject' => array_values(array_unique($errors['subject'])),
-            'html' => array_values(array_unique($errors['html'])),
-            'text' => array_values(array_unique($errors['text'])),
+            'subject' => \array_values(array_unique($errors['subject'])),
+            'html' => \array_values(array_unique($errors['html'])),
+            'text' => \array_values(array_unique($errors['text'])),
         ];
     }
 }

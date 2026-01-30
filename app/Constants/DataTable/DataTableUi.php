@@ -161,17 +161,17 @@ class DataTableUi
     public static function renderComponent(string $type, string|array $content, array $attributes = []): string
     {
         // Handle array content - render each item as the component type and join
-        if (is_array($content)) {
+        if (\is_array($content)) {
             $rendered = [];
             foreach ($content as $item) {
-                if (is_string($item)) {
+                if (\is_string($item)) {
                     $rendered[] = self::renderComponent($type, $item, $attributes);
                 } else {
                     $rendered[] = (string) $item;
                 }
             }
 
-            return implode(' ', $rendered);
+            return \implode(' ', $rendered);
         }
 
         // Handle string content
@@ -183,11 +183,11 @@ class DataTableUi
 
         // Render the view with content as 'text' prop
         // Need to pass attributes properly for Blade components
-        $props = array_merge($attributes, ['text' => (string) $content]);
+        $props = \array_merge($attributes, ['text' => (string) $content]);
 
         // Create attributes bag for component
         $attributesBag = new ComponentAttributeBag($props);
 
-        return view($viewPath, array_merge($props, ['attributes' => $attributesBag]))->render();
+        return view($viewPath, \array_merge($props, ['attributes' => $attributesBag]))->render();
     }
 }

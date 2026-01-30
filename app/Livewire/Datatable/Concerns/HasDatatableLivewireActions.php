@@ -121,7 +121,7 @@ trait HasDatatableLivewireActions
     protected function getResolvedRowActions(): array
     {
         return $this->memoize('actions:row', function () {
-            return method_exists($this, 'rowActions') ? $this->rowActions() : [];
+            return \method_exists($this, 'rowActions') ? $this->rowActions() : [];
         });
     }
 
@@ -152,7 +152,7 @@ trait HasDatatableLivewireActions
             return ['required' => false];
         }
 
-        return array_merge(
+        return \array_merge(
             ['required' => true],
             $action->resolveConfirmation($model),
         );
@@ -173,7 +173,7 @@ trait HasDatatableLivewireActions
 
         $models = $this->baseQuery()->whereIn('uuid', $this->selected)->get();
 
-        return array_merge(
+        return \array_merge(
             ['required' => true],
             $action->resolveConfirmation($models),
         );

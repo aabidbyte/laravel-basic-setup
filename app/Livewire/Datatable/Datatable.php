@@ -173,7 +173,7 @@ abstract class Datatable extends LivewireBaseComponent
      */
     public function hasFilters(): bool
     {
-        return $this->memoize('has_filters', fn () => count($this->getFilterDefinitions()) > 0);
+        return $this->memoize('has_filters', fn () => \count($this->getFilterDefinitions()) > 0);
     }
 
     /**
@@ -182,7 +182,7 @@ abstract class Datatable extends LivewireBaseComponent
      */
     public function hasBulkActions(): bool
     {
-        return $this->memoize('has_bulk_actions', fn () => count($this->bulkActions()) > 0);
+        return $this->memoize('has_bulk_actions', fn () => \count($this->bulkActions()) > 0);
     }
 
     /**
@@ -191,7 +191,7 @@ abstract class Datatable extends LivewireBaseComponent
      */
     public function hasRowActions(): bool
     {
-        return $this->memoize('has_row_actions', fn () => count($this->rowActions()) > 0);
+        return $this->memoize('has_row_actions', fn () => \count($this->rowActions()) > 0);
     }
 
     /**
@@ -219,11 +219,11 @@ abstract class Datatable extends LivewireBaseComponent
      */
     public function applyChanges(): void
     {
-        if (method_exists($this, 'resetPage')) {
+        if (\method_exists($this, 'resetPage')) {
             $this->resetPage();
         }
 
-        if (method_exists($this, 'savePreferences')) {
+        if (\method_exists($this, 'savePreferences')) {
             $this->savePreferences();
         }
 

@@ -1,8 +1,7 @@
 @use('App\Enums\DataTable\DataTableFilterType')
 
 {{-- Header with Search and Filters --}}
-<div class="mb-6 flex flex-col gap-4">
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div class="sticky top-0 py-2 z-31 flex flex-col gap-4 bg-base-100 sm:flex-row sm:items-center sm:justify-between">
         {{-- Search --}}
         <div class="max-w-md flex-1"
              wire:ignore>
@@ -67,12 +66,12 @@
                     {{ __('actions.clear_selection') }}
                 </x-ui.button>
             </div>
-        @elseif ($datatable->hasFilters())
+            @elseif ($datatable->hasFilters())
             {{-- Filter Toggle Button - only render if filters are defined --}}
-            <div class="flex items-center gap-2">
+            <div class="md:flex hidden items-center gap-2 py-2 flex-row-reverse">
                 <x-ui.button @click="toggleFilters()"
                              type="button"
-                             variant="ghost"
+                             variant="outline"
                              size="md">
                     <x-ui.icon name="funnel"
                                size="sm"></x-ui.icon>
@@ -83,9 +82,26 @@
                     @endif
                 </x-ui.button>
             </div>
-        @endif
+    @endif
     </div>
 
+    @if ($datatable->hasFilters() && !$datatable->hasSelection)
+            {{-- Filter Toggle Button - only render if filters are defined --}}
+            <div class="md:hidden flex items-center gap-2 py-2 flex-row-reverse">
+                <x-ui.button @click="toggleFilters()"
+                             type="button"
+                             variant="outline"
+                             size="md">
+                    <x-ui.icon name="funnel"
+                               size="sm"></x-ui.icon>
+                    {{ __('table.filters') }}
+                    @if (count($datatable->getActiveFilters()) > 0)
+                        <x-ui.badge color="primary"
+                                    size="sm">{{ count($datatable->getActiveFilters()) }}</x-ui.badge>
+                    @endif
+                </x-ui.button>
+            </div>
+    @endif
     {{-- Active Filters Badges --}}
     @if (count($datatable->getActiveFilters()) > 0)
         <div class="flex flex-wrap items-center gap-2">
@@ -114,8 +130,6 @@
             </x-ui.button>
         </div>
     @endif
-</div>
-
 {{-- Filters Panel - only render if filters are defined --}}
 @if ($datatable->hasFilters())
     <div x-show="openFilters"
@@ -134,11 +148,9 @@
                                          :options="$filter['options']">
                             </x-ui.select>
                         @elseif ($filter['type'] === DataTableFilterType::DATE_RANGE)
-                             <x-ui.date-range
-                                 :label="$filter['label']"
-                                 wire:model.from.live="filters.{{ $filter['key'] }}.from"
-                                 wire:model.to.live="filters.{{ $filter['key'] }}.to"
-                             />
+                            <x-ui.date-range :label="$filter['label']"
+                                             wire:model.from.live="filters.{{ $filter['key'] }}.from"
+                                             wire:model.to.live="filters.{{ $filter['key'] }}.to" />
                         @endif
                     @endforeach
                 </div>

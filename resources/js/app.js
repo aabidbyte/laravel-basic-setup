@@ -16,28 +16,10 @@ import './echo';
 import anchor from '@alpinejs/anchor';
 import focus from '@alpinejs/focus';
 
-import passwordStrength from './alpine/data/password-strength';
-import InfiniteScroll from './alpine/data/infinite-scroll';
-import permissionMatrix from './alpine/data/permission-matrix';
-import confirmModal from './alpine/data/confirm-modal';
-import submitForm from './alpine/data/submit-form';
-import mergeTagPicker from './alpine/merge-tag-picker';
-import grapeEditor from './alpine/grape-editor';
-import chartUi from './alpine/chart-ui';
-
 // Register Alpine plugins when initialized
 document.addEventListener('alpine:init', () => {
     window.Alpine.plugin(anchor);
     window.Alpine.plugin(focus);
-
-    window.Alpine.data('passwordStrength', passwordStrength);
-    window.Alpine.data('infiniteScroll', InfiniteScroll);
-    window.Alpine.data('permissionMatrix', permissionMatrix);
-    window.Alpine.data('confirmModal', confirmModal);
-    window.Alpine.data('submitForm', submitForm);
-    window.Alpine.data('mergeTagPicker', mergeTagPicker);
-    window.Alpine.data('grapeEditor', grapeEditor);
-    window.Alpine.data('chartUi', chartUi);
 });
 
 // Also register immediately if Alpine is already available
@@ -45,12 +27,4 @@ document.addEventListener('alpine:init', () => {
 if (window.Alpine) {
     window.Alpine.plugin(anchor);
     window.Alpine.plugin(focus);
-    window.Alpine.data('passwordStrength', passwordStrength);
-    window.Alpine.data('infiniteScroll', InfiniteScroll);
-    window.Alpine.data('permissionMatrix', permissionMatrix);
-    window.Alpine.data('confirmModal', confirmModal);
-    window.Alpine.data('submitForm', submitForm);
-    window.Alpine.data('mergeTagPicker', mergeTagPicker);
-    window.Alpine.data('grapeEditor', grapeEditor);
-    window.Alpine.data('chartUi', chartUi);
 }

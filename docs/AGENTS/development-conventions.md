@@ -762,6 +762,12 @@ public function getSubmitButtonTextProperty(): string
         -   ✅ `x-init="$nextTick(() => $el.showModal())"` instead of `x-init="$nextTick(() => { const modal = document.getElementById('id'); if (modal) modal.showModal(); })"`
         -   ✅ `x-data="{ open: false }" x-show="open"` instead of manually toggling classes with JavaScript
         -   ✅ `x-ref="modal"` then `$refs.modal.showModal()` instead of `document.getElementById('modal').showModal()`
+-   **Script Colocation**: **ALWAYS colocate specific Alpine components with their Blade views**
+    -   Use the `@assets` directive at the bottom of the Blade component file to define component-specific Alpine logic.
+    -   This ensures specific scripts are loaded **on-demand** and **deduplicated** automatically by Livewire.
+    -   **Pattern**: Use an IIFE with `alpine:init` registration check.
+    -   **Documentation**: See `docs/AGENTS/colocated-scripts.md` for the complete pattern and examples.
+    -   **Reference**: This replaces the old pattern of global `.js` files in `resources/js/alpine/data/`.
 
 ### Asset Management (CSS/JS Structure)
 

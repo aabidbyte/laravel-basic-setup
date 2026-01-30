@@ -67,7 +67,7 @@ class ActionModal extends LivewireBaseComponent
             $viewTitle = $viewTitle ?? $viewProps['title'] ?? __('modals.confirm.title');
 
             // Inject behavior callback strings for the Blade component
-            $viewProps = array_merge([
+            $viewProps = \array_merge([
                 'title' => $viewTitle,
                 'content' => $viewProps['content'] ?? '',
                 'confirmLabel' => $viewProps['confirmLabel'] ?? __('actions.confirm'),

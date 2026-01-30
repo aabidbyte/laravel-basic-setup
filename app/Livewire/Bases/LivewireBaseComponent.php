@@ -2,16 +2,15 @@
 
 namespace App\Livewire\Bases;
 
+use App\Enums\Ui\PlaceholderType;
 use Illuminate\Contracts\View\View;
-use Livewire\Component;
-
 /**
  * Base component for all Livewire components.
  *
  * Provides centralized placeholder functionality with typed skeletons.
  * All Livewire components should extend this class.
  */
-use App\Enums\Ui\PlaceholderType;
+use Livewire\Component;
 
 /**
  * Base component for all Livewire components.

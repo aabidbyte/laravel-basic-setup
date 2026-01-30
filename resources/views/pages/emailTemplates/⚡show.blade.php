@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 use App\Constants\Auth\Permissions;
 use App\Enums\EmailTemplate\EmailTemplateStatus;
+use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\BasePageComponent;
 use App\Models\EmailTemplate\EmailTemplate;
 
 new class extends BasePageComponent {
     public ?string $pageSubtitle = null;
 
-    protected string $placeholderType = 'card';
+    protected PlaceholderType $placeholderType = PlaceholderType::CARD;
 
     protected int $placeholderRows = 2;
 

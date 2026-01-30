@@ -226,7 +226,7 @@ class LocaleManager
     {
         // Check if key starts with a known namespace
         foreach ($this->namespaces as $namespace) {
-            if (str_starts_with($key, "{$namespace}.")) {
+            if (\str_starts_with($key, "{$namespace}.")) {
                 return $namespace;
             }
         }
@@ -248,8 +248,8 @@ class LocaleManager
 
         foreach ($keys as $fullKey => $locations) {
             // Remove namespace prefix if present
-            $keyWithoutNamespace = str_starts_with($fullKey, "{$filename}.")
-                ? substr($fullKey, strlen($filename) + 1)
+            $keyWithoutNamespace = \str_starts_with($fullKey, "{$filename}.")
+                ? \substr($fullKey, \strlen($filename) + 1)
                 : $fullKey;
 
             if ($keyWithoutNamespace === '' || $keyWithoutNamespace === null) {
@@ -263,13 +263,13 @@ class LocaleManager
                     $locationStrings[] = "{$file}:{$line}";
                 }
             }
-            $locationValue = implode(', ', $locationStrings);
+            $locationValue = \implode(', ', $locationStrings);
 
             // For extracted file, always treat keys as simple (even if they contain dots)
             // For other files, check if this is a namespaced key (has dots in the middle, not just at the end)
             $isSimpleKey = $filename === $this->extractedFile
-                || ! str_contains($keyWithoutNamespace, '.')
-                || (str_ends_with($keyWithoutNamespace, '.') && substr_count($keyWithoutNamespace, '.') === 1);
+                || ! \str_contains($keyWithoutNamespace, '.')
+                || (\str_ends_with($keyWithoutNamespace, '.') && substr_count($keyWithoutNamespace, '.') === 1);
 
             // Try automatic resolution for dynamic keys
             if ($this->dynamicKeyResolver->isDynamicKey($fullKey)) {
@@ -282,19 +282,19 @@ class LocaleManager
                         $translationValue = $this->dynamicKeyResolver->generateTranslationValue($expandedKey);
 
                         // Add expanded key to translations
-                        if (str_contains($expandedKey, '.')) {
+                        if (\str_contains($expandedKey, '.')) {
                             // Nested key
-                            $parts = explode('.', $expandedKey);
+                            $parts = \explode('.', $expandedKey);
                             $current = &$updated;
 
                             foreach ($parts as $idx => $part) {
-                                if ($idx === count($parts) - 1) {
+                                if ($idx === \count($parts) - 1) {
                                     if (! isset($current[$part])) {
                                         $current[$part] = $translationValue;
                                         $this->keysAdded++;
                                     }
                                 } else {
-                                    if (! isset($current[$part]) || ! is_array($current[$part])) {
+                                    if (! isset($current[$part]) || ! \is_array($current[$part])) {
                                         $current[$part] = [];
                                     }
                                     $current = &$current[$part];
@@ -327,16 +327,16 @@ class LocaleManager
                 }
             } else {
                 // Navigate/create nested structure for namespaced keys
-                $keyParts = explode('.', $keyWithoutNamespace);
+                $keyParts = \explode('.', $keyWithoutNamespace);
                 $current = &$updated;
 
                 foreach ($keyParts as $i => $keyPart) {
-                    if (empty($keyPart) && $i < count($keyParts) - 1) {
+                    if (empty($keyPart) && $i < \count($keyParts) - 1) {
                         // Skip empty intermediate keys
                         continue;
                     }
 
-                    if ($i === count($keyParts) - 1) {
+                    if ($i === \count($keyParts) - 1) {
                         // Last key - set the value if missing or if it's a raw location placeholder
                         if (! isset($current[$keyPart]) || $this->dynamicKeyResolver->isRawLocationValue($current[$keyPart])) {
                             $current[$keyPart] = $valueToSet;
@@ -344,7 +344,7 @@ class LocaleManager
                         }
                     } else {
                         // Intermediate key - ensure array exists
-                        if (! isset($current[$keyPart]) || ! is_array($current[$keyPart])) {
+                        if (! isset($current[$keyPart]) || ! \is_array($current[$keyPart])) {
                             $current[$keyPart] = [];
                         }
                         $current = &$current[$keyPart];
@@ -372,17 +372,17 @@ class LocaleManager
 
             if (! isset($merged[$key])) {
                 // Key missing in locale - set placeholder value
-                if (is_array($value)) {
+                if (\is_array($value)) {
                     // If source value is an array, recursively merge with empty array
                     $merged[$key] = $this->mergeTranslations($value, [], $filename, $fullKey);
                 } else {
                     // For scalar values, set empty string to allow fallback or manual translation
                     $merged[$key] = '';
                 }
-            } elseif (is_array($value) && is_array($merged[$key])) {
+            } elseif (\is_array($value) && \is_array($merged[$key])) {
                 // Both are arrays, recursively merge
                 $merged[$key] = $this->mergeTranslations($value, $merged[$key], $filename, $fullKey);
-            } elseif (is_array($value) && ! is_array($merged[$key])) {
+            } elseif (\is_array($value) && ! \is_array($merged[$key])) {
                 // Source is array but locale has scalar - replace with merged array
                 $merged[$key] = $this->mergeTranslations($value, [], $filename, $fullKey);
             }
@@ -410,7 +410,7 @@ class LocaleManager
         foreach ($new as $key => $value) {
             if (! isset($old[$key])) {
                 $count++;
-            } elseif (is_array($value) && is_array($old[$key])) {
+            } elseif (\is_array($value) && \is_array($old[$key])) {
                 $this->countAddedKeysRecursive($old[$key], $value, $count);
             }
         }
@@ -424,7 +424,7 @@ class LocaleManager
         $content = "<?php\n\n";
 
         // Add header for extracted file
-        if (str_contains($filePath, "/{$this->extractedFile}.php")) {
+        if (\str_contains($filePath, "/{$this->extractedFile}.php")) {
             $content .= "/*\n";
             $content .= "|--------------------------------------------------------------------------\n";
             $content .= "| Extracted Translations\n";
@@ -452,11 +452,11 @@ class LocaleManager
 
         foreach ($array as $key => $value) {
             // Format key: use simple string if valid identifier, otherwise use var_export
-            $keyStr = is_string($key) && preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $key)
+            $keyStr = \is_string($key) && \preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $key)
                 ? "'{$key}'"
                 : var_export($key, true);
 
-            if (is_array($value)) {
+            if (\is_array($value)) {
                 $result .= "{$spaces}{$keyStr} => [\n";
                 $result .= $this->arrayToPhpString($value, $indent + 1);
                 $result .= "{$spaces}],\n";

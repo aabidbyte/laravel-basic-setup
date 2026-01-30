@@ -114,3 +114,29 @@
         </template>
     </div>
 @endif
+
+@assets
+    <script>
+        (function() {
+            const register = () => {
+                Alpine.data('dropdown', () => ({
+                    open: false,
+
+                    toggle() {
+                        this.open = !this.open;
+                    },
+
+                    close() {
+                        this.open = false;
+                    },
+                }));
+            };
+
+            if (window.Alpine) {
+                register();
+            } else {
+                document.addEventListener('alpine:init', register);
+            }
+        })();
+    </script>
+@endassets

@@ -2,11 +2,11 @@
     <tr>
         {{-- Select All Checkbox - only render if bulk actions are defined --}}
         @if ($datatable->hasBulkActions())
-            <th class="w-12">
+            <th class="bg-base-100 sticky left-0 z-20 w-4 p-1">
                 <x-ui.checkbox wire:click="toggleSelectAll()"
                                :checked="$datatable->isAllSelected"
                                wire:key="select-all-checkbox-{{ $datatable->isAllSelected ? '1' : '0' }}"
-                               size="sm" />
+                               size="xs" />
             </th>
         @endif
 

@@ -6,7 +6,7 @@
 ])
 
 <div class="form-control w-full">
-    @if($label)
+    @if ($label)
         <label class="label">
             <span class="label-text">{{ $label }}</span>
         </label>
@@ -18,7 +18,7 @@
                {{ $attributes->whereStartsWith('wire:model.from') }}
                class="input input-bordered w-full"
                placeholder="{{ __('From') }}" />
-        
+
         <input type="date"
                {{ $to }}
                {{ $attributes->whereStartsWith('wire:model.to') }}
@@ -26,7 +26,7 @@
                placeholder="{{ __('To') }}" />
     </div>
 
-    @if($error)
+    @if ($error)
         <label class="label">
             <span class="label-text-alt text-error">{{ $error }}</span>
         </label>

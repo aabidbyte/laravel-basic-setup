@@ -67,8 +67,8 @@ class UserTable extends Datatable
                 ->content(function (User $user) {
                     $roles = $user->roles->pluck('display_name')->toArray();
 
-                    return count($roles) > 3
-                        ? [trans_choice('users.roles_count', count($roles))]
+                    return \count($roles) > 3
+                        ? [trans_choice('users.roles_count', \count($roles))]
                         : $roles;
                 })
                 ->type(DataTableUi::UI_BADGE, ['color' => 'primary', 'size' => 'sm']),
@@ -77,8 +77,8 @@ class UserTable extends Datatable
                 ->content(function (User $user) {
                     $teams = $user->teams->pluck('name')->toArray();
 
-                    return count($teams) > 3
-                        ? [trans_choice('users.teams_count', count($teams))]
+                    return \count($teams) > 3
+                        ? [trans_choice('users.teams_count', \count($teams))]
                         : $teams;
                 })
                 ->type(DataTableUi::UI_BADGE, ['color' => 'secondary', 'size' => 'sm']),

@@ -20,7 +20,7 @@ trait HasDatatableLivewireFilters
      */
     public function updatedFilters(): void
     {
-        if (method_exists($this, 'applyChanges')) {
+        if (\method_exists($this, 'applyChanges')) {
             $this->applyChanges();
         }
     }
@@ -64,7 +64,7 @@ trait HasDatatableLivewireFilters
     protected function getResolvedFilters(): array
     {
         return $this->memoize('filters:definitions', function () {
-            return method_exists($this, 'getFilterDefinitions') ? $this->getFilterDefinitions() : [];
+            return \method_exists($this, 'getFilterDefinitions') ? $this->getFilterDefinitions() : [];
         });
     }
 
@@ -91,7 +91,7 @@ trait HasDatatableLivewireFilters
                 $valueLabel = match ($filter->getType()) {
                     DataTableFilterType::SELECT => $filter->getOptions()[$value] ?? $value,
                     DataTableFilterType::DATE_RANGE => \is_array($value) ? $this->formatDateRangeLabel($value) : $value,
-                    default => \is_array($value) ? implode(', ', $value) : $value,
+                    default => \is_array($value) ? \implode(', ', $value) : $value,
                 };
 
                 return [

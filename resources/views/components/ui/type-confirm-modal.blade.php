@@ -61,3 +61,57 @@
         </x-ui.button>
     </x-slot:actions>
 </x-ui.base-modal>
+
+@assets
+    <script>
+        (function() {
+            const register = () => {
+                Alpine.data('typeConfirmModal', (config = {}) => ({
+                    isOpen: false,
+                    itemLabel: config.itemLabel || '',
+                    confirmText: '',
+                    onConfirm: config.onConfirm || (() => {}),
+
+                    /**
+                     * Open the confirmation modal
+                     */
+                    openModal() {
+                        this.confirmText = '';
+                        this.isOpen = true;
+                    },
+
+                    /**
+                     * Close the modal
+                     */
+                    closeModal() {
+                        this.isOpen = false;
+                        this.confirmText = '';
+                    },
+
+                    /**
+                     * Check if the typed text matches the item label
+                     */
+                    get isConfirmValid() {
+                        return this.confirmText.trim() === this.itemLabel.trim();
+                    },
+
+                    /**
+                     * Handle the confirm action
+                     */
+                    confirm() {
+                        if (this.isConfirmValid) {
+                            this.onConfirm();
+                            this.closeModal();
+                        }
+                    },
+                }));
+            };
+
+            if (window.Alpine) {
+                register();
+            } else {
+                document.addEventListener('alpine:init', register);
+            }
+        })();
+    </script>
+@endassets

@@ -212,7 +212,7 @@ class UpgradeStarter extends Command
             return null;
         }
 
-        return trim($result->output());
+        return \trim($result->output());
     }
 
     /**
@@ -236,7 +236,7 @@ class UpgradeStarter extends Command
             return 'main';
         }
 
-        return trim($result->output());
+        return \trim($result->output());
     }
 
     /**
@@ -251,7 +251,7 @@ class UpgradeStarter extends Command
             return false;
         }
 
-        $count = (int) trim($result->output());
+        $count = (int) \trim($result->output());
 
         return $count > 0;
     }
@@ -265,9 +265,9 @@ class UpgradeStarter extends Command
         $result = Process::run("git log --oneline HEAD..upstream/{$branch}");
 
         if ($result->successful()) {
-            $commits = explode("\n", trim($result->output()));
+            $commits = \explode("\n", \trim($result->output()));
             foreach ($commits as $commit) {
-                if (! empty(trim($commit))) {
+                if (! empty(\trim($commit))) {
                     info("  • {$commit}");
                 }
             }
@@ -275,7 +275,7 @@ class UpgradeStarter extends Command
 
         // Show file statistics
         $statResult = Process::run("git diff --stat HEAD..upstream/{$branch}");
-        if ($statResult->successful() && ! empty(trim($statResult->output()))) {
+        if ($statResult->successful() && ! empty(\trim($statResult->output()))) {
             info('');
             info('File changes:');
             $this->line($statResult->output());
@@ -290,9 +290,9 @@ class UpgradeStarter extends Command
         $result = Process::run("git diff HEAD..upstream/{$branch}");
         if ($result->successful()) {
             $output = $result->output();
-            if (strlen($output) > 2000) {
+            if (\strlen($output) > 2000) {
                 warning('Diff is very long. Showing first 2000 characters...');
-                $this->line(substr($output, 0, 2000));
+                $this->line(\substr($output, 0, 2000));
                 info('');
                 info('... (truncated - use "git diff HEAD..upstream/' . $branch . '" to see full diff)');
             } else {
@@ -312,7 +312,7 @@ class UpgradeStarter extends Command
             return false;
         }
 
-        return ! empty(trim($result->output()));
+        return ! empty(\trim($result->output()));
     }
 
     /**

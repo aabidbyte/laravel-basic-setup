@@ -59,6 +59,6 @@ class FrontendPreferences
      */
     public static function isValidTheme(string $theme): bool
     {
-        return in_array($theme, self::THEMES, true);
+        return \in_array($theme, self::THEMES, true);
     }
 }

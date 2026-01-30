@@ -26,7 +26,7 @@ class UpdateLocaleRequest extends FormRequest
      */
     public function rules(): array
     {
-        $supportedLocales = array_keys(app(I18nService::class)->getSupportedLocales());
+        $supportedLocales = \array_keys(app(I18nService::class)->getSupportedLocales());
 
         return [
             FrontendPreferences::KEY_LOCALE => [

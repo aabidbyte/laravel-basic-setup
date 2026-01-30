@@ -111,7 +111,7 @@ class Notification extends BaseModel
     public function setIdAttribute(mixed $value)
     {
         // If the value is a valid UUID, set it as the uuid attribute
-        if (is_string($value) && Str::isUuid((string) $value)) {
+        if (\is_string($value) && Str::isUuid((string) $value)) {
             $this->attributes['uuid'] = $value;
         } else {
             $this->attributes['id'] = $value;

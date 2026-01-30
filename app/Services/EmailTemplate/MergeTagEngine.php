@@ -174,9 +174,9 @@ class MergeTagEngine
      */
     protected function parseTag(string $tag): ?array
     {
-        $parts = explode('.', $tag, 2);
+        $parts = \explode('.', $tag, 2);
 
-        if (count($parts) !== 2) {
+        if (\count($parts) !== 2) {
             return null;
         }
 
@@ -313,7 +313,7 @@ class MergeTagEngine
      */
     protected function isContextTag(string $prefix, string $key, array $contextVariableKeys): bool
     {
-        return $prefix === 'action' && in_array($key, $contextVariableKeys, true);
+        return $prefix === 'action' && \in_array($key, $contextVariableKeys, true);
     }
 
     /**
@@ -323,7 +323,7 @@ class MergeTagEngine
      */
     protected function isEntityTag(string $prefix, string $tag, array $entityTypes): bool
     {
-        if (! in_array($prefix, $entityTypes, true)) {
+        if (! \in_array($prefix, $entityTypes, true)) {
             return false;
         }
 
@@ -417,7 +417,7 @@ class MergeTagEngine
      */
     protected function humanizeTagKey(string $key): string
     {
-        return str_replace(['.', '_'], ' ', ucwords($key, '._'));
+        return \str_replace(['.', '_'], ' ', ucwords($key, '._'));
     }
 
     /**

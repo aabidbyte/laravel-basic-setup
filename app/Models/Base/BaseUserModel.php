@@ -154,7 +154,7 @@ abstract class BaseUserModel extends Authenticatable
         // Try getting base from email first, then name
         $base = null;
         if (! empty($user->email)) {
-            $base = explode('@', $user->email)[0];
+            $base = \explode('@', $user->email)[0];
         } elseif (! empty($user->name)) {
             $base = Str::slug($user->name);
         }

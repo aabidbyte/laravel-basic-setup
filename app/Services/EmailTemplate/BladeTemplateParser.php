@@ -27,7 +27,7 @@ class BladeTemplateParser
         $content = File::get($path);
 
         // Extract the first @php ... @endphp block
-        preg_match('/@php\s+(.*?)\s+@endphp/s', $content, $matches);
+        \preg_match('/@php\s+(.*?)\s+@endphp/s', $content, $matches);
 
         if (empty($matches[1])) {
             return [];

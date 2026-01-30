@@ -1,6 +1,7 @@
 <?php
 
 use App\Events\Notifications\DatabaseNotificationChanged;
+use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\BasePageComponent;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -9,7 +10,7 @@ use Livewire\Attributes\Computed;
 new class extends BasePageComponent {
     public ?string $pageTitle = 'pages.notifications';
 
-    protected string $placeholderType = 'list';
+    protected PlaceholderType $placeholderType = PlaceholderType::LIST;
 
     protected int $placeholderRows = 5;
 

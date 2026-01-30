@@ -149,7 +149,7 @@ class Permissions
      */
     private static function permissionToConstantName(string $permission): string
     {
-        return strtoupper(str_replace(' ', '_', $permission));
+        return strtoupper(\str_replace(' ', '_', $permission));
     }
 
     /**

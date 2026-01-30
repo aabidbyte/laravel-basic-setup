@@ -1,0 +1,10 @@
+@layer components {
+    .page-content {
+        @apply flex-1;
+    }
+
+    .page-content>div,
+    .page-content>section {
+        @apply px-4 py-2;
+    }
+}

@@ -21,7 +21,7 @@ class RoleOptionsProvider implements OptionsProviderInterface
     {
         return Role::select('name')->get()->mapWithKeys(function ($role) {
             return [
-                $role->name => ucwords(str_replace('_', ' ', $role->name)),
+                $role->name => ucwords(\str_replace('_', ' ', $role->name)),
             ];
         })->toArray();
     }

@@ -64,7 +64,7 @@ class EmailChannel implements ChannelInterface
             return [];
         }
 
-        return array_map('trim', explode(',', $recipientString));
+        return array_map('trim', \explode(',', $recipientString));
     }
 
     /**
@@ -80,7 +80,7 @@ class EmailChannel implements ChannelInterface
             $appName = config('app.name', 'Laravel');
             $environment = app()->environment();
 
-            $message->subject(sprintf(
+            $message->subject(\sprintf(
                 '[%s] Error: %s (%s)',
                 $appName,
                 $context['reference_id'],
@@ -195,16 +195,16 @@ class EmailChannel implements ChannelInterface
      */
     protected function truncateStackTrace(string $stackTrace): string
     {
-        $lines = explode("\n", $stackTrace);
+        $lines = \explode("\n", $stackTrace);
         $maxLines = 20;
 
-        if (count($lines) <= $maxLines) {
+        if (\count($lines) <= $maxLines) {
             return $stackTrace;
         }
 
         $truncated = array_slice($lines, 0, $maxLines);
-        $truncated[] = sprintf('... and %d more lines', count($lines) - $maxLines);
+        $truncated[] = \sprintf('... and %d more lines', \count($lines) - $maxLines);
 
-        return implode("\n", $truncated);
+        return \implode("\n", $truncated);
     }
 }

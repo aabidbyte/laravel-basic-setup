@@ -56,7 +56,7 @@ abstract class BasePageComponent extends LivewireBaseComponent
             return config('app.name');
         }
         // If it looks like a translation key (contains dots), translate it
-        if (str_contains($this->pageTitle, '.')) {
+        if (\str_contains($this->pageTitle, '.')) {
             return __($this->pageTitle);
         }
 
@@ -70,7 +70,7 @@ abstract class BasePageComponent extends LivewireBaseComponent
         }
 
         // If it looks like a translation key (contains dots), translate it
-        if (str_contains($this->pageSubtitle, '.')) {
+        if (\str_contains($this->pageSubtitle, '.')) {
             return __($this->pageSubtitle);
         }
 

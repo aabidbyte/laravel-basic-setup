@@ -19,7 +19,7 @@ describe('ActivationService', function () {
             $token = $service->createActivationToken($user);
 
             expect($token)->toBeString();
-            expect(strlen($token))->toBe(64);
+            expect(\strlen($token))->toBe(64);
 
             // Verify token is stored in database
             $record = DB::table('password_reset_tokens')

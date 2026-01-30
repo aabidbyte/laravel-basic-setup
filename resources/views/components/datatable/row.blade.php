@@ -3,17 +3,18 @@
         @if ($datatable->rowClickOpensModal()) @click="$dispatch('datatable-modal-loading')" @endif
     @endif
     @class([
-        'bg-base-200' => $datatable->isSelected($row->uuid),
+        '!bg-secondary' => $datatable->isSelected($row->uuid),
         'cursor-pointer' => $datatable->rowsAreClickable(),
-        'transition-colors hover:bg-base-200/50',
+        'transition-colors hover:bg-accent',
     ])>
     {{-- Selection Checkbox - only render if bulk actions are defined --}}
     @if ($datatable->hasBulkActions())
-        <td @click.stop>
+        <td @click.stop
+            class="sticky-action-cell sticky left-0 z-10 p-1">
             <x-ui.checkbox wire:model.live="selected"
                            value="{{ $row->uuid }}"
                            wire:key="checkbox-{{ $row->uuid }}"
-                           size="sm" />
+                           size="xs" />
         </td>
     @endif
 

@@ -98,7 +98,7 @@ class NavigationBuilder implements Arrayable
      */
     public function getItems(): array
     {
-        return array_values(
+        return \array_values(
             array_filter($this->items, fn (NavigationItem $item) => $item->isVisible()),
         );
     }
@@ -110,7 +110,7 @@ class NavigationBuilder implements Arrayable
      */
     public function hasItems(): bool
     {
-        return count($this->getItems()) > 0;
+        return \count($this->getItems()) > 0;
     }
 
     /**
@@ -157,7 +157,7 @@ class NavigationBuilder implements Arrayable
             'title' => $this->title,
             'icon' => $this->icon,
             'items' => array_map(fn (NavigationItem $item) => $item->toArray(), $visibleItems),
-            'hasItems' => count($visibleItems) > 0,
+            'hasItems' => \count($visibleItems) > 0,
             'isVisible' => true,
         ]];
     }

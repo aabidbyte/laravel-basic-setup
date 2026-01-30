@@ -121,7 +121,7 @@ class Filter
      */
     public function type(DataTableFilterType|string $type): self
     {
-        if (is_string($type)) {
+        if (\is_string($type)) {
             $this->type = DataTableFilterType::tryFrom($type) ?? DataTableFilterType::SELECT;
         } else {
             $this->type = $type;
@@ -331,7 +331,7 @@ class Filter
      */
     public function isVisible(): bool
     {
-        if (is_bool($this->show)) {
+        if (\is_bool($this->show)) {
             return $this->show;
         }
 

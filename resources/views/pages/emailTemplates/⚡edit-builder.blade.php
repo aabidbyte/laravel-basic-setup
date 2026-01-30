@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Constants\Auth\Permissions;
 use App\Enums\EmailTemplate\EmailTemplateKind;
 use App\Enums\EmailTemplate\EmailTemplateStatus;
+use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\BasePageComponent;
 use App\Models\EmailTemplate\EmailTemplate;
 use App\Services\Notifications\NotificationBuilder;
@@ -12,7 +13,7 @@ use App\Services\Notifications\NotificationBuilder;
 new class extends BasePageComponent {
     public ?string $pageSubtitle = null;
 
-    protected string $placeholderType = 'form';
+    protected PlaceholderType $placeholderType = PlaceholderType::FORM;
 
     protected int $placeholderRows = 3;
 
@@ -236,7 +237,7 @@ new class extends BasePageComponent {
     {
         $template
             ->translations()
-            ->whereNotIn('locale', array_keys($this->translations))
+            ->whereNotIn('locale', \array_keys($this->translations))
             ->delete();
     }
 

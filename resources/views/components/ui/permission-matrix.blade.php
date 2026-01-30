@@ -113,27 +113,80 @@
     </table>
 </div>
 
-<style>
-    .permission-matrix-container {
-        max-height: 70vh;
-    }
+@assets
+    <style>
+        .permission-matrix-container {
+            max-height: 70vh;
+        }
 
-    .permission-matrix-container table {
-        border-collapse: separate;
-        border-spacing: 0;
-    }
+        .permission-matrix-container table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
 
-    .permission-matrix-container thead th {
-        position: sticky;
-        top: 0;
-        z-index: 20;
-    }
+        .permission-matrix-container thead th {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
 
-    .permission-matrix-container thead th:first-child {
-        z-index: 30;
-    }
+        .permission-matrix-container thead th:first-child {
+            z-index: 30;
+        }
 
-    .permission-matrix-container tbody td:first-child {
-        border-right: 1px solid oklch(var(--bc) / 0.1);
-    }
-</style>
+        .permission-matrix-container tbody td:first-child {
+            border-right: 1px solid oklch(var(--bc) / 0.1);
+        }
+    </style>
+@endassets
+
+@assets
+    <script>
+        (function() {
+            const register = () => {
+                Alpine.data('permissionMatrix', (readonly = false) => ({
+                    toggleBatch(type, key) {
+                        if (readonly) return;
+
+                        const selector = `input[data-${type}='${key}']`;
+
+                        // Try scoped search first
+                        let inputs = this.$el.querySelectorAll(selector);
+
+                        // Fallback to global search within container if scoped fails
+                        // (This addresses issues where Alpine sometimes loses scope context in complex DOMs)
+                        if (!inputs.length) {
+                            inputs = document.querySelectorAll(
+                                `.permission-matrix-container ${selector}`,
+                            );
+                        }
+
+                        if (!inputs.length) return;
+
+                        // Check if all are currently checked
+                        // Note: inputs is a NodeList, so we convert to Array
+                        const inputList = Array.from(inputs);
+                        const allChecked = inputList.every((i) => i.checked);
+                        const targetState = !allChecked;
+
+                        // Toggle each input
+                        inputList.forEach((input) => {
+                            if (input.checked !== targetState) {
+                                input.checked = targetState;
+                                input.dispatchEvent(new Event('change', {
+                                    bubbles: true
+                                }));
+                            }
+                        });
+                    },
+                }));
+            };
+
+            if (window.Alpine) {
+                register();
+            } else {
+                document.addEventListener('alpine:init', register);
+            }
+        })();
+    </script>
+@endassets

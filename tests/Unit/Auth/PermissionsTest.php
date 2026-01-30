@@ -24,7 +24,7 @@ test('all permissions from matrix are accessible via magic methods', function ()
 
     foreach ($allPermissions as $permission) {
         // Convert 'view users' to 'VIEW_USERS'
-        $constantName = strtoupper(str_replace(' ', '_', $permission));
+        $constantName = strtoupper(\str_replace(' ', '_', $permission));
 
         // Call the magic method
         $result = Permissions::$constantName();

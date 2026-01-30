@@ -6,4 +6,12 @@
     .table-zebra tbody tr:nth-child(odd) .sticky-action-cell {
         @apply bg-base-100;
     }
+
+    .table-zebra tbody tr:hover .sticky-action-cell {
+        @apply !bg-accent;
+    }
+
+    .table-zebra tbody tr:has(input[type="checkbox"]:checked) .sticky-action-cell {
+        @apply bg-secondary;
+    }
 }

@@ -19,11 +19,11 @@ trait HasDatatableLivewirePreferences
     {
         $identifier = static::class;
 
-        if (property_exists($this, 'datatableIdentifier')) {
+        if (\property_exists($this, 'datatableIdentifier')) {
             $identifier = "{$identifier}:{$this->datatableIdentifier}";
         }
 
-        if (method_exists($this, 'getPersonalisedDatatableIdentifier')) {
+        if (\method_exists($this, 'getPersonalisedDatatableIdentifier')) {
             $identifier .= ':' . $this->getPersonalisedDatatableIdentifier();
         }
 
@@ -49,7 +49,7 @@ trait HasDatatableLivewirePreferences
 
         if (! ($this->queryStringLoaded[DataTableConstants::QUERY_PARAM_DIRECTION] ?? false)) {
             $sortDirection = $preferencesService->getDatatablePreference($identifier, 'sortDirection', 'asc', $request);
-            if (! empty($sortDirection) && in_array($sortDirection, ['asc', 'desc'], true)) {
+            if (! empty($sortDirection) && \in_array($sortDirection, ['asc', 'desc'], true)) {
                 $this->sortDirection = $sortDirection;
             }
         }
@@ -63,7 +63,7 @@ trait HasDatatableLivewirePreferences
 
         if (! ($this->queryStringLoaded[DataTableConstants::QUERY_PARAM_FILTERS] ?? false)) {
             $filters = $preferencesService->getDatatablePreference($identifier, 'filters', [], $request);
-            if (is_array($filters) && ! empty($filters)) {
+            if (\is_array($filters) && ! empty($filters)) {
                 $this->filters = $filters;
             }
         }

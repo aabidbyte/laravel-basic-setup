@@ -66,7 +66,7 @@ class IconPackMapper
         }
 
         // Only allow alphanumeric, dash, underscore
-        $sanitizedName = preg_replace('/[^a-zA-Z0-9_-]/', '', $name);
+        $sanitizedName = \preg_replace('/[^a-zA-Z0-9_-]/', '', $name);
 
         if ($sanitizedName === '') {
             return self::DEFAULT_ICON;
@@ -82,9 +82,9 @@ class IconPackMapper
     public function sanitizeClass(string $class): string
     {
         // Allow valid CSS class characters: alphanumeric, dash, underscore, space, dot
-        $sanitized = preg_replace('/[^a-zA-Z0-9_\- .]/', '', $class);
+        $sanitized = \preg_replace('/[^a-zA-Z0-9_\- .]/', '', $class);
 
-        return trim($sanitized);
+        return \trim($sanitized);
     }
 
     /**
@@ -116,7 +116,7 @@ class IconPackMapper
      */
     public function getSupportedPacks(): array
     {
-        return array_keys($this->packMappings);
+        return \array_keys($this->packMappings);
     }
 
     /**
@@ -153,7 +153,7 @@ class IconPackMapper
         $sanitizedName = $this->sanitizeIconName($name);
 
         // Combine size and class, then sanitize
-        $combinedClass = trim("{$sizeClass} {$class}");
+        $combinedClass = \trim("{$sizeClass} {$class}");
         $sanitizedClass = $this->sanitizeClass($combinedClass) ?: 'w-6 h-6';
 
         if (! $name) {

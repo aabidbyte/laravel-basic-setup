@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\BasePageComponent;
 use App\Services\Notifications\NotificationBuilder;
 use App\Services\Trash\TrashedContext;
@@ -11,7 +12,7 @@ new class extends BasePageComponent {
 
     public ?string $pageSubtitle = null;
 
-    protected string $placeholderType = 'card';
+    protected PlaceholderType $placeholderType = PlaceholderType::CARD;
 
     protected int $placeholderRows = 3;
 
@@ -86,7 +87,7 @@ new class extends BasePageComponent {
         $this->authorize($this->entityConfig['forceDeletePermission']);
 
         // Validate the confirmation text
-        if (trim($this->confirmText) !== trim($this->model->label())) {
+        if (\trim($this->confirmText) !== \trim($this->model->label())) {
             NotificationBuilder::make()->title('pages.trash.show.confirm_mismatch')->error()->send();
 
             return;
@@ -127,7 +128,7 @@ new class extends BasePageComponent {
      */
     public function isConfirmValid(): bool
     {
-        return trim($this->confirmText) === trim($this->model?->label() ?? '');
+        return \trim($this->confirmText) === \trim($this->model?->label() ?? '');
     }
 }; ?>
 

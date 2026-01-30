@@ -1,6 +1,7 @@
 <?php
 
 use App\Constants\Auth\Permissions;
+use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\BasePageComponent;
 use App\Models\Team;
 use Livewire\Attributes\Locked;
@@ -8,7 +9,7 @@ use Livewire\Attributes\Locked;
 new class extends BasePageComponent {
     public ?string $pageSubtitle = null;
 
-    protected string $placeholderType = 'card';
+    protected PlaceholderType $placeholderType = PlaceholderType::CARD;
 
     #[Locked]
     public string $teamUuid = '';

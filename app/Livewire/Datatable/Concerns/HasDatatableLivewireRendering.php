@@ -119,7 +119,7 @@ trait HasDatatableLivewireRendering
         $quotedSearch = preg_quote($search, '/');
 
         // Split the string into HTML tags and text content
-        $parts = preg_split('/(<[^>]*>)/i', $value, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+        $parts = \preg_split('/(<[^>]*>)/i', $value, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
         $result = '';
 
         if ($parts === false) {
@@ -127,10 +127,10 @@ trait HasDatatableLivewireRendering
         }
 
         foreach ($parts as $part) {
-            if (str_starts_with($part, '<') && str_ends_with($part, '>')) {
+            if (\str_starts_with($part, '<') && \str_ends_with($part, '>')) {
                 $result .= $part;
             } else {
-                $result .= preg_replace('/(' . $quotedSearch . ')/i', '<mark class="bg-warning/30 rounded">$1</mark>', $part);
+                $result .= \preg_replace('/(' . $quotedSearch . ')/i', '<mark class="bg-warning/30 rounded">$1</mark>', $part);
             }
         }
 

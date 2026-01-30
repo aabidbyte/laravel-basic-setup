@@ -80,7 +80,7 @@ class NotificationContent
         }
 
         // Check if content is a translatable array
-        if (is_array($this->content) && isset($this->content['key'])) {
+        if (\is_array($this->content) && isset($this->content['key'])) {
             return __($this->content['key'], $this->content['params'] ?? []);
         }
 
@@ -107,7 +107,7 @@ class NotificationContent
         }
 
         // Check if content is a translatable array
-        if (is_array($this->content) && isset($this->content['key'])) {
+        if (\is_array($this->content) && isset($this->content['key'])) {
             return [
                 'type' => self::TYPE_STRING,
                 'content' => $this->content, // Store the array directly
@@ -136,11 +136,11 @@ class NotificationContent
         $content = $data['content'] ?? '';
 
         // Check if content is a translatable array
-        if (is_array($content) && isset($content['key'])) {
+        if (\is_array($content) && isset($content['key'])) {
             return __($content['key'], $content['params'] ?? []);
         }
 
-        return is_string($content) ? $content : '';
+        return \is_string($content) ? $content : '';
     }
 
     /**
@@ -152,7 +152,7 @@ class NotificationContent
             return $this->viewPath !== null;
         }
 
-        return $this->content !== null && trim($this->render()) !== '';
+        return $this->content !== null && \trim($this->render()) !== '';
     }
 
     /**

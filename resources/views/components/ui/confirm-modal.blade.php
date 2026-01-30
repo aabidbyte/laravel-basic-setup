@@ -1,9 +1,68 @@
+@assets
+    <script>
+        (() => {
+            const init = () => {
+                window.Alpine.data('confirmModalData', (defaultConfig = {}) => ({
+                    isOpen: false,
+                    title: defaultConfig.title || 'Confirm Action',
+                    message: defaultConfig.message || 'Are you sure?',
+                    confirmLabel: defaultConfig.confirmLabel || 'Confirm',
+                    cancelLabel: defaultConfig.cancelLabel || 'Cancel',
+                    confirmEvent: null,
+                    confirmData: null,
+                    confirmAction: null,
+
+                    handleConfirmModal(event) {
+                        if (!event.detail) return;
+                        const cfg = event.detail;
+                        if (cfg.title) this.title = cfg.title;
+                        if (cfg.message || cfg.content) this.message = cfg.message || cfg.content;
+                        if (cfg.confirmLabel || cfg.confirmText) this.confirmLabel = cfg.confirmLabel ||
+                            cfg.confirmText;
+                        if (cfg.cancelLabel || cfg.cancelText) this.cancelLabel = cfg.cancelLabel || cfg
+                            .cancelText;
+                        this.confirmEvent = cfg.confirmEvent || null;
+                        this.confirmData = cfg.confirmData || null;
+                        this.confirmAction = cfg.confirmAction || null;
+                        if (this.confirmAction) window._confirmModalAction = this.confirmAction;
+                        this.isOpen = true;
+                    },
+
+                    executeConfirm() {
+                        if (this.confirmEvent) {
+                            window.dispatchEvent(new CustomEvent(this.confirmEvent, {
+                                detail: this.confirmData,
+                                bubbles: true
+                            }));
+                        }
+                        let action = this.confirmAction || window._confirmModalAction;
+                        if (action && typeof action === 'function') action();
+                        this.closeModal();
+                    },
+
+                    closeModal() {
+                        this.isOpen = false;
+                        this.confirmAction = null;
+                        this.confirmEvent = null;
+                        window._confirmModalAction = null;
+                    }
+                }));
+            };
+            if (window.Alpine) {
+                init();
+            } else {
+                document.addEventListener('alpine:init', init);
+            }
+        })();
+    </script>
+@endassets
+
 {{-- Confirm Modal Component --}}
 @php
     $modalStateId = $openState ?? 'confirmModalIsOpen_' . str_replace('-', '_', $id);
 @endphp
 
-<div x-data="confirmModal({
+<div x-data="confirmModalData({
     modalId: '{{ $id }}',
     title: @js(__('modals.confirm.title')),
     message: @js(__('modals.confirm.message')),

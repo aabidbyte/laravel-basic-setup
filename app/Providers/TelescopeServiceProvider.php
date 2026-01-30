@@ -63,7 +63,7 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
                 return true;
             }
 
-            return in_array($user->email, [
+            return \in_array($user->email, [
                 //
             ], true);
         });
