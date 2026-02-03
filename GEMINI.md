@@ -39,11 +39,13 @@
 *   **Livewire Routing:** Use the **singular model name** for route parameters to enable automatic binding (e.g., `/users/{user}`), never `{id}` or `{uuid}`.
 *   **Blade Components:** Do **not** use Blade directives (like `@if`) inside component opening tags. Use conditional attribute binding instead (`:attr="$condition ? 'val' : null"`).
 *   **Layouts:** Full-page Livewire components are automatically wrapped in the layout. **Do not** manually wrap them in `<x-layouts.app>`.
+*   **Alpine Component Nesting:** Avoid using generic variable names (like `open`) in both parent and child components (e.g., `Select` and `Sheet`). This causes scope shadowing that breaks `x-model`. Use distinct names (`selectOpen` vs `open`).
+*   **Livewire Entangle:** When entangling nested array keys (`$wire.entangle('filters.role')`), the key MUST exist in the backend array initialization (e.g., in `mount()`). Use `mountHasDatatableLivewireFilters` for DataTables.
 
 ### Testing
 *   **Framework:** Pest (v4)
 *   **Location:** `tests/Feature` and `tests/Unit`
-*   **Command:** `php artisan test` or `composer run test`
+*   **Command:** `php artisan test --parallel` or `composer run test`
 
 ## 4. Build & Run Commands
 
@@ -68,7 +70,7 @@ composer run dev
 ### Testing & Quality
 ```bash
 # Run Tests
-php artisan test
+php artisan test --parallel
 
 # Format Code (PHP)
 composer run pint
@@ -87,4 +89,4 @@ npm run format:all
 ## 6. Agent Behavior
 *   **Reference:** Always consult `docs/AGENTS/` for specific patterns before implementation.
 *   **Safety:** Do not assume "standard" Laravel conventions if a specific base class or trait is provided (e.g., `BaseModel`).
-*   **Verification:** Always run `php artisan test` after changes.
+*   **Verification:** Always run `php artisan test --parallel` after changes.

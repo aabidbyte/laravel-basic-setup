@@ -207,15 +207,11 @@ new class extends BasePageComponent {
             <x-ui.form wire:submit="saveSettings"
                        class="w-full space-y-6">
                 {{-- Provider Selection --}}
-                <div class="form-control w-full">
-                    <x-ui.label :text="__('settings.mail.provider_label')"></x-ui.label>
-                    <select wire:model.live="provider"
-                            class="select select-bordered w-full">
-                        @foreach ($this->providers as $value => $label)
-                            <option value="{{ $value }}">{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                <x-ui.select label="{{ __('settings.mail.provider_label') }}"
+                             name="provider"
+                             wire:model.live="provider"
+                             :options="$this->providers"
+                             :prepend-empty="false" />
 
                 {{-- SMTP Settings (only shown for SMTP provider) --}}
                 @if ($provider === 'smtp')
@@ -249,15 +245,10 @@ new class extends BasePageComponent {
                                        autocomplete="new-password"></x-ui.password>
                     </div>
 
-                    <div class="form-control w-full">
-                        <x-ui.label :text="__('settings.mail.encryption_label')"></x-ui.label>
-                        <select wire:model="encryption"
-                                class="select select-bordered w-full">
-                            @foreach ($this->encryptionOptions as $value => $label)
-                                <option value="{{ $value }}">{{ $label }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+                    <x-ui.select label="{{ __('settings.mail.encryption_label') }}"
+                                 name="encryption"
+                                 wire:model="encryption"
+                                 :options="$this->encryptionOptions" />
                 @endif
 
                 <div class="divider"></div>

@@ -413,3 +413,25 @@ document.addEventListener('alpine:init', () => {
 | `{ async fetch() { ... } }` | ❌ No | Extract to JS file |
 | Arrow functions `() => {}` | ❌ No | Extract to JS file |
 
+### Alpine.js Component Nesting & Shadowing
+
+**CRITICAL**: When nesting Alpine components (e.g., using a Sheet inside a Select component), **avoid using generic variable names like `open` for state in both scopes**.
+
+If the parent component (`Select`) uses `open` and the child component (`Sheet`) uses `open` (bound via `x-model`), Alpine's scope resolution can fail or shadow the intended variable, breaking the binding.
+
+**❌ BAD (Shadowing Risk):**
+```javascript
+// Select Component
+{ open: false }
+// Sheet Component (Child)
+{ open: false } // x-model="open" -> Fails to bind to Parent.open
+```
+
+**✅ GOOD (Distinct Names):**
+```javascript
+// Select Component
+{ selectOpen: false }
+// Sheet Component (Child)
+{ open: false } // x-model="selectOpen" -> Binds correctly
+```
+

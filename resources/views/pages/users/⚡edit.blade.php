@@ -383,25 +383,19 @@ new class extends BasePageComponent {
                                     class="text-base-content/70">{{ __('users.edit.preferences') }}</x-ui.title>
 
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            <div class="form-control w-full">
-                                <x-ui.label :text="__('users.timezone')"></x-ui.label>
-                                <select wire:model="timezone"
-                                        class="select select-bordered w-full">
-                                    @foreach ($this->timezones as $value => $label)
-                                        <option value="{{ $value }}">{{ $label }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
+                                <x-ui.select label="{{ __('users.timezone') }}"
+                                             name="timezone"
+                                             wire:model="timezone"
+                                             :options="$this->timezones"
+                                             :prepend-empty="false" />
 
-                            <div class="form-control w-full">
-                                <x-ui.label :text="__('users.locale')"></x-ui.label>
-                                <select wire:model="locale"
-                                        class="select select-bordered w-full">
-                                    @foreach ($this->locales as $value => $label)
-                                        <option value="{{ $value }}">{{ $label }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
+                                             @dump($this->locales)
+
+                                <x-ui.select label="{{ __('users.locale') }}"
+                                             name="locale"
+                                             wire:model="locale"
+                                             :options="$this->locales"
+                                             :prepend-empty="false" />
                         </div>
 
                     </div>

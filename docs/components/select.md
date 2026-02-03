@@ -190,5 +190,23 @@ If you have existing select components that don't follow this pattern:
 
 3. **Update Filter classes** to use the new format (already done in the codebase)
 
+### Implementation Details
+
+**CSP Safety & Parser Robustness:**
+The `<x-ui.select>` component uses a custom Alpine.js implementation (`customSelect`) that is fully CSP-safe. It bypasses Livewire's recursive attribute parser by passing options and placeholders as **JSON-encoded strings**:
+
+```blade
+x-data="customSelect( ..., '{{ json_encode($options, JSON_HEX_APOS) }}', ... )"
+```
+
+This prevents common "Expected property key" errors and ensures robust handling of special characters.
+
+**DOM Structure:**
+- **Mobile (< 1024px)**: Renders a Bottom Sheet (`<x-ui.sheet>`).
+- **Desktop (>= 1024px)**: Renders a Floating Dropdown (`x-anchor`).
+
+**State Management:**
+Internal state uses `selectOpen` instead of `open` to avoid variable shadowing when nesting components.
+
 ---
 

@@ -5,7 +5,7 @@
     
     Child views can use: @click="modalIsOpen = false" to close modal
 --}}
-<div x-data="actionModal()">
+<div x-show="modalIsOpen" x-data="actionModal()" x-cloak>
     <x-ui.base-modal open-state="modalIsOpen"
                      use-parent-state="true"
                      :title="$modalType === 'confirm' ? null : ($modalTitle ?? __('table.action_modal_title'))"

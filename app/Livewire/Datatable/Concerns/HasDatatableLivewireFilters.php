@@ -26,6 +26,19 @@ trait HasDatatableLivewireFilters
     }
 
     /**
+     * Initialize filter keys on mount to ensure Livewire entangle works correctly.
+     * Prevents "Livewire property cannot be found" errors for uninitialized nested array keys.
+     */
+    public function mountHasDatatableLivewireFilters(): void
+    {
+        foreach ($this->getResolvedFilters() as $filter) {
+            if (! \array_key_exists($filter->getKey(), $this->filters)) {
+                $this->filters[$filter->getKey()] = null;
+            }
+        }
+    }
+
+    /**
      * Filter values
      *
      * @var array<string, mixed>

@@ -8,32 +8,47 @@ new class extends LivewireBaseComponent {
     /**
      * Refresh the notifications list.
      */
-    public function refreshNotifications(): void
+    public int $limit = 10;
+
+    /**
+     * Load more notifications.
+     */
+    public function loadMore(): void
     {
-        $this->dispatch('$refresh');
+        $this->limit += 10;
     }
 
     /**
-     * Get the user's notifications (last 5, unread first).
+     * Get all sorted notifications (cached for request).
      */
-    public function getNotificationsProperty(): \Illuminate\Database\Eloquent\Collection
+    public function getAllSortedNotificationsProperty(): \Illuminate\Database\Eloquent\Collection
     {
         $user = Auth::user();
         if (!$user) {
             return collect();
         }
 
-        // Get all notifications and sort: unread first, then by created_at desc
         return $user
             ->notifications()
             ->latest()
             ->get()
-            ->sortBy([
-                ['read_at', 'asc'], // null (unread) comes before dates (read)
-                ['created_at', 'desc'],
-            ])
-            ->take(5)
-            ->values();
+            ->sortBy([['created_at', 'desc'],['read_at', 'asc']]);
+    }
+
+    /**
+     * Get the user's notifications (limited).
+     */
+    public function getNotificationsProperty(): \Illuminate\Database\Eloquent\Collection
+    {
+        return $this->allSortedNotifications->values()->take($this->limit);
+    }
+
+    /**
+     * Check if there are more notifications to load.
+     */
+    public function getHasMoreProperty(): bool
+    {
+        return $this->allSortedNotifications->count() > $this->limit;
     }
 
     /**
@@ -122,9 +137,15 @@ new class extends LivewireBaseComponent {
             return;
         }
 
-        // Get the IDs of the last 5 notifications (what's visible in dropdown)
-        // Use direct query to avoid computed property lazy loading issues
-        $visibleNotificationIds = $user->notifications()->latest()->take(5)->pluck('id')->toArray();
+        // Get the IDs of the visible notifications (based on current limit)
+        $visibleNotificationIds = $user
+            ->notifications()
+            ->latest()
+            ->get()
+            ->sortBy([['read_at', 'asc'], ['created_at', 'desc']])
+            ->take($this->limit)
+            ->pluck('id')
+            ->toArray();
 
         // Mark only unread notifications as read in a single query
         if (!empty($visibleNotificationIds)) {
@@ -160,12 +181,8 @@ new class extends LivewireBaseComponent {
 <div x-data="notificationDropdownContent($wire)"
      x-on:notifications-changed.window="$wire.$refresh()"
      wire:key="notification-dropdown-content-{{ Auth::user()?->uuid ?? 'guest' }}">
-    <div class="menu-title">
-        <span>{{ __('notifications.dropdown.title') }}</span>
-    </div>
-
     @forelse($this->formattedNotifications as $notification)
-        <div>
+        <div x-intersect.once="delayedMarkAsRead('{{ $notification['id'] }}')">
             @if ($notification['hasLink'])
                 @if ($notification['markAsReadAction'])
                     <a href="{{ $notification['link'] }}"
@@ -220,11 +237,39 @@ new class extends LivewireBaseComponent {
         </div>
     @endforelse
 
-    <div class="divider my-1"></div>
-
-    <x-ui.button href="{{ route('notifications.index') }}"
-                 wire:navigate
-                 class="text-center">
-        {{ __('notifications.view_all') }}
-    </x-ui.button>
+    @if ($this->hasMore)
+        <div x-intersect.full="$wire.loadMore()"
+             class="flex justify-center p-4">
+            <x-ui.loading wire:loading
+                          class="loading-md opacity-50" />
+        </div>
+    @endif
 </div>
+
+@assets
+    <script>
+        (function() {
+            const register = () => {
+                Alpine.data('notificationDropdownContent', ($wire) => ({
+                    init() {
+                        // Optimized: No global listeners needed for basic intersection logic
+                    },
+
+                    delayedMarkAsRead(notificationId, delayMs = 2000) {
+                        setTimeout(() => {
+                            if ($wire) {
+                                $wire.markAsRead(notificationId);
+                            }
+                        }, delayMs);
+                    }
+                }));
+            };
+
+            if (window.Alpine) {
+                register();
+            } else {
+                document.addEventListener('alpine:init', register);
+            }
+        })();
+    </script>
+@endassets

@@ -19,16 +19,12 @@
 <div x-data="notificationDropdownTrigger(@js($initialUnreadCount))"
      @click.away="close()"
      class="relative">
-    <x-ui.dropdown placement="end"
-                   menu
-                   menuSize="sm"
-                   contentClass="min-w-80 max-h-96 overflow-y-auto"
-                   x-bind:class="{ 'dropdown-open': isOpen }">
+    <x-ui.sheet position="right"
+                title="{{ __('notifications.dropdown.title') }}">
         <x-slot:trigger>
             <button x-ref="trigger"
                     class="btn btn-ghost btn-circle relative"
-                    type="button"
-                    @click="toggle()">
+                    type="button">
                 <x-ui.icon name="bell"
                            class="h-5 w-5"></x-ui.icon>
                 {{-- Badge managed by Alpine, visible when count > 0 --}}
@@ -45,5 +41,12 @@
         {{-- Lazy-loaded content component --}}
         <livewire:notifications.dropdown-content lazy
                                                  wire:key="notifications-dropdown-content"></livewire:notifications.dropdown-content>
-    </x-ui.dropdown>
+        <x-slot:actions>
+            <x-ui.button href="{{ route('notifications.index') }}"
+                         wire:navigate
+                         class="w-full text-center">
+                {{ __('notifications.view_all') }}
+            </x-ui.button>
+        </x-slot:actions>
+    </x-ui.sheet>
 </div>

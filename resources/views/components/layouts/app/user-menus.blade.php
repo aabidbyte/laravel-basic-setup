@@ -1,17 +1,19 @@
+@php
+    $user = Auth::user();
+@endphp
+
 <x-ui.dropdown placement="end"
                menu
                menuSize="sm"
-               contentClass="sidebar-user-menus">
+               contentClass="sidebar-user-menus"
+               title="{{ $user->name }}">
     <x-slot:trigger>
         <div class="btn btn-ghost btn-circle">
-            <x-ui.avatar :user="Auth::user()"
+            <x-ui.avatar :imageSrc="$user->avatar_url ?? null"
+                         :initials="$user->initials()"
                          size="sm"></x-ui.avatar>
         </div>
     </x-slot:trigger>
-
-    <div class="menu-title text-center">
-        <span>{{ Auth::user()->name }}</span>
-    </div>
 
     {{-- User menu items --}}
     <div class="menu-items">
@@ -22,15 +24,16 @@
         @endforeach
     </div>
 
-    <div class="divider my-1"></div>
-    <div class="mx-auto">
-        <form method="POST"
-              action="{{ route('logout') }}">
-            @csrf
-            <x-ui.button type="submit"
-                         class="w-full">
-                {{ __('actions.logout') }}
-            </x-ui.button>
-        </form>
-    </div>
+    <x-slot:actions>
+        <div class="mx-auto">
+            <form method="POST"
+                  action="{{ route('logout') }}">
+                @csrf
+                <x-ui.button type="submit"
+                             class="w-full">
+                    {{ __('actions.logout') }}
+                </x-ui.button>
+            </form>
+        </div>
+    </x-slot:actions>
 </x-ui.dropdown>

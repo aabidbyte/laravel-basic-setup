@@ -1,135 +1,135 @@
 @use('App\Enums\DataTable\DataTableFilterType')
 
 {{-- Header with Search and Filters --}}
-    <div class="sticky top-0 py-2 z-31 flex flex-col gap-4 bg-base-100 sm:flex-row sm:items-center sm:justify-between">
-        {{-- Search --}}
-        <div class="max-w-md flex-1"
-             wire:ignore>
-            <x-ui.search wire:model.live.debounce.300ms="search"
-                         type="text"
-                         placeholder="{{ __('table.search_placeholder') }}"></x-ui.search>
-        </div>
-
-        {{-- Bulk Actions Dropdown --}}
-        @if ($datatable->hasSelection)
-            <div class="flex items-center gap-4">
-                <span class="text-base-content/70 text-sm font-medium">{{ $datatable->selectedCount }}
-                    {{ __('table.selected') }}</span>
-
-                <x-ui.dropdown placement="bottom-start"
-                               menu
-                               menuSize="sm"
-                               teleport>
-                    <x-slot:trigger>
-                        <x-ui.button type="button"
-                                     variant="outline"
-                                     size="sm"
-                                     class="gap-2">
-                            {{ __('table.bulk_actions') }}
-                            <x-ui.icon name="chevron-down"
-                                       size="sm"></x-ui.icon>
-                        </x-ui.button>
-                    </x-slot:trigger>
-
-                    @foreach ($datatable->getBulkActions() as $action)
-                        @php
-                            $actionClick = $action['confirm']
-                                ? "executeActionWithConfirmation('{$action['key']}', null, true)"
-                                : null;
-
-                            $wireClick = !$action['confirm'] ? "executeBulkAction('{$action['key']}')" : null;
-                        @endphp
-
-                        <x-ui.button type="button"
-                                     :@click="$actionClick ?: null"
-                                     :wire:click="$wireClick ?: null"
-                                     :variant="$action['variant'] ?? 'ghost'"
-                                     :color="$action['color'] ?? null"
-                                     size="sm"
-                                     class="justify-start">
-                            @if ($action['icon'])
-                                <x-ui.icon :name="$action['icon']"
-                                           size="sm"></x-ui.icon>
-                            @endif
-                            {{ $action['label'] }}
-                        </x-ui.button>
-                    @endforeach
-                </x-ui.dropdown>
-
-                <x-ui.button wire:click="clearSelection()"
-                             type="button"
-                             variant="ghost"
-                             color="error"
-                             size="sm">
-                    <x-ui.icon name="x-mark"
-                               size="sm"></x-ui.icon>
-                    {{ __('actions.clear_selection') }}
-                </x-ui.button>
-            </div>
-            @elseif ($datatable->hasFilters())
-            {{-- Filter Toggle Button - only render if filters are defined --}}
-            <div class="md:flex hidden items-center gap-2 py-2 flex-row-reverse">
-                <x-ui.button @click="toggleFilters()"
-                             type="button"
-                             variant="outline"
-                             size="md">
-                    <x-ui.icon name="funnel"
-                               size="sm"></x-ui.icon>
-                    {{ __('table.filters') }}
-                    @if (count($datatable->getActiveFilters()) > 0)
-                        <x-ui.badge color="primary"
-                                    size="sm">{{ count($datatable->getActiveFilters()) }}</x-ui.badge>
-                    @endif
-                </x-ui.button>
-            </div>
-    @endif
+<div class="z-31 bg-base-100 sticky top-0 flex flex-col gap-4 py-2 sm:flex-row sm:items-center sm:justify-between">
+    {{-- Search --}}
+    <div class="max-w-md flex-1"
+         wire:ignore>
+        <x-ui.search wire:model.live.debounce.300ms="search"
+                     type="text"
+                     placeholder="{{ __('table.search_placeholder') }}"></x-ui.search>
     </div>
 
-    @if ($datatable->hasFilters() && !$datatable->hasSelection)
-            {{-- Filter Toggle Button - only render if filters are defined --}}
-            <div class="md:hidden flex items-center gap-2 py-2 flex-row-reverse">
-                <x-ui.button @click="toggleFilters()"
-                             type="button"
-                             variant="outline"
-                             size="md">
-                    <x-ui.icon name="funnel"
-                               size="sm"></x-ui.icon>
-                    {{ __('table.filters') }}
-                    @if (count($datatable->getActiveFilters()) > 0)
-                        <x-ui.badge color="primary"
-                                    size="sm">{{ count($datatable->getActiveFilters()) }}</x-ui.badge>
-                    @endif
-                </x-ui.button>
-            </div>
-    @endif
-    {{-- Active Filters Badges --}}
-    @if (count($datatable->getActiveFilters()) > 0)
-        <div class="flex flex-wrap items-center gap-2">
-            <span class="text-base-content/70 text-sm">{{ __('table.active_filters') }}:</span>
-            @foreach ($datatable->getActiveFilters() as $filter)
-                <x-ui.badge size="sm"
-                            color="secondary"
-                            class="gap-1">
-                    <span class="font-medium">{{ $filter['label'] }}:</span>
-                    <span>{{ $filter['valueLabel'] }}</span>
-                    <x-ui.button wire:click="removeFilter('{{ $filter['key'] }}')"
-                                 type="button"
-                                 variant="ghost"
-                                 size="xs"
-                                 circle>
-                        <x-ui.icon name="x-mark"
-                                   size="xs"></x-ui.icon>
+    {{-- Bulk Actions Dropdown --}}
+    @if ($datatable->hasSelection)
+        <div class="flex items-center gap-4">
+            <span class="text-base-content/70 text-sm font-medium">{{ $datatable->selectedCount }}
+                {{ __('table.selected') }}</span>
+
+            <x-ui.dropdown placement="bottom-start"
+                           menu
+                           menuSize="sm"
+                           teleport>
+                <x-slot:trigger>
+                    <x-ui.button type="button"
+                                 variant="outline"
+                                 size="sm"
+                                 class="gap-2">
+                        {{ __('table.bulk_actions') }}
+                        <x-ui.icon name="chevron-down"
+                                   size="sm"></x-ui.icon>
                     </x-ui.button>
-                </x-ui.badge>
-            @endforeach
-            <x-ui.button wire:click="clearFilters"
+                </x-slot:trigger>
+
+                @foreach ($datatable->getBulkActions() as $action)
+                    @php
+                        $actionClick = $action['confirm']
+                            ? "executeActionWithConfirmation('{$action['key']}', null, true)"
+                            : null;
+
+                        $wireClick = !$action['confirm'] ? "executeBulkAction('{$action['key']}')" : null;
+                    @endphp
+
+                    <x-ui.button type="button"
+                                 :@click="$actionClick ?: null"
+                                 :wire:click="$wireClick ?: null"
+                                 :variant="$action['variant'] ?? 'ghost'"
+                                 :color="$action['color'] ?? null"
+                                 size="sm"
+                                 class="justify-start">
+                        @if ($action['icon'])
+                            <x-ui.icon :name="$action['icon']"
+                                       size="sm"></x-ui.icon>
+                        @endif
+                        {{ $action['label'] }}
+                    </x-ui.button>
+                @endforeach
+            </x-ui.dropdown>
+
+            <x-ui.button wire:click="clearSelection()"
                          type="button"
-                         variant="link"
+                         variant="ghost"
+                         color="error"
                          size="sm">
-                {{ __('actions.clear_all') }}
+                <x-ui.icon name="x-mark"
+                           size="sm"></x-ui.icon>
+                {{ __('actions.clear_selection') }}
+            </x-ui.button>
+        </div>
+    @elseif ($datatable->hasFilters())
+        {{-- Filter Toggle Button - only render if filters are defined --}}
+        <div class="hidden flex-row-reverse items-center gap-2 py-2 md:flex">
+            <x-ui.button @click="toggleFilters()"
+                         type="button"
+                         variant="outline"
+                         size="md">
+                <x-ui.icon name="funnel"
+                           size="sm"></x-ui.icon>
+                {{ __('table.filters') }}
+                @if (count($datatable->getActiveFilters()) > 0)
+                    <x-ui.badge color="primary"
+                                size="sm">{{ count($datatable->getActiveFilters()) }}</x-ui.badge>
+                @endif
             </x-ui.button>
         </div>
     @endif
+</div>
+
+@if ($datatable->hasFilters() && !$datatable->hasSelection)
+    {{-- Filter Toggle Button - only render if filters are defined --}}
+    <div class="flex flex-row-reverse items-center gap-2 py-2 md:hidden">
+        <x-ui.button @click="toggleFilters()"
+                     type="button"
+                     variant="outline"
+                     size="md">
+            <x-ui.icon name="funnel"
+                       size="sm"></x-ui.icon>
+            {{ __('table.filters') }}
+            @if (count($datatable->getActiveFilters()) > 0)
+                <x-ui.badge color="primary"
+                            size="sm">{{ count($datatable->getActiveFilters()) }}</x-ui.badge>
+            @endif
+        </x-ui.button>
+    </div>
+@endif
+{{-- Active Filters Badges --}}
+@if (count($datatable->getActiveFilters()) > 0)
+    <div class="flex flex-wrap items-center gap-2">
+        <span class="text-base-content/70 text-sm">{{ __('table.active_filters') }}:</span>
+        @foreach ($datatable->getActiveFilters() as $filter)
+            <x-ui.badge size="sm"
+                        color="secondary"
+                        class="gap-1">
+                <span class="font-medium">{{ $filter['label'] }}:</span>
+                <span>{{ $filter['valueLabel'] }}</span>
+                <x-ui.button wire:click="removeFilter('{{ $filter['key'] }}')"
+                             type="button"
+                             variant="ghost"
+                             size="xs"
+                             circle>
+                    <x-ui.icon name="x-mark"
+                               size="xs"></x-ui.icon>
+                </x-ui.button>
+            </x-ui.badge>
+        @endforeach
+        <x-ui.button wire:click="clearFilters"
+                     type="button"
+                     variant="link"
+                     size="sm">
+            {{ __('actions.clear_all') }}
+        </x-ui.button>
+    </div>
+@endif
 {{-- Filters Panel - only render if filters are defined --}}
 @if ($datatable->hasFilters())
     <div x-show="openFilters"

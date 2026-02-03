@@ -85,3 +85,12 @@ Filter::make('admin_only', __('Admin Filter'))
     ->show(fn() => Auth::user()?->isAdmin() ?? false)
     ->options([...])
 ```
+
+## Initialization & Safety
+
+Livewire V3 is strict about entangled properties. If you use nested properties (e.g., `filters.role`), the key `role` must exist in the `filters` array at mount time, otherwise, the frontend `entangle` directive may throw a "Property not found" error.
+
+The `HasDatatableLivewireFilters` trait handles this automatically via `mountHasDatatableLivewireFilters()`, which pre-fills the `$filters` array with `null` keys for all resolved definitions.
+
+**Best Practice:**
+Always define all potential filter keys in your `getFilterDefinitions()` method. Dynamic filters that appear conditionally should still have a defined key if possible, or care must be taken that the frontend condition (`x-if` or `@if`) matches the backend definition presence.

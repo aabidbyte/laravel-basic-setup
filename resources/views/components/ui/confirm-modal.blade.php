@@ -62,7 +62,7 @@
     $modalStateId = $openState ?? 'confirmModalIsOpen_' . str_replace('-', '_', $id);
 @endphp
 
-<div x-data="confirmModalData({
+<div x-show="isOpen" x-data="confirmModalData({
     modalId: '{{ $id }}',
     title: @js(__('modals.confirm.title')),
     message: @js(__('modals.confirm.message')),
@@ -71,7 +71,8 @@
 })"
      @confirm-modal.window="handleConfirmModal($event)"
      @confirm-modal-execute.window="executeConfirm()"
-     @confirm-modal-cancel.window="closeModal()">
+     @confirm-modal-cancel.window="closeModal()"
+     x-cloak>
 
     <x-ui.base-modal :id="$id"
                      open-state="isOpen"

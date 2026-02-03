@@ -310,10 +310,10 @@ class BaseModal extends Component
 
         $xInitParts = [];
         if ($this->autoOpen) {
-            $xInitParts[] = '$nextTick(() => { ' . $this->openState . ' = true; })';
+            $xInitParts[] = '$nextTick(function() { ' . $this->openState . ' = true; })';
         }
         if ($this->onOpen) {
-            $xInitParts[] = '$watch(\'' . $this->openState . '\', (value) => { if (value) { ' . $this->onOpen . ' } })';
+            $xInitParts[] = '$watch(\'' . $this->openState . '\', function(value) { if (value) { ' . $this->onOpen . ' } })';
         }
         if (! empty($xInitParts)) {
             $defaults['x-init'] = \implode('; ', $xInitParts);

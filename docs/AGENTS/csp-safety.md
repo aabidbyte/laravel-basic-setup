@@ -153,6 +153,39 @@ getColorClass() {
 <div :class="getColorClass()"></div>
 ```
 
+### Safe JSON Parsing for Complex Data
+
+Passing complex objects (like associative arrays) directly into Alpine attributes can fail due to Livewire's strict attribute parser or HTML entity decoding issues.
+
+**❌ CSP-UNSAFE / FRAGILE:**
+```blade
+{{-- This can cause "Parser Error: Expected property key" or "Undefined variable JSON" --}}
+<div x-data="myComponent({ 'key': 'value' })">...</div>
+<div x-data="myComponent(@js($data))">...</div> 
+```
+
+**✅ CSP-SAFE (String Passing Pattern):**
+Pass the data as a JSON-encoded **string** and parse it inside the component.
+
+```blade
+{{-- In Blade: Use JSON_HEX_APOS to ensure safety inside single quotes --}}
+<div x-data="myComponent( '{{ json_encode($data, JSON_HEX_APOS) }}' )">...</div>
+```
+
+```javascript
+// In JS Component:
+Alpine.data('myComponent', function(dataStr) {
+    return {
+        // Parse the string at runtime in the standard JS engine
+        data: JSON.parse(dataStr),
+        
+        init() {
+            console.log(this.data); // { key: 'value' }
+        }
+    }
+});
+```
+
 ### no `x-html`
 
 The `x-html` directive is prohibited in the CSP build because it requires unsafe-eval or potential XSS vectors.

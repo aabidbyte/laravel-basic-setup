@@ -131,40 +131,24 @@ new class extends BasePageComponent {
                 </div>
 
                 {{-- Language Selection --}}
-                <div class="form-control w-full">
-                    <x-ui.label :text="__('settings.preferences.locale_label')"></x-ui.label>
-                    <select wire:model="locale"
-                            class="select select-bordered w-full">
-                        @foreach ($this->locales as $code => $name)
-                            <option value="{{ $code }}">{{ $name }}</option>
-                        @endforeach
-                    </select>
-                    @error('locale')
-                        <x-ui.label variant="plain">
-                            <span class="label-text-alt text-error">{{ $message }}</span>
-                        </x-ui.label>
-                    @enderror
-                </div>
+                <x-ui.select label="{{ __('settings.preferences.locale_label') }}"
+                             name="locale"
+                             wire:model="locale"
+                             :options="$this->locales"
+                             :prepend-empty="false" />
 
                 {{-- Timezone Selection --}}
-                <div class="form-control w-full">
-                    <x-ui.label :text="__('settings.preferences.timezone_label')"></x-ui.label>
-                    <select wire:model="timezone"
-                            class="select select-bordered w-full">
-                        @foreach ($this->timezones as $tz)
-                            <option value="{{ $tz }}">{{ $tz }}</option>
-                        @endforeach
-                    </select>
-                    <x-ui.label variant="plain">
+                <div class="w-full">
+                    <x-ui.select label="{{ __('settings.preferences.timezone_label') }}"
+                                 name="timezone"
+                                 wire:model="timezone"
+                                 :options="$this->timezones"
+                                 :prepend-empty="false" />
+                    <x-ui.label variant="plain" class="mt-1">
                         <span class="label-text-alt text-base-content/70">
                             {{ __('settings.preferences.timezone_help') }}
                         </span>
                     </x-ui.label>
-                    @error('timezone')
-                        <x-ui.label variant="plain">
-                            <span class="label-text-alt text-error">{{ $message }}</span>
-                        </x-ui.label>
-                    @enderror
                 </div>
 
                 <div class="flex items-center gap-4 pt-4">

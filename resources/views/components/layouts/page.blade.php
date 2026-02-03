@@ -30,8 +30,7 @@
 <div class="flex flex-col gap-2 sm:gap-4">
     {{-- Top Row: Back Button + Actions --}}
     @if (!$showBottomBar)
-        <div
-             class="sticky top-0 z-30 px-4 flex py-2 backdrop-blur flex-row items-center justify-between gap-2 w-full">
+        <div class="sticky top-0 z-30 flex w-full flex-row items-center justify-between gap-2 px-4 py-2 backdrop-blur">
             <div class="flex-1">
                 @if ($backHref)
                     <x-ui.button href="{{ $backHref }}"
@@ -47,7 +46,7 @@
             </div>
 
             @if (isset($topActions))
-                <div class="flex-wrap items-center gap-2 flex justify-center *:flex-1 *:whitespace-nowrap">
+                <div class="flex flex-wrap items-center justify-center gap-2 *:flex-1 *:whitespace-nowrap">
                     {{ $topActions }}
                 </div>
             @endif
@@ -61,9 +60,8 @@
 
     {{-- Bottom Row: Back Button + Actions (Optional) --}}
     @if ($showBottomBar)
-        <div
-             class="border-base-300 sticky bottom-0 z-30 px-4 flex flex-col gap-3 border-t py-2 backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:gap-2">
-            <div>
+        <div class="border-base-300 border-t sticky bottom-0 z-30 flex w-full flex-row items-center justify-between gap-2 px-4 py-2 backdrop-blur">
+            <div class="flex-1">
                 @if (isset($bottomLeft))
                     {{ $bottomLeft }}
                 @elseif($backHref)
@@ -79,8 +77,8 @@
                 @endif
             </div>
 
-            @if (isset($bottomActions))
-                <div class="flex flex-wrap items-center gap-2">
+             @if (isset($bottomActions))
+                <div class="flex flex-wrap items-center justify-center gap-2 *:flex-1 *:whitespace-nowrap">
                     {{ $bottomActions }}
                 </div>
             @endif
