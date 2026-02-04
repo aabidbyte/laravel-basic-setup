@@ -87,21 +87,15 @@ new class extends LivewireBaseComponent {
         <div x-show="showVerificationStep"
              style="display: none;">
             <div class="space-y-4">
-                <div class="form-control">
-                    <x-ui.label :text="__('settings.two_factor.setup.otp_label')"></x-ui.label>
-                    <input type="text"
-                           wire:model="code"
-                           maxlength="6"
-                           pattern="[0-9]{6}"
-                           inputmode="numeric"
-                           class="input input-bordered @error('code') input-error @enderror w-full text-center text-2xl tracking-widest"
-                           placeholder="000000" />
-                    @error('code')
-                        <div class="label">
-                            <span class="label-text-alt text-error">{{ $message }}</span>
-                        </div>
-                    @enderror
-                </div>
+                <x-ui.input type="text"
+                            wire:model="code"
+                            name="code"
+                            maxlength="6"
+                            pattern="[0-9]{6}"
+                            inputmode="numeric"
+                            class="text-center text-2xl tracking-widest"
+                            placeholder="000000"
+                            :label="__('settings.two_factor.setup.otp_label')" />
 
                 <div class="flex gap-2">
                     <x-ui.button type="button"
@@ -142,10 +136,11 @@ new class extends LivewireBaseComponent {
                 <div class="divider">{{ __('settings.two_factor.setup.manual_code_label') }}</div>
 
                 <div class="join w-full">
-                    <input type="text"
-                           readonly
-                           value="{{ $manualSetupKey }}"
-                           class="input input-bordered join-item flex-1" />
+                    <x-ui.input type="text"
+                                readonly
+                                value="{{ $manualSetupKey }}"
+                                container-class="join-item flex-1"
+                                class="join-item" />
                     <x-ui.button type="button"
                                  variant="ghost"
                                  x-data="copyToClipboard('{{ $manualSetupKey }}')"

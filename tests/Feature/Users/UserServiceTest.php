@@ -9,6 +9,7 @@ use App\Models\Role;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\Users\UserService;
+use App\Support\Users\UserData;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -35,12 +36,12 @@ describe('UserService', function () {
         it('creates a user with basic data', function () {
             $userService = app(UserService::class);
 
-            $user = $userService->createUser([
+            $user = $userService->createUser(UserData::forCreation([
                 'name' => 'Test User',
                 'email' => 'test@example.com',
                 'username' => 'testuser',
                 'password' => 'password123',
-            ]);
+            ]));
 
             expect($user)->toBeInstanceOf(User::class);
             expect($user->name)->toBe('Test User');
@@ -53,11 +54,11 @@ describe('UserService', function () {
         it('creates a user without email', function () {
             $userService = app(UserService::class);
 
-            $user = $userService->createUser([
+            $user = $userService->createUser(UserData::forCreation([
                 'name' => 'No Email User',
                 'username' => 'noemail',
                 'password' => 'password123',
-            ]);
+            ]));
 
             expect($user)->toBeInstanceOf(User::class);
             expect($user->email)->toBeNull();
@@ -66,13 +67,13 @@ describe('UserService', function () {
         it('creates a user with timezone and locale', function () {
             $userService = app(UserService::class);
 
-            $user = $userService->createUser([
+            $user = $userService->createUser(UserData::forCreation([
                 'name' => 'Preference User',
                 'email' => 'pref@example.com',
                 'timezone' => 'Europe/Paris',
                 'locale' => 'fr',
                 'password' => 'password123',
-            ]);
+            ]));
 
             expect($user->timezone)->toBe('Europe/Paris');
             expect($user->locale)->toBe('fr');
@@ -85,13 +86,13 @@ describe('UserService', function () {
 
             $userService = app(UserService::class);
 
-            $user = $userService->createUser(
-                data: [
+            $user = $userService->createUser(UserData::forCreation(
+                attributes: [
                     'name' => 'Role User',
                     'email' => 'roleuser@example.com',
                 ],
                 roleUuids: [$writerRole->uuid, $editorRole->uuid],
-            );
+            ));
 
             expect($user->roles)->toHaveCount(2);
             expect($user->hasRole('writer'))->toBeTrue();
@@ -104,13 +105,13 @@ describe('UserService', function () {
 
             $userService = app(UserService::class);
 
-            $user = $userService->createUser(
-                data: [
+            $user = $userService->createUser(UserData::forCreation(
+                attributes: [
                     'name' => 'Multi Team User',
                     'email' => 'multiteam@example.com',
                 ],
                 teamUuids: [$team1->uuid, $team2->uuid],
-            );
+            ));
 
             expect($user->teams)->toHaveCount(2);
             expect($user->teams->pluck('id')->toArray())->toContain($team1->id);
@@ -120,13 +121,13 @@ describe('UserService', function () {
         it('throws exception when sending activation without email', function () {
             $userService = app(UserService::class);
 
-            expect(fn () => $userService->createUser(
-                data: [
+            expect(fn () => $userService->createUser(UserData::forCreation(
+                attributes: [
                     'name' => 'No Email Activation',
                     'username' => 'noemaila',
                 ],
                 sendActivation: true,
-            ))->toThrow(\InvalidArgumentException::class);
+            )))->toThrow(\InvalidArgumentException::class);
         });
     });
 
@@ -135,9 +136,9 @@ describe('UserService', function () {
             $user = User::factory()->create(['name' => 'Original Name']);
             $userService = app(UserService::class);
 
-            $updated = $userService->updateUser($user, [
+            $updated = $userService->updateUser($user, UserData::forUpdate([
                 'name' => 'Updated Name',
-            ]);
+            ]));
 
             expect($updated->name)->toBe('Updated Name');
         });
@@ -146,10 +147,10 @@ describe('UserService', function () {
             $user = User::factory()->create();
             $userService = app(UserService::class);
 
-            $updated = $userService->updateUser($user, [
+            $updated = $userService->updateUser($user, UserData::forUpdate([
                 'timezone' => 'America/New_York',
                 'locale' => 'en',
-            ]);
+            ]));
 
             expect($updated->timezone)->toBe('America/New_York');
             expect($updated->locale)->toBe('en');
@@ -159,9 +160,9 @@ describe('UserService', function () {
             $user = User::factory()->create(['is_active' => false]);
             $userService = app(UserService::class);
 
-            $updated = $userService->updateUser($user, [
+            $updated = $userService->updateUser($user, UserData::forUpdate([
                 'is_active' => true,
-            ]);
+            ]));
 
             expect($updated->is_active)->toBeTrue();
         });
@@ -179,8 +180,10 @@ describe('UserService', function () {
             // Update to change roles from writer to editor
             $updated = $userService->updateUser(
                 $user,
-                [],
-                roleUuids: [$editorRole->uuid],
+                UserData::forUpdate(
+                    attributes: [],
+                    roleUuids: [$editorRole->uuid],
+                ),
             );
 
             $updated->refresh();
@@ -194,7 +197,7 @@ describe('UserService', function () {
             $userService = app(UserService::class);
 
             // Admin is not super admin
-            $userService->updateUser($user, ['password' => 'new_password']);
+            $userService->updateUser($user, UserData::forUpdate(['password' => 'new_password']));
 
             $user->refresh();
             expect(Hash::check('old_password', $user->password))->toBeTrue();
@@ -208,7 +211,7 @@ describe('UserService', function () {
             $superAdminRole = Role::create(['name' => Roles::SUPER_ADMIN]);
             $this->admin->assignRole($superAdminRole);
 
-            $userService->updateUser($user, ['password' => 'new_password']);
+            $userService->updateUser($user, UserData::forUpdate(['password' => 'new_password']));
 
             $user->refresh();
             expect(Hash::check('new_password', $user->password))->toBeTrue();
@@ -223,7 +226,7 @@ describe('UserService', function () {
             ]);
             $userService = app(UserService::class);
 
-            $userService->updateUser($user, ['email' => 'new@example.com']);
+            $userService->updateUser($user, UserData::forUpdate(['email' => 'new@example.com']));
 
             $user->refresh();
             expect($user->email)->toBe('old@example.com');
@@ -242,7 +245,7 @@ describe('UserService', function () {
             ]);
             $userService = app(UserService::class);
 
-            $userService->updateUser($user, ['email' => 'new@example.com']);
+            $userService->updateUser($user, UserData::forUpdate(['email' => 'new@example.com']));
 
             $user->refresh();
             expect($user->email)->toBe('new@example.com');

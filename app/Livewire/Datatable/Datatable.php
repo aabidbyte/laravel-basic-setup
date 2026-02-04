@@ -17,6 +17,7 @@ use App\Livewire\DataTable\Concerns\HasDatatableLivewireSelection;
 use App\Livewire\DataTable\Concerns\HasDatatableLivewireSorting;
 use App\Services\DataTable\Builders\Action;
 use App\Services\DataTable\DataTableQueryBuilder;
+use App\Support\DataTable\QueryOptions;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
@@ -202,7 +203,7 @@ abstract class Datatable extends LivewireBaseComponent
     {
         $queryBuilder = new DataTableQueryBuilder;
 
-        return $queryBuilder->build(
+        return $queryBuilder->build(new QueryOptions(
             query: $this->baseQuery(),
             columns: $this->columns(),
             filters: $this->getFilterDefinitions(),
@@ -211,7 +212,7 @@ abstract class Datatable extends LivewireBaseComponent
             sortBy: $this->sortBy,
             sortDirection: $this->sortDirection,
             perPage: $this->perPage,
-        );
+        ));
     }
 
     /**

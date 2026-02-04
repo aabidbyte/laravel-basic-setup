@@ -91,4 +91,8 @@ return [
         ],
     ],
     'copy_failed' => 'Failed to copy to clipboard',
+    'date_range' => [
+        'from' => 'From',
+        'to' => 'To',
+    ],
 ];

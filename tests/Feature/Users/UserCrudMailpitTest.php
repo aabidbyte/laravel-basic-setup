@@ -8,6 +8,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Services\Mail\MailpitClient;
 use App\Services\Users\UserService;
+use App\Support\Users\UserData;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 
@@ -36,13 +37,13 @@ describe('User CRUD Email Verification', function () {
 
         $userService = app(UserService::class);
 
-        $user = $userService->createUser(
-            data: [
+        $user = $userService->createUser(UserData::forCreation(
+            attributes: [
                 'name' => 'Fake Mail User',
                 'email' => 'fake-mail@example.com',
             ],
             sendActivation: true,
-        );
+        ));
 
         expect($user)->toBeInstanceOf(User::class);
         expect($user->email)->toBe('fake-mail@example.com');

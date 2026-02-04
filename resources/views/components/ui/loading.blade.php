@@ -51,12 +51,17 @@
         $sizeClasses[$size] ?? 'loading-lg',
         $colorClasses[$color] ?? 'text-primary',
     ]);
+    // Detect if color is being bound by Alpine
+    $boundColor = $attributes->get('x-bind:color') ?? $attributes->get(':color');
 @endphp
 
 @if ($centered)
-    <div {{ $attributes->merge(['class' => "flex items-center justify-center {$padding}"]) }}>
-        <span class="{{ $loadingClass }}"></span>
+    <div
+         {{ $attributes->except(['size', 'variant', 'color', 'centered', 'padding', 'x-bind:color', ':color'])->merge(['class' => "flex items-center justify-center {$padding}"]) }}>
+        <span class="{{ $loadingClass }}"
+              @if ($boundColor) x-bind:class='{{ alpineColorClasses($boundColor, 'loading-') }}' @endif></span>
     </div>
 @else
-    <span {{ $attributes->merge(['class' => $loadingClass]) }}></span>
+    <span {{ $attributes->except(['size', 'variant', 'color', 'centered', 'padding', 'x-bind:color', ':color'])->merge(['class' => $loadingClass]) }}
+          @if ($boundColor) x-bind:class='{{ alpineColorClasses($boundColor, 'loading-') }}' @endif></span>
 @endif

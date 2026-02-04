@@ -6,6 +6,9 @@ namespace App\Services\DataTable;
 
 use App\Services\DataTable\Builders\Column;
 use App\Services\DataTable\Builders\Filter;
+use App\Support\DataTable\JoinOptions;
+use App\Support\DataTable\QueryOptions;
+use App\Support\DataTable\SortOptions;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -30,44 +33,32 @@ class DataTableQueryBuilder
 
     /**
      * Build and execute the query
-     *
-     * @param  Builder  $query  Base query
-     * @param  array<int, Column>  $columns  Column definitions
-     * @param  array<int, Filter>  $filters  Filter definitions
-     * @param  array<string, mixed>  $filterValues  Current filter values
-     * @param  string  $search  Search term
-     * @param  string|null  $sortBy  Sort column
-     * @param  string  $sortDirection  Sort direction (asc/desc)
-     * @param  int  $perPage  Items per page
      */
-    public function build(
-        Builder $query,
-        array $columns,
-        array $filters,
-        array $filterValues,
-        string $search,
-        ?string $sortBy,
-        string $sortDirection,
-        int $perPage,
-    ): LengthAwarePaginator {
+    public function build(QueryOptions $options): LengthAwarePaginator
+    {
         // Auto-join relationships from columns
-        $this->applyAutoJoins($query, $columns);
+        $this->applyAutoJoins($options->query, $options->columns);
 
         // Apply search
-        if ($search !== '') {
-            $this->applySearch($query, $columns, $search);
+        if ($options->search !== '') {
+            $this->applySearch($options->query, $options->columns, $options->search);
         }
 
         // Apply filters
-        $this->applyFilters($query, $filters, $filterValues);
+        $this->applyFilters($options->query, $options->filters, $options->filterValues);
 
         // Apply sorting
-        if ($sortBy !== null && $sortBy !== '') {
-            $this->applySorting($query, $columns, $sortBy, $sortDirection);
+        if ($options->sortBy !== null && $options->sortBy !== '') {
+            $this->applySorting(new SortOptions(
+                query: $options->query,
+                columns: $options->columns,
+                sortBy: $options->sortBy,
+                sortDirection: $options->sortDirection,
+            ));
         }
 
         // Paginate
-        return $query->paginate($perPage);
+        return $options->query->paginate($options->perPage);
     }
 
     /**
@@ -144,10 +135,18 @@ class DataTableQueryBuilder
 
         $alias = $relatedTable === $parentTable ? "{$relatedTable}_{$relationshipName}" : $relatedTable;
 
+        $joinOptions = new JoinOptions(
+            query: $query,
+            relation: $relation,
+            parentTable: $parentTable,
+            relatedTable: $relatedTable,
+            alias: $alias,
+        );
+
         match ($relationType) {
-            'BelongsTo' => $this->applyBelongsToJoin($query, $relation, $parentTable, $relatedTable, $alias),
-            'HasOne', 'HasMany' => $this->applyHasJoin($query, $relation, $parentTable, $relatedTable, $alias),
-            'BelongsToMany' => $this->applyBelongsToManyJoin($query, $relation, $parentTable, $relatedTable, $alias),
+            'BelongsTo' => $this->applyBelongsToJoin($joinOptions),
+            'HasOne', 'HasMany' => $this->applyHasJoin($joinOptions),
+            'BelongsToMany' => $this->applyBelongsToManyJoin($joinOptions),
             default => null,
         };
 
@@ -170,66 +169,66 @@ class DataTableQueryBuilder
     /**
      * Apply BelongsTo join
      */
-    private function applyBelongsToJoin(Builder $query, $relation, string $parentTable, string $relatedTable, string $alias): void
+    private function applyBelongsToJoin(JoinOptions $options): void
     {
-        $foreignKey = $relation->getForeignKeyName();
-        $ownerKey = $relation->getOwnerKeyName();
+        $foreignKey = $options->relation->getForeignKeyName();
+        $ownerKey = $options->relation->getOwnerKeyName();
 
-        $tableClause = $alias === $relatedTable ? $relatedTable : "{$relatedTable} as {$alias}";
+        $tableClause = $options->alias === $options->relatedTable ? $options->relatedTable : "{$options->relatedTable} as {$options->alias}";
 
-        $query->leftJoin(
+        $options->query->leftJoin(
             $tableClause,
-            "{$parentTable}.{$foreignKey}",
+            "{$options->parentTable}.{$foreignKey}",
             '=',
-            "{$alias}.{$ownerKey}",
+            "{$options->alias}.{$ownerKey}",
         );
     }
 
     /**
      * Apply HasOne/HasMany join
      */
-    private function applyHasJoin(Builder $query, $relation, string $parentTable, string $relatedTable, string $alias): void
+    private function applyHasJoin(JoinOptions $options): void
     {
-        $foreignKey = $relation->getForeignKeyName();
-        $localKey = $relation->getLocalKeyName();
+        $foreignKey = $options->relation->getForeignKeyName();
+        $localKey = $options->relation->getLocalKeyName();
 
-        $tableClause = $alias === $relatedTable ? $relatedTable : "{$relatedTable} as {$alias}";
+        $tableClause = $options->alias === $options->relatedTable ? $options->relatedTable : "{$options->relatedTable} as {$options->alias}";
 
-        $query->leftJoin(
+        $options->query->leftJoin(
             $tableClause,
-            "{$parentTable}.{$localKey}",
+            "{$options->parentTable}.{$localKey}",
             '=',
-            "{$alias}.{$foreignKey}",
+            "{$options->alias}.{$foreignKey}",
         );
     }
 
     /**
      * Apply BelongsToMany join (through pivot table)
      */
-    private function applyBelongsToManyJoin(Builder $query, $relation, string $parentTable, string $relatedTable, string $alias): void
+    private function applyBelongsToManyJoin(JoinOptions $options): void
     {
-        $pivotTable = $relation->getTable();
-        $foreignPivotKey = $relation->getForeignPivotKeyName();
-        $relatedPivotKey = $relation->getRelatedPivotKeyName();
-        $parentKey = $relation->getParentKeyName();
-        $relatedKey = $relation->getRelatedKeyName();
+        $pivotTable = $options->relation->getTable();
+        $foreignPivotKey = $options->relation->getForeignPivotKeyName();
+        $relatedPivotKey = $options->relation->getRelatedPivotKeyName();
+        $parentKey = $options->relation->getParentKeyName();
+        $relatedKey = $options->relation->getRelatedKeyName();
 
         // Join pivot table
-        $query->leftJoin(
+        $options->query->leftJoin(
             $pivotTable,
-            "{$parentTable}.{$parentKey}",
+            "{$options->parentTable}.{$parentKey}",
             '=',
             "{$pivotTable}.{$foreignPivotKey}",
         );
 
-        $tableClause = $alias === $relatedTable ? $relatedTable : "{$relatedTable} as {$alias}";
+        $tableClause = $options->alias === $options->relatedTable ? $options->relatedTable : "{$options->relatedTable} as {$options->alias}";
 
         // Join related table
-        $query->leftJoin(
+        $options->query->leftJoin(
             $tableClause,
             "{$pivotTable}.{$relatedPivotKey}",
             '=',
-            "{$alias}.{$relatedKey}",
+            "{$options->alias}.{$relatedKey}",
         );
     }
 
@@ -343,13 +342,11 @@ class DataTableQueryBuilder
 
     /**
      * Apply sorting
-     *
-     * @param  array<int, Column>  $columns
      */
-    private function applySorting(Builder $query, array $columns, string $sortBy, string $sortDirection): void
+    private function applySorting(SortOptions $options): void
     {
         // Find the column
-        $column = collect($columns)->first(fn (Column $col) => $col->getField() === $sortBy);
+        $column = collect($options->columns)->first(fn (Column $col) => $col->getField() === $options->sortBy);
 
         if ($column === null) {
             return;
@@ -358,7 +355,7 @@ class DataTableQueryBuilder
         // Check for custom sort callback
         $sortCallback = $column->getSortCallback();
         if ($sortCallback !== null) {
-            ($sortCallback)($query, $sortDirection);
+            ($sortCallback)($options->query, $options->sortDirection);
 
             return;
         }
@@ -366,11 +363,11 @@ class DataTableQueryBuilder
         // Default sort behavior
         if ($column->hasRelationship()) {
             $parsed = $column->parseRelationship();
-            $table = $this->getTableForRelationship($query, $parsed['relationships']);
-            $query->orderBy("{$table}.{$parsed['column']}", $sortDirection);
+            $table = $this->getTableForRelationship($options->query, $parsed['relationships']);
+            $options->query->orderBy("{$table}.{$parsed['column']}", $options->sortDirection);
         } else {
-            $table = $query->getModel()->getTable();
-            $query->orderBy("{$table}.{$sortBy}", $sortDirection);
+            $table = $options->query->getModel()->getTable();
+            $options->query->orderBy("{$table}.{$options->sortBy}", $options->sortDirection);
         }
     }
 

@@ -6,6 +6,7 @@ namespace App\Livewire\DataTable\Concerns;
 
 use App\Constants\DataTable\DataTable as DataTableConstants;
 use App\Services\FrontendPreferences\FrontendPreferencesService;
+use App\Support\Preferences\DatatablePreferenceOptions;
 
 /**
  * Trait for handling DataTable user preferences logic.
@@ -41,28 +42,28 @@ trait HasDatatableLivewirePreferences
 
         // Load preferences only if not set by query string
         if (! ($this->queryStringLoaded[DataTableConstants::QUERY_PARAM_SORT] ?? false)) {
-            $sortBy = $preferencesService->getDatatablePreference($identifier, 'sortBy', '', $request);
+            $sortBy = $preferencesService->getDatatablePreference(new DatatablePreferenceOptions($identifier, 'sortBy', '', $request));
             if (! empty($sortBy)) {
                 $this->sortBy = $sortBy;
             }
         }
 
         if (! ($this->queryStringLoaded[DataTableConstants::QUERY_PARAM_DIRECTION] ?? false)) {
-            $sortDirection = $preferencesService->getDatatablePreference($identifier, 'sortDirection', 'asc', $request);
+            $sortDirection = $preferencesService->getDatatablePreference(new DatatablePreferenceOptions($identifier, 'sortDirection', 'asc', $request));
             if (! empty($sortDirection) && \in_array($sortDirection, ['asc', 'desc'], true)) {
                 $this->sortDirection = $sortDirection;
             }
         }
 
         if (! ($this->queryStringLoaded[DataTableConstants::QUERY_PARAM_PER_PAGE] ?? false)) {
-            $perPage = $preferencesService->getDatatablePreference($identifier, 'perPage', $this->perPage, $request);
+            $perPage = $preferencesService->getDatatablePreference(new DatatablePreferenceOptions($identifier, 'perPage', $this->perPage, $request));
             if ($perPage > 0) {
                 $this->perPage = $perPage;
             }
         }
 
         if (! ($this->queryStringLoaded[DataTableConstants::QUERY_PARAM_FILTERS] ?? false)) {
-            $filters = $preferencesService->getDatatablePreference($identifier, 'filters', [], $request);
+            $filters = $preferencesService->getDatatablePreference(new DatatablePreferenceOptions($identifier, 'filters', [], $request));
             if (\is_array($filters) && ! empty($filters)) {
                 $this->filters = $filters;
             }

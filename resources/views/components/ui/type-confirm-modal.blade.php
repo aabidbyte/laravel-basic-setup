@@ -34,16 +34,13 @@
         </div>
 
         {{-- Confirmation input --}}
-        <div class="form-control">
-            <x-ui.label :text="__('common.type_confirm.type_label')"></x-ui.label>
-            <input type="text"
-                   x-model="confirmText"
-                   @keyup.enter="confirm()"
-                   class="input input-bordered w-full"
-                   :class="{ 'input-error': confirmText.length > 0 && !isConfirmValid }"
-                   placeholder="{{ __('common.type_confirm.placeholder') }}"
-                   autofocus />
-        </div>
+        <x-ui.input type="text"
+                    x-model="confirmText"
+                    @keyup.enter="confirm()"
+                    :class="{ 'input-error': confirmText.length > 0 && !isConfirmValid }"
+                    placeholder="{{ __('common.type_confirm.placeholder') }}"
+                    :label="__('common.type_confirm.type_label')"
+                    autofocus />
     </div>
 
     <x-slot:actions>

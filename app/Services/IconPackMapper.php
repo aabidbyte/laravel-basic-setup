@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Support\UI\IconOptions;
+
 /**
  * Maps icon pack names to Blade Icons component names.
  * Handles validation and sanitization of icon names, pack names, and CSS classes.
@@ -143,27 +145,30 @@ class IconPackMapper
      * Render icon HTML.
      * Handles all sanitization, size mapping, and rendering with fallback.
      */
-    public function renderIcon(?string $name, ?string $pack = null, ?string $class = null, ?string $size = null): string
+    public function renderIcon(IconOptions $options): string
     {
-        // Handle size prop for backward compatibility
-        $sizeClass = $this->getSizeClass($size);
+        // Handle size prop
+        $sizeClass = $this->getSizeClass($options->size);
 
         // Sanitize inputs
-        $sanitizedPack = $this->sanitizePack($pack);
-        $sanitizedName = $this->sanitizeIconName($name);
+        $sanitizedPack = $this->sanitizePack($options->pack);
+        $sanitizedName = $this->sanitizeIconName($options->name);
 
-        // Combine size and class, then sanitize
-        $combinedClass = \trim("{$sizeClass} {$class}");
+        // Handle color
+        $colorClass = $options->color ? 'text-' . $options->color : '';
+
+        // Combine size, color, and class, then sanitize
+        $combinedClass = \trim("{$sizeClass} {$colorClass} {$options->class}");
         $sanitizedClass = $this->sanitizeClass($combinedClass) ?: 'w-6 h-6';
 
-        if (! $name) {
-            return svg('heroicon-o-question-mark-circle', $sanitizedClass)->toHtml();
+        if (! $options->name) {
+            return \svg('heroicon-o-question-mark-circle', $sanitizedClass)->toHtml();
         }
 
         // Get the component name
         $componentName = $this->getComponentName($sanitizedPack, $sanitizedName);
 
         // Render the icon with fallback
-        return svg($componentName, $sanitizedClass)->toHtml();
+        return \svg($componentName, $sanitizedClass)->toHtml();
     }
 }

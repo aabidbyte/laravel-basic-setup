@@ -51,17 +51,18 @@
     -   **Global Namespace for Built-in Functions**: All PHP built-in functions (e.g., `is_array`, `count`, `array_merge`, `in_array`, `json_encode`, `json_decode`, etc.) MUST be called in the global namespace by prefixing them with a backslash (`\`) when used inside a namespaced file. This improves performance by avoiding a namespace lookup.
         -   **✅ Correct**: `\count($items)`, `\json_encode($data)`
         -   **❌ Incorrect**: `count($items)`, `json_encode($data)`
--   **PHPDoc**: **Always add comprehensive PHPDoc comments to all methods and functions when possible** - This enables better IDE autocomplete, type checking, and code documentation. Include:
-    -   `@param` annotations with types and descriptions for all parameters
-    -   `@return` annotations with return types
-    -   `@throws` annotations for exceptions that may be thrown
-    -   Detailed descriptions explaining what the method does
-    -   Prefer PHPDoc blocks over inline comments
+-   **PHPDoc & Commenting**: **(MANDATORY)** All code must be well-documented.
+    -   **PHPDoc**: Add comprehensive PHPDoc comments to all methods, functions, and classes. Include `@param`, `@return`, and `@throws` tags with types and descriptions.
+    -   **Logic Explanation**: For any non-trivial logic, you **MUST** provide inline comments explaining *why* something is done, not just *what* is done. Explain weird edge cases, complex business logic, or specific design decisions.
+    -   **Usages**: If a function has specific usage constraints or intended patterns, document them clearly in the PHPDoc description.
+    -   **Prefer PHPDoc blocks** over inline comments for method/function headers.
 -   **Auth**: **Never use the `auth()` helper**. Always use the `Illuminate\Support\Facades\Auth` facade (e.g. `Auth::check()`, `Auth::user()`, `Auth::id()`, `Auth::guard(...)`).
 -   **Helper Functions**: **Do NOT use `function_exists()` checks in helper files** - Helper files are autoloaded via Composer and will only be loaded once, so function existence checks are unnecessary
 -   **I18nService**: **Always use `I18nService` for locale-related code** - Do not directly access `config('i18n.*')` in helper functions or other code. Use `I18nService` methods to centralize all locale-related logic (`getSupportedLocales()`, `getDefaultLocale()`, `getValidLocale()`, `getLocaleMetadata()`, etc.)
 -   **View Composers**: **Use View Composers instead of `@inject` for global data** - Register View Composers in service providers to share data globally with all views. This is more efficient and cleaner than using `@inject` directives in every template.
 -   **Leading Import Slashes**: **NO leading import slashes are allowed in PHP or Blade files** - Avoid using leading slashes in `use` statements or inline class references (e.g., use `App\Models\User` instead of `\App\Models\User`). Always prefer importing classes at the top of the file. If a name collision occurs, use the `as` keyword with descriptive context (e.g., `use App\Models\User as AppUser`).
+-   **Use Enums Whenever Possible**: Always prefer PHP **backed Enums** over class constants or raw strings for type-bound properties (status, type, color, etc.). This ensures type safety and enables better IDE support.
+-   **Dedicated UI Helpers**: Use `alpineColorClasses()` (from `app/helpers/ui-helpers.php`) for all dynamic class bindings in UI components. This helper ensures compatibility with the Tailwind 4 scanner without needing a manual safelist.
  
 
  ### Exception Handling
@@ -93,8 +94,56 @@ A function is considered valid ONLY IF:
 -   **Functions MUST be small**
 -   **Default target**: 1–10 lines
 -   **Hard limit**: 20 lines (exceptions require explicit justification)
+-   **Parameter Limit**: A function MUST NOT have more than **3 parameters**. If more parameters are required, they MUST be encapsulated into a dedicated **Data Object** or **DTO**.
 -   Nested control structures are discouraged
 -   **Early returns are preferred**
+
+#### DTO Organization & Implementation
+
+-   **Location**: Place DTOs in `app/Support/[Domain]/` (e.g., `app/Support/Users/UserData.php`, `app/Support/DataTable/QueryOptions.php`).
+-   **Structure**: Use PHP 8.2+ `readonly` classes with constructor property promotion whenever possible.
+-   **Factory Methods**: Add static `fromArray()` or `forCreation()` / `forUpdate()` methods to simplify DTO instantiation from request data or arrays.
+-   **Type Safety**: Always use strict type hints for all DTO properties.
+
+**Example (DTO):**
+```php
+namespace App\Support\Users;
+
+readonly class UserData
+{
+    public function __construct(
+        public array $attributes,
+        public array $roleUuids = [],
+        public array $teamUuids = [],
+        public array $permissionUuids = [],
+        public bool $sendActivation = false,
+    ) {}
+
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            attributes: $data['attributes'] ?? [],
+            roleUuids: $data['roles'] ?? [],
+            // ...
+        );
+    }
+}
+```
+
+**Example (Usage):**
+```php
+// ✅ CORRECT (Using DTO)
+public function createUser(UserData $data): User
+{
+    // Implementation using $data->attributes, $data->roleUuids, etc.
+}
+
+// ❌ INCORRECT (Too many parameters)
+public function createUser(array $attributes, array $roles, array $teams, bool $sendActivation): User
+{
+    // ...
+}
+```
 
 #### Refactoring Requirement (MANDATORY)
 
@@ -421,6 +470,19 @@ it('tests something', function () {
         <x-layouts.app>...</x-layouts.app>
         ```
 
+### Component Attribute Forwarding & Alpine.js Scope (CRITICAL)
+
+When creating wrapper components (like `x-ui.input` or `x-ui.password`) that include slots and Alpine.js state, ensure that **Alpine logic is placed on the outermost relevant container**.
+
+**Pattern:**
+Promote attributes like `x-data`, `x-init`, and `x-cloak` from the component's `$attributes` to the root container. This ensures that any elements inside slots (like `prepend`/`append` icons or buttons) share the same Alpine scope as the main input/textarea.
+
+**Rule for forward-facing components:**
+1.  **Split `$attributes`**: Divide attributes into "container attributes" (`x-data`, `x-init`, `x-cloak`, `x-show`, `x-transition`) and "input attributes" (`wire:model`, `name`, `id`, `x-ref`, etc.).
+2.  **Container Binding**: Apply "container attributes" to the root `div` of the component.
+3.  **Input Binding**: Apply "input attributes" to the actual `<input>` or `<textarea>`.
+4.  **Rationale**: This prevents scope shadowing and ensures that `$refs` or shared state (like `showPassword` in a password toggle) are accessible to interactive elements within slots.
+
 ### Component-First UI Development
 
 > **CRITICAL RULE**: All user-facing UI MUST use centralized `x-ui.*` components. Raw HTML tags for common UI patterns are NOT allowed.
@@ -444,7 +506,7 @@ it('tests something', function () {
 These structural elements are acceptable without components:
 -   **Containers**: `<div>`, `<section>`, `<article>`, `<main>`, `<header>`, `<footer>`, `<nav>`, `<aside>`
 -   **Layout utilities**: Tailwind's `flex`, `grid`, `gap-*`, `p-*`, `m-*`, `w-*`, `max-w-*`
--   **Semantic lists**: `<ul>`, `<ol>`, `<li>`, `<dl>`, `<dt>`, `<dd>`
+-   **Semantic lists**: `<ul>`, `<ol>`, `<li>`, `<dl>`, `dt`, `<dd>`
 -   **Card structures**: DaisyUI's `.card`, `.card-body` classes (no component yet)
 -   **Alerts**: DaisyUI's `.alert` classes (no component yet)
 
@@ -653,15 +715,14 @@ public function getSubmitButtonTextProperty(): string
         -   Checkbox values should use UUIDs: `value="{{ $role->id }}"` → `value="{{ $role->uuid }}"`
         -   Wire:model id arrays should contain UUIDs, not integer IDs
     -   **Exception**: Session IDs and notification IDs from Laravel's built-in systems may use their default format
-586: 
-587: #### Self-Joins & Ambiguity
-588: 
-589: -   **Ambiguous Columns Rule**: **ALWAYS qualify columns with the table name when using joins.**
-590:     -   When joining tables (especially self-joins), column names like `created_at`, `status`, or `type` become ambiguous.
-591:     -   **Correct**: `where('users.created_at', ...)`
-592:     -   **Incorrect**: `where('created_at', ...)`
-593: -   **DataTable Filters**: Use `->fieldMapping('table_name.column')` in DataTable Filters to implicitly fix ambiguity without changing the filter key.
-594: -   **Base Query**: In `baseQuery()`, always select `table_name.*` to ensure the primary model attributes are hydrated correctly and not overwritten by joined columns.
+#### Self-Joins & Ambiguity
+
+-   **Ambiguous Columns Rule**: **ALWAYS qualify columns with the table name when using joins.**
+    -   When joining tables (especially self-joins), column names like `created_at`, `status`, or `type` become ambiguous.
+    -   **Correct**: `where('users.created_at', ...)`
+    -   **Incorrect**: `where('created_at', ...)`
+-   **DataTable Filters**: Use `->fieldMapping('table_name.column')` in DataTable Filters to implicitly fix ambiguity without changing the filter key.
+-   **Base Query**: In `baseQuery()`, always select `table_name.*` to ensure the primary model attributes are hydrated correctly and not overwritten by joined columns.
 
 ### Authentication
 

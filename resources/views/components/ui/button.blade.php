@@ -53,14 +53,24 @@
     $btnClasses = trim(implode(' ', [$variantClass, $colorClass, $sizeClass, $circleClass]));
 @endphp
 
+@php
+    // Detect if color is being bound by Alpine
+    $boundColor = $attributes->get('x-bind:color') ?? $attributes->get(':color');
+
+    // Classes to exclude from final attributes
+    $excludeAttributes = ['variant', 'color', 'size', 'type', 'text', 'href', 'circle', 'x-bind:color', ':color'];
+@endphp
+
 @if ($href ?? false)
     <a href="{{ $href }}"
-       {{ $attributes->merge(['class' => trim("btn {$btnClasses} data-loading:opacity-50 data-loading:pointer-events-none")])->except(['variant', 'color', 'size', 'type', 'text', 'href', 'circle']) }}>
+       {{ $attributes->merge(['class' => trim("btn {$btnClasses} data-loading:opacity-50 data-loading:pointer-events-none")])->except($excludeAttributes) }}
+       @if ($boundColor) x-bind:class={{ alpineColorClasses($boundColor, 'btn-') }} @endif>
         {{ $text ?? $slot }}
     </a>
 @else
     <button type="{{ $type }}"
-            {{ $attributes->merge(['class' => trim("btn {$btnClasses} data-loading:opacity-50 data-loading:pointer-events-none")])->except(['variant', 'color', 'size', 'type', 'text', 'circle']) }}>
+            {{ $attributes->merge(['class' => trim("btn {$btnClasses} data-loading:opacity-50 data-loading:pointer-events-none")])->except($excludeAttributes) }}
+            @if ($boundColor) x-bind:class='{{ alpineColorClasses($boundColor, 'btn-') }}' @endif>
         {{ $text ?? $slot }}
     </button>
 @endif

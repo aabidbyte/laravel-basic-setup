@@ -88,13 +88,17 @@
                     </div>
 
                     {{-- Dismiss Button --}}
-                    <button @click.stop="dismiss()"
-                            type="button"
-                            class="text-base-content/40 hover:text-base-content/60 focus:outline-base-content ml-auto shrink-0 focus:outline-2 focus:outline-offset-2"
-                            aria-label="{{ __('notifications.dismiss') }}">
+                    <x-ui.button @click.stop="dismiss()"
+                                 type="button"
+                                 variant="ghost"
+                                 ::color="toast.type"
+                                 size="sm"
+                                 circle
+                                 aria-label="{{ __('notifications.dismiss') }}">
                         <x-ui.icon name="x-mark"
-                                   class="h-5 w-5"></x-ui.icon>
-                    </button>
+                                   ::color="toast.type"
+                                   size="sm"></x-ui.icon>
+                    </x-ui.button>
                 </div>
             </div>
         </template>

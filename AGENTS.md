@@ -21,6 +21,11 @@ See [Colocated Scripts Pattern](docs/AGENTS/colocated-scripts.md) for details.
 
 See [Development Conventions](docs/AGENTS/development-conventions.md#no-directives-in-component-tags) for details.
 
+### Component Attribute Forwarding (CRITICAL)
+**Always promote Alpine attributes (`x-data`, etc.) to the root container in composite components.** This ensures slots share the same Alpine scope.
+
+See [Attribute Forwarding Patterns](docs/AGENTS/development-conventions.md#component-attribute-forwarding--alpinejs-scope-critical) for details.
+
 ### No Leading Import Slashes (PHP/Blade)
 **Avoid leading slashes (`\`) in `use` statements and class references.** Use full namespaces in `use` statements and short names in the code.
 
@@ -114,6 +119,17 @@ Standard Blade views (controlled by Controllers/Routes returning `view()`) **MUS
 {{-- ✅ CORRECT --}}
 <x-layouts.page>...</x-layouts.page>
 ```
+
+### Parameter Limit & DTO Pattern (MANDATORY)
+**A function MUST NOT have more than 3 parameters.** If a method or function requires more than 3 parameters, they MUST be encapsulated into a dedicated **Data Object** or **DTO**.
+
+**Examples:**
+- ❌ `public function createUser(array $data, array $roles, array $teams, bool $sendActivation)` (4 parameters)
+- ✅ `public function createUser(UserData $userData)` (1 parameter)
+
+**DTO Location**: DTOs should be placed in `app/Support/[Domain]/` (e.g., `app/Support/Users/UserData.php`).
+
+See [Development Conventions](docs/AGENTS/development-conventions.md#parameter-limit) for details.
 
 ## Quick Links
 

@@ -85,7 +85,7 @@ class User extends BaseUserModel implements MustVerifyEmail
     }
 
     /**
-     * Get the user's initials
+     * Get the user's initials.
      */
     public function initials(): string
     {
@@ -291,6 +291,9 @@ class User extends BaseUserModel implements MustVerifyEmail
      *
      * For token storage, we use 'identifier' (email or username) to support users
      * with optional email addresses, but the notification system requires an email.
+     *
+     *
+     * @throws RuntimeException If user has no email
      */
     public function getEmailForPasswordReset(): string
     {

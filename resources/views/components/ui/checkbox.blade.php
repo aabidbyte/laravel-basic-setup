@@ -28,13 +28,17 @@
         'lg' => 'checkbox-lg',
         default => '',
     };
+
+    // Detect if color is being bound by Alpine
+    $boundColor = $attributes->get('x-bind:color') ?? $attributes->get(':color');
 @endphp
 
 <div class="form-control w-fit">
     <x-ui.label variant="inline">
         <input type="checkbox"
                id="{{ $id }}"
-               {{ $attributes->merge(['class' => trim("checkbox {$colorClass} {$sizeClass}")]) }}
+               {{ $attributes->merge(['class' => trim("checkbox {$colorClass} {$sizeClass}")])->except(['color', 'x-bind:color', ':color']) }}
+               @if ($boundColor) x-bind:class='{{ alpineColorClasses($boundColor, 'checkbox-') }}' @endif
                @if ($value !== null) value="{{ $value }}" @endif
                @if ($checked) checked @endif />
         @if ($label)

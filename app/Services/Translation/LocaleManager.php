@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services\Translation;
 
+use App\Support\Translation\MergeOptions;
+use App\Support\Translation\SyncOptions;
+use App\Support\Translation\TranslationConfig;
 use Illuminate\Support\Facades\File;
 
 class LocaleManager
@@ -28,12 +31,12 @@ class LocaleManager
         $this->dynamicKeyResolver = $dynamicKeyResolver;
     }
 
-    public function setConfiguration(string $sourceLocale, array $supportedLocales, array $namespaces, string $extractedFile): void
+    public function setConfiguration(TranslationConfig $config): void
     {
-        $this->sourceLocale = $sourceLocale;
-        $this->supportedLocales = $supportedLocales;
-        $this->namespaces = $namespaces;
-        $this->extractedFile = $extractedFile;
+        $this->sourceLocale = $config->sourceLocale;
+        $this->supportedLocales = $config->supportedLocales;
+        $this->namespaces = $config->namespaces;
+        $this->extractedFile = $config->extractedFile;
     }
 
     public function getSourceLocale(): string
@@ -119,26 +122,31 @@ class LocaleManager
                 continue; // Skip source locale
             }
 
-            $this->syncLocale($locale, $translationFiles, $write, $output);
+            $this->syncLocale(new SyncOptions(
+                locale: $locale,
+                translationFiles: $translationFiles,
+                write: $write,
+                output: $output,
+            ));
         }
     }
 
     /**
      * Sync a specific locale with the source locale.
      */
-    public function syncLocale(string $locale, array $translationFiles, bool $write, $output = null): void
+    public function syncLocale(SyncOptions $options): void
     {
-        $localePath = lang_path($locale);
+        $localePath = lang_path($options->locale);
         $sourcePath = lang_path($this->sourceLocale);
 
         if (! File::exists($localePath)) {
             File::makeDirectory($localePath, 0755, true);
-            if ($output) {
-                $output->info("Created locale directory: {$locale}");
+            if ($options->output) {
+                $options->output->info("Created locale directory: {$options->locale}");
             }
         }
 
-        foreach ($translationFiles as $file) {
+        foreach ($options->translationFiles as $file) {
             $sourceFile = "{$sourcePath}/{$file}.php";
             $localeFile = "{$localePath}/{$file}.php";
 
@@ -150,19 +158,23 @@ class LocaleManager
             $localeTranslations = File::exists($localeFile) ? require $localeFile : [];
 
             // Merge: add missing keys from source, keep existing locale values
-            $merged = $this->mergeTranslations($sourceTranslations, $localeTranslations, $file);
+            $merged = $this->mergeTranslations(new MergeOptions(
+                source: $sourceTranslations,
+                locale: $localeTranslations,
+                filename: $file,
+            ));
 
             // Check if there are changes
             if ($merged !== $localeTranslations) {
-                if ($write) {
+                if ($options->write) {
                     $this->writeTranslationFile($localeFile, $merged);
                     $this->filesUpdated++;
-                    if ($output) {
-                        $output->info("Updated: {$locale}/{$file}.php");
+                    if ($options->output) {
+                        $options->output->info("Updated: {$options->locale}/{$file}.php");
                     }
                 } else {
-                    if ($output) {
-                        $output->line("Would update: {$locale}/{$file}.php");
+                    if ($options->output) {
+                        $options->output->line("Would update: {$options->locale}/{$file}.php");
                     }
                 }
 
@@ -359,32 +371,45 @@ class LocaleManager
     /**
      * Merge translations, adding missing keys from source.
      *
-     * @param  array<string, mixed>  $source
-     * @param  array<string, mixed>  $locale
      * @return array<string, mixed>
      */
-    public function mergeTranslations(array $source, array $locale, string $filename = '', string $prefix = ''): array
+    public function mergeTranslations(MergeOptions $options): array
     {
-        $merged = $locale;
+        $merged = $options->locale;
 
-        foreach ($source as $key => $value) {
-            $fullKey = $prefix ? "{$prefix}.{$key}" : $key;
+        foreach ($options->source as $key => $value) {
+            $fullKey = $options->prefix ? "{$options->prefix}.{$key}" : $key;
 
             if (! isset($merged[$key])) {
                 // Key missing in locale - set placeholder value
                 if (\is_array($value)) {
                     // If source value is an array, recursively merge with empty array
-                    $merged[$key] = $this->mergeTranslations($value, [], $filename, $fullKey);
+                    $merged[$key] = $this->mergeTranslations(new MergeOptions(
+                        source: $value,
+                        locale: [],
+                        filename: $options->filename,
+                        prefix: $fullKey,
+                    ));
                 } else {
                     // For scalar values, set empty string to allow fallback or manual translation
                     $merged[$key] = '';
                 }
             } elseif (\is_array($value) && \is_array($merged[$key])) {
                 // Both are arrays, recursively merge
-                $merged[$key] = $this->mergeTranslations($value, $merged[$key], $filename, $fullKey);
+                $merged[$key] = $this->mergeTranslations(new MergeOptions(
+                    source: $value,
+                    locale: $merged[$key],
+                    filename: $options->filename,
+                    prefix: $fullKey,
+                ));
             } elseif (\is_array($value) && ! \is_array($merged[$key])) {
                 // Source is array but locale has scalar - replace with merged array
-                $merged[$key] = $this->mergeTranslations($value, [], $filename, $fullKey);
+                $merged[$key] = $this->mergeTranslations(new MergeOptions(
+                    source: $value,
+                    locale: [],
+                    filename: $options->filename,
+                    prefix: $fullKey,
+                ));
             }
         }
 

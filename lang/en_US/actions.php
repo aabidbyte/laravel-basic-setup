@@ -59,4 +59,6 @@ return [
     'customize_text_version' => 'Customize Text Version',
     'hide_text_version' => 'Hide Text Version',
     'required' => 'Required',
+    'show_password' => 'Show Password',
+    'hide_password' => 'Hide Password',
 ];

@@ -13,17 +13,17 @@
     @endif
 
     <div class="flex gap-2">
-        <input type="date"
-               {{ $from }}
-               {{ $attributes->whereStartsWith('wire:model.from') }}
-               class="input input-bordered w-full"
-               placeholder="{{ __('From') }}" />
+        <x-ui.input type="date"
+                    {{ $from }}
+                    {{ $attributes->whereStartsWith('wire:model.from') }}
+                    class="w-full"
+                    placeholder="{{ __('table.date_range.from') }}" />
 
-        <input type="date"
-               {{ $to }}
-               {{ $attributes->whereStartsWith('wire:model.to') }}
-               class="input input-bordered w-full"
-               placeholder="{{ __('To') }}" />
+        <x-ui.input type="date"
+                    {{ $to }}
+                    {{ $attributes->whereStartsWith('wire:model.to') }}
+                    class="w-full"
+                    placeholder="{{ __('table.date_range.to') }}" />
     </div>
 
     @if ($error)

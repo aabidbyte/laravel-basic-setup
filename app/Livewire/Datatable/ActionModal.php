@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\DataTable;
 
 use App\Livewire\Bases\LivewireBaseComponent;
+use App\Support\UI\ModalOptions;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\On;
 
@@ -50,42 +51,43 @@ class ActionModal extends LivewireBaseComponent
 
     /**
      * Handle open modal event from datatable components
-     *
-     * @param  string  $viewPath  The view or component path
-     * @param  string  $viewType  'blade' or 'livewire'
-     * @param  array<string, mixed>  $viewProps  Props to pass to the modal content
-     * @param  string|null  $viewTitle  Optional modal title
-     * @param  string|null  $datatableId  ID of the datatable for callbacks
      */
     #[On('open-datatable-modal')]
-    public function openModal(?string $viewPath = null, string $viewType = 'blade', array $viewProps = [], ?string $viewTitle = null, ?string $datatableId = null): void
+    public function openModal(ModalOptions|array $options): void
     {
+        $options = $options instanceof ModalOptions ? $options : ModalOptions::fromArray($options);
+
         // Handle confirmation modal type by mapping it to a Blade view
-        if ($viewType === 'confirm') {
+        if ($options->viewType === 'confirm') {
             $viewType = 'blade'; // Normalize to blade for view rendering compatibility
-            $viewPath = $viewPath ?? 'components.ui.confirm-dialog-body';
-            $viewTitle = $viewTitle ?? $viewProps['title'] ?? __('modals.confirm.title');
+            $viewPath = $options->viewPath ?? 'components.ui.confirm-dialog-body';
+            $viewTitle = $options->viewTitle ?? $options->viewProps['title'] ?? __('modals.confirm.title');
 
             // Inject behavior callback strings for the Blade component
             $viewProps = \array_merge([
                 'title' => $viewTitle,
-                'content' => $viewProps['content'] ?? '',
-                'confirmLabel' => $viewProps['confirmLabel'] ?? __('actions.confirm'),
-                'cancelLabel' => $viewProps['cancelLabel'] ?? __('actions.cancel'),
+                'content' => $options->viewProps['content'] ?? '',
+                'confirmLabel' => $options->viewProps['confirmLabel'] ?? __('actions.confirm'),
+                'cancelLabel' => $options->viewProps['cancelLabel'] ?? __('actions.cancel'),
                 'onConfirm' => 'confirmAction()',
                 'onCancel' => 'closeModal()',
                 // Explicitly preserve action keys
-                'actionKey' => $viewProps['actionKey'] ?? null,
-                'uuid' => $viewProps['uuid'] ?? null,
-                'isBulk' => $viewProps['isBulk'] ?? false,
-            ], $viewProps);
+                'actionKey' => $options->viewProps['actionKey'] ?? null,
+                'uuid' => $options->viewProps['uuid'] ?? null,
+                'isBulk' => $options->viewProps['isBulk'] ?? false,
+            ], $options->viewProps);
+        } else {
+            $viewPath = $options->viewPath;
+            $viewType = $options->viewType;
+            $viewProps = $options->viewProps;
+            $viewTitle = $options->viewTitle;
         }
 
         $this->modalView = $viewPath;
         $this->modalType = $viewType;
         $this->modalProps = $viewProps;
         $this->modalTitle = $viewTitle;
-        $this->datatableId = $datatableId;
+        $this->datatableId = $options->datatableId;
         $this->isOpen = true;
     }
 

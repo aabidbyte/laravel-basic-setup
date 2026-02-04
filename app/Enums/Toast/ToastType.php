@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Enums\Toast;
 
+use App\Enums\UI\ThemeColorTypes;
+
 enum ToastType: string
 {
-    case Success = 'success';
-    case Info = 'info';
-    case Warning = 'warning';
-    case Error = 'error';
-    case Classic = 'classic';
+    case Success = ThemeColorTypes::SUCCESS->value;
+    case Info = ThemeColorTypes::INFO->value;
+    case Warning = ThemeColorTypes::WARNING->value;
+    case Error = ThemeColorTypes::ERROR->value;
+    case Classic = ThemeColorTypes::NEUTRAL->value;
 }

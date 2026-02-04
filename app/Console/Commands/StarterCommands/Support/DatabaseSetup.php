@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands\StarterCommands\Support;
 
+use App\Support\Database\DatabaseCredentials;
 use Exception;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -141,29 +142,24 @@ class DatabaseSetup
      */
     public function configure(array $credentials): void
     {
-        $connection = $credentials['connection'];
-        $dbHost = $credentials['host'];
-        $dbPort = $credentials['port'];
-        $dbDatabase = $credentials['database'];
-        $dbUsername = $credentials['username'];
-        $dbPassword = $credentials['password'];
+        $creds = DatabaseCredentials::fromArray($credentials);
 
         // Check if database exists and create if needed (for MySQL/MariaDB/PostgreSQL)
-        if ($connection !== 'sqlite' && ($connection === 'mysql' || $connection === 'mariadb' || $connection === 'pgsql')) {
-            $this->checkAndCreateDatabase($connection, $dbHost, $dbPort, $dbDatabase, $dbUsername, $dbPassword);
+        if ($creds->connection !== 'sqlite' && (\in_array($creds->connection, ['mysql', 'mariadb', 'pgsql'], true))) {
+            $this->checkAndCreateDatabase($creds);
         }
 
         // Update .env file
         $envUpdates = [
-            'DB_CONNECTION' => $connection,
-            'DB_DATABASE' => $dbDatabase,
+            'DB_CONNECTION' => $creds->connection,
+            'DB_DATABASE' => $creds->database,
         ];
 
-        if ($connection !== 'sqlite') {
-            $envUpdates['DB_HOST'] = $dbHost;
-            $envUpdates['DB_PORT'] = $dbPort;
-            $envUpdates['DB_USERNAME'] = $dbUsername;
-            $envUpdates['DB_PASSWORD'] = $dbPassword ?: '';
+        if ($creds->connection !== 'sqlite') {
+            $envUpdates['DB_HOST'] = $creds->host;
+            $envUpdates['DB_PORT'] = $creds->port;
+            $envUpdates['DB_USERNAME'] = $creds->username;
+            $envUpdates['DB_PASSWORD'] = $creds->password ?: '';
         }
 
         $this->envManager->update($envUpdates);
@@ -171,10 +167,10 @@ class DatabaseSetup
         info('✅ Database credentials saved to .env file');
 
         // Update Config facade and clear DB connection cache
-        $this->updateConfigAndClearCache($credentials);
+        $this->updateConfigAndClearCache($creds);
 
         // Log the database credentials that Laravel will use
-        $this->logDatabaseConfig($connection, $dbHost, $dbPort, $dbDatabase, $dbUsername, $dbPassword);
+        $this->logDatabaseConfig($creds);
     }
 
     /**
@@ -182,32 +178,29 @@ class DatabaseSetup
      *
      * @param  array<string, mixed>  $credentials
      */
-    protected function updateConfigAndClearCache(array $credentials): void
+    protected function updateConfigAndClearCache(DatabaseCredentials|array $credentials): void
     {
-        $connection = $credentials['connection'];
-        $dbHost = $credentials['host'];
-        $dbPort = $credentials['port'];
-        $dbDatabase = $credentials['database'];
-        $dbUsername = $credentials['username'];
-        $dbPassword = $credentials['password'];
+        if (\is_array($credentials)) {
+            $credentials = DatabaseCredentials::fromArray($credentials);
+        }
 
         // Set database config values directly using Config facade
-        Config::set('database.default', $connection);
-        Config::set('database.connections.' . $connection . '.driver', $connection);
-        Config::set('database.connections.' . $connection . '.host', $dbHost);
-        Config::set('database.connections.' . $connection . '.port', $dbPort);
-        Config::set('database.connections.' . $connection . '.database', $dbDatabase);
-        Config::set('database.connections.' . $connection . '.username', $dbUsername);
-        Config::set('database.connections.' . $connection . '.password', $dbPassword ?: '');
-        if ($connection === 'mysql' || $connection === 'mariadb') {
-            Config::set('database.connections.' . $connection . '.charset', 'utf8mb4');
-            Config::set('database.connections.' . $connection . '.collation', 'utf8mb4_unicode_ci');
-        } elseif ($connection === 'pgsql') {
-            Config::set('database.connections.' . $connection . '.charset', 'utf8');
+        Config::set('database.default', $credentials->connection);
+        Config::set('database.connections.' . $credentials->connection . '.driver', $credentials->connection);
+        Config::set('database.connections.' . $credentials->connection . '.host', $credentials->host);
+        Config::set('database.connections.' . $credentials->connection . '.port', $credentials->port);
+        Config::set('database.connections.' . $credentials->connection . '.database', $credentials->database);
+        Config::set('database.connections.' . $credentials->connection . '.username', $credentials->username);
+        Config::set('database.connections.' . $credentials->connection . '.password', $credentials->password ?: '');
+        if ($credentials->connection === 'mysql' || $credentials->connection === 'mariadb') {
+            Config::set('database.connections.' . $credentials->connection . '.charset', 'utf8mb4');
+            Config::set('database.connections.' . $credentials->connection . '.collation', 'utf8mb4_unicode_ci');
+        } elseif ($credentials->connection === 'pgsql') {
+            Config::set('database.connections.' . $credentials->connection . '.charset', 'utf8');
         }
 
         // Clear DB connection cache to ensure new config is used
-        DB::purge($connection);
+        DB::purge($credentials->connection);
     }
 
     /**
@@ -405,52 +398,52 @@ class DatabaseSetup
     /**
      * Log database configuration.
      */
-    protected function logDatabaseConfig(string $connection, string $dbHost, string $dbPort, string $dbDatabase, string $dbUsername, string $dbPassword): void
+    protected function logDatabaseConfig(DatabaseCredentials $credentials): void
     {
         info('Database credentials that Laravel will use:');
-        info('  Connection: ' . Config::get('database.connections.' . $connection . '.driver', $connection));
-        info('  Host: ' . Config::get('database.connections.' . $connection . '.host', $dbHost));
-        info('  Port: ' . Config::get('database.connections.' . $connection . '.port', $dbPort));
-        info('  Database: ' . Config::get('database.connections.' . $connection . '.database', $dbDatabase ?: '(empty)'));
-        info('  Username: ' . Config::get('database.connections.' . $connection . '.username', $dbUsername ?: '(empty)'));
-        $configPassword = Config::get('database.connections.' . $connection . '.password', '');
+        info('  Connection: ' . Config::get('database.connections.' . $credentials->connection . '.driver', $credentials->connection));
+        info('  Host: ' . Config::get('database.connections.' . $credentials->connection . '.host', $credentials->host));
+        info('  Port: ' . Config::get('database.connections.' . $credentials->connection . '.port', $credentials->port));
+        info('  Database: ' . Config::get('database.connections.' . $credentials->connection . '.database', $credentials->database ?: '(empty)'));
+        info('  Username: ' . Config::get('database.connections.' . $credentials->connection . '.username', $credentials->username ?: '(empty)'));
+        $configPassword = Config::get('database.connections.' . $credentials->connection . '.password', '');
         info('  Password: ' . ($configPassword ?: '(empty)'));
-        if ($connection === 'mysql' || $connection === 'mariadb') {
-            info('  Charset: ' . Config::get('database.connections.' . $connection . '.charset', 'utf8mb4'));
-            info('  Collation: ' . Config::get('database.connections.' . $connection . '.collation', 'utf8mb4_unicode_ci'));
+        if ($credentials->connection === 'mysql' || $credentials->connection === 'mariadb') {
+            info('  Charset: ' . Config::get('database.connections.' . $credentials->connection . '.charset', 'utf8mb4'));
+            info('  Collation: ' . Config::get('database.connections.' . $credentials->connection . '.collation', 'utf8mb4_unicode_ci'));
         }
     }
 
     /**
      * Check if database exists and create it if needed.
      */
-    protected function checkAndCreateDatabase(string $connection, string $host, string $port, string $database, string $username, string $password): void
+    protected function checkAndCreateDatabase(DatabaseCredentials $credentials): void
     {
         try {
             // Connect to the database server without specifying a database
-            $dsn = match ($connection) {
-                'mysql', 'mariadb' => "mysql:host={$host};port={$port}",
-                'pgsql' => "pgsql:host={$host};port={$port}",
-                default => throw new InvalidArgumentException("Unsupported connection type: {$connection}"),
+            $dsn = match ($credentials->connection) {
+                'mysql', 'mariadb' => "mysql:host={$credentials->host};port={$credentials->port}",
+                'pgsql' => "pgsql:host={$credentials->host};port={$credentials->port}",
+                default => throw new InvalidArgumentException("Unsupported connection type: {$credentials->connection}"),
             };
 
-            $pdo = new PDO($dsn, $username, $password);
+            $pdo = new PDO($dsn, $credentials->username, $credentials->password);
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
             // Check if database exists
             $databaseExists = false;
-            if ($connection === 'mysql' || $connection === 'mariadb') {
-                $stmt = $pdo->query('SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = ' . $pdo->quote($database));
+            if ($credentials->connection === 'mysql' || $credentials->connection === 'mariadb') {
+                $stmt = $pdo->query('SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = ' . $pdo->quote($credentials->database));
                 $databaseExists = $stmt->rowCount() > 0;
-            } elseif ($connection === 'pgsql') {
-                $stmt = $pdo->query('SELECT 1 FROM pg_database WHERE datname = ' . $pdo->quote($database));
+            } elseif ($credentials->connection === 'pgsql') {
+                $stmt = $pdo->query('SELECT 1 FROM pg_database WHERE datname = ' . $pdo->quote($credentials->database));
                 $databaseExists = $stmt->rowCount() > 0;
             }
 
             if (! $databaseExists) {
                 info('');
                 $createDatabase = confirm(
-                    label: "Database '{$database}' does not exist. Would you like to create it?",
+                    label: "Database '{$credentials->database}' does not exist. Would you like to create it?",
                     default: true,
                     hint: 'The database will be created with the specified charset and collation.',
                 );
@@ -460,7 +453,7 @@ class DatabaseSetup
                     $charset = 'utf8mb4';
                     $collation = 'utf8mb4_unicode_ci';
 
-                    if ($connection === 'mysql' || $connection === 'mariadb') {
+                    if ($credentials->connection === 'mysql' || $credentials->connection === 'mariadb') {
                         $charset = text(
                             label: 'Database charset',
                             default: 'utf8mb4',
@@ -478,14 +471,14 @@ class DatabaseSetup
 
                     // Create the database
                     try {
-                        if ($connection === 'mysql' || $connection === 'mariadb') {
-                            $pdo->exec("CREATE DATABASE `{$database}` CHARACTER SET {$charset} COLLATE {$collation}");
-                        } elseif ($connection === 'pgsql') {
-                            $pdo->exec("CREATE DATABASE \"{$database}\" ENCODING 'UTF8'");
+                        if ($credentials->connection === 'mysql' || $credentials->connection === 'mariadb') {
+                            $pdo->exec("CREATE DATABASE `{$credentials->database}` CHARACTER SET {$charset} COLLATE {$collation}");
+                        } elseif ($credentials->connection === 'pgsql') {
+                            $pdo->exec("CREATE DATABASE \"{$credentials->database}\" ENCODING 'UTF8'");
                         }
 
-                        info("✅ Database '{$database}' created successfully!");
-                        if ($connection === 'mysql' || $connection === 'mariadb') {
+                        info("✅ Database '{$credentials->database}' created successfully!");
+                        if ($credentials->connection === 'mysql' || $credentials->connection === 'mariadb') {
                             info("   Charset: {$charset}");
                             info("   Collation: {$collation}");
                         }
@@ -500,7 +493,7 @@ class DatabaseSetup
                     info('Skipping database creation. Please create the database manually and try again.');
                 }
             } else {
-                info("✅ Database '{$database}' already exists.");
+                info("✅ Database '{$credentials->database}' already exists.");
             }
         } catch (PDOException $e) {
             // If we can't connect to check, that's okay - we'll catch it in the connection test

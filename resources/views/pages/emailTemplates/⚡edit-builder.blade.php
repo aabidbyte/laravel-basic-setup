@@ -360,27 +360,32 @@ new class extends BasePageComponent {
                             </a>
                         @endforeach
                     </div>
-                    {{-- Locale Adder --}}
                     @if (count($translations) < count($this->supportedLocales))
-                        <div class="dropdown dropdown-end">
-                            <x-ui.label tabindex="0"
-                                        variant="plain"
-                                        class="btn btn-sm btn-ghost gap-2">
-                                <x-ui.icon name="plus"
-                                           size="sm"></x-ui.icon>
-                                {{ __('actions.add_locale') }}
-                            </x-ui.label>
-                            <ul tabindex="0"
-                                class="dropdown-content menu bg-base-100 rounded-box w-52 p-2 shadow">
-                                @foreach ($this->supportedLocales as $locale => $data)
-                                    @if (!isset($translations[$locale]))
-                                        <li><a
-                                               wire:click="addLocale('{{ $locale }}')">{{ __("locales.{$locale}") }}</a>
-                                        </li>
-                                    @endif
-                                @endforeach
-                            </ul>
-                        </div>
+                        <x-ui.dropdown placement="end"
+                                       menu="true"
+                                       contentClass="w-52">
+                            <x-slot:trigger>
+                                <x-ui.button type="button"
+                                             variant="ghost"
+                                             size="sm"
+                                             class="gap-2"
+                                             tabindex="0">
+                                    <x-ui.icon name="plus"
+                                               size="sm"></x-ui.icon>
+                                    {{ __('actions.add_locale') }}
+                                </x-ui.button>
+                            </x-slot:trigger>
+
+                            @foreach ($this->supportedLocales as $locale => $data)
+                                @if (!isset($translations[$locale]))
+                                    <li>
+                                        <a wire:click="addLocale('{{ $locale }}')">
+                                            {{ __("locales.{$locale}") }}
+                                        </a>
+                                    </li>
+                                @endif
+                            @endforeach
+                        </x-ui.dropdown>
                     @endif
                 </div>
                 <div class="card shadow">

@@ -27,13 +27,17 @@ beforeEach(function () {
 });
 
 test('authorized user can see all user details on show page', function () {
-    $this->targetUser->update([
-        'email_verified_at' => now()->subDays(1),
+    $now = now();
+    $this->targetUser->forceFill([
+        'email_verified_at' => $now->copy()->subDays(1),
+        'updated_at' => $now->copy()->subSeconds(10),
         'notification_preferences' => ['mail' => true, 'database' => false],
-    ]);
+    ])->save();
 
     // Create a user by this user
     User::factory()->create(['created_by_user_id' => $this->targetUser->id]);
+
+    \Illuminate\Support\Carbon::setTestNow($now);
 
     Livewire::actingAs($this->admin)
         ->test('pages::users.show', ['user' => $this->targetUser])
@@ -45,6 +49,8 @@ test('authorized user can see all user details on show page', function () {
         ->assertSee('Mail')
         ->assertSee('Database')
         ->assertSee($this->targetUser->updated_at->diffForHumans());
+
+    \Illuminate\Support\Carbon::setTestNow();
 });
 
 test('authorized user can delete a user from show page', function () {

@@ -50,7 +50,7 @@
                 <x-ui.icon :name="$trendIcon"
                            class="h-3 w-3" />
                 <span>{{ $payload['trend_value'] }}%</span>
-                <span class="text-base-content/60 ml-1">{{ __('vs last month') }}</span>
+                <span class="text-base-content/60 ml-1">{{ __('charts.vs_last_month') }}</span>
             </div>
         @endif
     </div>

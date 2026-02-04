@@ -99,16 +99,17 @@
                         <div class="flex flex-wrap gap-2">
                             <template x-for="(tag, tagKey) in group.tags"
                                       :key="tagKey">
-                                <button type="button"
-                                        @click="insertTag(tagKey)"
-                                        class="group transition-transform active:scale-95"
-                                        :title="tag.example">
-                                    <x-ui.badge :text="'tag.label'"
-                                                x-text="tag.label"
+                                <x-ui.button type="button"
+                                             variant="ghost"
+                                             size="md"
+                                             @click="insertTag(tagKey)"
+                                             class="group h-auto p-0"
+                                             x-bind:title="tag.example">
+                                    <x-ui.badge x-text="tag.label"
                                                 x-bind:class="'badge-' + group.color"
                                                 variant="soft"
-                                                class="cursor-pointer py-3 text-xs transition-all group-hover:brightness-95"></x-ui.badge>
-                                </button>
+                                                class="cursor-pointer py-3 text-xs"></x-ui.badge>
+                                </x-ui.button>
                             </template>
                         </div>
                     </div>

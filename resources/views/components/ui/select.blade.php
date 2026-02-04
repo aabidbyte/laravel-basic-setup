@@ -26,69 +26,32 @@
 
     $wireModel = $attributes->wire('model');
 
-    // DEBUG: Verify exactly what the component receives
-    // dump('SELECT COMPONENT RECEIVED OPTIONS:', $options);
-
     // Construct Alpine x-data expression safely in PHP
-    // We use a single-quoted HTML attribute: x-data='...'
-
-    // 1. Value Argument
     if ($wireModel && $wireModel->value()) {
         $propertyName = e($wireModel->value());
         $entangle = "\$wire.\$entangle(\"{$propertyName}\")";
 
-        // Append all modifiers to entangle (e.g., .live, .debounce.300ms, .lazy, etc.)
         if ($wireModel->modifiers()) {
             foreach ($wireModel->modifiers() as $key => $value) {
-                // If key is numeric, value is the modifier name (e.g., [0 => 'live'])
                 if (is_numeric($key)) {
                     $entangle .= ".{$value}";
-                }
-                // If key is string and value is not true/null, it's a modifier with value (e.g., ['debounce' => '300ms'])
-            elseif ($value !== true && $value !== null) {
-                $entangle .= ".{$key}.{$value}";
-            }
-            // Otherwise it's a simple modifier (e.g., ['live' => true])
-                else {
+                } elseif ($value !== true && $value !== null) {
+                    $entangle .= ".{$key}.{$value}";
+                } else {
                     $entangle .= ".{$key}";
                 }
             }
         }
-
         $valueArg = $entangle;
     } else {
-        // Double-encode to pass as a string literal: '"value"'
-        // JSON_HEX_APOS ensures strict safety inside single-quoted attribute
         $valueArg = json_encode(json_encode($initialValue), JSON_HEX_APOS);
     }
 
-    // 2. Options Argument
-    // Convert to indexed array of [value, label] pairs to preserve order
     $optionsArray = array_map(fn($val, $label) => [$val, $label], array_keys($options), $options);
     $optionsArg = json_encode(json_encode($optionsArray), JSON_HEX_APOS);
-
-    // 3. Placeholder Argument
     $placeholderArg = json_encode(json_encode($placeholder), JSON_HEX_APOS);
 
     $alpineData = "customSelect({$valueArg}, {$optionsArg}, {$placeholderArg})";
-
-    // Closure to render option button (reused in mobile & desktop)
-    // SECURITY: All user data (label, val) is bound via x-text, never interpolated directly
-    $renderOptionButton = function () {
-        return <<<'HTML'
-                                <button type="button"
-                                        @click="choose(val)"
-                                        :data-selected="isSelected(val) ? 'true' : null"
-                                        class="btn btn-ghost btn-md lg:btn-sm w-full justify-between text-left font-normal"
-                                        :class="getOptionClasses(val)">
-                                    <span x-text="label" class="truncate"></span>
-                                    <!-- Inline SVG for reactivity within x-for loop -->
-                                    <svg x-show="isSelected(val)" class="ml-auto h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <polyline points="20 6 9 17 4 12"></polyline>
-                                    </svg>
-                                </button>
-        HTML;
-    };
 
     $sizeClass = match ($size) {
         'xs' => 'select-xs',
@@ -103,6 +66,29 @@
         'ghost' => 'select-ghost',
         default => null,
     };
+
+    // Template for the options list
+    // We use HEREDOC with 'blade' tag to avoid PHP interpreting $ or {{ }}
+    // We use x-bind: for Alpine expressions so Blade::render doesn't try to evaluate them as PHP
+$renderOptionsList = <<<'blade'
+<div class="flex w-full flex-col gap-1">
+    <template x-for="[val, label] in optionsArray" :key="val">
+        <x-ui.button type="button"
+                     @click="choose(val)"
+                     x-bind:data-selected="isSelected(val) ? 'true' : null"
+                     variant="ghost"
+                     x-bind:size="$store.ui.isMobile ? 'md' : 'sm'"
+                     class="w-full justify-between text-left font-normal"
+                     x-bind:class="getOptionClasses(val)">
+            <span x-text="label" class="truncate"></span>
+            <x-ui.icon name="check"
+                       x-show="isSelected(val)"
+                       class="ml-auto"
+                       size="sm" />
+                </x-ui.button>
+            </template>
+        </div>
+blade;
 @endphp
 
 <div class="flex w-full flex-col gap-1"
@@ -139,12 +125,7 @@
         <x-ui.sheet x-model="selectOpen"
                     position="bottom"
                     :title="$label ?? ($placeholder ?? $title)">
-            <div class="flex w-full flex-col gap-1">
-                <template x-for="[val, label] in optionsArray"
-                          :key="val">
-                    {!! $renderOptionButton() !!}
-                </template>
-            </div>
+            {!! Blade::render($renderOptionsList) !!}
         </x-ui.sheet>
     </template>
 
@@ -164,12 +145,7 @@
                  :style="getSelectStyle()"
                  x-cloak
                  class="rounded-box bg-base-100 border-base-200 max-h-60 overflow-y-auto border p-2 shadow-xl">
-                <div class="flex flex-col gap-1">
-                    <template x-for="[val, label] in optionsArray"
-                              :key="val">
-                        {!! $renderOptionButton() !!}
-                    </template>
-                </div>
+                {!! Blade::render($renderOptionsList) !!}
             </div>
         </template>
     </template>
@@ -190,7 +166,6 @@
         (function() {
             const register = function() {
                 Alpine.data('customSelect', function(value, options, placeholder) {
-                    // Options comes as an array of [value, label] pairs from PHP (order preserved)
                     const optionsArray = typeof options === 'string' ? JSON.parse(options) : options;
 
                     return {
@@ -199,7 +174,6 @@
                         placeholder: typeof placeholder === 'string' ? JSON.parse(placeholder) :
                             placeholder,
                         selectOpen: false,
-                        // isMobile: handled by global store $store.ui.isMobile
                         currentLabel: '',
                         selectWidth: 0,
                         selectZIndex: 10000,
@@ -208,7 +182,6 @@
                             const self = this;
                             this.updateLabel();
 
-                            // Initialize z-index stack if not present
                             window.uiZIndexStack = window.uiZIndexStack || {
                                 current: 9999,
                                 next: function() {
@@ -216,7 +189,6 @@
                                 }
                             };
 
-                            // Watchers
                             this.$watch('value', function() {
                                 self.updateLabel();
                             });
@@ -224,29 +196,17 @@
                             this.$watch('optionsArray', function() {
                                 self.updateLabel();
                             });
-
-                            // Responsive check
-                            // Responsive check
-                            // Initial check - handled by global store
-                        },
-
-                        destroy: function() {
-                            // Cleanup handled by global store
                         },
 
                         updateLabel: function() {
-                            // Find label in array using strict equality
                             const option = this.optionsArray.find(([val]) => this.isSelected(val));
-                            console.log()
                             this.currentLabel = option ? option[1] : (this.placeholder || '');
                         },
 
                         toggle: function() {
                             this.selectOpen = !this.selectOpen;
                             if (this.selectOpen) {
-                                // Get next z-index to appear above modals
                                 this.selectZIndex = window.uiZIndexStack?.next() || 10000;
-                                // Calculate select width from trigger
                                 this.selectWidth = this.$refs.selectTrigger?.offsetWidth || 200;
                                 this.scrollToSelected();
                             }
@@ -255,24 +215,18 @@
                         getSelectStyle: function() {
                             return {
                                 minWidth: this.selectWidth + 'px',
-                                maxWidth: (this.selectWidth + 20) + 'px',
+                                maxWidth: (this.selectWidth + 40) + 'px',
                                 zIndex: this.selectZIndex
                             };
                         },
 
                         scrollToSelected: function() {
-                            // Wait for DOM to be fully rendered (teleport + x-for)
                             setTimeout(() => {
-                                // Search in the correct scope
-                                // Desktop: selectContent (teleported), Mobile: inside Sheet (also in body)
                                 let searchScope = this.$refs.selectContent || document.body;
-
-                                // Find the selected button using data attribute
                                 let selectedBtn = searchScope.querySelector(
                                     '[data-selected="true"]');
 
                                 if (!selectedBtn) {
-                                    // Fallback: try searching in document.body
                                     selectedBtn = document.body.querySelector(
                                         '[data-selected="true"]');
                                 }
@@ -282,7 +236,6 @@
                                         '.overflow-y-auto');
 
                                     if (scrollContainer) {
-                                        // Calculate position to center the selected item
                                         const containerRect = scrollContainer
                                             .getBoundingClientRect();
                                         const buttonRect = selectedBtn.getBoundingClientRect();
@@ -296,7 +249,6 @@
                                             behavior: 'smooth'
                                         });
                                     } else {
-                                        // Fallback to scrollIntoView
                                         selectedBtn.scrollIntoView({
                                             block: 'nearest',
                                             inline: 'nearest',
@@ -312,13 +264,12 @@
                         },
 
                         isSelected: function(val) {
-                            // Use strict equality to distinguish between null, undefined, '', and 0
                             return this.value === val;
                         },
 
                         getOptionClasses: function(val) {
                             return {
-                                'btn-active btn-outline': this.isSelected(val)
+                                'btn-active': this.isSelected(val)
                             };
                         },
 

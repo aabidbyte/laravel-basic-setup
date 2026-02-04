@@ -47,10 +47,14 @@
     $sizeClass = $sizeClasses[$size] ?? '';
 
     $classes = trim("badge {$variantClass} {$colorClass} {$sizeClass} {$class}");
-    $finalClass = $classes . ' whitespace-nowrap';
+    $finalClass = "$classes whitespace-nowrap";
+
+    // Detect if color is being bound by Alpine
+    $boundColor = $attributes->get('x-bind:color') ?? $attributes->get(':color');
 @endphp
 
-<span class="{!! $finalClass !!}"
-      {{ $attributes->except(['variant', 'color', 'size', 'class', 'text']) }}>
+<span class="{{ $finalClass }}"
+      {{ $attributes->except(['variant', 'color', 'size', 'class', 'text', 'x-bind:color', ':color']) }}
+      @if ($boundColor) x-bind:class='{{ alpineColorClasses($boundColor, 'badge-') }}' @endif>
     {{ $text ?? $slot }}
 </span>

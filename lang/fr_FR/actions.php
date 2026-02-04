@@ -59,4 +59,6 @@ return [
     'customize_text_version' => 'Personnaliser la version texte',
     'hide_text_version' => 'Masquer la version texte',
     'required' => 'Requis',
+    'show_password' => 'Afficher le mot de passe',
+    'hide_password' => 'Masquer le mot de passe',
 ];

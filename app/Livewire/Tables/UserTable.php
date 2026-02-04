@@ -121,7 +121,7 @@ class UserTable extends Datatable
                 ])
                 ->valueMapping(['1' => 'not_null', '0' => 'null']),
 
-            Filter::make('created_at', __('Created At'))
+            Filter::make('created_at', __('table.users.filters.created_at'))
                 ->type(DataTableFilterType::DATE_RANGE)
                 ->execute(function (Builder $query, $value) {
                     $from = $value['from'] ?? null;

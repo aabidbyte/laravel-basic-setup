@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\FrontendPreferences\Stores\SessionPreferencesStore;
 use App\Services\FrontendPreferences\Stores\UserJsonPreferencesStore;
 use App\Services\I18nService;
+use App\Support\Preferences\DatatablePreferenceOptions;
 use DateTimeZone;
 use Illuminate\Http\Request;
 use Illuminate\Session\Store as SessionStore;
@@ -316,15 +317,12 @@ class FrontendPreferencesService
 
     /**
      * Get a specific datatable preference value.
-     *
-     * @param  string  $identifier  Datatable identifier (typically the full class name)
-     * @param  string  $key  Preference key (e.g., 'sortBy', 'perPage', 'filters')
      */
-    public function getDatatablePreference(string $identifier, string $key, mixed $default = null, ?Request $request = null): mixed
+    public function getDatatablePreference(DatatablePreferenceOptions $options): mixed
     {
-        $preferences = $this->getDatatablePreferences($identifier, $request);
+        $preferences = $this->getDatatablePreferences($options->identifier, $options->request);
 
-        return $preferences[$key] ?? $default;
+        return $preferences[$options->key] ?? $options->default;
     }
 
     /**

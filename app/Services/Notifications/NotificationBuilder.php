@@ -12,6 +12,7 @@ use App\Models\Notification;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\IconPackMapper;
+use App\Support\UI\IconOptions;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Notifications\DatabaseNotification;
@@ -459,7 +460,7 @@ class NotificationBuilder
 
         $iconName = $iconNames[$type->value] ?? 'bell';
 
-        return $iconMapper->renderIcon($iconName, 'heroicons', 'h-6 w-6');
+        return $iconMapper->renderIcon(new IconOptions(name: $iconName, pack: 'heroicons', class: 'h-6 w-6'));
     }
 
     /**

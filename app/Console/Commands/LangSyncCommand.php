@@ -8,6 +8,7 @@ use App\Services\Translation\DynamicKeyResolver;
 use App\Services\Translation\LocaleManager;
 use App\Services\Translation\TranslationPruner;
 use App\Services\Translation\TranslationScanner;
+use App\Support\Translation\TranslationConfig;
 use Illuminate\Console\Command;
 
 class LangSyncCommand extends Command
@@ -123,14 +124,24 @@ class LangSyncCommand extends Command
         $extractedFile = config('i18n.extracted_file', 'extracted');
 
         // Configuration Injection
-        $this->localeManager->setConfiguration($sourceLocale, $supportedLocales, [], $extractedFile);
+        $this->localeManager->setConfiguration(new TranslationConfig(
+            sourceLocale: $sourceLocale,
+            supportedLocales: $supportedLocales,
+            namespaces: [],
+            extractedFile: $extractedFile,
+        ));
 
         $configuredNamespaces = config('i18n.namespaces', ['ui', 'messages']);
         $discoveredNamespaces = $this->localeManager->discoverNamespaces();
-        $namespaces = array_unique(\array_merge($configuredNamespaces, $discoveredNamespaces));
+        $namespaces = \array_unique(\array_merge($configuredNamespaces, $discoveredNamespaces));
 
         // Re-configure LocaleManager with full namespaces
-        $this->localeManager->setConfiguration($sourceLocale, $supportedLocales, $namespaces, $extractedFile);
+        $this->localeManager->setConfiguration(new TranslationConfig(
+            sourceLocale: $sourceLocale,
+            supportedLocales: $supportedLocales,
+            namespaces: $namespaces,
+            extractedFile: $extractedFile,
+        ));
 
         // Configure Pruner
         $this->pruner->setConfiguration($supportedLocales, $protectedFiles, $namespaces);

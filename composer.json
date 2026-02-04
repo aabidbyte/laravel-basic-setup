@@ -57,6 +57,7 @@
             "app/helpers/dateTime.php",
             "app/helpers/currency.php",
             "app/helpers/form-helpers.php",
+            "app/helpers/ui-helpers.php",
             "app/helpers/view-helpers.php"
         ]
     },

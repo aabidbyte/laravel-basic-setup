@@ -92,4 +92,8 @@ return [
         ],
     ],
     'copy_failed' => 'Échec de la copie dans le presse-papiers',
+    'date_range' => [
+        'from' => 'De',
+        'to' => 'À',
+    ],
 ];

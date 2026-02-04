@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Translation;
 
+use App\Support\Translation\PruneFileOptions;
 use Illuminate\Support\Facades\File;
 
 class TranslationPruner
@@ -70,7 +71,12 @@ class TranslationPruner
                     continue;
                 }
 
-                $this->pruneFile($locale, $filename, $write, $output);
+                $this->pruneFile(new PruneFileOptions(
+                    locale: $locale,
+                    filename: $filename,
+                    write: $write,
+                    output: $output,
+                ));
             }
         }
     }
@@ -78,28 +84,28 @@ class TranslationPruner
     /**
      * Prune unused keys from a specific file.
      */
-    public function pruneFile(string $locale, string $filename, bool $write, $output = null): void
+    public function pruneFile(PruneFileOptions $options): void
     {
-        $filePath = lang_path("{$locale}/{$filename}.php");
+        $filePath = lang_path("{$options->locale}/{$options->filename}.php");
         if (! File::exists($filePath)) {
             return;
         }
 
         $translations = require $filePath;
-        $pruned = $this->pruneTranslations($translations, $filename);
+        $pruned = $this->pruneTranslations($translations, $options->filename);
 
         if ($pruned !== $translations) {
             $prunedCount = $this->countPrunedKeys($translations, $pruned);
             $this->keysPruned += $prunedCount;
 
-            if ($write) {
+            if ($options->write) {
                 $this->localeManager->writeTranslationFile($filePath, $pruned);
-                if ($output) {
-                    $output->info("Pruned {$prunedCount} keys from {$locale}/{$filename}.php");
+                if ($options->output) {
+                    $options->output->info("Pruned {$prunedCount} keys from {$options->locale}/{$options->filename}.php");
                 }
             } else {
-                if ($output) {
-                    $output->line("Would prune {$prunedCount} keys from {$locale}/{$filename}.php");
+                if ($options->output) {
+                    $options->output->line("Would prune {$prunedCount} keys from {$options->locale}/{$options->filename}.php");
                 }
             }
         }
@@ -116,7 +122,7 @@ class TranslationPruner
             $fullKey = $namespace === 'extracted' ? $key : "{$namespace}.{$key}";
 
             // Check if key is used in codebase
-            $isUsed = $this->isKeyUsed($fullKey, $translations, $key, $value);
+            $isUsed = $this->isKeyUsed($fullKey, $value);
 
             if ($isUsed) {
                 if (\is_array($value)) {
@@ -142,7 +148,7 @@ class TranslationPruner
 
         foreach ($translations as $key => $value) {
             $fullKey = "{$parentKey}.{$key}";
-            $isUsed = $this->isKeyUsed($fullKey, $translations, $key, $value);
+            $isUsed = $this->isKeyUsed($fullKey, $value);
 
             if ($isUsed) {
                 if (\is_array($value)) {
@@ -162,7 +168,7 @@ class TranslationPruner
     /**
      * Check if a translation key is used in the codebase.
      */
-    protected function isKeyUsed(string $fullKey, array $context, string $shortKey, mixed $value): bool
+    protected function isKeyUsed(string $fullKey, mixed $value): bool
     {
         // Check if the full key is found in scanner results
         $foundKeys = $this->scanner->getFoundKeys();
@@ -175,7 +181,7 @@ class TranslationPruner
         if (\is_array($value)) {
             foreach ($value as $nestedKey => $nestedValue) {
                 $nestedFullKey = "{$fullKey}.{$nestedKey}";
-                if ($this->isKeyUsed($nestedFullKey, $context, $nestedKey, $nestedValue)) {
+                if ($this->isKeyUsed($nestedFullKey, $nestedValue)) {
                     return true;
                 }
             }

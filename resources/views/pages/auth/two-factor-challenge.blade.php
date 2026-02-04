@@ -21,24 +21,16 @@
 
                 <div class="space-y-5 text-center">
                     <div x-show="!showRecoveryInput">
-                        <div class="form-control">
-                            <x-ui.label for="code"
-                                        :text="__('settings.two_factor.setup.otp_label')"></x-ui.label>
-                            <input type="text"
-                                   x-model="code"
-                                   name="code"
-                                   id="code"
-                                   maxlength="6"
-                                   pattern="[0-9]{6}"
-                                   inputmode="numeric"
-                                   class="input input-bordered @error('code') input-error @enderror w-full max-w-xs text-center text-2xl tracking-widest"
-                                   placeholder="000000" />
-                            @error('code')
-                                <div class="label">
-                                    <span class="label-text-alt text-error">{{ $message }}</span>
-                                </div>
-                            @enderror
-                        </div>
+                        <x-ui.input type="text"
+                                    x-model="code"
+                                    name="code"
+                                    id="code"
+                                    maxlength="6"
+                                    pattern="[0-9]{6}"
+                                    inputmode="numeric"
+                                    class="max-w-xs text-center text-2xl tracking-widest"
+                                    placeholder="000000"
+                                    :label="__('settings.two_factor.setup.otp_label')" />
                     </div>
 
                     <div x-show="showRecoveryInput">

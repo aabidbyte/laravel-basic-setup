@@ -22,9 +22,11 @@
     <x-ui.sheet position="right"
                 title="{{ __('notifications.dropdown.title') }}">
         <x-slot:trigger>
-            <button x-ref="trigger"
-                    class="btn btn-ghost btn-circle relative"
-                    type="button">
+            <x-ui.button x-ref="trigger"
+                         variant="ghost"
+                         circle
+                         class="relative"
+                         type="button">
                 <x-ui.icon name="bell"
                            class="h-5 w-5"></x-ui.icon>
                 {{-- Badge managed by Alpine, visible when count > 0 --}}
@@ -35,7 +37,7 @@
                                 x-bind:aria-label="'{{ __('notifications.unread') }}: ' + unreadCount"
                                 x-text="unreadCount > 99 ? '99+' : unreadCount"></x-ui.badge>
                 </template>
-            </button>
+            </x-ui.button>
         </x-slot:trigger>
 
         {{-- Lazy-loaded content component --}}

@@ -51,7 +51,7 @@
     }
 
     if (!empty($contentClass)) {
-        $contentClasses .= ' ' . $contentClasses;
+        $contentClasses .= ' ' . $contentClass;
     }
 
     // CSS-only mode (default)
@@ -118,7 +118,11 @@
                         @if (isset($trigger))
                             {{ $trigger }}
                         @else
-                            <button class="btn m-1">{{ $triggerText }}</button>
+                            <x-ui.button variant="solid"
+                                         size="md"
+                                         class="m-1">
+                                {{ $triggerText }}
+                            </x-ui.button>
                         @endif
                     </div>
                 </x-slot:trigger>

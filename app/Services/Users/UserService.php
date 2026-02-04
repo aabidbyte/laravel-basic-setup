@@ -11,6 +11,7 @@ use App\Models\Role;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\Mail\MailBuilder;
+use App\Support\Users\UserData;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -34,28 +35,28 @@ class UserService
     /**
      * Create a new user.
      *
-     * @param  array<string, mixed>  $data  User data (name, email, username, password, etc.)
-     * @param  bool  $sendActivation  Whether to send an activation email
-     * @param  array<string>  $roleUuids  Role UUIDs to assign
-     * @param  array<string>  $teamUuids  Team UUIDs to assign
-     * @param  array<string>  $permissionUuids  Direct permission UUIDs to assign
      * @return User The created user
      *
      * @throws InvalidArgumentException If email is required for activation but not provided
      */
-    public function createUser(
-        array $data,
-        bool $sendActivation = false,
-        array $roleUuids = [],
-        array $teamUuids = [],
-        array $permissionUuids = [],
-    ): User {
+    public function createUser(UserData $userData): User
+    {
+        $data = $userData->attributes;
+        $sendActivation = $userData->sendActivation;
+        $roleUuids = $userData->roleUuids ?? [];
+        $teamUuids = $userData->teamUuids ?? [];
+        $permissionUuids = $userData->permissionUuids ?? [];
         // Validate: if sending activation, email is required
         if ($sendActivation && empty($data['email'])) {
             throw new InvalidArgumentException('Email is required when sending activation email.');
         }
 
-        return DB::transaction(function () use ($data, $sendActivation, $roleUuids, $teamUuids, $permissionUuids) {
+        return DB::transaction(function () use ($userData) {
+            $data = $userData->attributes;
+            $sendActivation = $userData->sendActivation;
+            $roleUuids = $userData->roleUuids ?? [];
+            $teamUuids = $userData->teamUuids ?? [];
+            $permissionUuids = $userData->permissionUuids ?? [];
             // Get the creator (current authenticated user)
             /** @var User|null $creator */
             $creator = Auth::user();
@@ -105,20 +106,20 @@ class UserService
      * Update an existing user.
      *
      * @param  User  $user  The user to update
-     * @param  array<string, mixed>  $data  User data to update
-     * @param  array<string>|null  $roleUuids  Role UUIDs to assign (null = don't change)
-     * @param  array<string>|null  $teamUuids  Team UUIDs to assign (null = don't change)
-     * @param  array<string>|null  $permissionUuids  Direct permission UUIDs to assign (null = don't change)
      * @return User The updated user
      */
-    public function updateUser(
-        User $user,
-        array $data,
-        ?array $roleUuids = null,
-        ?array $teamUuids = null,
-        ?array $permissionUuids = null,
-    ): User {
-        return DB::transaction(function () use ($user, $data, $roleUuids, $teamUuids, $permissionUuids) {
+    public function updateUser(User $user, UserData $userData): User
+    {
+        $data = $userData->attributes;
+        $roleUuids = $userData->roleUuids;
+        $teamUuids = $userData->teamUuids;
+        $permissionUuids = $userData->permissionUuids;
+
+        return DB::transaction(function () use ($user, $userData) {
+            $data = $userData->attributes;
+            $roleUuids = $userData->roleUuids;
+            $teamUuids = $userData->teamUuids;
+            $permissionUuids = $userData->permissionUuids;
             // Build update data
             $updateData = [];
 

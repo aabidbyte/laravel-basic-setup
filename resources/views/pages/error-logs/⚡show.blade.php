@@ -243,15 +243,16 @@ new class extends BasePageComponent {
             <div x-data="{ open: false }"
                  class="card bg-base-100 shadow-xl">
                 <div class="card-body">
-                    <button @click="open = !open"
-                            class="flex w-full items-center justify-between text-left">
+                    <x-ui.button @click="open = !open"
+                                 variant="ghost"
+                                 class="flex w-full items-center justify-between px-0 text-left font-bold hover:bg-transparent">
                         <x-ui.title level="3"
                                     class="border-b pb-2">{{ __('errors.management.context') }}</x-ui.title>
                         <x-ui.icon name="chevron-down"
                                    size="sm"
                                    class="transition-transform duration-200"
                                    ::class="open ? 'rotate-180' : ''"></x-ui.icon>
-                    </button>
+                    </x-ui.button>
 
                     <div x-show="open"
                          x-collapse
@@ -269,15 +270,16 @@ new class extends BasePageComponent {
             <div x-data="{ open: false }"
                  class="card bg-base-100 shadow-xl">
                 <div class="card-body">
-                    <button @click="open = !open"
-                            class="flex w-full items-center justify-between text-left">
+                    <x-ui.button @click="open = !open"
+                                 variant="ghost"
+                                 class="flex w-full items-center justify-between px-0 text-left font-bold hover:bg-transparent">
                         <x-ui.title level="3"
                                     class="border-b pb-2">{{ __('errors.management.stack_trace') }}</x-ui.title>
                         <x-ui.icon name="chevron-down"
                                    size="sm"
                                    class="transition-transform duration-200"
                                    ::class="open ? 'rotate-180' : ''"></x-ui.icon>
-                    </button>
+                    </x-ui.button>
 
                     <div x-show="open"
                          x-collapse

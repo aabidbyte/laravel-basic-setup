@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Translation;
 
+use App\Support\Translation\ScanOptions;
 use Illuminate\Support\Facades\File;
 
 class TranslationScanner
@@ -67,22 +68,22 @@ class TranslationScanner
         $commentRanges = $this->getCommentRanges($content);
 
         // Pattern 1: __('key') or __('namespace.key') - allow parameters
-        $this->scanPattern($content, $lines, "/__\s*\(\s*['\"]([^'\"]+)['\"]/", $relativePath, $commentRanges);
+        $this->scanPattern(new ScanOptions($content, $lines, "/__\s*\(\s*['\"]([^'\"]+)['\"]/", $relativePath, $commentRanges));
 
         // Pattern 2: @lang('key') - allow parameters
-        $this->scanPattern($content, $lines, "/@lang\s*\(\s*['\"]([^'\"]+)['\"]/", $relativePath, $commentRanges);
+        $this->scanPattern(new ScanOptions($content, $lines, "/@lang\s*\(\s*['\"]([^'\"]+)['\"]/", $relativePath, $commentRanges));
 
         // Pattern 3: trans('key') - allow parameters
-        $this->scanPattern($content, $lines, "/trans\s*\(\s*['\"]([^'\"]+)['\"]/", $relativePath, $commentRanges);
+        $this->scanPattern(new ScanOptions($content, $lines, "/trans\s*\(\s*['\"]([^'\"]+)['\"]/", $relativePath, $commentRanges));
 
         // Pattern 4: :label="__('key')" (Blade attributes) - allow parameters
-        $this->scanPattern($content, $lines, "/:\w+\s*=\s*__\s*\(\s*['\"]([^'\"]+)['\"]/", $relativePath, $commentRanges);
+        $this->scanPattern(new ScanOptions($content, $lines, "/:\w+\s*=\s*__\s*\(\s*['\"]([^'\"]+)['\"]/", $relativePath, $commentRanges));
 
         // Pattern 5: ->title('key') (NotificationBuilder)
-        $this->scanPattern($content, $lines, "/->title\s*\(\s*['\"]([^'\"]+)['\"]/", $relativePath, $commentRanges);
+        $this->scanPattern(new ScanOptions($content, $lines, "/->title\s*\(\s*['\"]([^'\"]+)['\"]/", $relativePath, $commentRanges));
 
         // Pattern 6: ->subtitle('key') (NotificationBuilder)
-        $this->scanPattern($content, $lines, "/->subtitle\s*\(\s*['\"]([^'\"]+)['\"]/", $relativePath, $commentRanges);
+        $this->scanPattern(new ScanOptions($content, $lines, "/->subtitle\s*\(\s*['\"]([^'\"]+)['\"]/", $relativePath, $commentRanges));
 
         // Pattern 7: DISABLED - was creating empty string keys from concatenation
         // __('string' . $variable) patterns should use existing keys
@@ -188,9 +189,9 @@ class TranslationScanner
     /**
      * Scan content for a pattern and track line numbers.
      */
-    protected function scanPattern(string $content, array $lines, string $pattern, string $filePath, array $commentRanges = []): void
+    protected function scanPattern(ScanOptions $options): void
     {
-        preg_match_all($pattern, $content, $matches, PREG_OFFSET_CAPTURE);
+        \preg_match_all($options->pattern, $options->content, $matches, PREG_OFFSET_CAPTURE);
 
         if (empty($matches[1])) {
             return;
@@ -206,12 +207,12 @@ class TranslationScanner
             $fullMatchOffset = (int) $fullMatch[1];
 
             // Skip if the full match is within a comment
-            if (! empty($commentRanges) && $this->isInComment($fullMatchOffset, $commentRanges)) {
+            if (! empty($options->commentRanges) && $this->isInComment($fullMatchOffset, $options->commentRanges)) {
                 continue;
             }
 
             // Skip if inside an enum label() method (e.g., __("key.{$this->value}"))
-            if ($this->isInEnumLabelMethod($content, $fullMatchOffset, $filePath)) {
+            if ($this->isInEnumLabelMethod($options->content, $fullMatchOffset, $options->filePath)) {
                 continue;
             }
 
@@ -234,7 +235,7 @@ class TranslationScanner
             }
 
             // Calculate line number from key offset
-            $lineNum = substr_count(\substr($content, 0, $keyOffset), "\n") + 1;
+            $lineNum = \substr_count(\substr($options->content, 0, $keyOffset), "\n") + 1;
 
             // Initialize key if not exists
             if (! isset($this->foundKeys[$key])) {
@@ -242,13 +243,13 @@ class TranslationScanner
             }
 
             // Initialize file if not exists
-            if (! isset($this->foundKeys[$key][$filePath])) {
-                $this->foundKeys[$key][$filePath] = [];
+            if (! isset($this->foundKeys[$key][$options->filePath])) {
+                $this->foundKeys[$key][$options->filePath] = [];
             }
 
             // Add line number if not already present
-            if (! \in_array($lineNum, $this->foundKeys[$key][$filePath], true)) {
-                $this->foundKeys[$key][$filePath][] = $lineNum;
+            if (! \in_array($lineNum, $this->foundKeys[$key][$options->filePath], true)) {
+                $this->foundKeys[$key][$options->filePath][] = $lineNum;
             }
         }
     }

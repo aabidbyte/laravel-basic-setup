@@ -85,7 +85,7 @@ class UsersChartsIndex extends BaseChartsComponent
         // Example data - in real app, use aggregate queries
         return ChartBuilder::make()
             ->type(ChartType::LINE)
-            ->title('New Registrations (Last 6 Months)')
+            ->title('charts.registrations_last_6_months')
             ->labels(['Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan'])
             ->dataset('Registrations', [12, 19, 3, 5, 2, 30], [
                 'borderColor' => 'rgb(99, 102, 241)', // Primary color approximation

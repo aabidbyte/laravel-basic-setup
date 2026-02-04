@@ -12,6 +12,7 @@ use App\Services\Users\UserService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
+use App\Support\Users\UserData;
 use Illuminate\Database\Eloquent\Collection;
 
 new class extends BasePageComponent {
@@ -187,18 +188,20 @@ new class extends BasePageComponent {
 
         $userService = app(UserService::class);
         $user = $userService->createUser(
-            data: [
-                'name' => $this->name,
-                'username' => $this->username,
-                'email' => $this->email,
-                'password' => $this->password ?: null,
-                'timezone' => $this->timezone,
-                'locale' => $this->locale,
-            ],
-            sendActivation: $this->sendActivation,
-            roleUuids: $this->selectedRoles,
-            teamUuids: $this->selectedTeams,
-            permissionUuids: $this->selectedDirectPermissions,
+            UserData::forCreation(
+                attributes: [
+                    'name' => $this->name,
+                    'username' => $this->username,
+                    'email' => $this->email,
+                    'password' => $this->password ?: null,
+                    'timezone' => $this->timezone,
+                    'locale' => $this->locale,
+                ],
+                sendActivation: $this->sendActivation,
+                roleUuids: $this->selectedRoles,
+                teamUuids: $this->selectedTeams,
+                permissionUuids: $this->selectedDirectPermissions,
+            ),
         );
 
         $this->sendSuccessNotification($user, 'pages.common.create.success');
@@ -211,19 +214,21 @@ new class extends BasePageComponent {
 
         $userService = app(UserService::class);
         $user = $userService->updateUser(
-            user: $this->model,
-            data: [
-                'name' => $this->name,
-                'username' => $this->username,
-                'email' => $this->email,
-                'password' => $this->password ?: null,
-                'timezone' => $this->timezone,
-                'locale' => $this->locale,
-                'is_active' => $this->is_active,
-            ],
-            roleUuids: $this->selectedRoles,
-            teamUuids: $this->selectedTeams,
-            permissionUuids: $this->selectedDirectPermissions,
+            $this->model,
+            UserData::forUpdate(
+                attributes: [
+                    'name' => $this->name,
+                    'username' => $this->username,
+                    'email' => $this->email,
+                    'password' => $this->password ?: null,
+                    'timezone' => $this->timezone,
+                    'locale' => $this->locale,
+                    'is_active' => $this->is_active,
+                ],
+                roleUuids: $this->selectedRoles,
+                teamUuids: $this->selectedTeams,
+                permissionUuids: $this->selectedDirectPermissions,
+            ),
         );
 
         $this->sendSuccessNotification($user, 'pages.common.edit.success');

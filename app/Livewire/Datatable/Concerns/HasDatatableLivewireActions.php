@@ -236,13 +236,13 @@ trait HasDatatableLivewireActions
         $modalProps = $action->getModalProps();
         $resolvedProps = $modalProps instanceof Closure ? $modalProps($model) : $modalProps;
 
-        $this->dispatch('open-datatable-modal',
-            viewPath: $action->getModal(),
-            viewType: $action->getModalType(),
-            viewProps: $resolvedProps,
-            viewTitle: null,
-            datatableId: $this->getId(),
-        );
+        $this->dispatch('open-datatable-modal', options: [
+            'viewPath' => $action->getModal(),
+            'viewType' => $action->getModalType(),
+            'viewProps' => $resolvedProps,
+            'viewTitle' => null,
+            'datatableId' => $this->getId(),
+        ]);
     }
 
     /**
