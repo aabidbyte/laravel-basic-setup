@@ -36,6 +36,10 @@
 
 ### Frontend (Blade/Livewire/Alpine)
 *   **CSP Safety:** All Alpine.js logic must be extracted to registered components. **Avoid inline event handlers** that violate CSP.
+*   **JSON in x-data:** When passing JSON to `x-data`, use **Single Quotes** for the HTML attribute and **Double Quotes** for the inner JSON string.
+    *   **Right:** `x-data='{!! json_encode(["key" => "val"]) !!}'` or `x-data='myComponent({!! json_encode(...) !!})'`
+    *   **Wrong:** `x-data="{!! json_encode(...) !!}"` (Breaks on inner double quotes, causes "Unexpected Token: EOF")
+    *   Ensure any single quotes in data are escaped (`JSON_HEX_APOS`) so they don't break the outer attribute.
 *   **Livewire Routing:** Use the **singular model name** for route parameters to enable automatic binding (e.g., `/users/{user}`), never `{id}` or `{uuid}`.
 *   **Blade Components:** Do **not** use Blade directives (like `@if`) inside component opening tags. Use conditional attribute binding instead (`:attr="$condition ? 'val' : null"`).
 *   **Layouts:** Full-page Livewire components are automatically wrapped in the layout. **Do not** manually wrap them in `<x-layouts.app>`.
@@ -46,6 +50,12 @@
 *   **Framework:** Pest (v4)
 *   **Location:** `tests/Feature` and `tests/Unit`
 *   **Command:** `php artisan test --parallel` or `composer run test`
+**When to Run Tests:**
+- After **major updates** or **big implementations**
+- After **significant architectural changes**
+- When **explicitly requested** by the user
+- Before committing breaking changes
+- **Not** required for minor tweaks, styling changes, or small bug fixes
 
 ## 4. Build & Run Commands
 

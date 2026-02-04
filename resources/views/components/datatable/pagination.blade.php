@@ -7,51 +7,24 @@
 
 <nav role="navigation"
      aria-label="{{ __('pagination.pagination_navigation') }}"
-     class="flex items-center gap-2">
+     class="flex items-center justify-between gap-2">
     {{-- Per-Page Selector (always visible) --}}
     <div class="flex items-center gap-2">
         <x-ui.tooltip text="{{ __('table.per_page') }}">
             <x-ui.select wire:model.live="perPage"
                          :label="null"
-                         class="select-sm"
+                         variant="ghost"
+                         size="sm"
                          :options="['12' => '12', '25' => '25', '50' => '50', '100' => '100', '200' => '200']"
-                         :prependEmpty="false">
+                         :prependEmpty="false"
+                         title="{{ __('table.per_page') }}">
             </x-ui.select>
         </x-ui.tooltip>
     </div>
 
     @if ($paginator->hasPages())
-        <div class="flex items-center justify-between gap-2 sm:hidden">
-
-            @if ($paginator->onFirstPage())
-                <span class="btn btn-sm btn-ghost btn-disabled">
-                    {!! __('pagination.previous') !!}
-                </span>
-            @else
-                <x-ui.button wire:click="previousPage('{{ $paginator->getPageName() }}')"
-                             variant="ghost"
-                             size="sm">
-                    {!! __('pagination.previous') !!}
-                </x-ui.button>
-            @endif
-
-            @if ($paginator->hasMorePages())
-                <x-ui.button wire:click="nextPage('{{ $paginator->getPageName() }}')"
-                             variant="ghost"
-                             size="sm">
-                    {!! __('pagination.next') !!}
-                </x-ui.button>
-            @else
-                <span class="btn btn-sm btn-ghost btn-disabled">
-                    {!! __('pagination.next') !!}
-                </span>
-            @endif
-
-        </div>
-
-        <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between sm:gap-2">
-
-            <div>
+        <div class="flex items-center justify-between gap-2">
+            <div class="hidden md:block">
                 <p class="text-base-content/70 text-sm">
                     <span class="font-medium">{{ $paginator->lastItem() }}</span>
                     {!! __('pagination.of') !!}

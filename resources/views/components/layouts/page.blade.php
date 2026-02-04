@@ -60,7 +60,8 @@
 
     {{-- Bottom Row: Back Button + Actions (Optional) --}}
     @if ($showBottomBar)
-        <div class="border-base-300 border-t sticky bottom-0 z-30 flex w-full flex-row items-center justify-between gap-2 px-4 py-2 backdrop-blur">
+        <div
+             class="border-base-300 sticky bottom-0 z-30 flex w-full flex-row items-center justify-between gap-2 border-t px-4 py-2 backdrop-blur">
             <div class="flex-1">
                 @if (isset($bottomLeft))
                     {{ $bottomLeft }}
@@ -77,7 +78,7 @@
                 @endif
             </div>
 
-             @if (isset($bottomActions))
+            @if (isset($bottomActions))
                 <div class="flex flex-wrap items-center justify-center gap-2 *:flex-1 *:whitespace-nowrap">
                     {{ $bottomActions }}
                 </div>

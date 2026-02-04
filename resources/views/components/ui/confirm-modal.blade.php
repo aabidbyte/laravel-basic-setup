@@ -62,13 +62,14 @@
     $modalStateId = $openState ?? 'confirmModalIsOpen_' . str_replace('-', '_', $id);
 @endphp
 
-<div x-show="isOpen" x-data="confirmModalData({
-    modalId: '{{ $id }}',
-    title: @js(__('modals.confirm.title')),
-    message: @js(__('modals.confirm.message')),
-    confirmLabel: @js(__('actions.confirm')),
-    cancelLabel: @js(__('actions.cancel'))
-})"
+<div x-show="isOpen"
+     x-data="confirmModalData({
+         modalId: '{{ $id }}',
+         title: @js(__('modals.confirm.title')),
+         message: @js(__('modals.confirm.message')),
+         confirmLabel: @js(__('actions.confirm')),
+         cancelLabel: @js(__('actions.cancel'))
+     })"
      @confirm-modal.window="handleConfirmModal($event)"
      @confirm-modal-execute.window="executeConfirm()"
      @confirm-modal-cancel.window="closeModal()"

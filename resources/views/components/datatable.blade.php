@@ -158,8 +158,9 @@
                 }));
 
                 Alpine.data('infiniteScroll', () => ({
+                    observer: null,
                     init() {
-                        const observer = new IntersectionObserver((entries) => {
+                        this.observer = new IntersectionObserver((entries) => {
                             if (entries[0].isIntersecting) {
                                 this.$wire.loadMore();
                             }
@@ -168,8 +169,13 @@
                             rootMargin: '1200px',
                             threshold: 0
                         });
-                        observer.observe(this.$el);
+                        this.observer.observe(this.$el);
                     },
+                    destroy() {
+                        if (this.observer) {
+                            this.observer.disconnect();
+                        }
+                    }
                 }));
             };
 

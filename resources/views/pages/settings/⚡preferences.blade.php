@@ -144,7 +144,8 @@ new class extends BasePageComponent {
                                  wire:model="timezone"
                                  :options="$this->timezones"
                                  :prepend-empty="false" />
-                    <x-ui.label variant="plain" class="mt-1">
+                    <x-ui.label variant="plain"
+                                class="mt-1">
                         <span class="label-text-alt text-base-content/70">
                             {{ __('settings.preferences.timezone_help') }}
                         </span>

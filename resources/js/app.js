@@ -16,10 +16,13 @@ import './echo';
 import anchor from '@alpinejs/anchor';
 import focus from '@alpinejs/focus';
 
+import uiStore from './alpine/store/ui';
+
 // Register Alpine plugins when initialized
 document.addEventListener('alpine:init', () => {
     window.Alpine.plugin(anchor);
     window.Alpine.plugin(focus);
+    window.Alpine.store('ui', uiStore);
 });
 
 // Also register immediately if Alpine is already available
@@ -27,4 +30,5 @@ document.addEventListener('alpine:init', () => {
 if (window.Alpine) {
     window.Alpine.plugin(anchor);
     window.Alpine.plugin(focus);
+    window.Alpine.store('ui', uiStore);
 }

@@ -190,6 +190,23 @@ If you have existing select components that don't follow this pattern:
 
 3. **Update Filter classes** to use the new format (already done in the codebase)
 
+### Security & Optimization (New 2026)
+
+The component has been significantly hardened and optimized:
+
+1.  **XSS Protection (Secure by Default):**
+    *   All user data (labels and values) is **JSON-encoded** in PHP.
+    *   Data is rendered using Alpine's `x-text` directive, which automatically escapes HTML.
+    *   Strictly allows **NO** raw HTML interpolation for user content.
+
+2.  **Order Preservation:**
+    *   Options are converted to an array of `[value, label]` pairs in PHP.
+    *   This guarantees that insertion order is preserved (e.g., "All Statuses" stays at the top), fixing issues where JSON object keys could be reordered by browsers.
+
+3.  **Strict Value Handling:**
+    *   The component uses strict equality (`===`) to distinguish between `0`, `null`, `undefined`, and `''`.
+    *   This ensures that a value of `0` is not mistaken for empty/null.
+
 ### Implementation Details
 
 **CSP Safety & Parser Robustness:**
@@ -199,14 +216,26 @@ The `<x-ui.select>` component uses a custom Alpine.js implementation (`customSel
 x-data="customSelect( ..., '{{ json_encode($options, JSON_HEX_APOS) }}', ... )"
 ```
 
-This prevents common "Expected property key" errors and ensures robust handling of special characters.
+**Internal Logic:**
+*   **Reactivity:** The check icon uses an inline SVG within the Alpine loop to ensure instant reactivity when selection changes.
+*   **Performance:** Uses a PHP closure to render option buttons, ensuring DRY code across mobile and desktop views without runtime overhead.
+*   **State Management:** Internal state uses `selectOpen` instead of `open` to avoid variable shadowing.
 
 **DOM Structure:**
 - **Mobile (< 1024px)**: Renders a Bottom Sheet (`<x-ui.sheet>`).
 - **Desktop (>= 1024px)**: Renders a Floating Dropdown (`x-anchor`).
 
-**State Management:**
-Internal state uses `selectOpen` instead of `open` to avoid variable shadowing when nesting components.
-
 ---
+
+## History
+
+### Security Hardening & Optimization (2026-02-04)
+- **Security**: Replaced static Blade icon with inline reactive SVG. All data bound via `x-text` for XSS protection.
+- **Ordering**: Fixed option order issues by switching from Object keys to Array pairs.
+- **Strictness**: Implemented strict value comparison (`0` vs `null` vs `''`).
+- **Optimization**: Refactored to use PHP closures for template rendering, reducing code duplication.
+
+### Initial Creation
+- Centralized select component created to unify UI and behavior across the app.
+
 

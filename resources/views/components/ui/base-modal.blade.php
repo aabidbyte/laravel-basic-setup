@@ -4,10 +4,10 @@
     - Theme-aware overlay and colors (DaisyUI base-* / *-content)
     - Always uses teleport to render modal in body
 --}}
-<div x-data="responsiveOverlay('{{ $openState }}', {{ ($open || $autoOpen) ? 'true' : 'false' }}, {{ $useParentState ? 'true' : 'false' }})"
+<div x-data="responsiveOverlay('{{ $openState }}', {{ $open || $autoOpen ? 'true' : 'false' }}, {{ $useParentState ? 'true' : 'false' }})"
      class="inline-block">
     {{-- Mobile View (< lg): Bottom Sheet --}}
-    <template x-if="isMobile">
+    <template x-if="$store.ui.isMobile">
         <x-ui.sheet x-model="{{ $openState }}"
                     :title="$title"
                     :close-on-backdrop="$closeOnOutsideClick"
@@ -27,7 +27,7 @@
     </template>
 
     {{-- Desktop View (>= lg): Original Modal --}}
-    <template x-if="!isMobile">
+    <template x-if="!$store.ui.isMobile">
         <template x-teleport="body">
             <div x-cloak
                  x-show="{{ $openState }}"
@@ -107,18 +107,13 @@
             const register = function() {
                 Alpine.data('responsiveOverlay', function(openState, initialOpen, useParentState) {
                     const data = {
-                        isMobile: window.innerWidth < 1024,
+                        // isMobile: handled by global store $store.ui.isMobile
                         zIndex: 9999,
-                        
+
                         init: function() {
                             const self = this;
-                            
-                            // Responsive check
-                            const update = function() {
-                                self.isMobile = window.innerWidth < 1024;
-                            };
-                            window.addEventListener('resize', update);
-                            update();
+
+                            // Responsive check - handled by global store $store.ui.isMobile
 
                             // Logic to bring to front on open
                             // We watch the dynamic property name 'openState'

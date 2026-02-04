@@ -104,30 +104,37 @@
 @endif
 {{-- Active Filters Badges --}}
 @if (count($datatable->getActiveFilters()) > 0)
-    <div class="flex flex-wrap items-center gap-2">
-        <span class="text-base-content/70 text-sm">{{ __('table.active_filters') }}:</span>
-        @foreach ($datatable->getActiveFilters() as $filter)
-            <x-ui.badge size="sm"
-                        color="secondary"
-                        class="gap-1">
-                <span class="font-medium">{{ $filter['label'] }}:</span>
-                <span>{{ $filter['valueLabel'] }}</span>
-                <x-ui.button wire:click="removeFilter('{{ $filter['key'] }}')"
-                             type="button"
-                             variant="ghost"
-                             size="xs"
-                             circle>
-                    <x-ui.icon name="x-mark"
-                               size="xs"></x-ui.icon>
-                </x-ui.button>
-            </x-ui.badge>
-        @endforeach
-        <x-ui.button wire:click="clearFilters"
-                     type="button"
-                     variant="link"
-                     size="sm">
-            {{ __('actions.clear_all') }}
-        </x-ui.button>
+    <div class="grid grid-cols-12 place-items-center gap-2">
+        <div class="col-span-2">
+            <span class="text-base-content/70 text-sm">{{ __('table.active_filters') }}:</span>
+        </div>
+        <div class="col-span-8">
+            @foreach ($datatable->getActiveFilters() as $filter)
+                <x-ui.badge size="sm"
+                            color="secondary"
+                            class="gap-1">
+                    <span class="font-medium">{{ $filter['label'] }}:</span>
+                    <span>{{ $filter['valueLabel'] }}</span>
+                    <x-ui.button wire:click="removeFilter('{{ $filter['key'] }}')"
+                                 type="button"
+                                 variant="ghost"
+                                 size="xs"
+                                 circle>
+                        <x-ui.icon name="x-mark"
+                                   size="xs"></x-ui.icon>
+                    </x-ui.button>
+                </x-ui.badge>
+            @endforeach
+        </div>
+        <div class="col-span-2">
+            <x-ui.button wire:click="clearFilters"
+                         type="button"
+                         variant="outline"
+                         color="error"
+                         size="md">
+                {{ __('actions.clear_all') }}
+            </x-ui.button>
+        </div>
     </div>
 @endif
 {{-- Filters Panel - only render if filters are defined --}}

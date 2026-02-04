@@ -81,6 +81,13 @@
                         }
 
                         this.chart = new window.Chart(ctx, this.config);
+                    },
+
+                    destroy() {
+                        if (this.chart) {
+                            this.chart.destroy();
+                            this.chart = null;
+                        }
                     }
                 }));
             };

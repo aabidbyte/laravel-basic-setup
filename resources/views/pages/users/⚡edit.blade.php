@@ -383,19 +383,17 @@ new class extends BasePageComponent {
                                     class="text-base-content/70">{{ __('users.edit.preferences') }}</x-ui.title>
 
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                <x-ui.select label="{{ __('users.timezone') }}"
-                                             name="timezone"
-                                             wire:model="timezone"
-                                             :options="$this->timezones"
-                                             :prepend-empty="false" />
+                            <x-ui.select label="{{ __('users.timezone') }}"
+                                         name="timezone"
+                                         wire:model="timezone"
+                                         :options="$this->timezones"
+                                         :prepend-empty="false" />
 
-                                             @dump($this->locales)
-
-                                <x-ui.select label="{{ __('users.locale') }}"
-                                             name="locale"
-                                             wire:model="locale"
-                                             :options="$this->locales"
-                                             :prepend-empty="false" />
+                            <x-ui.select label="{{ __('users.locale') }}"
+                                         name="locale"
+                                         wire:model="locale"
+                                         :options="$this->locales"
+                                         :prepend-empty="false" />
                         </div>
 
                     </div>

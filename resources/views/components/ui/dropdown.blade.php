@@ -6,7 +6,13 @@
     - bgClass: Background color class (default: bg-base-100)
     - menu: Use menu styling (adds 'menu' class)
     - menuSize: 'xs', 'sm', 'md', 'lg', 'xl'
-    - id: Optional ID for accessibility
+    - title: Optional title (auto-escaped)
+    - triggerText: Optional safe text for trigger (auto-escaped, alternative to slot)
+    - items: Optional array of safe text items (auto-escaped, alternative to slot)
+    
+    SECURITY WARNING:
+    - If using slots with user data, ALWAYS use {{ }} NOT {!! !!}
+    - For DB content, prefer triggerText/items props (auto-secured)
 --}}
 @props([
     'placement' => 'center',
@@ -17,6 +23,8 @@
     'menuSize' => 'md',
     'teleport' => false,
     'title' => null,
+    'triggerText' => null, // Safe alternative to trigger slot
+    'items' => null, // Safe alternative to content slot (array of strings)
 ])
 
 @php
@@ -77,24 +85,50 @@
             default => 'bottom-end',
         };
     }
+
+    // Helper closure to render items list
+    $renderItems = function () use ($items, $menu) {
+        if (empty($items)) {
+            return '';
+        }
+        // Add 'menu' class if not already handled by parent
+        $ulClass = $menu ? 'w-full p-0' : 'menu w-full p-0';
+
+        $html = '<ul class="' . $ulClass . '">';
+        foreach ($items as $item) {
+            // SECURITY: Explicitly escape item text
+            $safeItem = e($item);
+            $html .= '<li><a>' . $safeItem . '</a></li>';
+        }
+        $html .= '</ul>';
+        return $html;
+    };
 @endphp
 <div x-data="responsiveDropdown()"
      class="inline-block"
      {{ $attributes->only('class') }}>
     {{-- Mobile/Tablet Sheet View (< lg) --}}
-    <template x-if="isMobile">
+    <template x-if="$store.ui.isMobile">
         <x-ui.sheet position="bottom"
                     x-model="open"
                     :title="$title">
-            @isset($trigger)
+            @if (isset($trigger) || $triggerText)
                 <x-slot:trigger>
                     <div {{ $attributes->except('class') }}>
-                        {{ $trigger }}
+                        @if (isset($trigger))
+                            {{ $trigger }}
+                        @else
+                            <button class="btn m-1">{{ $triggerText }}</button>
+                        @endif
                     </div>
                 </x-slot:trigger>
-            @endisset
+            @endif
 
-            {{ $slot }}
+            @if (!empty($items))
+                {!! $renderItems() !!}
+            @else
+                {{ $slot }}
+            @endif
 
             @isset($actions)
                 <x-slot:actions>
@@ -105,17 +139,21 @@
     </template>
 
     {{-- Desktop Dropdown View (>= lg) --}}
-    <template x-if="!isMobile">
+    <template x-if="!$store.ui.isMobile">
         <div class="inline-block"> {{-- Wrapper to ensure inline-block behavior inside template --}}
             @if (!$teleport)
                 <div
                      {{ $attributes->except(['placement', 'hover', 'contentClass', 'bgClass', 'menu', 'menuSize', 'teleport', 'aria-label', 'aria-labelledby', 'class'])->merge(['class' => $dropdownClasses]) }}>
-                    @isset($trigger)
+                    @if (isset($trigger) || $triggerText)
                         <div tabindex="0"
                              role="button">
-                            {{ $trigger }}
+                            @if (isset($trigger))
+                                {{ $trigger }}
+                            @else
+                                {{ $triggerText }}
+                            @endif
                         </div>
-                    @endisset
+                    @endif
                     <div @class($contentClasses)
                          {{ $attributes->only(['aria-label', 'aria-labelledby']) }}>
                         @if ($title)
@@ -123,7 +161,11 @@
                                 <span>{{ $title }}</span>
                             </div>
                         @endif
-                        {{ $slot }}
+                        @if (!empty($items))
+                            {!! $renderItems() !!}
+                        @else
+                            {{ $slot }}
+                        @endif
                         @isset($actions)
                             <div class="border-base-200 mt-2 border-t pt-2">
                                 {{ $actions }}
@@ -135,13 +177,17 @@
                 <div x-data="dropdown()"
                      class="inline-block"
                      {{ $attributes->except(['placement', 'hover', 'contentClass', 'bgClass', 'menu', 'menuSize', 'teleport', 'aria-label', 'aria-labelledby', 'class']) }}>
-                    @isset($trigger)
+                    @if (isset($trigger) || $triggerText)
                         <div x-ref="trigger"
                              @click="toggle()"
                              role="button">
-                            {{ $trigger }}
+                            @if (isset($trigger))
+                                {{ $trigger }}
+                            @else
+                                {{ $triggerText }}
+                            @endif
                         </div>
-                    @endisset
+                    @endif
 
                     <template x-teleport="body">
                         <div x-show="open"
@@ -153,14 +199,19 @@
                              x-transition:leave="transition ease-in duration-75"
                              x-transition:leave-start="opacity-100 scale-100"
                              x-transition:leave-end="opacity-0 scale-95"
-                             @class($contentClasses . ' z-50 shadow-xl border border-base-200')
+                             :style="getDropdownStyle()"
+                             @class($contentClasses . ' shadow-xl border border-base-200')
                              {{ $attributes->only(['aria-label', 'aria-labelledby']) }}>
                             @if ($title)
                                 <div class="menu-title">
                                     <span>{{ $title }}</span>
                                 </div>
                             @endif
-                            {{ $slot }}
+                            @if (!empty($items))
+                                {!! $renderItems() !!}
+                            @else
+                                {{ $slot }}
+                            @endif
                             @isset($actions)
                                 <div class="border-base-200 mt-2 border-t pt-2">
                                     {{ $actions }}
@@ -180,29 +231,43 @@
             const register = function() {
                 Alpine.data('responsiveDropdown', function() {
                     return {
-                        isMobile: window.innerWidth < 1024,
+                        // isMobile: handled by global store $store.ui.isMobile
                         open: false,
-                        init: function() {
-                            const self = this;
-                            const update = function() {
-                                self.isMobile = window.innerWidth < 1024;
-                            };
-                            window.addEventListener('resize', update);
-                            update();
-                        }
+                        // init/destroy no longer needed for resize listener
                     };
                 });
 
                 Alpine.data('dropdown', function() {
                     return {
                         open: false,
+                        dropdownZIndex: 10000,
+
+                        init: function() {
+                            // Initialize z-index stack if not present
+                            window.uiZIndexStack = window.uiZIndexStack || {
+                                current: 9999,
+                                next: function() {
+                                    return ++this.current;
+                                }
+                            };
+                        },
 
                         toggle: function() {
                             this.open = !this.open;
+                            if (this.open) {
+                                // Get next z-index to appear above modals
+                                this.dropdownZIndex = window.uiZIndexStack?.next() || 10000;
+                            }
                         },
 
                         close: function() {
                             this.open = false;
+                        },
+
+                        getDropdownStyle: function() {
+                            return {
+                                zIndex: this.dropdownZIndex
+                            };
                         },
 
                         handleOutside: function(event) {

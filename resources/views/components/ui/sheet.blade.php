@@ -102,7 +102,7 @@ $transitionLeave = 'transform transition ease-in-out duration-300';
 @endphp
 
 <div x-data="sheet({
-    openValue: @if($wireModel && $wireModel->value()) $wire.$entangle('{{ $wireModel->value() }}') @else {{ $open ?? 'false' }} @endif,
+    openValue: @if ($wireModel && $wireModel->value()) $wire.$entangle('{{ $wireModel->value() }}') @else {{ $open ?? 'false' }} @endif,
     closeOnBackdrop: {{ $closeOnBackdrop ? 'true' : 'false' }},
     closeOnEscape: {{ $closeOnEscape ? 'true' : 'false' }}
 })"
@@ -135,7 +135,7 @@ $transitionLeave = 'transform transition ease-in-out duration-300';
                  x-transition:leave="transition-opacity ease-linear duration-300"
                  x-transition:leave-start="opacity-100"
                  x-transition:leave-end="opacity-0"
-                 class="absolute inset-0 bg-base-300/60 backdrop-blur-sm">
+                 class="bg-base-300/60 absolute inset-0 backdrop-blur-sm">
             </div>
 
             {{-- Sheet Panel --}}
@@ -157,28 +157,24 @@ $transitionLeave = 'transform transition ease-in-out duration-300';
                  ])>
 
                 {{-- Header --}}
-                @if ($title)
-                    <div class="border-base-200 flex shrink-0 items-center justify-between border-b px-3 py-2">
+                <div @class([
+                    'flex shrink-0 items-center justify-between',
+                    $title ? 'border-base-200 border-b px-3 py-2' : '',
+                ])>
+                    @if ($title)
                         <x-ui.title size="md">
                             {{ $title }}
                         </x-ui.title>
-
-                        <x-ui.button @click="close"
-                                     circle
-                                     variant="ghost"
-                                     aria-label="Close">
-                            <x-ui.icon name="x-mark"></x-ui.icon>
-                        </x-ui.button>
-                    </div>
-                @else
+                    @else
+                        <div></div>
+                    @endif
                     <x-ui.button @click="close"
                                  circle
                                  variant="ghost"
-                                 class="absolute right-0 top-0"
                                  aria-label="Close">
                         <x-ui.icon name="x-mark"></x-ui.icon>
                     </x-ui.button>
-                @endif
+                </div>
 
                 {{-- Scrollable Content --}}
                 <div class="flex-1 overflow-y-auto px-6 py-4">
@@ -216,7 +212,7 @@ $transitionLeave = 'transform transition ease-in-out duration-300';
 
                         init: function() {
                             const self = this;
-                            
+
                             // Initialize z-index if open explicitly on load
                             if (this.open) {
                                 this.zIndex = window.uiZIndexStack.next();

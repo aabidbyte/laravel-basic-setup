@@ -32,7 +32,7 @@ new class extends LivewireBaseComponent {
             ->notifications()
             ->latest()
             ->get()
-            ->sortBy([['created_at', 'desc'],['read_at', 'asc']]);
+            ->sortBy([['created_at', 'desc'], ['read_at', 'asc']]);
     }
 
     /**

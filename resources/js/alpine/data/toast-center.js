@@ -467,5 +467,9 @@ export function toastItem(toast, toasts, displayDuration) {
                 this.progressInterval = null;
             }
         },
+
+        destroy() {
+            this._cleanup();
+        },
     };
 }

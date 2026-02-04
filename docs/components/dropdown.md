@@ -18,6 +18,21 @@ A centralized, flexible dropdown component that provides consistent dropdown fun
 | `bgClass`      | `string` | `'bg-base-100'` | Background color class for dropdown content (default: bg-base-100)             |
 | `menu`         | `bool`   | `false`         | Enable menu styling (adds `menu` class to dropdown content)                    |
 | `menuSize`     | `string` | `'md'`          | Menu size: `xs`, `sm`, `md`, `lg`, `xl` (only applies when `menu="true"`)      |
+| `title`        | `string\|null` | `null`    | Optional title for the dropdown (auto-escaped)                                 |
+| `triggerText`  | `string\|null` | `null`    | **Safe Mode**: Trigger text (auto-escaped). Helper to avoid using slot.        |
+| `items`        | `array\|null`  | `null`    | **Safe Mode**: Array of menu items (auto-escaped). Helper to avoid using slot. |
+
+### 🛡️ Security Modes
+
+The component operates in two modes:
+
+1.  **✅ Safe Mode (Recommended for DB Data):**
+    Using `triggerText` and `items` props. The component **automatically escapes** all content passed to these props using PHP's `e()` helper.
+    *   **Best for:** Displaying user-generated content (names, emails) directly from the database.
+
+2.  **⚠️ Custom Slot Mode (Advanced):**
+    Using slots (`trigger`, `default`). You have full control over the HTML.
+    *   **Responsibility:** You **MUST** use `{{ }}` to escape any user data. Never use `{!! !!}` with untrusted content.
 
 ### Slots
 
@@ -26,7 +41,18 @@ A centralized, flexible dropdown component that provides consistent dropdown fun
 
 ### Usage Examples
 
-#### Basic Dropdown with Custom Content
+#### Secure Safe Mode (For DB Data)
+
+Use this mode when displaying user data to prevent XSS. All content is automatically escaped.
+
+```blade
+<x-ui.dropdown 
+    trigger-text="{{ $user->name }}" 
+    :items="[$user->email, $user->role, 'Joined: ' . $user->created_at]" 
+/>
+```
+
+#### Basic Dropdown with Custom Content (Custom Slot Mode)
 
 ```blade
 <x-ui.dropdown>
