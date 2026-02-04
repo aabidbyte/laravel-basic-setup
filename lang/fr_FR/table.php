@@ -2,6 +2,9 @@
 
 return [
     'search_placeholder' => 'Rechercher...',
+    'search_options' => 'Rechercher des options...',
+    'no_results_found' => 'Aucun résultat trouvé',
+    'clear_search' => 'Effacer la recherche',
     'actions' => 'Actions',
     'empty' => 'Aucun enregistrement trouvé.',
     'empty_message' => 'Aucun enregistrement trouvé.',

@@ -9,6 +9,12 @@
     'selected' => null,
     'placeholder' => null,
     'prependEmpty' => false,
+    // Search functionality
+    'searchable' => true,
+    'searchThreshold' => 10,
+    'searchMethod' => null,
+    'searchDebounce' => 300,
+    'searchPlaceholder' => null,
 ])
 
 @php
@@ -51,7 +57,18 @@
     $optionsArg = json_encode(json_encode($optionsArray), JSON_HEX_APOS);
     $placeholderArg = json_encode(json_encode($placeholder), JSON_HEX_APOS);
 
-    $alpineData = "customSelect({$valueArg}, {$optionsArg}, {$placeholderArg})";
+    // Search configuration
+    $searchConfig = [
+        'searchable' => $searchable,
+        'searchThreshold' => $searchThreshold,
+        'searchMethod' => $searchMethod,
+        'searchDebounce' => $searchDebounce,
+        'searchPlaceholder' => $searchPlaceholder ?? __('table.search_placeholder'),
+        'emptyMessage' => __('table.no_results_found'),
+    ];
+    $searchConfigArg = json_encode(json_encode($searchConfig), JSON_HEX_APOS);
+
+    $alpineData = "customSelect({$valueArg}, {$optionsArg}, {$placeholderArg}, {$searchConfigArg})";
 
     $sizeClass = match ($size) {
         'xs' => 'select-xs',
@@ -71,8 +88,27 @@
     // We use HEREDOC with 'blade' tag to avoid PHP interpreting $ or {{ }}
     // We use x-bind: for Alpine expressions so Blade::render doesn't try to evaluate them as PHP
 $renderOptionsList = <<<'blade'
-<div class="flex w-full flex-col gap-1">
-    <template x-for="[val, label] in optionsArray" :key="val">
+<template x-if="showSearch">
+    <div class="sticky top-0 z-10 bg-base-100 pb-2" wire:ignore>
+        <x-ui.search 
+            x-model="searchQuery"
+            x-bind:placeholder="searchConfig.searchPlaceholder"
+            size="sm"
+            class="w-full"
+        ></x-ui.search>
+    </div>
+</template>
+
+{{-- Loading indicator for server-side search --}}
+<template x-if="searchMethod && isSearching">
+    <div class="flex items-center justify-center p-4">
+        <x-ui.loading size="sm" :centered="false"></x-ui.loading>
+    </div>
+</template>
+
+{{-- Options list --}}
+<div class="flex w-full flex-col gap-1" x-show="!isSearching || !searchMethod">
+    <template x-for="[val, label] in filteredOptions" :key="val">
         <x-ui.button type="button"
                      @click="choose(val)"
                      x-bind:data-selected="isSelected(val) ? 'true' : null"
@@ -80,14 +116,34 @@ $renderOptionsList = <<<'blade'
                      x-bind:size="$store.ui.isMobile ? 'md' : 'sm'"
                      class="w-full justify-between text-left font-normal"
                      x-bind:class="getOptionClasses(val)">
-            <span x-text="label" class="truncate"></span>
+            {{-- Safe highlighting without x-html --}}
+            <span class="truncate">
+                <template x-if="!searchQuery">
+                    <span x-text="label"></span>
+                </template>
+                <template x-if="searchQuery">
+                    <template x-for="(token, idx) in $store.ui.highlightText(label, searchQuery)" :key="val + '-' + idx">
+                        <div class="inline-flex w-fit">
+                            <mark x-show="token.highlight" class="bg-warning/30 rounded" x-text="token.text"></mark>
+                            <span x-show="!token.highlight" x-text="token.text"></span>
+                        </div>
+                    </template>
+                </template>
+            </span>
             <x-ui.icon name="check"
                        x-show="isSelected(val)"
                        class="ml-auto"
-                       size="sm" />
-                </x-ui.button>
-            </template>
+                size="sm" />
+        </x-ui.button>
+    </template>
+    
+    {{-- Empty state for no results --}}
+    <template x-if="filteredOptions.length === 0">
+        <div class="p-4 text-center text-base-content/50">
+            <p x-text="searchConfig.emptyMessage"></p>
         </div>
+    </template>
+</div>
 blade;
 @endphp
 
@@ -165,8 +221,9 @@ blade;
     <script>
         (function() {
             const register = function() {
-                Alpine.data('customSelect', function(value, options, placeholder) {
+                Alpine.data('customSelect', function(value, options, placeholder, config = {}) {
                     const optionsArray = typeof options === 'string' ? JSON.parse(options) : options;
+                    const searchConfig = typeof config === 'string' ? JSON.parse(config) : config;
 
                     return {
                         value: value,
@@ -177,6 +234,14 @@ blade;
                         currentLabel: '',
                         selectWidth: 0,
                         selectZIndex: 10000,
+                        
+                        // Search state
+                        searchQuery: '',
+                        isSearching: false,
+                        searchConfig: searchConfig,
+                        searchMethod: searchConfig.searchMethod || null,
+                        cachedFilteredOptions: [],
+                        filteringInProgress: false,
 
                         init: function() {
                             const self = this;
@@ -195,7 +260,113 @@ blade;
 
                             this.$watch('optionsArray', function() {
                                 self.updateLabel();
+                                self.isSearching = false;
                             });
+                            
+                            // Focus search input when dropdown opens
+                            this.$watch('selectOpen', function(isOpen) {
+                                if (isOpen && self.showSearch) {
+                                    self.$nextTick(function() {
+                                        const searchInput = self.$el.querySelector('input[type="search"]');
+                                        if (searchInput) searchInput.focus();
+                                    });
+                                }
+                            });
+                        },
+                        
+                        // Optimized filtering with chunking for large lists
+                        get filteredOptions() {
+                            if (!this.searchQuery || this.searchMethod) {
+                                this.cachedFilteredOptions = this.optionsArray;
+                                return this.optionsArray;
+                            }
+                            
+                            // Return cached results immediately while filtering continues
+                            if (this.filteringInProgress) {
+                                return this.cachedFilteredOptions;
+                            }
+                            
+                            const query = this.searchQuery.toLowerCase().trim();
+                            
+                            // For small lists, filter synchronously
+                            if (this.optionsArray.length <= 100) {
+                                this.cachedFilteredOptions = this.optionsArray.filter(function(option) {
+                                    return option[1].toString().toLowerCase().includes(query);
+                                });
+                                return this.cachedFilteredOptions;
+                            }
+                            
+                            // For large lists, trigger async chunked filtering
+                            this.filterOptionsAsync(query);
+                            return this.cachedFilteredOptions;
+                        },
+                        
+                        // Async chunked filtering for better performance
+                        filterOptionsAsync: function(query) {
+                            if (this.filteringInProgress) return;
+                            
+                            this.filteringInProgress = true;
+                            const results = [];
+                            const chunkSize = 50;
+                            let currentIndex = 0;
+                            const self = this;
+                            
+                            // Show first chunk immediately
+                            const firstChunk = this.optionsArray.slice(0, chunkSize);
+                            firstChunk.forEach(function(option) {
+                                if (option[1].toString().toLowerCase().includes(query)) {
+                                    results.push(option);
+                                }
+                            });
+                            this.cachedFilteredOptions = results;
+                            currentIndex = chunkSize;
+                            
+                            // Process remaining chunks asynchronously
+                            const processChunk = function() {
+                                const endIndex = Math.min(currentIndex + chunkSize, self.optionsArray.length);
+                                const chunk = self.optionsArray.slice(currentIndex, endIndex);
+                                
+                                chunk.forEach(function(option) {
+                                    if (option[1].toString().toLowerCase().includes(query)) {
+                                        results.push(option);
+                                    }
+                                });
+                                
+                                self.cachedFilteredOptions = results;
+                                currentIndex = endIndex;
+                                
+                                if (currentIndex < self.optionsArray.length) {
+                                    // Continue processing next chunk
+                                    if (window.requestIdleCallback) {
+                                        requestIdleCallback(processChunk);
+                                    } else {
+                                        setTimeout(processChunk, 0);
+                                    }
+                                } else {
+                                    // Filtering complete
+                                    self.filteringInProgress = false;
+                                }
+                            };
+                            
+                            // Start processing remaining chunks
+                            if (window.requestIdleCallback) {
+                                requestIdleCallback(processChunk);
+                            } else {
+                                setTimeout(processChunk, 0);
+                            }
+                        },
+                        
+                        // Computed property to determine if search should be shown
+                        get showSearch() {
+                            return this.searchConfig.searchable && 
+                                   this.optionsArray.length > this.searchConfig.searchThreshold;
+                        },
+                        
+                        // Clear search
+                        clearSearch: function() {
+                            this.searchQuery = '';
+                            this.cachedFilteredOptions = [];
+                            this.filteringInProgress = false;
                         },
 
                         updateLabel: function() {
