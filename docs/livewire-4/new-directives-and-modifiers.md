@@ -73,6 +73,34 @@ Preserve scroll position during updates to prevent layout jumps:
 <button wire:click.preserve-scroll="loadMore">Load More</button>
 ```
 
+### wire:show
+
+Toggles element visibility instantly on the client side using CSS `display: none`:
+
+```blade
+<div wire:show="isOpen">
+    <!-- Toggles instantly when isOpen changes -->
+</div>
+```
+
+### wire:text
+
+Updates the text content of an element instantly on the client side:
+
+```blade
+Likes: <span wire:text="likes"></span>
+```
+
+### wire:bind
+
+Bind any HTML attribute reactively on the client side:
+
+```blade
+<div wire:bind:class="count > 10 ? 'text-red-500' : 'text-green-500'">
+    Count: {{ $count }}
+</div>
+```
+
 ### data-loading Attribute
 
 Every element that triggers a network request automatically receives a `data-loading` attribute, making it easy to style loading states with Tailwind:

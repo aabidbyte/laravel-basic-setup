@@ -9,18 +9,9 @@ use Livewire\Attributes\Computed;
 
 /**
  * Trait for handling DataTable rendering logic.
- *
- * @property string $search
- *
- * @method array columns()
  */
 trait HasDatatableLivewireRendering
 {
-    /**
-     * Get columns for view
-     *
-     * @return array<int, array<string, mixed>>
-     */
     /**
      * Get columns for view
      *
@@ -58,6 +49,7 @@ trait HasDatatableLivewireRendering
      * @param  array<string, mixed>  $columnData  Column array data
      * @param  mixed  $row  Row model instance
      */
+    #[Computed]
     public function renderColumn(array $columnData, mixed $row): string
     {
         // Find the Column instance

@@ -48,9 +48,10 @@
         @if ($this->rows->count() > $this->visibleRows)
             <div x-data="infiniteScroll"
                  wire:key="datatable-load-more-{{ $this->datatableId }}"
-                 wire:loading
                  class="flex h-8 items-center justify-center p-4">
-                <x-ui.loading size="sm" />
+                <x-ui.loading
+                 wire:loading
+                 size="sm" />
             </div>
         @endif
     </div>
