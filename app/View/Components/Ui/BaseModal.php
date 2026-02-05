@@ -212,6 +212,7 @@ class BaseModal extends Component
             'rounded-box',
             'text-base-content',
             'shadow-lg',
+            'min-h-[30dvh]',
             $this->backgroundClass,
             $maxWidthClasses,
             $maxHeightClasses . ' overflow-y-auto',

@@ -4,9 +4,9 @@
         @if ($this->hasBulkActions())
             <th wire:key="header-{{ $this->datatableId }}-col-checkbox"
                 class="bg-base-100 sticky left-0 z-20 w-4 p-1">
-                <x-ui.checkbox wire:click="toggleSelectAll()"
-                               :checked="$this->isAllSelected"
-                               wire:key="select-all-checkbox-{{ $this->isAllSelected ? '1' : '0' }}"
+                <x-ui.checkbox @click="toggleAll()"
+                               wire:bind:checked="currentPageUuids.length > 0 && selected.length === currentPageUuids.length"
+                               wire:key="select-all-checkbox"
                                size="xs" />
             </th>
         @endif

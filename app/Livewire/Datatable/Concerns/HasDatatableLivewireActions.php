@@ -279,7 +279,16 @@ trait HasDatatableLivewireActions
     {
         $action = collect($this->bulkActions())->first(fn (BulkAction $a) => $a->getKey() === $actionKey);
 
-        if ($action && $action->getExecute() && ! empty($this->selected)) {
+        if ($action && $action->getExecute()) {
+            if (empty($this->selected)) {
+                \App\Services\Notifications\NotificationBuilder::make()
+                    ->title('actions.select_at_least_one')
+                    ->error()
+                    ->send();
+
+                return;
+            }
+
             $models = $this->baseQuery()->whereIn('uuid', $this->selected)->get();
             ($action->getExecute())($models);
             $this->clearSelection();

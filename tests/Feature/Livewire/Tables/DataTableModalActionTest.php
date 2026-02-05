@@ -155,3 +155,20 @@ it('returns false for rowClickOpensModal when no rows exist', function () {
     // With no rows, rowClickOpensModal should return false
     expect($component->instance()->rowClickOpensModal())->toBeFalse();
 });
+
+it('ActionModal can map options from event payload', function () {
+    $options = [
+        'viewType' => 'confirm',
+        'viewProps' => [
+            'title' => 'Test Title',
+            'content' => 'Test Content',
+        ],
+        'datatableId' => 'test-dt',
+    ];
+
+    Livewire::test('data-table.action-modal')
+        ->dispatch('open-datatable-modal', options: $options)
+        ->assertSet('isOpen', true)
+        ->assertSet('modalTitle', 'Test Title')
+        ->assertSet('datatableId', 'test-dt');
+});

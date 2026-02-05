@@ -11,10 +11,14 @@
     </div>
 
     {{-- Bulk Actions Dropdown --}}
-    @if ($this->hasSelection)
-        <div class="flex items-center gap-4">
-            <span class="text-base-content/70 text-sm font-medium">{{ $this->selectedCount }}
-                {{ __('table.selected') }}</span>
+    @if ($this->hasBulkActions())
+        <div class="flex items-center gap-4"
+             wire:show="selected.length > 0"
+             wire:cloak>
+            <span class="text-base-content/70 text-sm font-medium">
+                <span wire:text="selected.length"></span>
+                {{ __('table.selected') }}
+            </span>
 
             <x-ui.dropdown placement="bottom-start"
                            menu
@@ -34,7 +38,7 @@
                 @foreach ($this->getBulkActions() as $action)
                     @php
                         $actionClick = $action['confirm']
-                            ? "executeActionWithConfirmation('{$action['key']}', null, true)"
+                            ? "executeActionWithConfirmation('{$action['key']}', null, true, " . \json_encode($action) . ')'
                             : null;
 
                         $wireClick = !$action['confirm'] ? "executeBulkAction('{$action['key']}')" : null;
@@ -67,9 +71,12 @@
                 {{ __('actions.clear_selection') }}
             </x-ui.button>
         </div>
-    @elseif ($this->hasFilters())
-        {{-- Filter Toggle Button - only render if filters are defined --}}
-        <div class="hidden flex-row-reverse items-center gap-2 py-2 md:flex">
+    @endif
+    <div class="hidden flex-row-reverse items-center gap-2 py-2 md:flex"
+         wire:show="selected.length === 0"
+         wire:cloak>
+        @if ($this->hasFilters())
+            {{-- Filter Toggle Button - only render if filters are defined --}}
             <x-ui.button @click="toggleFilters()"
                          type="button"
                          variant="outline"
@@ -82,13 +89,15 @@
                                 size="sm">{{ count($this->getActiveFilters()) }}</x-ui.badge>
                 @endif
             </x-ui.button>
-        </div>
-    @endif
+        @endif
+    </div>
 </div>
 
-@if ($this->hasFilters() && !$this->hasSelection)
+@if ($this->hasFilters())
     {{-- Filter Toggle Button - only render if filters are defined --}}
-    <div class="flex flex-row-reverse items-center gap-2 py-2 md:hidden">
+    <div class="flex flex-row-reverse items-center gap-2 py-2 md:hidden"
+         wire:show="selected.length === 0"
+         wire:cloak>
         <x-ui.button @click="toggleFilters()"
                      type="button"
                      variant="outline"

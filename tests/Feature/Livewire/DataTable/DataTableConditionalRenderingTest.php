@@ -150,7 +150,7 @@ class DataTableConditionalRenderingTest extends TestCase
 
         Livewire::actingAs($this->user)
             ->test(FullDatatableForConditionalTest::class)
-            ->assertSee('wire:click="toggleSelectAll()"', false) // Select-all checkbox
+            ->assertSee('@click="toggleAll()"', false) // Select-all checkbox new syntax
             ->assertSee(__('table.actions')); // Actions column header
     }
 

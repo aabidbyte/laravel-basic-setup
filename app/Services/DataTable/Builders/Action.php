@@ -572,11 +572,9 @@ class Action
             'hasModal' => $this->modal !== null,
             'modal' => $this->modal,
             'modalProps' => \is_array($this->modalProps) ? $this->modalProps : [],
-            'hasModalClosure' => $this->modalProps instanceof Closure,
             'modalType' => $this->modalType,
             'confirm' => $this->confirm,
             'confirmMessage' => \is_string($this->confirmMessage) ? $this->confirmMessage : null,
-            'hasConfirmClosure' => $this->confirmMessage instanceof Closure,
             'confirmView' => $this->confirmView,
             'confirmViewProps' => $this->confirmViewProps,
         ];

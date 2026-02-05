@@ -96,9 +96,20 @@
                         this.openFilters = false;
                     },
 
-                    executeActionWithConfirmation(actionKey, uuid = null, isBulk = false) {
+                    executeActionWithConfirmation(actionKey, uuid = null, isBulk = false, action = null) {
                         const wire = this.$wire || this.$el.closest('[wire\\:id]')?.__livewire;
                         if (!wire) return;
+
+                        // Zero-network confirmation if we have a static message
+                        if (action && action.confirm && action.confirmMessage && !action.confirmView) {
+                            this.pendingAction = {
+                                actionKey,
+                                uuid,
+                                isBulk
+                            };
+                            this.dispatchConfirmModal(action.confirmMessage, actionKey, uuid, isBulk, action.label);
+                            return;
+                        }
 
                         const method = isBulk ? 'getBulkActionConfirmation' : 'getActionConfirmation';
 
@@ -109,32 +120,65 @@
                                     uuid,
                                     isBulk
                                 };
-                                window.dispatchEvent(new CustomEvent('open-datatable-modal', {
-                                    detail: {
-                                        viewType: 'confirm',
-                                        viewProps: {
-                                            title: config.title || 'Confirm Action',
-                                            content: config.message || config
-                                                .content ||
-                                                'Are you sure you want to proceed?',
-                                            confirmLabel: config.confirmText ||
-                                                'Confirm',
-                                            cancelLabel: config.cancelText ||
-                                                'Cancel',
-                                            actionKey,
-                                            uuid,
-                                            isBulk,
-                                        },
-                                        viewTitle: config.title || 'Confirm Action',
-                                        datatableId: this.id,
-                                    },
-                                    bubbles: true,
-                                }));
+                                const message = config.message || config.content ||
+                                    'Are you sure you want to proceed?';
+                                this.dispatchConfirmModal(message, actionKey, uuid, isBulk, config.title);
                             } else {
                                 if (isBulk) wire.executeBulkAction(actionKey);
                                 else wire.executeAction(actionKey, uuid);
                             }
                         }).catch(() => {});
+                    },
+
+                    dispatchConfirmModal(message, actionKey, uuid, isBulk, title = null) {
+                        window.dispatchEvent(new CustomEvent('confirm-modal', {
+                            detail: {
+                                title: title || 'Confirm Action',
+                                message: message,
+                                confirmAction: () => {
+                                    const wire = this.$wire || this.$el.closest(
+                                        '[wire\\:id]')?.__livewire;
+                                    if (isBulk) wire.executeBulkAction(actionKey);
+                                    else wire.executeAction(actionKey, uuid);
+                                }
+                            }
+                        }));
+                    },
+
+                    openModalOptimistically(actionKey, uuid, action = null) {
+                        // Instantly show loading state in ActionModal
+                        window.dispatchEvent(new CustomEvent('datatable-modal-loading'));
+
+                        // If we have action info, bypass the datatable RPC
+                        if (action && action.hasModal && action.modal) {
+                            window.dispatchEvent(new CustomEvent('datatable-modal-open', {
+                                detail: {
+                                    options: {
+                                        viewPath: action.modal,
+                                        viewType: action.modalType,
+                                        viewProps: action.modalProps || {},
+                                        viewTitle: action.label,
+                                        datatableId: this.id,
+                                    }
+                                }
+                            }));
+                            return;
+                        }
+
+                        // Fallback to server-side modal resolution
+                        this.$wire.openActionModal(actionKey, uuid);
+                    },
+
+                    toggleAll() {
+                        const wire = this.$wire;
+                        const pageUuids = wire.currentPageUuids || [];
+                        const selected = wire.selected || [];
+
+                        if (selected.length === pageUuids.length && pageUuids.length > 0) {
+                            wire.selected = [];
+                        } else {
+                            wire.selected = [...pageUuids];
+                        }
                     },
 
                     cancelAction() {

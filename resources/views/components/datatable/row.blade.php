@@ -3,8 +3,8 @@
         @click="handleClick($event)"
         @if ($this->rowClickOpensModal()) @click="$dispatch('this-modal-loading')" @endif
     @endif
+    wire:bind:class="selected.includes('{{ $row->uuid }}') ? '!bg-secondary' : ''"
     @class([
-        '!bg-secondary' => $this->isSelected($row->uuid),
         'cursor-pointer' => $this->rowsAreClickable(),
         'transition-colors hover:bg-accent',
     ])>
@@ -12,7 +12,7 @@
     @if ($this->hasBulkActions())
         <td wire:key="row-{{ $row->uuid }}-checkbox"
             class="sticky-action-cell sticky left-0 z-10 p-1">
-            <x-ui.checkbox wire:model.live="selected"
+            <x-ui.checkbox wire:model="selected"
                            value="{{ $row->uuid }}"
                            wire:key="checkbox-{{ $row->uuid }}"
                            size="xs" />

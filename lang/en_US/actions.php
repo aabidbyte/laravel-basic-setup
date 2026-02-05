@@ -61,4 +61,5 @@ return [
     'required' => 'Required',
     'show_password' => 'Show Password',
     'hide_password' => 'Hide Password',
+    'select_at_least_one' => 'Please select at least one item.',
 ];

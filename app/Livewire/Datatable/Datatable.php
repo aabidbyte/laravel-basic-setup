@@ -279,6 +279,10 @@ abstract class Datatable extends LivewireBaseComponent
      */
     public function refreshTable(): void
     {
+        if (\method_exists($this, 'clearSelection')) {
+            $this->clearSelection();
+        }
+
         unset($this->rows);
         $this->visibleRows = 20;
         $this->dispatch("datatable:scroll-to-top:{$this->getId()}");

@@ -16,15 +16,13 @@
                      :show-close-button="$modalType !== 'confirm'">
 
         {{-- Loading State --}}
-        <div x-show="isLoading"
-             x-cloak>
+        <div x-show="isLoading" x-cloak>
             <x-ui.loading></x-ui.loading>
         </div>
 
         {{-- Content (always rendered by Blade, visibility toggled by Alpine) --}}
         <div x-show="!isLoading"
-             x-cloak
-             wire:loading.class="opacity-50">
+             x-cloak>
             @if ($isOpen && $modalView)
                 @if ($modalType === 'blade')
                     @include($modalView, $modalProps)
@@ -77,6 +75,17 @@
                             'datatable-modal-loading',
                             this._loadingListener,
                         );
+
+                        // Listen for dynamic modal open event (bypasses datatable RPC)
+                        window.addEventListener('datatable-modal-open', (event) => {
+                            this.isLoading = true;
+                            this.modalIsOpen = true;
+
+                            const options = event.detail.options;
+                            if (options && this.$wire) {
+                                this.$wire.openModal(options);
+                            }
+                        });
 
                         // Use Livewire hook to detect when component has finished updating
                         // Store the cleanup function returned by hook()

@@ -22,6 +22,21 @@ trait HasDatatableLivewireSelection
     public array $selected = [];
 
     /**
+     * UUIDs of rows on the current page (accessible by $wire)
+     *
+     * @var array<int, string>
+     */
+    public array $currentPageUuids = [];
+
+    /**
+     * Hook into Livewire rendering to populate current page UUIDs for the frontend.
+     */
+    public function rendering(): void
+    {
+        $this->currentPageUuids = $this->currentPageUuids();
+    }
+
+    /**
      * Get current page UUIDs
      *
      * @return array<int, string>

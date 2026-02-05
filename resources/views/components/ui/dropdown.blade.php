@@ -197,6 +197,7 @@
                         <div x-show="open"
                              x-anchor.{{ $alpinePlacement }}.offset.4="$refs.trigger"
                              @click.outside="handleOutside($event)"
+                             @click="handleContentClick($event)"
                              x-transition:enter="transition ease-out duration-100"
                              x-transition:enter-start="opacity-0 scale-95"
                              x-transition:enter-end="opacity-100 scale-100"
@@ -254,6 +255,24 @@
                                     return ++this.current;
                                 }
                             };
+
+                            // Detect parent Livewire component
+                            const wire = this.$wire || this.$el.closest('[wire\\:id]')?.__livewire;
+                            this._wireId = wire?.id;
+
+                            // Close on re-render
+                            if (window.Livewire) {
+                                this._morphHookRemove = window.Livewire.hook(
+                                    'morph.updated',
+                                    ({
+                                        component
+                                    }) => {
+                                        if (this.open && component.id === this._wireId) {
+                                            this.close();
+                                        }
+                                    },
+                                );
+                            }
                         },
 
                         toggle: function() {
@@ -279,6 +298,24 @@
                                 return;
                             }
                             this.close();
+                        },
+
+                        handleContentClick: function(event) {
+                            // Close when item is clicked, unless it's a form element
+                            const interactiveTagNames = ['INPUT', 'TEXTAREA', 'SELECT', 'LABEL'];
+                            if (interactiveTagNames.includes(event.target.tagName)) {
+                                return;
+                            }
+
+                            this.close();
+                        },
+
+                        destroy() {
+                            if (this._morphHookRemove) {
+                                this._morphHookRemove();
+                            }
+                            this.open = false;
+                            this.dropdownZIndex = 10000;
                         }
                     };
                 });

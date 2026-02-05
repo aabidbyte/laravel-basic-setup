@@ -441,7 +441,6 @@ class BulkAction
             'modalProps' => $this->modalProps,
             'confirm' => $this->confirm,
             'confirmMessage' => \is_string($this->confirmMessage) ? $this->confirmMessage : null,
-            'hasConfirmClosure' => $this->confirmMessage instanceof Closure,
             'confirmView' => $this->confirmView,
             'confirmViewProps' => $this->confirmViewProps,
             'ability' => $this->ability,
