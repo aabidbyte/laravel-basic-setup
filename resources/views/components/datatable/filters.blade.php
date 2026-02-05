@@ -11,9 +11,9 @@
     </div>
 
     {{-- Bulk Actions Dropdown --}}
-    @if ($datatable->hasSelection)
+    @if ($this->hasSelection)
         <div class="flex items-center gap-4">
-            <span class="text-base-content/70 text-sm font-medium">{{ $datatable->selectedCount }}
+            <span class="text-base-content/70 text-sm font-medium">{{ $this->selectedCount }}
                 {{ __('table.selected') }}</span>
 
             <x-ui.dropdown placement="bottom-start"
@@ -31,7 +31,7 @@
                     </x-ui.button>
                 </x-slot:trigger>
 
-                @foreach ($datatable->getBulkActions() as $action)
+                @foreach ($this->getBulkActions() as $action)
                     @php
                         $actionClick = $action['confirm']
                             ? "executeActionWithConfirmation('{$action['key']}', null, true)"
@@ -40,7 +40,8 @@
                         $wireClick = !$action['confirm'] ? "executeBulkAction('{$action['key']}')" : null;
                     @endphp
 
-                    <x-ui.button type="button"
+                    <x-ui.button wire:key="bulk-action-{{ $action['key'] }}"
+                                 type="button"
                                  :@click="$actionClick ?: null"
                                  :wire:click="$wireClick ?: null"
                                  :variant="$action['variant'] ?? 'ghost'"
@@ -66,7 +67,7 @@
                 {{ __('actions.clear_selection') }}
             </x-ui.button>
         </div>
-    @elseif ($datatable->hasFilters())
+    @elseif ($this->hasFilters())
         {{-- Filter Toggle Button - only render if filters are defined --}}
         <div class="hidden flex-row-reverse items-center gap-2 py-2 md:flex">
             <x-ui.button @click="toggleFilters()"
@@ -76,16 +77,16 @@
                 <x-ui.icon name="funnel"
                            size="sm"></x-ui.icon>
                 {{ __('table.filters') }}
-                @if (count($datatable->getActiveFilters()) > 0)
+                @if (count($this->getActiveFilters()) > 0)
                     <x-ui.badge color="primary"
-                                size="sm">{{ count($datatable->getActiveFilters()) }}</x-ui.badge>
+                                size="sm">{{ count($this->getActiveFilters()) }}</x-ui.badge>
                 @endif
             </x-ui.button>
         </div>
     @endif
 </div>
 
-@if ($datatable->hasFilters() && !$datatable->hasSelection)
+@if ($this->hasFilters() && !$this->hasSelection)
     {{-- Filter Toggle Button - only render if filters are defined --}}
     <div class="flex flex-row-reverse items-center gap-2 py-2 md:hidden">
         <x-ui.button @click="toggleFilters()"
@@ -95,22 +96,23 @@
             <x-ui.icon name="funnel"
                        size="sm"></x-ui.icon>
             {{ __('table.filters') }}
-            @if (count($datatable->getActiveFilters()) > 0)
+            @if (count($this->getActiveFilters()) > 0)
                 <x-ui.badge color="primary"
-                            size="sm">{{ count($datatable->getActiveFilters()) }}</x-ui.badge>
+                            size="sm">{{ count($this->getActiveFilters()) }}</x-ui.badge>
             @endif
         </x-ui.button>
     </div>
 @endif
 {{-- Active Filters Badges --}}
-@if (count($datatable->getActiveFilters()) > 0)
+@if (count($this->getActiveFilters()) > 0)
     <div class="grid grid-cols-12 place-items-center gap-2">
         <div class="col-span-2">
             <span class="text-base-content/70 text-sm">{{ __('table.active_filters') }}:</span>
         </div>
         <div class="col-span-8">
-            @foreach ($datatable->getActiveFilters() as $filter)
-                <x-ui.badge size="sm"
+            @foreach ($this->getActiveFilters() as $filter)
+                <x-ui.badge wire:key="active-filter-{{ $filter['key'] }}"
+                            size="sm"
                             color="secondary"
                             class="gap-1">
                     <span class="font-medium">{{ $filter['label'] }}:</span>
@@ -138,7 +140,7 @@
     </div>
 @endif
 {{-- Filters Panel - only render if filters are defined --}}
-@if ($datatable->hasFilters())
+@if ($this->hasFilters())
     <div x-show="openFilters"
          x-collapse
          class="mb-6">
@@ -147,15 +149,17 @@
                 <h3 class="card-title mb-4 text-lg">{{ __('table.filters') }}</h3>
 
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-                    @foreach ($datatable->getFilters() as $filter)
+                    @foreach ($this->getFilters() as $filter)
                         @if ($filter['type'] === DataTableFilterType::SELECT)
-                            <x-ui.select wire:model.live="filters.{{ $filter['key'] }}"
+                            <x-ui.select wire:key="filter-input-{{ $filter['key'] }}"
+                                         wire:model.live="filters.{{ $filter['key'] }}"
                                          :label="$filter['label']"
                                          class="select-md"
                                          :options="$filter['options']">
                             </x-ui.select>
                         @elseif ($filter['type'] === DataTableFilterType::DATE_RANGE)
-                            <x-ui.date-range :label="$filter['label']"
+                            <x-ui.date-range wire:key="filter-input-{{ $filter['key'] }}"
+                                             :label="$filter['label']"
                                              wire:model.from.live="filters.{{ $filter['key'] }}.from"
                                              wire:model.to.live="filters.{{ $filter['key'] }}.to" />
                         @endif

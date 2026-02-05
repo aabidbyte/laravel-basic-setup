@@ -1,16 +1,17 @@
 <tr wire:key="row-{{ $row->uuid }}"
-    @if ($datatable->rowsAreClickable()) x-data="tableRow('{{ $row->uuid }}')"
+    @if ($this->rowsAreClickable()) x-data="tableRow('{{ $row->uuid }}')"
         @click="handleClick($event)"
-        @if ($datatable->rowClickOpensModal()) @click="$dispatch('datatable-modal-loading')" @endif
+        @if ($this->rowClickOpensModal()) @click="$dispatch('this-modal-loading')" @endif
     @endif
     @class([
-        '!bg-secondary' => $datatable->isSelected($row->uuid),
-        'cursor-pointer' => $datatable->rowsAreClickable(),
+        '!bg-secondary' => $this->isSelected($row->uuid),
+        'cursor-pointer' => $this->rowsAreClickable(),
         'transition-colors hover:bg-accent',
     ])>
     {{-- Selection Checkbox - only render if bulk actions are defined --}}
-    @if ($datatable->hasBulkActions())
-        <td class="sticky-action-cell sticky left-0 z-10 p-1">
+    @if ($this->hasBulkActions())
+        <td wire:key="row-{{ $row->uuid }}-checkbox"
+            class="sticky-action-cell sticky left-0 z-10 p-1">
             <x-ui.checkbox wire:model.live="selected"
                            value="{{ $row->uuid }}"
                            wire:key="checkbox-{{ $row->uuid }}"
@@ -19,48 +20,32 @@
     @endif
 
     {{-- Data Columns --}}
-    @foreach ($datatable->getColumns() as $column)
-        <td style="{{ $column['width'] ? "width: {$column['width']}; max-width: {$column['width']};" : '' }}"
+    @foreach ($this->getColumns() as $column)
+        <td wire:key="row-{{ $row->uuid }}-{{ $column['field'] ?? $loop->index }}"
+            style="{{ $column['width'] ? "width: {$column['width']}; max-width: {$column['width']};" : '' }}"
             @class([
                 $column['class'],
                 'whitespace-nowrap' => $column['nowrap'],
                 'truncate' => (bool) $column['width'],
             ])>
-            {!! $datatable->renderColumn($column, $row) !!}
+            @if ($column['searchable'] && $this->search)
+                {{-- Client-side highlighting for all searchable columns --}}
+                @php
+                    $cellValue = $this->renderColumn($column, $row);
+                @endphp
+                <span x-data="highlightedCell('{{ addslashes($cellValue) }}', '{{ addslashes($this->search) }}')"></span>
+            @else
+                {{-- No highlighting for non-searchable columns --}}
+                {!! $this->renderColumn($column, $row) !!}
+            @endif
         </td>
     @endforeach
 
     {{-- Actions Dropdown - only render if row actions are defined --}}
-    @if ($datatable->hasRowActions())
-        <td class="sticky-action-cell sticky right-0 z-10 text-end">
-            {!! $datatable->renderRowActions($row) !!}
+    @if ($this->hasRowActions())
+        <td wire:key="row-{{ $row->uuid }}-actions"
+            class="sticky-action-cell sticky right-0 z-10 text-end">
+            {!! $this->renderRowActions($row) !!}
         </td>
     @endif
 </tr>
-
-@assets
-    <script>
-        (function() {
-            const register = () => {
-                Alpine.data('tableRow', (uuid) => ({
-                    handleClick(event) {
-                        // Ignore clicks on sticky action cells or interactive elements
-                        if (event.target.closest('.sticky-action-cell') ||
-                            event.target.closest('a') ||
-                            event.target.closest('button')) {
-                            return;
-                        }
-
-                        this.$wire.handleRowClick(uuid);
-                    }
-                }));
-            };
-
-            if (window.Alpine) {
-                register();
-            } else {
-                document.addEventListener('alpine:init', register);
-            }
-        })();
-    </script>
-@endassets

@@ -834,6 +834,42 @@ public function getSubmitButtonTextProperty(): string
 
 The application uses a modular CSS/JS structure to avoid duplication and optimize bundle sizes. Assets are organized using CSS imports (supported by Tailwind CSS v4) rather than separate Vite entry points.
 
+### Search & Highlight Conventions
+
+**CRITICAL RULE**: Use `$store.search` for ALL search and highlight functionality across the application.
+
+#### ✅ DO
+
+-   Use `$store.search.highlightText()` for all text highlighting
+-   Use `$store.search.filterOptions()` for large list filtering (>100 items)
+-   Implement token-based rendering with `x-text` (never `x-html`)
+-   Use async filtering for lists > 100 items
+-   Add `wire:ignore` to search inputs in Livewire components
+-   Follow the established pattern for highlighting:
+
+```blade
+<template x-for="token in $store.search.highlightText(text, query)">
+    <mark x-show="token.highlight" class="bg-warning/30 rounded" x-text="token.text"></mark>
+    <span x-show="!token.highlight" x-text="token.text"></span>
+</template>
+```
+
+#### ❌ DON'T
+
+-   Don't use server-side highlighting (PHP regex) - move to frontend
+-   Don't use `x-html` for highlighted content (XSS risk)
+-   Don't implement custom filtering logic - use centralized store
+-   Don't sync-filter lists > 100 items - use async chunking
+-   Don't use template literals in Alpine expressions (CSP violation)
+-   Don't use `$store.ui.highlightText()` - it no longer exists, use `$store.search.highlightText()`
+
+#### Documentation
+
+-   **Technical Guide**: See `docs/AGENTS/search-system.md` for API reference and implementation patterns
+-   **User Guide**: See `docs/features/search.md` for usage examples and configuration
+-   **Components**: Select component and datatable both use centralized search
+
+
 #### CSS File Structure
 
 **Base CSS** (`resources/css/base.css`):

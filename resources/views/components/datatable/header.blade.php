@@ -1,17 +1,18 @@
-<thead>
-    <tr>
+<thead wire:key="header-{{ $this->datatableId }}">
+    <tr wire:key="header-{{ $this->datatableId }}-row">
         {{-- Select All Checkbox - only render if bulk actions are defined --}}
-        @if ($datatable->hasBulkActions())
-            <th class="bg-base-100 sticky left-0 z-20 w-4 p-1">
+        @if ($this->hasBulkActions())
+            <th wire:key="header-{{ $this->datatableId }}-col-checkbox"
+                class="bg-base-100 sticky left-0 z-20 w-4 p-1">
                 <x-ui.checkbox wire:click="toggleSelectAll()"
-                               :checked="$datatable->isAllSelected"
-                               wire:key="select-all-checkbox-{{ $datatable->isAllSelected ? '1' : '0' }}"
+                               :checked="$this->isAllSelected"
+                               wire:key="select-all-checkbox-{{ $this->isAllSelected ? '1' : '0' }}"
                                size="xs" />
             </th>
         @endif
 
         {{-- Column Headers --}}
-        @foreach ($datatable->getColumns() as $column)
+        @foreach ($this->getColumns() as $column)
             @php
                 $columnStyles = $column['width'] ? "width: {$column['width']}; max-width: {$column['width']};" : '';
                 $columnClasses = [
@@ -21,7 +22,8 @@
             @endphp
 
             @if ($column['sortable'])
-                <th wire:click="sort('{{ $column['field'] }}')"
+                <th wire:key="header-{{ $this->datatableId }}-col-{{ $column['field'] }}"
+                    wire:click="sort('{{ $column['field'] }}')"
                     style="{{ $columnStyles }}"
                     @class([
                         'cursor-pointer select-none hover:bg-base-200',
@@ -29,14 +31,15 @@
                     ])>
                     <div class="flex items-center justify-between gap-2">
                         <span class="truncate">{{ $column['label'] }}</span>
-                        @if ($datatable->sortBy === $column['field'])
-                            <x-ui.icon :name="$datatable->sortDirection === 'asc' ? 'chevron-up' : 'chevron-down'"
+                        @if ($this->sortBy === $column['field'])
+                            <x-ui.icon :name="$this->sortDirection === 'asc' ? 'chevron-up' : 'chevron-down'"
                                        size="xs"></x-ui.icon>
                         @endif
                     </div>
                 </th>
             @else
-                <th style="{{ $columnStyles }}"
+                <th wire:key="header-{{ $this->datatableId }}-col-{{ $column['field'] ?? $loop->index }}"
+                    style="{{ $columnStyles }}"
                     @class($columnClasses)>
                     <div class="flex items-center gap-2">
                         <span class="truncate">{{ $column['label'] }}</span>
@@ -46,8 +49,9 @@
         @endforeach
 
         {{-- Actions Column - only render if row actions are defined --}}
-        @if ($datatable->hasRowActions())
-            <th class="bg-base-100 sticky right-0 z-20 text-end">{{ __('table.actions') }}</th>
+        @if ($this->hasRowActions())
+            <th wire:key="header-{{ $this->datatableId }}-col-actions"
+                class="bg-base-100 sticky right-0 z-20 text-end">{{ __('table.actions') }}</th>
         @endif
     </tr>
 </thead>

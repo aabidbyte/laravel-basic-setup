@@ -65,22 +65,29 @@ export default () => ({
 
 ## Best Practices
 
-### Memoization
+### Computed Properties
 
-Expensive computations are cached per-request using `memoize()`:
+We utilize Livewire 4's `#[Computed]` attribute for efficient caching of derived state. This replaces manual memoization patterns and ensures that expensive logic (like resolving columns, filters, or checking selection state) is executed only once per request.
 
 ```php
-protected function getRoleOptions(): array
-{
-    return $this->memoize('filter:roles', fn () =>
-        Role::pluck('name', 'name')->toArray()
-    );
-}
+use Livewire\Attributes\Computed;
 
-// Use with Filter
-Filter::make('role', __('Role'))
-    ->options($this->getRoleOptions()) // ✅ Computed once per request
+#[Computed]
+public function hasSelection(): bool
+{
+    return count($this->selected) > 0;
+}
 ```
+
+This property can be accessed in views as `$this->hasSelection` without method parentheses, cleaner and more performant.
+
+### Optimistic UI & Deferred Updates
+
+To ensure the table feels instant, we use:
+
+1.  **Deferred Selection**: Row checkboxes use `wire:model="selected"` (deferred). Checking a box does **not** send a request to the server immediately.
+2.  **Optimistic Rendering**: We use `wire:show` and `wire:text` to instantly update the UI (like bulk action counts) based on client-side state, even before the server processes the data.
+3.  **wire:cloak**: Ensures no UI flicker occurs during initialization.
 
 ### Avoid N+1 Patterns
 

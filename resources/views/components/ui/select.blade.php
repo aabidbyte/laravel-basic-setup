@@ -83,69 +83,67 @@
         'ghost' => 'select-ghost',
         default => null,
     };
-
+@endphp
+{{-- blade-formatter-disable --}}
+@php
     // Template for the options list
     // We use HEREDOC with 'blade' tag to avoid PHP interpreting $ or {{ }}
     // We use x-bind: for Alpine expressions so Blade::render doesn't try to evaluate them as PHP
-$renderOptionsList = <<<'blade'
-<template x-if="showSearch">
-    <div class="sticky top-0 z-10 bg-base-100 pb-2" wire:ignore>
-        <x-ui.search 
-            x-model="searchQuery"
-            x-bind:placeholder="searchConfig.searchPlaceholder"
-            size="sm"
-            class="w-full"
-        ></x-ui.search>
-    </div>
-</template>
-
-{{-- Loading indicator for server-side search --}}
-<template x-if="searchMethod && isSearching">
-    <div class="flex items-center justify-center p-4">
-        <x-ui.loading size="sm" :centered="false"></x-ui.loading>
-    </div>
-</template>
-
-{{-- Options list --}}
-<div class="flex w-full flex-col gap-1" x-show="!isSearching || !searchMethod">
-    <template x-for="[val, label] in filteredOptions" :key="val">
-        <x-ui.button type="button"
-                     @click="choose(val)"
-                     x-bind:data-selected="isSelected(val) ? 'true' : null"
-                     variant="ghost"
-                     x-bind:size="$store.ui.isMobile ? 'md' : 'sm'"
-                     class="w-full justify-between text-left font-normal"
-                     x-bind:class="getOptionClasses(val)">
-            {{-- Safe highlighting without x-html --}}
-            <span class="truncate">
-                <template x-if="!searchQuery">
-                    <span x-text="label"></span>
-                </template>
-                <template x-if="searchQuery">
-                    <template x-for="(token, idx) in $store.ui.highlightText(label, searchQuery)" :key="val + '-' + idx">
-                        <div class="inline-flex w-fit">
-                            <mark x-show="token.highlight" class="bg-warning/30 rounded" x-text="token.text"></mark>
-                            <span x-show="!token.highlight" x-text="token.text"></span>
-                        </div>
-                    </template>
-                </template>
-            </span>
-            <x-ui.icon name="check"
-                       x-show="isSelected(val)"
-                       class="ml-auto"
-                size="sm" />
-        </x-ui.button>
-    </template>
-    
-    {{-- Empty state for no results --}}
-    <template x-if="filteredOptions.length === 0">
-        <div class="p-4 text-center text-base-content/50">
-            <p x-text="searchConfig.emptyMessage"></p>
+    $renderOptionsList = <<<'blade'
+    <template x-if="showSearch">
+        <div class="bg-base-100 sticky top-0 z-10 pb-2" wire:ignore>
+            <x-ui.search
+                x-model="searchQuery"
+                x-bind:placeholder="searchConfig.searchPlaceholder"
+                size="sm"
+                class="w-full"
+            ></x-ui.search>
         </div>
     </template>
-</div>
-blade;
+
+    {{-- Loading indicator for server-side search --}}
+    <template x-if="searchMethod && isSearching">
+        <div class="flex items-center justify-center p-4">
+            <x-ui.loading size="sm" :centered="false"></x-ui.loading>
+        </div>
+    </template>
+
+    {{-- Options list --}}
+    <div class="flex w-full flex-col gap-1" x-show="!isSearching || !searchMethod">
+        <template x-for="[val, label] in filteredOptions" :key="val">
+            <x-ui.button type="button"
+                         @click="choose(val)"
+                         x-bind:data-selected="isSelected(val) ? 'true' : null"
+                         variant="ghost"
+                         x-bind:size="$store.ui.isMobile ? 'md' : 'sm'"
+                         class="w-full justify-between text-left font-normal"
+                         x-bind:class="getOptionClasses(val)">
+                {{-- Safe highlighting without x-html --}}
+                <span class="truncate">
+                    <template x-if="!searchQuery">
+                        <span x-text="label"></span>
+                    </template>
+                    <template x-if="searchQuery">
+                        <span x-data="highlightedText($data, label)"></span>
+                    </template>
+                </span>
+                <x-ui.icon name="check"
+                           x-show="isSelected(val)"
+                           class="ml-auto"
+                           size="sm" />
+            </x-ui.button>
+        </template>
+
+        {{-- Empty state for no results --}}
+        <template x-if="filteredOptions.length === 0">
+            <div class="text-base-content/50 p-4 text-center">
+                <p x-text="searchConfig.emptyMessage"></p>
+            </div>
+        </template>
+    </div>
+    blade;
 @endphp
+{{-- blade-formatter-enable --}}
 
 <div class="flex w-full flex-col gap-1"
      x-data='{!! $alpineData !!}'
@@ -234,7 +232,7 @@ blade;
                         currentLabel: '',
                         selectWidth: 0,
                         selectZIndex: 10000,
-                        
+
                         // Search state
                         searchQuery: '',
                         isSearching: false,
@@ -262,32 +260,33 @@ blade;
                                 self.updateLabel();
                                 self.isSearching = false;
                             });
-                            
+
                             // Focus search input when dropdown opens
                             this.$watch('selectOpen', function(isOpen) {
                                 if (isOpen && self.showSearch) {
                                     self.$nextTick(function() {
-                                        const searchInput = self.$el.querySelector('input[type="search"]');
+                                        const searchInput = self.$el.querySelector(
+                                            'input[type="search"]');
                                         if (searchInput) searchInput.focus();
                                     });
                                 }
                             });
                         },
-                        
+
                         // Optimized filtering with chunking for large lists
                         get filteredOptions() {
                             if (!this.searchQuery || this.searchMethod) {
                                 this.cachedFilteredOptions = this.optionsArray;
                                 return this.optionsArray;
                             }
-                            
+
                             // Return cached results immediately while filtering continues
                             if (this.filteringInProgress) {
                                 return this.cachedFilteredOptions;
                             }
-                            
+
                             const query = this.searchQuery.toLowerCase().trim();
-                            
+
                             // For small lists, filter synchronously
                             if (this.optionsArray.length <= 100) {
                                 this.cachedFilteredOptions = this.optionsArray.filter(function(option) {
@@ -295,22 +294,22 @@ blade;
                                 });
                                 return this.cachedFilteredOptions;
                             }
-                            
+
                             // For large lists, trigger async chunked filtering
                             this.filterOptionsAsync(query);
                             return this.cachedFilteredOptions;
                         },
-                        
+
                         // Async chunked filtering for better performance
                         filterOptionsAsync: function(query) {
                             if (this.filteringInProgress) return;
-                            
+
                             this.filteringInProgress = true;
                             const results = [];
                             const chunkSize = 50;
                             let currentIndex = 0;
                             const self = this;
-                            
+
                             // Show first chunk immediately
                             const firstChunk = this.optionsArray.slice(0, chunkSize);
                             firstChunk.forEach(function(option) {
@@ -320,21 +319,23 @@ blade;
                             });
                             this.cachedFilteredOptions = results;
                             currentIndex = chunkSize;
-                            
+
                             // Process remaining chunks asynchronously
                             const processChunk = function() {
-                                const endIndex = Math.min(currentIndex + chunkSize, self.optionsArray.length);
+                                const endIndex = Math.min(currentIndex + chunkSize, self
+                                    .optionsArray.length);
                                 const chunk = self.optionsArray.slice(currentIndex, endIndex);
-                                
+
                                 chunk.forEach(function(option) {
-                                    if (option[1].toString().toLowerCase().includes(query)) {
+                                    if (option[1].toString().toLowerCase().includes(
+                                            query)) {
                                         results.push(option);
                                     }
                                 });
-                                
+
                                 self.cachedFilteredOptions = results;
                                 currentIndex = endIndex;
-                                
+
                                 if (currentIndex < self.optionsArray.length) {
                                     // Continue processing next chunk
                                     if (window.requestIdleCallback) {
@@ -347,7 +348,7 @@ blade;
                                     self.filteringInProgress = false;
                                 }
                             };
-                            
+
                             // Start processing remaining chunks
                             if (window.requestIdleCallback) {
                                 requestIdleCallback(processChunk);
@@ -355,13 +356,13 @@ blade;
                                 setTimeout(processChunk, 0);
                             }
                         },
-                        
+
                         // Computed property to determine if search should be shown
                         get showSearch() {
-                            return this.searchConfig.searchable && 
-                                   this.optionsArray.length > this.searchConfig.searchThreshold;
+                            return this.searchConfig.searchable &&
+                                this.optionsArray.length > this.searchConfig.searchThreshold;
                         },
-                        
+
                         // Clear search
                         clearSearch: function() {
                             this.searchQuery = '';
@@ -450,6 +451,26 @@ blade;
                         }
                     };
                 });
+
+                // Register highlightedText component for reactive search highlighting
+                // This component receives the parent scope ($data) and content (label)
+                window.Alpine.data('highlightedText', function(parentScope, content) {
+                    return {
+                        init() {
+                            const update = () => {
+                                this.$el.innerHTML = this.$store.search.highlightHTML(content,
+                                    parentScope.searchQuery);
+                            };
+
+                            // Initial render
+                            update();
+
+                            // Watch parent's searchQuery for changes
+                            this.$watch(() => parentScope.searchQuery, update);
+                        }
+                    };
+                });
+
             };
 
             if (window.Alpine) {

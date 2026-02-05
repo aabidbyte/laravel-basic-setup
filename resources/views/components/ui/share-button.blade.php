@@ -32,44 +32,44 @@ $copiedText = __('table.url_copied');
                        class="h-5 w-5" />
         </x-ui.button>
     </x-ui.tooltip>
+</div>
+@assets
+    <script>
+        (function() {
+            const register = () => {
+                Alpine.data('shareButton', (config) => ({
+                    url: config.url,
+                    tooltipText: config.initialTooltip,
 
-    @assets
-        <script>
-            (function() {
-                const register = () => {
-                    Alpine.data('shareButton', (config) => ({
-                        url: config.url,
-                        tooltipText: config.initialTooltip,
+                    async copyUrl() {
+                        try {
+                            await navigator.clipboard.writeText(this.url);
 
-                        async copyUrl() {
-                            try {
-                                await navigator.clipboard.writeText(this.url);
+                            const originalText = config.initialTooltip;
+                            this.tooltipText = config.copiedText;
 
-                                const originalText = config.initialTooltip;
-                                this.tooltipText = config.copiedText;
+                            setTimeout(() => {
+                                this.tooltipText = originalText;
+                            }, 2000);
+                        } catch (err) {
+                            console.error('Failed to copy text: ', err);
 
-                                setTimeout(() => {
-                                    this.tooltipText = originalText;
-                                }, 2000);
-                            } catch (err) {
-                                console.error('Failed to copy text: ', err);
+                            const originalText = config.initialTooltip;
+                            this.tooltipText = config.copyFailedText;
 
-                                const originalText = config.initialTooltip;
-                                this.tooltipText = config.copyFailedText;
-
-                                setTimeout(() => {
-                                    this.tooltipText = originalText;
-                                }, 2000);
-                            }
+                            setTimeout(() => {
+                                this.tooltipText = originalText;
+                            }, 2000);
                         }
-                    }));
-                };
+                    }
+                }));
+            };
 
-                if (window.Alpine) {
-                    register();
-                } else {
-                    document.addEventListener('alpine:init', register);
-                }
-            })();
-        </script>
-    @endassets
+            if (window.Alpine) {
+                register();
+            } else {
+                document.addEventListener('alpine:init', register);
+            }
+        })();
+    </script>
+@endassets

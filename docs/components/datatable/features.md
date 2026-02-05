@@ -36,7 +36,7 @@ Selection state is fully managed by Livewire and automatically:
 - Tracks selected UUIDs across all pages
 - Provides computed properties: `selectedCount()`, `hasSelection()`, `isAllSelected()`
 - Optimized database queries by checking current page rows first before querying
-- **New**: Uses `wire:model.live="selected"` on row checkboxes for seamless synchronization
+- **New**: Uses deferred `wire:model="selected"` on row checkboxes for seamless synchronization without server roundtrips on every click
 - **New**: Uses dynamic `wire:key` on checkboxes and the select-all input to force re-render and prevent persistent visual "checked" states after clearing selection
 - **New**: Bulk actions are now consolidated into a premium dropdown menu in the header, appearing only when items are selected
 - **New**: Added a "Clear Selection" button in the header for quick reset
@@ -123,19 +123,20 @@ These events are dispatched by the Livewire component or listened to by the Alpi
 - `datatable:clean-url:{id}`: Remove query parameters from URL
 
 ```blade
-<div x-data="dataTable" 
+```blade
+<div x-data="dataTable('{{ $this->getId() }}')"
     @datatable-action-confirmed.window="confirmAction($event.detail)"
     @datatable-action-cancelled.window="cancelAction()">
 
-    {!! $this->renderFilters() !!}
+    @include('components.datatable.filters')
 
     <div class="overflow-x-auto">
         <table class="table">
-            {!! $this->renderTableHeader() !!}
+            @include('components.datatable.header')
 
             <tbody>
                 @foreach($this->rows as $row)
-                    {!! $this->renderTableRow($row) !!}
+                    @include('components.datatable.row')
                 @endforeach
             </tbody>
         </table>

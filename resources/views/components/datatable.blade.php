@@ -1,80 +1,64 @@
 {{-- DataTable Component Template --}}
 {{-- Optimized for minimal Livewire payloads with loading states --}}
-@php
-    $datatableId = $this->getId();
-    $rows = $this->rows;
-    $columns = $this->getColumns();
-    $countColumns = count($columns);
+<div x-data="dataTable('{{ $this->datatableId }}')"
+     wire:key="datatable-{{ $this->datatableId }}">
+    {{-- Filters (search, bulk actions, filter panel) --}}
+    @include('components.datatable.filters')
 
-    // Calculate extra columns for checkbox and actions
-    $extraColumns = 0;
-    if ($this->hasBulkActions()) {
-        $extraColumns++;
-    }
-    if ($this->hasRowActions()) {
-        $extraColumns++;
-    }
-@endphp
+    {{ $this->rows->links('components.datatable.pagination', ['position' => 'top']) }}
 
-<div>
-    <div x-data="dataTable('{{ $datatableId }}')">
-
-        {{-- Filters (search, bulk actions, filter panel) --}}
-        {!! $this->renderFilters() !!}
-
-        {{-- Top Pagination --}}
-        {{ $rows->links('components.datatable.pagination') }}
-
-        {{-- Table with Loading Overlay --}}
-        <div class="relative overflow-x-auto">
-            {{-- Loading Overlay - uses wire:loading.flex to ensure display:flex when shown --}}
-            <div wire:loading.flex.delay.shortest
-                 wire:target="sort, search, filters, perPage, gotoPage, previousPage, nextPage, toggleSelectAll, selected"
-                 class="bg-base-100/50 absolute inset-0 z-50 hidden items-center justify-center backdrop-blur-[1px]">
-                <x-ui.loading size="md"
-                              :centered="false"></x-ui.loading>
-            </div>
-
-            <table class="table-zebra table"
-                   wire:loading.class="opacity-50"
-                   wire:target="sort, search, filters, perPage, gotoPage, previousPage, nextPage">
-                {{-- Table Header --}}
-                {!! $this->renderTableHeader() !!}
-
-                <tbody x-ref="tbody">
-                    @forelse ($rows->take($this->visibleRows) as $row)
-                        {!! $this->renderTableRow($row) !!}
-                    @empty
-                        <tr wire:key="empty-row-{{ $datatableId }}">
-                            <td colspan="{{ $countColumns + $extraColumns }}"
-                                class="py-12 text-center">
-                                <div class="text-base-content/50 flex flex-col items-center gap-2">
-                                    <x-ui.icon name="users"
-                                               size="lg"></x-ui.icon>
-                                    <p>{{ __('table.no_results') }}</p>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-
-            {{-- Load More Trigger --}}
-            @if ($rows->count() > $this->visibleRows)
-                <div x-data="infiniteScroll"
-                     class="flex h-8 items-center justify-center p-4">
-                    <x-ui.loading size="sm" />
-                </div>
-            @endif
+    {{-- Table with Loading Overlay --}}
+    <div class="relative overflow-x-auto"
+         wire:key="datatable-table-container-{{ $this->datatableId }}">
+        {{-- Loading Overlay - uses wire:loading.flex to ensure display:flex when shown --}}
+        <div wire:loading.flex.delay.shortest
+             wire:key="datatable-loading-{{ $this->datatableId }}"
+             wire:target="sort, search, filters, perPage, gotoPage, previousPage, nextPage, toggleSelectAll, selected"
+             class="bg-base-100/50 absolute inset-0 z-50 hidden items-center justify-center backdrop-blur-[1px]">
+            <x-ui.loading size="md"
+                          :centered="false"></x-ui.loading>
         </div>
 
-        {{-- Bottom Pagination --}}
-        {{ $rows->links('components.datatable.pagination') }}
+        <table wire:key="datatable-table-{{ $this->datatableId }}"
+               class="table-zebra table"
+               wire:loading.class="opacity-50"
+               wire:target="sort, search, filters, perPage, gotoPage, previousPage, nextPage">
+            {{-- Table Header --}}
+            @include('components.datatable.header')
+            <tbody wire:key="datatable-table-body-{{ $this->datatableId }}"
+                   x-ref="tbody">
+                @forelse ($this->rows->take($this->visibleRows) as $row)
+                    @include('components.datatable.row')
+                @empty
+                    <tr wire:key="datatable-empty-row-{{ $this->datatableId }}">
+                        <td colspan="{{ $this->totalColumns }}"
+                            class="py-12 text-center">
+                            <div class="text-base-content/50 flex flex-col items-center gap-2">
+                                <x-ui.icon name="users"
+                                           size="lg"></x-ui.icon>
+                                <p>{{ __('table.no_results') }}</p>
+                            </div>
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
 
-        {{-- Modal is now global: see components/datatable/action-modal.blade.php --}}
+        {{-- Load More Trigger --}}
+        @if ($this->rows->count() > $this->visibleRows)
+            <div x-data="infiniteScroll"
+                 wire:key="datatable-load-more-{{ $this->datatableId }}"
+                 wire:loading
+                 class="flex h-8 items-center justify-center p-4">
+                <x-ui.loading size="sm" />
+            </div>
+        @endif
     </div>
-</div>
 
+    {{-- Bottom Pagination --}}
+    {{ $this->rows->links('components.datatable.pagination', ['position' => 'bottom']) }}
+
+</div>
 @assets
     <script>
         (function() {
@@ -177,6 +161,45 @@
                         }
                     }
                 }));
+            };
+
+            if (window.Alpine) {
+                register();
+            } else {
+                document.addEventListener('alpine:init', register);
+            }
+        })();
+    </script>
+@endassets
+@assets
+    <script>
+        (function() {
+            const register = () => {
+                Alpine.data('tableRow', (uuid) => ({
+                    handleClick(event) {
+                        // Ignore clicks on sticky action cells or interactive elements
+                        if (event.target.closest('.sticky-action-cell') ||
+                            event.target.closest('a') ||
+                            event.target.closest('button')) {
+                            return;
+                        }
+
+                        this.$wire.handleRowClick(uuid);
+                    }
+                }));
+
+                // Register highlightedCell component for datatable highlighting
+                // Datatable search is server-side so no reactivity needed
+                window.Alpine.data('highlightedCell', function(content, query) {
+                    return {
+                        init() {
+                            this.$nextTick(function() {
+                                this.$el.innerHTML = this.$store.search.highlightHTML(content,
+                                    query);
+                            }.bind(this));
+                        }
+                    };
+                });
             };
 
             if (window.Alpine) {

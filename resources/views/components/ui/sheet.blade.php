@@ -17,7 +17,7 @@
     'position' => 'right',
     'title' => null,
     'width' => 'w-full min-w-sm max-w-lg',
-    'height' => 'max-h-[80vh]',
+    'height' => 'max-h-[80dvh]',
     'closeOnBackdrop' => true,
     'closeOnEscape' => true,
     'open' => null, // Manual open state variable name (as string) or boolean

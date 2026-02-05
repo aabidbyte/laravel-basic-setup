@@ -109,6 +109,12 @@ abstract class Datatable extends LivewireBaseComponent
         }
     }
 
+    #[Computed]
+    public function datatableId(): string
+    {
+        return (string) $this->getId();
+    }
+
     /**
      * Handle row click (optional)
      * Return Action for modal/route/execute, or void for custom handling
@@ -123,6 +129,10 @@ abstract class Datatable extends LivewireBaseComponent
     /**
      * Determine if the row is clickable
      */
+    /**
+     * Determine if the row is clickable
+     */
+    #[Computed]
     public function rowsAreClickable(): bool
     {
         if (isset($this->rowsClickable)) {
@@ -147,52 +157,72 @@ abstract class Datatable extends LivewireBaseComponent
      * Fetches a sample row to check if the rowClick action has hasModal set.
      * Returns false if table is empty or rowClick doesn't use a modal.
      */
+    /**
+     * Determine if row click action opens a modal (used for loading UX)
+     *
+     * Fetches a sample row to check if a rowClick action has hasModal set.
+     * Returns false if table is empty or rowClick doesn't use a modal.
+     */
+    #[Computed]
     public function rowClickOpensModal(): bool
     {
-        return $this->memoize('row_click_opens_modal', function () {
-            if (! $this->rowsAreClickable()) {
-                return false;
-            }
+        if (! $this->rowsAreClickable) {
+            return false;
+        }
 
-            // Use loaded rows if available to avoid extra query
-            $sampleRow = $this->rows->first();
+        // Use loaded rows if available to avoid extra query
+        $sampleRow = $this->rows->first();
 
-            if (! $sampleRow) {
-                return false;
-            }
+        if (! $sampleRow) {
+            return false;
+        }
 
-            // Get the action from rowClick and check if it has a modal
-            $action = $this->rowClick($sampleRow->uuid);
+        // Get the action from rowClick and check if it has a modal
+        $action = $this->rowClick($sampleRow->uuid);
 
-            return $action?->getModal() !== null;
-        });
+        return $action?->getModal() !== null;
     }
 
     /**
      * Check if this datatable has filters defined.
      * Used by templates to conditionally render filter UI.
      */
+    /**
+     * Check if this datatable has filters defined.
+     * Used by templates to conditionally render filter UI.
+     */
+    #[Computed]
     public function hasFilters(): bool
     {
-        return $this->memoize('has_filters', fn () => \count($this->getFilterDefinitions()) > 0);
+        return \count($this->getFilterDefinitions()) > 0;
     }
 
     /**
      * Check if this datatable has bulk actions defined.
      * Used by templates to conditionally render selection checkboxes.
      */
+    /**
+     * Check if this datatable has bulk actions defined.
+     * Used by templates to conditionally render selection checkboxes.
+     */
+    #[Computed]
     public function hasBulkActions(): bool
     {
-        return $this->memoize('has_bulk_actions', fn () => \count($this->bulkActions()) > 0);
+        return \count($this->bulkActions()) > 0;
     }
 
     /**
      * Check if this datatable has row actions defined.
      * Used by templates to conditionally render the actions column.
      */
+    /**
+     * Check if this datatable has row actions defined.
+     * Used by templates to conditionally render the actions column.
+     */
+    #[Computed]
     public function hasRowActions(): bool
     {
-        return $this->memoize('has_row_actions', fn () => \count($this->rowActions()) > 0);
+        return \count($this->rowActions()) > 0;
     }
 
     /**
@@ -257,7 +287,7 @@ abstract class Datatable extends LivewireBaseComponent
     /**
      * Render the component
      */
-    public function render(): \Illuminate\Contracts\View\View
+    public function render()
     {
         return view('components.datatable');
     }

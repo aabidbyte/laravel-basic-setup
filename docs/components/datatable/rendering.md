@@ -8,9 +8,7 @@ These methods are defined in the `Datatable` base class and can be overridden in
 
 | Method | Description |
 |--------|-------------|
-| `renderFilters()` | Renders the search, bulk actions, and filter toggles. |
-| `renderTableHeader()` | Renders the `<thead>` with column headers and sorting UI. |
-| `renderTableRow($row)` | Renders a single `<tr>` with data cells and actions. |
+| `renderColumn($columnData, $row)` | Renders a single cell's content. |
 | `renderRowActions($row)` | Renders the row actions dropdown for a specific row. |
 
 ## Modular Sub-views

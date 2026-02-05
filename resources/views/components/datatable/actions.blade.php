@@ -43,6 +43,7 @@
                      :type="$actionHref ? null : 'button'"
                      :wire:navigate="$actionHref ? true : null"
                      :@click="$actionClick ?: null"
+                     :wire:key="'row-action-' . $row->uuid . '-' . $action['key']"
                      :wire:click="$wireClick ?: null"
                      :variant="$action['variant'] ?? 'ghost'"
                      :color="$action['color'] ?? null"

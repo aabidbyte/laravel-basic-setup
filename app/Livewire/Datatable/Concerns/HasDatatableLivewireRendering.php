@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\DataTable\Concerns;
 
 use App\Services\DataTable\Builders\Column;
+use Livewire\Attributes\Computed;
 
 /**
  * Trait for handling DataTable rendering logic.
@@ -20,6 +21,12 @@ trait HasDatatableLivewireRendering
      *
      * @return array<int, array<string, mixed>>
      */
+    /**
+     * Get columns for view
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    #[Computed]
     public function getColumns(): array
     {
         return collect($this->columns())
@@ -29,25 +36,20 @@ trait HasDatatableLivewireRendering
             ->toArray();
     }
 
-    /**
-     * Render the table header
-     */
-    public function renderTableHeader(): string
+    #[Computed]
+    public function totalColumns(): int
     {
-        return view('components.datatable.header', [
-            'datatable' => $this,
-        ])->render();
-    }
+        $extraColumns = 0;
 
-    /**
-     * Render a table row
-     */
-    public function renderTableRow(mixed $row): string
-    {
-        return view('components.datatable.row', [
-            'row' => $row,
-            'datatable' => $this,
-        ])->render();
+        if ($this->hasBulkActions()) {
+            $extraColumns++;
+        }
+
+        if ($this->hasRowActions()) {
+            $extraColumns++;
+        }
+
+        return \count($this->getColumns()) + $extraColumns;
     }
 
     /**
@@ -96,44 +98,6 @@ trait HasDatatableLivewireRendering
             $value = e((string) $value);
         }
 
-        // 5. Apply Search Highlighting
-        if ($column->isSearchable() && ! empty($this->search)) {
-            $value = $this->highlightSearchTerm((string) $value, $this->search);
-        }
-
         return (string) $value;
-    }
-
-    /**
-     * Highlight search term in value (HTML-safe)
-     *
-     * @param  string  $value  Value to highlight
-     * @param  string  $search  Search term
-     */
-    protected function highlightSearchTerm(string $value, string $search): string
-    {
-        if (empty($search) || empty($value)) {
-            return $value;
-        }
-
-        $quotedSearch = preg_quote($search, '/');
-
-        // Split the string into HTML tags and text content
-        $parts = \preg_split('/(<[^>]*>)/i', $value, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
-        $result = '';
-
-        if ($parts === false) {
-            return $value;
-        }
-
-        foreach ($parts as $part) {
-            if (\str_starts_with($part, '<') && \str_ends_with($part, '>')) {
-                $result .= $part;
-            } else {
-                $result .= \preg_replace('/(' . $quotedSearch . ')/i', '<mark class="bg-warning/30 rounded">$1</mark>', $part);
-            }
-        }
-
-        return $result;
     }
 }

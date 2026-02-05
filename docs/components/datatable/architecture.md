@@ -25,6 +25,13 @@ DataTableQueryBuilder (auto-joins, search, filter, sort)
 Alpine.js Component (UI-only: filters panel, modals)
 ```
 
+## Modern Livewire Features
+
+The architecture fully leverages Livewire 4 capabilities:
+- **`#[Computed]` Properties**: Used extensively for state derived from the render loop (columns, filters, selection state), ensuring efficient caching.
+- **Optimistic UI**: `wire:model` (deferred) and `wire:show` allow instant user interaction without immediate server roundtrips.
+- **Strict Typing**: All methods and properties are strictly typed for robustness.
+
 **Key Benefits:**
 - ✅ **SOLID**: Clear separation of responsibilities into focused traits
 - ✅ **Readability**: Smaller, more manageable code files

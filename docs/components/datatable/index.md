@@ -10,7 +10,7 @@ The DataTable component provides a powerful, flexible way to display tabular dat
 - ✅ Automatic relationship joins
 - ✅ Alpine.js-driven UI state (filters panel, modals)
 - ✅ Livewire 4 features
-- ✅ Server-side selection management (optimized queries)
+- ✅ Optimized Server-side selection with deferred updates
 
 ## Documentation Index
 
@@ -38,7 +38,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Tables;
 
-use App\Livewire\Datatable;
+use App\Livewire\DataTable\Datatable;
 use App\Services\DataTable\Builders\{Column, Filter, Action, BulkAction};
 use Illuminate\Database\Eloquent\Builder;
 
@@ -99,7 +99,7 @@ public string $search = '';              // Search term
 public string $sortBy = '';              // Sort column
 public string $sortDirection = 'asc';    // Sort direction
 public int $perPage = 15;                // Items per page
-public array $selected = [];                     // Selected UUIDs
+public array $selected = [];             // Selected UUIDs (deferred)
 ```
 
 ## Best Practices
@@ -201,9 +201,10 @@ test('sort toggles direction', function () {
 test('bulk select all', function () {
     User::factory()->count(5)->create();
 
-    Livewire::actingAs($this->user)
+    $component = Livewire::actingAs($this->user)
         ->test('users.table')
-        ->call('toggleSelectAll')
-        ->assertTrue($this->isAllSelected);
+        ->call('toggleSelectAll');
+        
+    $this->assertTrue($component->instance()->isAllSelected);
 });
 ```

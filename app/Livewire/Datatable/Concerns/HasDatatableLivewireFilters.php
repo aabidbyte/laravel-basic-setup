@@ -6,6 +6,7 @@ namespace App\Livewire\DataTable\Concerns;
 
 use App\Enums\DataTable\DataTableFilterType;
 use App\Services\DataTable\Builders\Filter;
+use Livewire\Attributes\Computed;
 
 /**
  * Trait for handling DataTable filters logic.
@@ -86,6 +87,7 @@ trait HasDatatableLivewireFilters
      *
      * @return array<int, array<string, mixed>>
      */
+    #[Computed]
     public function getActiveFilters(): array
     {
         // Use memoized filters to avoid re-resolving definitions (which can trigger queries)
