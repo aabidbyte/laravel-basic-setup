@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\UI\ThemeColorTypes;
+use App\Enums\Ui\ThemeColorTypes;
 
 /**
  * Generate Alpine.js class mapping for dynamic colors.

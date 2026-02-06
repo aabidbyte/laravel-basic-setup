@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Enums\Toast;
 
-use App\Enums\UI\ThemeColorTypes;
+use App\Enums\Ui\ThemeColorTypes;
 
 enum ToastType: string
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Enums\UI;
+namespace App\Enums\Ui;
 
 /**
  * Supported DaisyUI color names.
