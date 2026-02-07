@@ -9,6 +9,7 @@ return [
         'title' => 'Profil',
         'description' => 'Mettez à jour votre nom et votre adresse e-mail',
         'name_label' => 'Nom',
+        'username_label' => 'Nom d\'utilisateur',
         'email_label' => 'E-mail',
         'email_unverified' => 'Votre adresse e-mail n\'est pas vérifiée.',
         'resend_verification' => 'Cliquez ici pour renvoyer l\'e-mail de vérification.',

@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
+use App\Actions\Fortify\UpdateUserPassword;
+use App\Actions\Fortify\UpdateUserProfileInformation;
 use App\Http\Responses\Fortify\EmailVerificationNotificationSentResponse;
 use App\Http\Responses\Fortify\PasswordResetResponse;
 use App\Http\Responses\Fortify\SuccessfulPasswordResetLinkRequestResponse;
@@ -69,6 +71,8 @@ class FortifyServiceProvider extends ServiceProvider
     {
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
         Fortify::createUsersUsing(CreateNewUser::class);
+        Fortify::updateUserProfileInformationUsing(UpdateUserProfileInformation::class);
+        Fortify::updateUserPasswordsUsing(UpdateUserPassword::class);
 
         // Custom response classes are registered in register() method via service container bindings
         // Fortify will automatically resolve them when needed
@@ -182,7 +186,7 @@ class FortifyServiceProvider extends ServiceProvider
         return User::select('username', 'name', 'email')
             ->orderBy('id', 'asc')
             ->get()
-            ->mapWithKeys(fn ($user) => [
+            ->mapWithKeys(fn (User $user) => [
                 $user->username ?? $user->email => $this->formatUserLabel($user),
             ])
             ->toArray();

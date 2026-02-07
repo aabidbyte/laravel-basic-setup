@@ -17,6 +17,7 @@ return [
         'title' => 'Profile',
         'description' => 'Update your name and email address',
         'name_label' => 'Name',
+        'username_label' => 'Username',
         'email_label' => 'Email',
         'email_unverified' => 'Your email address is unverified.',
         'resend_verification' => 'Click here to re-send the verification email.',

@@ -5,8 +5,9 @@ use App\Livewire\Bases\BasePageComponent;
 use App\Models\User;
 use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
+use Laravel\Fortify\Contracts\UpdatesUserPasswords;
+use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
 
 new class extends BasePageComponent {
     public ?string $pageTitle = 'settings.tabs.account';
@@ -19,6 +20,8 @@ new class extends BasePageComponent {
 
     // Profile fields
     public string $name = '';
+
+    public string $username = '';
 
     public string $email = '';
 
@@ -35,28 +38,29 @@ new class extends BasePageComponent {
     public function mount(): void
     {
         $this->name = Auth::user()->name;
+        $this->username = Auth::user()->username;
         $this->email = Auth::user()->email;
     }
 
     /**
      * Update the profile information.
      */
-    public function updateProfileInformation(): void
+    /**
+     * Update the profile information.
+     */
+    public function updateProfileInformation(UpdatesUserProfileInformation $updater): void
     {
         $user = Auth::user();
 
-        $validated = $this->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)->ignore($user->id)],
-        ]);
-
-        $user->fill($validated);
-
-        if ($user->isDirty('email')) {
-            $user->email_verified_at = null;
+        try {
+            $updater->update($user, [
+                'name' => $this->name,
+                'username' => $this->username,
+                'email' => $this->email,
+            ]);
+        } catch (ValidationException $e) {
+            throw $e->withMessages($e->validator->errors()->toArray());
         }
-
-        $user->save();
 
         NotificationBuilder::make()->title('settings.profile.save_success')->success()->persist()->send();
 
@@ -84,16 +88,20 @@ new class extends BasePageComponent {
     /**
      * Update the password.
      */
-    public function updatePassword(): void
+    /**
+     * Update the password.
+     */
+    public function updatePassword(UpdatesUserPasswords $updater): void
     {
-        $validated = $this->validate([
-            'current_password' => ['required', 'string', 'current_password'],
-            'password' => ['required', 'string', Password::defaults(), 'confirmed'],
-        ]);
-
-        Auth::user()->update([
-            'password' => $validated['password'],
-        ]);
+        try {
+            $updater->update(Auth::user(), [
+                'current_password' => $this->current_password,
+                'password' => $this->password,
+                'password_confirmation' => $this->password_confirmation,
+            ]);
+        } catch (ValidationException $e) {
+            throw $e->withMessages($e->validator->errors()->toArray());
+        }
 
         $this->reset('current_password', 'password', 'password_confirmation');
 
@@ -118,6 +126,13 @@ new class extends BasePageComponent {
                                 required
                                 autofocus
                                 autocomplete="name"></x-ui.input>
+
+                    <x-ui.input type="text"
+                                wire:model="username"
+                                name="username"
+                                :label="__('settings.profile.username_label')"
+                                required
+                                autocomplete="username"></x-ui.input>
 
                     <x-ui.input type="email"
                                 wire:model="email"
