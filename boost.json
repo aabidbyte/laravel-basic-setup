@@ -1,17 +1,21 @@
 {
     "agents": [
         "claude_code",
-        "copilot",
         "cursor",
-        "phpstorm"
+        "gemini",
+        "copilot"
     ],
-    "editors": [
-        "claude_code",
-        "cursor",
-        "phpstorm",
-        "vscode"
-    ],
-    "guidelines": [
+    "guidelines": true,
+    "herd_mcp": false,
+    "mcp": true,
+    "packages": [
         "laravel/fortify"
+    ],
+    "sail": false,
+    "skills": [
+        "livewire-development",
+        "pest-testing",
+        "tailwindcss-development",
+        "developing-with-fortify"
     ]
 }
