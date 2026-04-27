@@ -104,8 +104,8 @@ class MailBuilder
      */
     public function __construct()
     {
-        $this->provider = new LaravelMailProvider;
-        $this->resolver = new MailCredentialResolver;
+        $this->provider = new LaravelMailProvider();
+        $this->resolver = new MailCredentialResolver();
         $this->renderer = app(EmailRenderer::class);
     }
 
@@ -116,7 +116,7 @@ class MailBuilder
      */
     public static function make(): static
     {
-        return new static;
+        return new static();
     }
 
     /**
@@ -343,8 +343,7 @@ class MailBuilder
             $recipient = $this->resolveRecipient();
             $rendered = $this->renderedEmail;
 
-            return new class($rendered, $recipient) extends BaseMailable
-            {
+            return new class($rendered, $recipient) extends BaseMailable {
                 public function __construct(protected RenderedEmail $rendered, protected mixed $mailRecipient) {}
 
                 public function build(): static
@@ -363,8 +362,7 @@ class MailBuilder
         // Build a simple mailable from view
         $recipient = $this->resolveRecipient();
 
-        return new class($this->viewName, $this->viewData, $this->subject, $recipient) extends BaseMailable
-        {
+        return new class($this->viewName, $this->viewData, $this->subject, $recipient) extends BaseMailable {
             public function __construct(
                 protected string $viewName,
                 protected array $viewData,

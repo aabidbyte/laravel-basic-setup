@@ -767,13 +767,17 @@ public function getSubmitButtonTextProperty(): string
 
 ### Testing
 
--   **Framework**: Pest v4
+-   **Framework**: Pest v4 (MANDATORY)
+    -   **ALL tests MUST be written using Pest's functional API** (`it()` or `test()`).
+    -   **Class-based tests (extending `TestCase` or `PHPUnit\Framework\TestCase`) are strictly FORBIDDEN.**
+    -   Use `beforeEach()` or `uses()` closures instead of `setUp()` methods.
+    -   Use Pest's fluent expectation API (`expect()->to...()`) instead of PHPUnit assertions (`$this->assert...()`).
 -   **Test Types**:
     -   Feature tests (most common)
     -   Unit tests (for isolated logic)
     -   Browser tests (for complex interactions)
 -   **Test Location**: `tests/Feature/` and `tests/Unit/`
--   **Test Command**: `php artisan test --filter=testName`
+-   **Test Command**: `php artisan test --filter=testName` or `php artisan test --parallel`
 -   **Coverage**: Every change must be tested
 -   **Factories**: Use model factories in tests
 

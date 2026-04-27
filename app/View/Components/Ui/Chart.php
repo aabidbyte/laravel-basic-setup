@@ -21,7 +21,7 @@ class Chart extends Component
     protected function resolveConfig($config): array
     {
         if ($config instanceof ChartPayload) {
-            $transformer = new ChartJsTransformer;
+            $transformer = new ChartJsTransformer();
 
             return $transformer->transform($config);
         }

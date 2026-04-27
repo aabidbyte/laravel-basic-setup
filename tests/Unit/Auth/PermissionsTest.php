@@ -19,7 +19,7 @@ test('permission magic methods return correct permission strings', function () {
 });
 
 test('all permissions from matrix are accessible via magic methods', function () {
-    $matrix = new PermissionMatrix;
+    $matrix = new PermissionMatrix();
     $allPermissions = $matrix->getAllPermissionNames();
 
     foreach ($allPermissions as $permission) {
@@ -61,7 +61,7 @@ test('permission cache works correctly', function () {
 
 test('permissions all method returns all permission names', function () {
     $permissions = Permissions::all();
-    $matrix = new PermissionMatrix;
+    $matrix = new PermissionMatrix();
 
     expect($permissions)->toBeArray()
         ->and($permissions)->toEqual($matrix->getAllPermissionNames())

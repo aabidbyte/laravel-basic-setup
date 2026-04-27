@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  *
  * All new models should extend this class instead of Eloquent\Model directly.
  *
- * @see \App\Models\Base\BaseUserModel For authenticatable models
+ * @see BaseUserModel For authenticatable models
  */
 abstract class BaseModel extends EloquentModel
 {

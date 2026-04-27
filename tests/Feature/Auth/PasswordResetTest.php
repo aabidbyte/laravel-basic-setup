@@ -4,6 +4,7 @@ use App\Enums\EmailTemplate\EmailTemplateStatus;
 use App\Enums\EmailTemplate\EmailTemplateType;
 use App\Models\EmailTemplate\EmailTemplate;
 use App\Models\User;
+use App\Notifications\Auth\ResetPasswordNotification;
 use Illuminate\Support\Facades\Notification;
 
 test('reset password link can be requested', function () {
@@ -34,7 +35,7 @@ test('reset password link can be requested', function () {
     ]);
 
     $response->assertSessionHasNoErrors();
-    Notification::assertSentTo($user, \App\Notifications\Auth\ResetPasswordNotification::class, function ($notification, $channels, $notifiable) use ($user) {
+    Notification::assertSentTo($user, ResetPasswordNotification::class, function ($notification, $channels, $notifiable) use ($user) {
         $mailData = $notification->toMail($notifiable);
         $rendered = $mailData->render();
 
@@ -52,7 +53,7 @@ test('reset password link can be requested with username', function () {
     ]);
 
     $response->assertSessionHasNoErrors();
-    Notification::assertSentTo($user, \App\Notifications\Auth\ResetPasswordNotification::class);
+    Notification::assertSentTo($user, ResetPasswordNotification::class);
 });
 
 test('password can be reset with valid token', function () {
@@ -63,7 +64,7 @@ test('password can be reset with valid token', function () {
     $response = $this->post(route('password.email'), ['identifier' => $user->email]);
 
     $response->assertSessionHasNoErrors();
-    Notification::assertSentTo($user, \App\Notifications\Auth\ResetPasswordNotification::class, function ($notification) use ($user) {
+    Notification::assertSentTo($user, ResetPasswordNotification::class, function ($notification) use ($user) {
         $response = $this->post(route('password.update'), [
             'token' => $notification->token,
             'identifier' => $user->email,

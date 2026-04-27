@@ -288,7 +288,7 @@ class EmailRenderer
             return null;
         }
 
-        $model = new $modelClass;
+        $model = new $modelClass();
         $this->fillModelWithMockData($model);
 
         return $model;

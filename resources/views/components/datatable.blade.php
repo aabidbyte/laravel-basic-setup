@@ -49,9 +49,8 @@
             <div x-data="infiniteScroll"
                  wire:key="datatable-load-more-{{ $this->datatableId }}"
                  class="flex h-8 items-center justify-center p-4">
-                <x-ui.loading
-                 wire:loading
-                 size="sm" />
+                <x-ui.loading wire:loading
+                              size="sm" />
             </div>
         @endif
     </div>
@@ -96,7 +95,8 @@
                         this.openFilters = false;
                     },
 
-                    executeActionWithConfirmation(actionKey, uuid = null, isBulk = false, action = null) {
+                    executeActionWithConfirmation(actionKey, uuid = null, isBulk = false, action =
+                        null) {
                         const wire = this.$wire || this.$el.closest('[wire\\:id]')?.__livewire;
                         if (!wire) return;
 
@@ -107,7 +107,8 @@
                                 uuid,
                                 isBulk
                             };
-                            this.dispatchConfirmModal(action.confirmMessage, actionKey, uuid, isBulk, action.label);
+                            this.dispatchConfirmModal(action.confirmMessage, actionKey, uuid, isBulk,
+                                action.label);
                             return;
                         }
 
@@ -122,7 +123,8 @@
                                 };
                                 const message = config.message || config.content ||
                                     'Are you sure you want to proceed?';
-                                this.dispatchConfirmModal(message, actionKey, uuid, isBulk, config.title);
+                                this.dispatchConfirmModal(message, actionKey, uuid, isBulk,
+                                    config.title);
                             } else {
                                 if (isBulk) wire.executeBulkAction(actionKey);
                                 else wire.executeAction(actionKey, uuid);

@@ -3,22 +3,28 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Process\Pool;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     *
-     * Routes to appropriate seeder based on environment:
-     * - Production: Essential data only (roles, permissions, teams, superAdmin)
-     * - Development: All production data + sample teams and users
-     */
     public function run(): void
     {
-        if (isProduction()) {
-            $this->call(ProductionSeeder::class);
-        } else {
-            $this->call(DevelopmentSeeder::class);
-        }
+        Pool::command([
+            PHP_BINARY,
+            base_path('artisan'),
+            'db:seed:landlord',
+        ]);
+
+        Pool::command([
+            PHP_BINARY,
+            base_path('artisan'),
+            'db:seed:masters',
+        ]);
+
+        Pool::command([
+            PHP_BINARY,
+            base_path('artisan'),
+            'db:seed:tenants',
+        ]);
     }
 }

@@ -69,7 +69,7 @@ class TrashDataTable extends Datatable
 
         $modelClass = $config['model'];
 
-        return $modelClass::onlyTrashed()->select((new $modelClass)->getTable() . '.*');
+        return $modelClass::onlyTrashed()->select((new $modelClass())->getTable() . '.*');
     }
 
     /**

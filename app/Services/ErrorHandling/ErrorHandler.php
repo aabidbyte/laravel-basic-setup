@@ -74,23 +74,23 @@ class ErrorHandler
         $config = config('error-handling.channels', []);
 
         if ($config[ErrorChannels::TOAST]['enabled'] ?? true) {
-            $this->channels[] = new ToastChannel;
+            $this->channels[] = new ToastChannel();
         }
 
         if ($config[ErrorChannels::SLACK]['enabled'] ?? false) {
-            $this->channels[] = new SlackChannel;
+            $this->channels[] = new SlackChannel();
         }
 
         if ($config[ErrorChannels::EMAIL]['enabled'] ?? false) {
-            $this->channels[] = new EmailChannel;
+            $this->channels[] = new EmailChannel();
         }
 
         if ($config[ErrorChannels::LOG]['enabled'] ?? true) {
-            $this->channels[] = new LogChannel;
+            $this->channels[] = new LogChannel();
         }
 
         if ($config[ErrorChannels::DATABASE]['enabled'] ?? true) {
-            $this->channels[] = new DatabaseChannel;
+            $this->channels[] = new DatabaseChannel();
         }
     }
 

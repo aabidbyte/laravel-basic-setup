@@ -8,18 +8,15 @@ use App\Services\ErrorHandling\Channels\DatabaseChannel;
 use App\Services\ErrorHandling\Channels\LogChannel;
 use App\Services\ErrorHandling\Channels\ToastChannel;
 use App\Services\ErrorHandling\ErrorHandler;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
-
-uses(RefreshDatabase::class);
 
 /**
  * Tests for the ErrorHandler service.
  */
 describe('ErrorHandler', function () {
     test('generates reference ID in correct format', function () {
-        $handler = new ErrorHandler;
+        $handler = new ErrorHandler();
         $referenceId = $handler->generateReferenceId();
 
         // Format: ERR-YYYYMMDD-XXXXXX
@@ -27,7 +24,7 @@ describe('ErrorHandler', function () {
     });
 
     test('generates unique reference IDs', function () {
-        $handler = new ErrorHandler;
+        $handler = new ErrorHandler();
 
         $ids = [];
         for ($i = 0; $i < 100; $i++) {
@@ -40,10 +37,10 @@ describe('ErrorHandler', function () {
     test('stores error in database via report method', function () {
         config(['error-handling.channels.database.enabled' => true]);
 
-        $exception = new \Exception('Test error message');
+        $exception = new Exception('Test error message');
         $request = Request::create('/test-url', 'GET');
 
-        $handler = new ErrorHandler;
+        $handler = new ErrorHandler();
         // Use report() instead of handle() to avoid exception re-throw in dev mode
         $handler->report($exception, $request);
 
@@ -51,7 +48,7 @@ describe('ErrorHandler', function () {
 
         $log = ErrorLog::first();
         expect($log->message)->toBe('Test error message')
-            ->and($log->exception_class)->toBe(\Exception::class)
+            ->and($log->exception_class)->toBe(Exception::class)
             ->and($log->url)->toBe('http://localhost/test-url')
             ->and($log->method)->toBe('GET')
             ->and($log->reference_id)->toMatch('/^ERR-\d{8}-[A-Z0-9]{6}$/');
@@ -65,7 +62,7 @@ describe('ErrorHandler', function () {
         ]);
         $request = Request::create('/test-url', 'POST');
 
-        $handler = new ErrorHandler;
+        $handler = new ErrorHandler();
         $handler->report($exception, $request);
 
         expect(ErrorLog::count())->toBe(0);
@@ -74,10 +71,10 @@ describe('ErrorHandler', function () {
     test('does not store authentication exceptions in database', function () {
         config(['error-handling.channels.database.enabled' => true]);
 
-        $exception = new \Illuminate\Auth\AuthenticationException('Unauthenticated.');
+        $exception = new Illuminate\Auth\AuthenticationException('Unauthenticated.');
         $request = Request::create('/test-url', 'GET');
 
-        $handler = new ErrorHandler;
+        $handler = new ErrorHandler();
         $handler->report($exception, $request);
 
         expect(ErrorLog::count())->toBe(0);
@@ -90,10 +87,10 @@ describe('ErrorHandler', function () {
         $user = User::factory()->create();
         $this->actingAs($user);
 
-        $exception = new \Exception('Test error');
+        $exception = new Exception('Test error');
         $request = Request::create('/test-url', 'GET');
 
-        $handler = new ErrorHandler;
+        $handler = new ErrorHandler();
         // Generate reference ID first (normally done by handle())
         $refMethod = new ReflectionMethod($handler, 'generateReferenceId');
         $refMethod->setAccessible(true);
@@ -112,7 +109,7 @@ describe('ErrorHandler', function () {
     test('sanitizes sensitive request data', function () {
         config(['error-handling.channels.database.enabled' => true]);
 
-        $exception = new \Exception('Test error');
+        $exception = new Exception('Test error');
         $request = Request::create('/test-url', 'POST', [
             'email' => 'test@example.com',
             'password' => 'secret123',
@@ -121,7 +118,7 @@ describe('ErrorHandler', function () {
             'name' => 'John Doe',
         ]);
 
-        $handler = new ErrorHandler;
+        $handler = new ErrorHandler();
         // Set the reference ID via reflection
         $refIdProp = new ReflectionProperty($handler, 'referenceId');
         $refIdProp->setAccessible(true);
@@ -143,11 +140,11 @@ describe('ErrorHandler', function () {
         // Set environment to production for this test to avoid exception re-throw
         app()->detectEnvironment(fn () => 'production');
 
-        $exception = new \Exception('Test error message');
+        $exception = new Exception('Test error message');
         $request = Request::create('/test-url', 'GET');
         $request->headers->set('Accept', 'application/json');
 
-        $handler = new ErrorHandler;
+        $handler = new ErrorHandler();
         $response = $handler->handle($exception, $request);
 
         expect($response->getStatusCode())->toBe(500);
@@ -163,7 +160,7 @@ describe('ErrorLog Model', function () {
         /** @var ErrorLog $log */
         $log = ErrorLog::create([
             'reference_id' => 'ERR-20260108-TEST01',
-            'exception_class' => \Exception::class,
+            'exception_class' => Exception::class,
             'message' => 'Test error',
             'stack_trace' => 'Test trace',
         ]);
@@ -179,14 +176,14 @@ describe('ErrorLog Model', function () {
     test('scope unresolved returns only unresolved errors', function () {
         ErrorLog::create([
             'reference_id' => 'ERR-20260108-TEST01',
-            'exception_class' => \Exception::class,
+            'exception_class' => Exception::class,
             'message' => 'Unresolved error',
             'stack_trace' => 'Trace',
         ]);
 
         ErrorLog::create([
             'reference_id' => 'ERR-20260108-TEST02',
-            'exception_class' => \Exception::class,
+            'exception_class' => Exception::class,
             'message' => 'Resolved error',
             'stack_trace' => 'Trace',
             'resolved_at' => now(),
@@ -200,7 +197,7 @@ describe('ErrorLog Model', function () {
         // Create a recent error
         $recentLog = ErrorLog::create([
             'reference_id' => 'ERR-20260108-TEST01',
-            'exception_class' => \Exception::class,
+            'exception_class' => Exception::class,
             'message' => 'Recent error',
             'stack_trace' => 'Trace',
         ]);
@@ -208,7 +205,7 @@ describe('ErrorLog Model', function () {
         // Create an old error by updating timestamp after creation
         $oldLog = ErrorLog::create([
             'reference_id' => 'ERR-20260108-TEST02',
-            'exception_class' => \Exception::class,
+            'exception_class' => Exception::class,
             'message' => 'Old error',
             'stack_trace' => 'Trace',
         ]);
@@ -225,7 +222,7 @@ describe('PruneErrorLogsCommand', function () {
         // Create old error log
         $oldLog = ErrorLog::create([
             'reference_id' => 'ERR-20260108-OLD001',
-            'exception_class' => \Exception::class,
+            'exception_class' => Exception::class,
             'message' => 'Old error',
             'stack_trace' => 'Trace',
         ]);
@@ -235,7 +232,7 @@ describe('PruneErrorLogsCommand', function () {
         // Create recent error log
         ErrorLog::create([
             'reference_id' => 'ERR-20260108-NEW001',
-            'exception_class' => \Exception::class,
+            'exception_class' => Exception::class,
             'message' => 'Recent error',
             'stack_trace' => 'Trace',
         ]);
@@ -252,7 +249,7 @@ describe('PruneErrorLogsCommand', function () {
     test('dry run does not delete anything', function () {
         $oldLog = ErrorLog::create([
             'reference_id' => 'ERR-20260108-OLD001',
-            'exception_class' => \Exception::class,
+            'exception_class' => Exception::class,
             'message' => 'Old error',
             'stack_trace' => 'Trace',
         ]);
@@ -268,8 +265,8 @@ describe('PruneErrorLogsCommand', function () {
 
 describe('Error Channels', function () {
     test('toast channel creates notification', function () {
-        $channel = new ToastChannel;
-        $exception = new \Exception('Test error');
+        $channel = new ToastChannel();
+        $exception = new Exception('Test error');
         $context = [
             'reference_id' => 'ERR-20260108-TEST01',
             'is_production' => false,
@@ -281,11 +278,11 @@ describe('Error Channels', function () {
     });
 
     test('database channel stores error log', function () {
-        $channel = new DatabaseChannel;
-        $exception = new \Exception('Test error');
+        $channel = new DatabaseChannel();
+        $exception = new Exception('Test error');
         $context = [
             'reference_id' => 'ERR-20260108-TEST01',
-            'exception_class' => \Exception::class,
+            'exception_class' => Exception::class,
             'message' => 'Test error',
             'stack_trace' => 'Test trace',
             'url' => 'http://localhost/test',
@@ -298,11 +295,11 @@ describe('Error Channels', function () {
     });
 
     test('log channel logs to configured channel', function () {
-        $channel = new LogChannel;
-        $exception = new \Exception('Test error');
+        $channel = new LogChannel();
+        $exception = new Exception('Test error');
         $context = [
             'reference_id' => 'ERR-20260108-TEST01',
-            'exception_class' => \Exception::class,
+            'exception_class' => Exception::class,
         ];
 
         // Should not throw

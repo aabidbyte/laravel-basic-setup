@@ -45,7 +45,7 @@ new class extends BasePageComponent {
     public function mount(?EmailTemplate $template = null): void
     {
         $this->authorizeAccess($template);
-        $this->initializeUnifiedModel($template, fn($t) => $this->loadExistingTemplate($t), fn() => $this->prepareNewTemplate());
+        $this->initializeUnifiedModel($template, fn ($t) => $this->loadExistingTemplate($t), fn () => $this->prepareNewTemplate());
 
         $this->modelTypeLabel = $this->isLayout ? __('types.email_layout') : __('types.email_content');
 
@@ -205,7 +205,7 @@ new class extends BasePageComponent {
             });
         }
 
-        return ['' => __('common.select')] + $query->get()->mapWithKeys(fn($l) => [$l->id => $l->name])->toArray();
+        return ['' => __('common.select')] + $query->get()->mapWithKeys(fn ($l) => [$l->id => $l->name])->toArray();
     }
 
     public function getTypeOptionsProperty(): array

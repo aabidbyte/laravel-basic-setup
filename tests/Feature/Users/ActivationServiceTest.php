@@ -4,17 +4,14 @@ declare(strict_types=1);
 
 use App\Models\User;
 use App\Services\Users\ActivationService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-
-uses(RefreshDatabase::class);
 
 describe('ActivationService', function () {
     describe('createActivationToken', function () {
         it('creates a token for user with email', function () {
             $user = User::factory()->create(['email' => 'test@example.com']);
-            $service = new ActivationService;
+            $service = new ActivationService();
 
             $token = $service->createActivationToken($user);
 
@@ -35,7 +32,7 @@ describe('ActivationService', function () {
                 'email' => null,
                 'username' => 'testuser',
             ]);
-            $service = new ActivationService;
+            $service = new ActivationService();
 
             $token = $service->createActivationToken($user);
 
@@ -51,7 +48,7 @@ describe('ActivationService', function () {
 
         it('replaces existing token for same user', function () {
             $user = User::factory()->create(['email' => 'test@example.com']);
-            $service = new ActivationService;
+            $service = new ActivationService();
 
             $token1 = $service->createActivationToken($user);
             $token2 = $service->createActivationToken($user);
@@ -69,7 +66,7 @@ describe('ActivationService', function () {
     describe('validateToken', function () {
         it('validates a correct token', function () {
             $user = User::factory()->create(['email' => 'test@example.com']);
-            $service = new ActivationService;
+            $service = new ActivationService();
 
             $token = $service->createActivationToken($user);
             $isValid = $service->validateToken($token, 'test@example.com');
@@ -79,7 +76,7 @@ describe('ActivationService', function () {
 
         it('rejects an incorrect token', function () {
             $user = User::factory()->create(['email' => 'test@example.com']);
-            $service = new ActivationService;
+            $service = new ActivationService();
 
             $service->createActivationToken($user);
             $isValid = $service->validateToken('wrong-token', 'test@example.com');
@@ -88,7 +85,7 @@ describe('ActivationService', function () {
         });
 
         it('rejects token for non-existent identifier', function () {
-            $service = new ActivationService;
+            $service = new ActivationService();
 
             $isValid = $service->validateToken('some-token', 'nonexistent@example.com');
 
@@ -97,7 +94,7 @@ describe('ActivationService', function () {
 
         it('rejects expired token', function () {
             $user = User::factory()->create(['email' => 'test@example.com']);
-            $service = new ActivationService;
+            $service = new ActivationService();
 
             $token = $service->createActivationToken($user);
 
@@ -115,7 +112,7 @@ describe('ActivationService', function () {
     describe('findUserByToken', function () {
         it('finds user by valid token', function () {
             $user = User::factory()->create(['email' => 'test@example.com']);
-            $service = new ActivationService;
+            $service = new ActivationService();
 
             $token = $service->createActivationToken($user);
             $found = $service->findUserByToken($token);
@@ -125,7 +122,7 @@ describe('ActivationService', function () {
         });
 
         it('returns null for invalid token', function () {
-            $service = new ActivationService;
+            $service = new ActivationService();
 
             $found = $service->findUserByToken('invalid-token');
 
@@ -134,7 +131,7 @@ describe('ActivationService', function () {
 
         it('returns null for expired token', function () {
             $user = User::factory()->create(['email' => 'test@example.com']);
-            $service = new ActivationService;
+            $service = new ActivationService();
 
             $token = $service->createActivationToken($user);
 
@@ -152,7 +149,7 @@ describe('ActivationService', function () {
     describe('generateActivationUrl', function () {
         it('generates a valid activation URL', function () {
             $user = User::factory()->create(['email' => 'test@example.com']);
-            $service = new ActivationService;
+            $service = new ActivationService();
 
             $url = $service->generateActivationUrl($user);
 
@@ -167,7 +164,7 @@ describe('ActivationService', function () {
                 'email' => 'test@example.com',
                 'is_active' => false,
             ]);
-            $service = new ActivationService;
+            $service = new ActivationService();
 
             $token = $service->createActivationToken($user);
             $activated = $service->activateWithPassword($user, 'new-password-123', $token);
@@ -187,7 +184,7 @@ describe('ActivationService', function () {
 
     describe('getTokenExpirationDays', function () {
         it('returns the correct expiration period', function () {
-            $service = new ActivationService;
+            $service = new ActivationService();
 
             expect($service->getTokenExpirationDays())->toBe(7);
         });

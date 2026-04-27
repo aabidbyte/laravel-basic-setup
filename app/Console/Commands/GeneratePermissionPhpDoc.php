@@ -74,7 +74,7 @@ class GeneratePermissionPhpDoc extends Command
      */
     private function generatePhpDoc(string $currentContent): string
     {
-        $matrix = new PermissionMatrix;
+        $matrix = new PermissionMatrix();
         $methods = [];
 
         // Generate @method annotations for each permission

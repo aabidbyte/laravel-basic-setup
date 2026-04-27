@@ -2,11 +2,7 @@
 
 use App\Models\User;
 use App\Services\DataTable\Builders\Action;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
-use Tests\TestCase;
-
-uses(TestCase::class, RefreshDatabase::class);
 
 beforeEach(function () {
     $this->user = User::factory()->create();
@@ -69,7 +65,7 @@ it('combines can and show checks (both must pass)', function () {
 
 it('checks class level ability if no model required', function () {
     Gate::shouldReceive('forUser')->with($this->user)->andReturnSelf();
-    Gate::shouldReceive('check')->with('create', \Mockery::any())->andReturn(true); // Argument might be null or class name
+    Gate::shouldReceive('check')->with('create', Mockery::any())->andReturn(true); // Argument might be null or class name
 
     $action = Action::make('create', 'Create')->can('create', false);
 

@@ -114,7 +114,7 @@ class Column
      */
     public static function make(string $label, ?string $field = null): self
     {
-        $instance = new self;
+        $instance = new self();
         $instance->label = $label;
         $instance->field = $field ?? str($label)->snake()->toString();
 

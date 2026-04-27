@@ -11,9 +11,7 @@ use App\Services\DataTable\Builders\BulkAction;
 use App\Services\DataTable\Builders\Column;
 use App\Services\DataTable\Builders\Filter;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
-use Tests\TestCase;
 
 /**
  * Test datatable with all features (filters, bulk actions, row actions).
@@ -101,82 +99,66 @@ class RowActionsOnlyDatatableForConditionalTest extends Datatable
     }
 }
 
-class DataTableConditionalRenderingTest extends TestCase
-{
-    use RefreshDatabase;
+beforeEach(function () {
+    $this->user = User::factory()->create();
+});
 
-    protected User $user;
+test('full datatable has all feature flags', function () {
+    $component = Livewire::actingAs($this->user)
+        ->test(FullDatatableForConditionalTest::class);
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->user = User::factory()->create();
-    }
+    // Use call to get the return values from component methods
+    expect($component->instance()->hasFilters())->toBeTrue();
+    expect($component->instance()->hasBulkActions())->toBeTrue();
+    expect($component->instance()->hasRowActions())->toBeTrue();
+});
 
-    public function test_full_datatable_has_all_feature_flags(): void
-    {
-        $component = Livewire::actingAs($this->user)
-            ->test(FullDatatableForConditionalTest::class);
+test('minimal datatable has no feature flags', function () {
+    $component = Livewire::actingAs($this->user)
+        ->test(MinimalDatatableForConditionalTest::class);
 
-        // Use call to get the return values from component methods
-        $this->assertTrue($component->instance()->hasFilters());
-        $this->assertTrue($component->instance()->hasBulkActions());
-        $this->assertTrue($component->instance()->hasRowActions());
-    }
+    expect($component->instance()->hasFilters())->toBeFalse();
+    expect($component->instance()->hasBulkActions())->toBeFalse();
+    expect($component->instance()->hasRowActions())->toBeFalse();
+});
 
-    public function test_minimal_datatable_has_no_feature_flags(): void
-    {
-        $component = Livewire::actingAs($this->user)
-            ->test(MinimalDatatableForConditionalTest::class);
+test('row actions only datatable has correct flags', function () {
+    $component = Livewire::actingAs($this->user)
+        ->test(RowActionsOnlyDatatableForConditionalTest::class);
 
-        $this->assertFalse($component->instance()->hasFilters());
-        $this->assertFalse($component->instance()->hasBulkActions());
-        $this->assertFalse($component->instance()->hasRowActions());
-    }
+    expect($component->instance()->hasFilters())->toBeFalse();
+    expect($component->instance()->hasBulkActions())->toBeFalse();
+    expect($component->instance()->hasRowActions())->toBeTrue();
+});
 
-    public function test_row_actions_only_datatable_has_correct_flags(): void
-    {
-        $component = Livewire::actingAs($this->user)
-            ->test(RowActionsOnlyDatatableForConditionalTest::class);
+test('full datatable renders checkbox column', function () {
+    User::factory()->create();
 
-        $this->assertFalse($component->instance()->hasFilters());
-        $this->assertFalse($component->instance()->hasBulkActions());
-        $this->assertTrue($component->instance()->hasRowActions());
-    }
+    Livewire::actingAs($this->user)
+        ->test(FullDatatableForConditionalTest::class)
+        ->assertSee('@click="toggleAll()"', false) // Select-all checkbox new syntax
+        ->assertSee(__('table.actions')); // Actions column header
+});
 
-    public function test_full_datatable_renders_checkbox_column(): void
-    {
-        User::factory()->create();
+test('minimal datatable does not render checkbox or actions', function () {
+    User::factory()->create();
 
-        Livewire::actingAs($this->user)
-            ->test(FullDatatableForConditionalTest::class)
-            ->assertSee('@click="toggleAll()"', false) // Select-all checkbox new syntax
-            ->assertSee(__('table.actions')); // Actions column header
-    }
+    $component = Livewire::actingAs($this->user)
+        ->test(MinimalDatatableForConditionalTest::class);
 
-    public function test_minimal_datatable_does_not_render_checkbox_or_actions(): void
-    {
-        User::factory()->create();
+    // The minimal datatable should NOT render actions column header
+    // (but it still shows the search bar)
+    $component->assertDontSee(__('table.actions'));
+});
 
-        $component = Livewire::actingAs($this->user)
-            ->test(MinimalDatatableForConditionalTest::class);
+test('minimal datatable does not render filters button', function () {
+    Livewire::actingAs($this->user)
+        ->test(MinimalDatatableForConditionalTest::class)
+        ->assertDontSee(__('table.filters'));
+});
 
-        // The minimal datatable should NOT render actions column header
-        // (but it still shows the search bar)
-        $component->assertDontSee(__('table.actions'));
-    }
-
-    public function test_minimal_datatable_does_not_render_filters_button(): void
-    {
-        Livewire::actingAs($this->user)
-            ->test(MinimalDatatableForConditionalTest::class)
-            ->assertDontSee(__('table.filters'));
-    }
-
-    public function test_full_datatable_renders_filters_button(): void
-    {
-        Livewire::actingAs($this->user)
-            ->test(FullDatatableForConditionalTest::class)
-            ->assertSee(__('table.filters'));
-    }
-}
+test('full datatable renders filters button', function () {
+    Livewire::actingAs($this->user)
+        ->test(FullDatatableForConditionalTest::class)
+        ->assertSee(__('table.filters'));
+});

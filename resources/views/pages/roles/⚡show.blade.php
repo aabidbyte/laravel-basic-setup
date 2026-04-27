@@ -6,7 +6,7 @@ use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\BasePageComponent;
 use App\Models\Permission;
 use App\Models\Role;
-use Livewire\Attributes\Locked;
+use Illuminate\Database\Eloquent\Collection;
 
 new class extends BasePageComponent {
     public ?string $pageSubtitle = null;
@@ -43,7 +43,7 @@ new class extends BasePageComponent {
     /**
      * Get available permissions.
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return Collection
      */
     public function getPermissionsProperty()
     {

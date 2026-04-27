@@ -27,7 +27,7 @@ class MetricBuilder
 
     public static function make(): self
     {
-        return new self;
+        return new self();
     }
 
     public function label(string $label): self

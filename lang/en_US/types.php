@@ -15,4 +15,6 @@ return [
     'email_content' => 'Email Content',
     'email_layouts' => 'Email Layouts',
     'email_contents' => 'Email Contents',
+    'master' => 'Master',
+    'tenant' => 'Tenant',
 ];

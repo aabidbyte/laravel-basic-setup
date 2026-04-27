@@ -6,17 +6,14 @@ use App\Constants\Auth\Permissions;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     // Create permissions
-    $viewPermission = Permission::create(['name' => Permissions::VIEW_USERS()]);
-    $deletePermission = Permission::create(['name' => Permissions::DELETE_USERS()]);
+    $viewPermission = Permission::firstOrCreate(['name' => Permissions::VIEW_USERS()]);
+    $deletePermission = Permission::firstOrCreate(['name' => Permissions::DELETE_USERS()]);
 
-    $adminRole = Role::create(['name' => 'admin']);
+    $adminRole = Role::firstOrCreate(['name' => 'admin']);
     $adminRole->givePermissionTo($viewPermission);
     $adminRole->givePermissionTo($deletePermission);
 
@@ -37,7 +34,7 @@ test('authorized user can see all user details on show page', function () {
     // Create a user by this user
     User::factory()->create(['created_by_user_id' => $this->targetUser->id]);
 
-    \Illuminate\Support\Carbon::setTestNow($now);
+    Illuminate\Support\Carbon::setTestNow($now);
 
     Livewire::actingAs($this->admin)
         ->test('pages::users.show', ['user' => $this->targetUser])
@@ -50,7 +47,7 @@ test('authorized user can see all user details on show page', function () {
         ->assertSee('Database')
         ->assertSee($this->targetUser->updated_at->diffForHumans());
 
-    \Illuminate\Support\Carbon::setTestNow();
+    Illuminate\Support\Carbon::setTestNow();
 });
 
 test('authorized user can delete a user from show page', function () {
@@ -65,7 +62,7 @@ test('authorized user can delete a user from show page', function () {
 });
 
 test('unauthorized user cannot see delete button on show page', function () {
-    $viewerRole = Role::create(['name' => 'viewer']);
+    $viewerRole = Role::firstOrCreate(['name' => 'viewer']);
     $viewerRole->givePermissionTo(Permission::where('name', Permissions::VIEW_USERS())->first());
 
     $viewer = User::factory()->create();

@@ -102,7 +102,7 @@ class EntityTypeRegistry
             return null;
         }
 
-        return (new $modelClass)->getTable();
+        return (new $modelClass())->getTable();
     }
 
     /**

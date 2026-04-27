@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 use App\Models\User;
 use Illuminate\Auth\Events\Login;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
-
-uses(RefreshDatabase::class);
 
 test('last_login_at is updated when user logs in', function () {
     $user = User::factory()->create([

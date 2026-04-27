@@ -60,7 +60,7 @@ interface StatefulGuard
     /**
      * Log a user into the application.
      *
-     * @param  \Illuminate\Contracts\Auth\Authenticatable  $user
+     * @param  Authenticatable  $user
      * @param  bool  $remember
      */
     public function login($user, $remember = false): void;
@@ -565,6 +565,22 @@ interface Schema
     public static function create($table, $callback): void;
 
     /**
+     * Create a new table on the schema.
+     *
+     * @param  string  $table
+     * @param  \Closure  $callback
+     */
+    public static function createTable($table, $callback): void;
+
+    /**
+     * Create a new table on the schema.
+     *
+     * @param  string  $table
+     * @param  \Closure  $callback
+     */
+    public static function createPivotTable($table, $callback): void;
+
+    /**
      * Drop a table from the schema.
      *
      * @param  string  $table
@@ -874,7 +890,7 @@ interface Builder
      * Get the first result from the query.
      *
      * @param  array|string  $columns
-     * @return \Illuminate\Database\Eloquent\Model|null
+     * @return Model|null
      */
     public function first($columns = ['*']);
 
@@ -882,7 +898,7 @@ interface Builder
      * Get the first result from the query or throw an exception.
      *
      * @param  array|string  $columns
-     * @return \Illuminate\Database\Eloquent\Model
+     * @return Model
      */
     public function firstOrFail($columns = ['*']);
 
@@ -891,7 +907,7 @@ interface Builder
      *
      * @param  array  $attributes
      * @param  array  $values
-     * @return \Illuminate\Database\Eloquent\Model
+     * @return Model
      */
     public function firstOrCreate($attributes, $values = []);
 
@@ -900,7 +916,7 @@ interface Builder
      *
      * @param  array  $attributes
      * @param  array  $values
-     * @return \Illuminate\Database\Eloquent\Model
+     * @return Model
      */
     public function firstOrNew($attributes, $values = []);
 
@@ -909,7 +925,7 @@ interface Builder
      *
      * @param  array  $attributes
      * @param  array  $values
-     * @return \Illuminate\Database\Eloquent\Model
+     * @return Model
      */
     public function updateOrCreate($attributes, $values = []);
 
@@ -917,35 +933,35 @@ interface Builder
      * Get the first result from the query or create a new instance.
      *
      * @param  array  $values
-     * @return \Illuminate\Database\Eloquent\Model
+     * @return Model
      */
     public function upsert($values, $uniqueBy, $update = null): int;
 
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @return \Illuminate\Database\Eloquent\Model
+     * @return Model
      */
     public function find($id, $columns = ['*']);
 
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @return \Illuminate\Database\Eloquent\Model
+     * @return Model
      */
     public function findOrFail($id, $columns = ['*']);
 
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @return \Illuminate\Database\Eloquent\Model
+     * @return Model
      */
     public function findOrNew($id, $columns = ['*']);
 
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @return \Illuminate\Database\Eloquent\Model
+     * @return Model
      */
     public function findMany($ids, $columns = ['*']);
 
@@ -953,7 +969,7 @@ interface Builder
      * Get the results from the query.
      *
      * @param  array|string  $columns
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return Collection
      */
     public function get($columns = ['*']);
 
@@ -1170,35 +1186,35 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @return \Illuminate\Database\Eloquent\Model
+     * @return Model
      */
     public function macro($name, $macro);
 
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @return \Illuminate\Database\Eloquent\Model
+     * @return Model
      */
     public function mixin($mixin, $replace = true);
 
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @return \Illuminate\Database\Eloquent\Model
+     * @return Model
      */
     public function hasMacro($name);
 
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @return \Illuminate\Database\Eloquent\Model
+     * @return Model
      */
     public function getMacro($name);
 
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @return \Illuminate\Database\Eloquent\Model
+     * @return Model
      */
     public function __call($method, $parameters);
 
@@ -1285,7 +1301,7 @@ class Inertia
     public static function render(string $component, array $props = []): Response
     {
         // Stub implementation for Intelephense
-        return new Response;
+        return new Response();
     }
 }
 

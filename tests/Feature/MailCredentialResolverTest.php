@@ -9,22 +9,19 @@ use App\Models\Role;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\Mail\MailCredentialResolver;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     // Create the permission and role
-    $permission = Permission::create(['name' => Permissions::CONFIGURE_MAIL_SETTINGS()]);
-    $this->mailConfigRole = Role::create(['name' => 'mail-config']);
+    $permission = Permission::firstOrCreate(['name' => Permissions::CONFIGURE_MAIL_SETTINGS()]);
+    $this->mailConfigRole = Role::firstOrCreate(['name' => 'mail-config']);
     $this->mailConfigRole->givePermissionTo($permission);
 });
 
 describe('MailCredentialResolver', function () {
     describe('resolve', function () {
         it('returns null when no custom settings exist (uses environment)', function () {
-            $resolver = new MailCredentialResolver;
+            $resolver = new MailCredentialResolver();
 
             $settings = $resolver->resolve();
 
@@ -44,7 +41,7 @@ describe('MailCredentialResolver', function () {
                 'is_active' => true,
             ]);
 
-            $resolver = new MailCredentialResolver;
+            $resolver = new MailCredentialResolver();
             $settings = $resolver->resolve($user);
 
             expect($settings)->not()->toBeNull();
@@ -64,7 +61,7 @@ describe('MailCredentialResolver', function () {
                 'is_active' => true,
             ]);
 
-            $resolver = new MailCredentialResolver;
+            $resolver = new MailCredentialResolver();
             $settings = $resolver->resolve($user);
 
             expect($settings)->toBeNull();
@@ -84,7 +81,7 @@ describe('MailCredentialResolver', function () {
                 'is_active' => true,
             ]);
 
-            $resolver = new MailCredentialResolver;
+            $resolver = new MailCredentialResolver();
             $settings = $resolver->resolve($user);
 
             expect($settings)->not()->toBeNull();
@@ -101,7 +98,7 @@ describe('MailCredentialResolver', function () {
                 'is_active' => true,
             ]);
 
-            $resolver = new MailCredentialResolver;
+            $resolver = new MailCredentialResolver();
             $settings = $resolver->resolve();
 
             expect($settings)->not()->toBeNull();
@@ -141,7 +138,7 @@ describe('MailCredentialResolver', function () {
                 'is_active' => true,
             ]);
 
-            $resolver = new MailCredentialResolver;
+            $resolver = new MailCredentialResolver();
             $settings = $resolver->resolve($user, $team);
 
             // Should get user settings (highest priority)
@@ -172,7 +169,7 @@ describe('MailCredentialResolver', function () {
                 'is_active' => false,
             ]);
 
-            $resolver = new MailCredentialResolver;
+            $resolver = new MailCredentialResolver();
             $settings = $resolver->resolve($user, $team);
 
             // Should fall back to team settings
@@ -182,7 +179,7 @@ describe('MailCredentialResolver', function () {
 
     describe('getSettingsSource', function () {
         it('returns environment when no custom settings', function () {
-            $resolver = new MailCredentialResolver;
+            $resolver = new MailCredentialResolver();
 
             expect($resolver->getSettingsSource())->toBe('environment');
         });
@@ -199,7 +196,7 @@ describe('MailCredentialResolver', function () {
                 'is_active' => true,
             ]);
 
-            $resolver = new MailCredentialResolver;
+            $resolver = new MailCredentialResolver();
 
             expect($resolver->getSettingsSource($user))->toBe('user');
         });
@@ -217,7 +214,7 @@ describe('MailCredentialResolver', function () {
                 'is_active' => true,
             ]);
 
-            $resolver = new MailCredentialResolver;
+            $resolver = new MailCredentialResolver();
 
             expect($resolver->getSettingsSource($user))->toBe('team');
         });
@@ -231,7 +228,7 @@ describe('MailCredentialResolver', function () {
                 'is_active' => true,
             ]);
 
-            $resolver = new MailCredentialResolver;
+            $resolver = new MailCredentialResolver();
 
             expect($resolver->getSettingsSource())->toBe('app');
         });
@@ -239,7 +236,7 @@ describe('MailCredentialResolver', function () {
 
     describe('hasCustomSettings', function () {
         it('returns false when no custom settings', function () {
-            $resolver = new MailCredentialResolver;
+            $resolver = new MailCredentialResolver();
 
             expect($resolver->hasCustomSettings())->toBeFalse();
         });
@@ -253,7 +250,7 @@ describe('MailCredentialResolver', function () {
                 'is_active' => true,
             ]);
 
-            $resolver = new MailCredentialResolver;
+            $resolver = new MailCredentialResolver();
 
             expect($resolver->hasCustomSettings())->toBeTrue();
         });

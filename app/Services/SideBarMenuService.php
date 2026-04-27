@@ -25,7 +25,6 @@ class SideBarMenuService
                     ->title(__('navigation.dashboard'))
                     ->route('dashboard')
                     ->icon('home'),
-
                 NavigationItem::make()
                     ->title(__('navigation.starter_kit'))
                     ->url('#')
@@ -54,13 +53,11 @@ class SideBarMenuService
                             ->route('users.index')
                             ->activeRoutes('users.*')
                             ->show(Auth::user()?->can(Permissions::VIEW_USERS()) ?? false),
-
                         NavigationItem::make()
                             ->title(__('navigation.roles'))
                             ->route('roles.index')
                             ->activeRoutes('roles.*')
                             ->show(Auth::user()?->can(Permissions::VIEW_ROLES()) ?? false),
-
                         NavigationItem::make()
                             ->title(__('navigation.teams'))
                             ->route('teams.index')
@@ -78,7 +75,6 @@ class SideBarMenuService
                             ->route('emailTemplates.contents.index')
                             ->activeRoutes('emailTemplates.contents.*')
                             ->show(Auth::user()?->can(Permissions::VIEW_EMAIL_TEMPLATES()) ?? false),
-
                         NavigationItem::make()
                             ->title(__('types.email_layouts'))
                             ->route('emailTemplates.layouts.index')
@@ -97,19 +93,16 @@ class SideBarMenuService
                             ->url(config('app.url') . '/admin/system/debug/monitoring')
                             ->icon('magnifying-glass')
                             ->external(),
-
                         NavigationItem::make()
                             ->title(__('navigation.horizon'))
                             ->url(config('app.url') . '/admin/system/queue-monitor')
                             ->icon('queue-list')
                             ->external(),
-
                         NavigationItem::make()
                             ->title(__('navigation.log_viewer'))
                             ->url(config('app.url') . '/admin/system/log-viewer')
                             ->icon('document-text')
                             ->external(),
-
                         NavigationItem::make()
                             ->title(__('navigation.error_handler'))
                             ->route('admin.errors.index')
@@ -129,19 +122,16 @@ class SideBarMenuService
                             ->route('trash.index', ['entityType' => 'users'])
                             ->active(fn () => request()->route('entityType') === 'users' && request()->routeIs('trash.*'))
                             ->show(Auth::user()?->can(Permissions::VIEW_USERS()) ?? false),
-
                         NavigationItem::make()
                             ->title(__('types.roles'))
                             ->route('trash.index', ['entityType' => 'roles'])
                             ->active(fn () => request()->route('entityType') === 'roles' && request()->routeIs('trash.*'))
                             ->show(Auth::user()?->can(Permissions::VIEW_ROLES()) ?? false),
-
                         NavigationItem::make()
                             ->title(__('types.teams'))
                             ->route('trash.index', ['entityType' => 'teams'])
                             ->active(fn () => request()->route('entityType') === 'teams' && request()->routeIs('trash.*'))
                             ->show(Auth::user()?->can(Permissions::VIEW_TEAMS()) ?? false),
-
                         NavigationItem::make()
                             ->title(__('types.error_logs'))
                             ->route('trash.index', ['entityType' => 'error-logs'])

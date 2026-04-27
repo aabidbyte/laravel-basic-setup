@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 use App\Enums\Toast\ToastType;
 use App\Events\Notifications\ToastBroadcasted;
+use App\Models\Team;
 use App\Models\User;
 use App\Services\Notifications\NotificationBuilder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
-
-uses(Tests\TestCase::class, Illuminate\Foundation\Testing\RefreshDatabase::class);
+use Illuminate\Support\Str;
 
 test('can create notification builder with make method', function () {
     $builder = NotificationBuilder::make();
@@ -18,7 +19,7 @@ test('can create notification builder with make method', function () {
 
 test('requires title to send', function () {
     expect(fn () => NotificationBuilder::make()->send())
-        ->toThrow(\InvalidArgumentException::class, 'Notification title is required.');
+        ->toThrow(InvalidArgumentException::class, 'Notification title is required.');
 });
 
 test('defaults to success type', function () {
@@ -89,9 +90,9 @@ test('defaults to current user channel', function () {
 test('can send notification to a team', function () {
     Event::fake([ToastBroadcasted::class]);
 
-    $team = \App\Models\Team::factory()->create();
+    $team = Team::factory()->create();
     $user = User::factory()->create();
-    $team->users()->attach($user, ['uuid' => \Illuminate\Support\Str::uuid()]);
+    $team->users()->attach($user, ['uuid' => Str::uuid()]);
 
     NotificationBuilder::make()
         ->title('Team Notification')
@@ -106,13 +107,13 @@ test('can send notification to a team', function () {
 test('user in multiple teams receives notifications from all teams', function () {
     Event::fake([ToastBroadcasted::class]);
 
-    $team1 = \App\Models\Team::factory()->create();
-    $team2 = \App\Models\Team::factory()->create();
+    $team1 = Team::factory()->create();
+    $team2 = Team::factory()->create();
     $user = User::factory()->create();
 
     // User belongs to both teams
-    $team1->users()->attach($user, ['uuid' => \Illuminate\Support\Str::uuid()]);
-    $team2->users()->attach($user, ['uuid' => \Illuminate\Support\Str::uuid()]);
+    $team1->users()->attach($user, ['uuid' => Str::uuid()]);
+    $team2->users()->attach($user, ['uuid' => Str::uuid()]);
 
     // Send notification to team1
     NotificationBuilder::make()
@@ -139,15 +140,15 @@ test('user in multiple teams receives notifications from all teams', function ()
 });
 
 test('persists notification to all team members when user is in multiple teams', function () {
-    $team1 = \App\Models\Team::factory()->create();
-    $team2 = \App\Models\Team::factory()->create();
+    $team1 = Team::factory()->create();
+    $team2 = Team::factory()->create();
     $user1 = User::factory()->create();
     $user2 = User::factory()->create();
 
     // User1 belongs to both teams, User2 only to team1
-    $team1->users()->attach($user1->id, ['uuid' => \Illuminate\Support\Str::uuid()]);
-    $team1->users()->attach($user2->id, ['uuid' => \Illuminate\Support\Str::uuid()]);
-    $team2->users()->attach($user1->id, ['uuid' => \Illuminate\Support\Str::uuid()]);
+    $team1->users()->attach($user1->id, ['uuid' => Str::uuid()]);
+    $team1->users()->attach($user2->id, ['uuid' => Str::uuid()]);
+    $team2->users()->attach($user1->id, ['uuid' => Str::uuid()]);
 
     NotificationBuilder::make()
         ->title('Team 1 Notification')
@@ -156,13 +157,13 @@ test('persists notification to all team members when user is in multiple teams',
         ->send();
 
     // User1 should receive notification (member of team1)
-    expect(\Illuminate\Support\Facades\DB::table('notifications')
+    expect(DB::table('notifications')
         ->where('notifiable_type', User::class)
         ->where('notifiable_id', $user1->id)
         ->count())->toBe(1);
 
     // User2 should receive notification (member of team1)
-    expect(\Illuminate\Support\Facades\DB::table('notifications')
+    expect(DB::table('notifications')
         ->where('notifiable_type', User::class)
         ->where('notifiable_id', $user2->id)
         ->count())->toBe(1);
@@ -175,13 +176,13 @@ test('persists notification to all team members when user is in multiple teams',
         ->send();
 
     // User1 should now have 2 notifications (one from each team)
-    expect(\Illuminate\Support\Facades\DB::table('notifications')
+    expect(DB::table('notifications')
         ->where('notifiable_type', User::class)
         ->where('notifiable_id', $user1->id)
         ->count())->toBe(2);
 
     // User2 should still have only 1 notification (only member of team1)
-    expect(\Illuminate\Support\Facades\DB::table('notifications')
+    expect(DB::table('notifications')
         ->where('notifiable_type', User::class)
         ->where('notifiable_id', $user2->id)
         ->count())->toBe(1);

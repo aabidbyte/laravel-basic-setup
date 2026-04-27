@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Team;
+use App\Models\User;
 
 test('new users can register', function () {
     $response = $this->post(route('register.store'), [
@@ -26,7 +27,7 @@ test('creates team and attaches user on registration', function () {
 
     $response->assertSessionHasNoErrors();
 
-    $user = \App\Models\User::where('email', 'jane@example.com')->first();
+    $user = User::where('email', 'jane@example.com')->first();
     expect($user)->not->toBeNull();
 
     // User should have a team

@@ -173,7 +173,7 @@
 
         @default
             {{-- Default: centered loading spinner --}}
-            <div class="flex items-center justify-center grow">
+            <div class="flex grow items-center justify-center">
                 <x-ui.loading size="lg"
                               color="neutral" />
             </div>

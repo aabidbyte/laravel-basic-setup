@@ -1,129 +1,111 @@
 <?php
 
-namespace Tests\Feature\Auth;
-
 use App\Models\User;
 use App\Services\Users\ActivationService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Database\Seeders\Masters\CommonSeeders\Production\EmailTemplateSeeder;
 use Illuminate\Support\Facades\Hash;
-use Tests\TestCase;
 
-class ActivationTest extends TestCase
-{
-    use RefreshDatabase;
+beforeEach(function () {
+    $this->seed(EmailTemplateSeeder::class);
+    $this->activationService = app(ActivationService::class);
+});
 
-    protected ActivationService $activationService;
+test('can view activation page with valid token', function () {
+    $user = User::factory()->create([
+        'password' => null, // Simulate user created without password
+    ]);
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->seed(\Database\Seeders\EmailTemplateSeeder::class);
-        $this->activationService = app(ActivationService::class);
-    }
+    $token = $this->activationService->createActivationToken($user);
 
-    public function test_can_view_activation_page_with_valid_token()
-    {
-        $user = User::factory()->create([
-            'password' => null, // Simulate user created without password
-        ]);
+    $response = $this->get(route('auth.activate', $token));
 
-        $token = $this->activationService->createActivationToken($user);
+    $response->assertStatus(200);
+    $response->assertViewIs('pages.auth.activate');
+    $response->assertViewHas('tokenValid', true);
+    $response->assertSee($user->name);
+});
 
-        $response = $this->get(route('auth.activate', $token));
+test('view activation page with invalid token shows error', function () {
+    $response = $this->get(route('auth.activate', 'invalid-token'));
 
-        $response->assertStatus(200);
-        $response->assertViewIs('pages.auth.activate');
-        $response->assertViewHas('tokenValid', true);
-        $response->assertSee($user->name);
-    }
+    $response->assertStatus(200);
+    $response->assertViewIs('pages.auth.activate');
+    $response->assertViewHas('tokenValid', false);
+    $response->assertSee(__('authentication.activation.invalid_title'));
+});
 
-    public function test_view_activation_page_with_invalid_token_shows_error()
-    {
-        $response = $this->get(route('auth.activate', 'invalid-token'));
+test('can activate account with valid token and password', function () {
+    $user = User::factory()->create([
+        'password' => null,
+        'is_active' => false,
+    ]);
 
-        $response->assertStatus(200);
-        $response->assertViewIs('pages.auth.activate');
-        $response->assertViewHas('tokenValid', false);
-        $response->assertSee(__('authentication.activation.invalid_title'));
-    }
+    $token = $this->activationService->createActivationToken($user);
 
-    public function test_can_activate_account_with_valid_token_and_password()
-    {
-        $user = User::factory()->create([
-            'password' => null,
-            'is_active' => false,
-        ]);
+    $response = $this->post(route('auth.activate', $token), [
+        'password' => 'Password123!',
+        'password_confirmation' => 'Password123!',
+    ]);
 
-        $token = $this->activationService->createActivationToken($user);
+    $response->assertRedirect(route('login'));
+    $response->assertSessionHas('activated', true);
 
-        $response = $this->post(route('auth.activate', $token), [
-            'password' => 'Password123!',
-            'password_confirmation' => 'Password123!',
-        ]);
+    expect($user->fresh()->is_active)->toBeTrue();
+    expect(Hash::check('Password123!', $user->fresh()->password))->toBeTrue();
+    $this->assertDatabaseMissing('password_reset_tokens', [
+        'identifier' => $user->email,
+    ]);
+});
 
-        $response->assertRedirect(route('login'));
-        $response->assertSessionHas('activated', true);
+test('cannot activate with invalid token', function () {
+    $user = User::factory()->create([
+        'password' => null,
+        'is_active' => false,
+    ]);
 
-        $this->assertTrue($user->fresh()->is_active);
-        $this->assertTrue(Hash::check('Password123!', $user->fresh()->password));
-        $this->assertDatabaseMissing('password_reset_tokens', [
-            'identifier' => $user->email,
-        ]);
-    }
+    $response = $this->post(route('auth.activate', 'invalid-token'), [
+        'password' => 'Password123!',
+        'password_confirmation' => 'Password123!',
+    ]);
 
-    public function test_cannot_activate_with_invalid_token()
-    {
-        $user = User::factory()->create([
-            'password' => null,
-            'is_active' => false,
-        ]);
+    $response->assertRedirect();
+    // Should flash error
+    // Note: NotificationBuilder uses session flash or toasts, might need specific assertion if we want to be strict.
+    // For now, assert user is not activated.
+    expect($user->fresh()->is_active)->toBeFalse();
+    expect($user->fresh()->password)->toBeNull();
+});
 
-        $response = $this->post(route('auth.activate', 'invalid-token'), [
-            'password' => 'Password123!',
-            'password_confirmation' => 'Password123!',
-        ]);
+test('activation requires valid password', function () {
+    $user = User::factory()->create([
+        'password' => null,
+        'is_active' => false,
+    ]);
 
-        $response->assertRedirect();
-        // Should flash error
-        // Note: NotificationBuilder uses session flash or toasts, might need specific assertion if we want to be strict.
-        // For now, assert user is not activated.
-        $this->assertFalse($user->fresh()->is_active);
-        $this->assertNull($user->fresh()->password);
-    }
+    $token = $this->activationService->createActivationToken($user);
 
-    public function test_activation_requires_valid_password()
-    {
-        $user = User::factory()->create([
-            'password' => null,
-            'is_active' => false,
-        ]);
+    $response = $this->post(route('auth.activate', $token), [
+        'password' => 'short',
+        'password_confirmation' => 'short',
+    ]);
 
-        $token = $this->activationService->createActivationToken($user);
+    $response->assertSessionHasErrors('password');
+    expect($user->fresh()->is_active)->toBeFalse();
+});
 
-        $response = $this->post(route('auth.activate', $token), [
-            'password' => 'short',
-            'password_confirmation' => 'short',
-        ]);
+test('activation requires password confirmation', function () {
+    $user = User::factory()->create([
+        'password' => null,
+        'is_active' => false,
+    ]);
 
-        $response->assertSessionHasErrors('password');
-        $this->assertFalse($user->fresh()->is_active);
-    }
+    $token = $this->activationService->createActivationToken($user);
 
-    public function test_activation_requires_password_confirmation()
-    {
-        $user = User::factory()->create([
-            'password' => null,
-            'is_active' => false,
-        ]);
+    $response = $this->post(route('auth.activate', $token), [
+        'password' => 'Password123!',
+        'password_confirmation' => 'DifferentPassword',
+    ]);
 
-        $token = $this->activationService->createActivationToken($user);
-
-        $response = $this->post(route('auth.activate', $token), [
-            'password' => 'Password123!',
-            'password_confirmation' => 'DifferentPassword',
-        ]);
-
-        $response->assertSessionHasErrors('password');
-        $this->assertFalse($user->fresh()->is_active);
-    }
-}
+    $response->assertSessionHasErrors('password');
+    expect($user->fresh()->is_active)->toBeFalse();
+});

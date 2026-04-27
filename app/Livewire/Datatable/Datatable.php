@@ -231,7 +231,7 @@ abstract class Datatable extends LivewireBaseComponent
     #[Computed]
     public function rows(): LengthAwarePaginator
     {
-        $queryBuilder = new DataTableQueryBuilder;
+        $queryBuilder = new DataTableQueryBuilder();
 
         return $queryBuilder->build(new QueryOptions(
             query: $this->baseQuery(),

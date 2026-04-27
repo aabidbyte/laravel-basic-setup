@@ -3,19 +3,18 @@
 declare(strict_types=1);
 
 use App\Constants\Auth\Permissions;
+use App\Constants\Auth\Roles;
+use App\Livewire\Tables\RoleTable;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
-
-uses(RefreshDatabase::class);
 
 test('unauthenticated user cannot access roles pages', function () {
     $this->get(route('roles.index'))->assertRedirect(route('login'));
     $this->get(route('roles.edit'))->assertRedirect(route('login'));
 
-    $role = Role::create(['name' => 'test-role']);
+    $role = Role::firstOrCreate(['name' => 'test-role']);
     $this->get(route('roles.edit', $role->uuid))->assertRedirect(route('login'));
     $this->get(route('roles.show', $role->uuid))->assertRedirect(route('login'));
 });
@@ -26,28 +25,28 @@ test('unauthorized user cannot access roles pages', function () {
     $this->actingAs($user)->get(route('roles.index'))->assertForbidden();
     $this->actingAs($user)->get(route('roles.edit'))->assertForbidden();
 
-    $role = Role::create(['name' => 'test-role']);
+    $role = Role::firstOrCreate(['name' => 'test-role']);
     $this->actingAs($user)->get(route('roles.edit', $role->uuid))->assertForbidden();
     $this->actingAs($user)->get(route('roles.show', $role->uuid))->assertForbidden();
 });
 
 test('authorized user can list roles', function () {
     $user = User::factory()->create();
-    $permission = Permission::create(['name' => Permissions::VIEW_ROLES()]);
-    $role = Role::create(['name' => 'viewer']);
+    $permission = Permission::firstOrCreate(['name' => Permissions::VIEW_ROLES()]);
+    $role = Role::firstOrCreate(['name' => 'viewer']);
     $role->givePermissionTo($permission);
     $user->assignRole($role);
 
     $this->actingAs($user)
         ->get(route('roles.index'))
         ->assertOk()
-        ->assertSeeLivewire(\App\Livewire\Tables\RoleTable::class);
+        ->assertSeeLivewire(RoleTable::class);
 });
 
 test('authorized user can create role', function () {
     $user = User::factory()->create();
-    $permission = Permission::create(['name' => Permissions::CREATE_ROLES()]);
-    $role = Role::create(['name' => 'creator']);
+    $permission = Permission::firstOrCreate(['name' => Permissions::CREATE_ROLES()]);
+    $role = Role::firstOrCreate(['name' => 'creator']);
     $role->givePermissionTo($permission);
     $user->assignRole($role);
 
@@ -66,12 +65,12 @@ test('authorized user can create role', function () {
 
 test('authorized user can edit role', function () {
     $user = User::factory()->create();
-    $permission = Permission::create(['name' => Permissions::EDIT_ROLES()]);
-    $role = Role::create(['name' => 'editor']);
+    $permission = Permission::firstOrCreate(['name' => Permissions::EDIT_ROLES()]);
+    $role = Role::firstOrCreate(['name' => 'editor']);
     $role->givePermissionTo($permission);
     $user->assignRole($role);
 
-    $targetRole = Role::create(['name' => 'target-role', 'display_name' => 'Target Role']);
+    $targetRole = Role::firstOrCreate(['name' => 'target-role', 'display_name' => 'Target Role']);
 
     $this->actingAs($user)
         ->get(route('roles.edit', $targetRole->uuid))
@@ -87,16 +86,16 @@ test('authorized user can edit role', function () {
 
 test('authorized user can delete role', function () {
     $user = User::factory()->create();
-    $permission = Permission::create(['name' => Permissions::DELETE_ROLES()]);
-    $viewerPermission = Permission::create(['name' => Permissions::VIEW_ROLES()]); // Needed for redirection typically or index view
-    $role = Role::create(['name' => 'deleter']);
+    $permission = Permission::firstOrCreate(['name' => Permissions::DELETE_ROLES()]);
+    $viewerPermission = Permission::firstOrCreate(['name' => Permissions::VIEW_ROLES()]); // Needed for redirection typically or index view
+    $role = Role::firstOrCreate(['name' => 'deleter']);
     $role->givePermissionTo($permission, $viewerPermission);
     $user->assignRole($role);
 
-    $targetRole = Role::create(['name' => 'target-role']);
+    $targetRole = Role::firstOrCreate(['name' => 'target-role']);
 
     Livewire::actingAs($user)
-        ->test(\App\Livewire\Tables\RoleTable::class)
+        ->test(RoleTable::class)
         ->call('executeAction', 'delete', $targetRole->uuid);
 
     expect(Role::where('name', 'target-role')->exists())->toBeFalse();
@@ -104,20 +103,20 @@ test('authorized user can delete role', function () {
 
 test('protected roles cannot be deleted', function () {
     $user = User::factory()->create();
-    $permission = Permission::create(['name' => Permissions::DELETE_ROLES()]);
-    $viewerPermission = Permission::create(['name' => Permissions::VIEW_ROLES()]);
-    $role = Role::create(['name' => 'deleter']);
+    $permission = Permission::firstOrCreate(['name' => Permissions::DELETE_ROLES()]);
+    $viewerPermission = Permission::firstOrCreate(['name' => Permissions::VIEW_ROLES()]);
+    $role = Role::firstOrCreate(['name' => 'deleter']);
     $role->givePermissionTo($permission, $viewerPermission);
     $user->assignRole($role);
 
     // Create super_admin role manually if it doesn't exist (it should from seeding, but we are refreshing db)
     // Actually RefreshDatabase wipes it, so we need to create it to test protection logic which relies on NAME
-    $superAdmin = Role::create(['name' => \App\Constants\Auth\Roles::SUPER_ADMIN]);
+    $superAdmin = Role::firstOrCreate(['name' => Roles::SUPER_ADMIN]);
 
     Livewire::actingAs($user)
-        ->test(\App\Livewire\Tables\RoleTable::class)
+        ->test(RoleTable::class)
         ->call('executeAction', 'delete', $superAdmin->uuid);
 
     // Should still exist
-    expect(Role::where('name', \App\Constants\Auth\Roles::SUPER_ADMIN)->exists())->toBeTrue();
+    expect(Role::where('name', Roles::SUPER_ADMIN)->exists())->toBeTrue();
 });

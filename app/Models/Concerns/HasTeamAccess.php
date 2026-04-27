@@ -19,7 +19,7 @@ trait HasTeamAccess
      */
     public static function bootHasTeamAccess(): void
     {
-        static::addGlobalScope(new TeamScope);
+        static::addGlobalScope(new TeamScope());
     }
 
     /**

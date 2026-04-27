@@ -1,6 +1,5 @@
 <?php
 
-use App\Constants\Auth\Permissions;
 use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\BasePageComponent;
 use App\Services\Notifications\NotificationBuilder;
@@ -16,7 +15,6 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
-use Symfony\Component\HttpFoundation\Response;
 
 new class extends BasePageComponent {
     public ?string $pageTitle = 'settings.tabs.security';

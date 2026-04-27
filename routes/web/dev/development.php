@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -12,13 +14,13 @@ use Illuminate\Support\Facades\Route;
  * - app()->environment('local', 'development') returns true
  */
 Route::get('/test-error', function () {
-    throw new \Exception('This is a test error to verify the error handling system.');
+    throw new Exception('This is a test error to verify the error handling system.');
 })->name('test.error');
 
 Route::get('/test-error-404', function () {
-    throw new \Illuminate\Database\Eloquent\ModelNotFoundException('Test model not found');
+    throw new ModelNotFoundException('Test model not found');
 })->name('test.error.404');
 
 Route::get('/test-error-403', function () {
-    throw new \Illuminate\Auth\Access\AuthorizationException('Test authorization error');
+    throw new AuthorizationException('Test authorization error');
 })->name('test.error.403');

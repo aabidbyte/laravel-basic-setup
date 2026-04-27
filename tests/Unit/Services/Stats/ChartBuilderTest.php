@@ -1,71 +1,60 @@
 <?php
 
-namespace Tests\Unit\Services\Stats;
-
 use App\Enums\Stats\ChartType;
 use App\Services\Stats\ChartBuilder;
 use App\Services\Stats\Data\ChartPayload;
-use Tests\TestCase;
 
-class ChartBuilderTest extends TestCase
-{
-    public function test_can_instantiate_builder()
-    {
-        $builder = ChartBuilder::make();
-        $this->assertInstanceOf(ChartBuilder::class, $builder);
-    }
+test('can instantiate builder', function () {
+    $builder = ChartBuilder::make();
+    expect($builder)->toBeInstanceOf(ChartBuilder::class);
+});
 
-    public function test_can_set_type_and_build()
-    {
-        $payload = ChartBuilder::make()
-            ->type(ChartType::BAR)
-            ->build();
+test('can set type and build', function () {
+    $payload = ChartBuilder::make()
+        ->type(ChartType::BAR)
+        ->build();
 
-        $this->assertInstanceOf(ChartPayload::class, $payload);
-        $this->assertEquals(ChartType::BAR, $payload->type);
-    }
+    expect($payload)->toBeInstanceOf(ChartPayload::class);
+    expect($payload->type)->toBe(ChartType::BAR);
+});
 
-    public function test_can_add_datasets_and_labels()
-    {
-        $payload = ChartBuilder::make()
-            ->type(ChartType::LINE)
-            ->labels(['A', 'B'])
-            ->dataset('Test Data', [1, 2], ['borderColor' => 'red'])
-            ->build();
+test('can add datasets and labels', function () {
+    $payload = ChartBuilder::make()
+        ->type(ChartType::LINE)
+        ->labels(['A', 'B'])
+        ->dataset('Test Data', [1, 2], ['borderColor' => 'red'])
+        ->build();
 
-        $this->assertCount(2, $payload->labels);
-        $this->assertCount(1, $payload->datasets);
-        $this->assertEquals('Test Data', $payload->datasets[0]->label);
-        $this->assertEquals([1, 2], $payload->datasets[0]->data);
-        $this->assertEquals('red', $payload->datasets[0]->options['borderColor']);
-    }
+    expect($payload->labels)->toHaveCount(2);
+    expect($payload->datasets)->toHaveCount(1);
+    expect($payload->datasets[0]->label)->toBe('Test Data');
+    expect($payload->datasets[0]->data)->toBe([1, 2]);
+    expect($payload->datasets[0]->options['borderColor'])->toBe('red');
+});
 
-    public function test_can_merge_options()
-    {
-        $payload = ChartBuilder::make()
-            ->type(ChartType::PIE)
-            ->options(['responsive' => false])
-            ->title('My Chart')
-            ->build();
+test('can merge options', function () {
+    $payload = ChartBuilder::make()
+        ->type(ChartType::PIE)
+        ->options(['responsive' => false])
+        ->title('My Chart')
+        ->build();
 
-        $this->assertFalse($payload->options['responsive']);
-        $this->assertTrue($payload->options['plugins']['title']['display']);
-        $this->assertEquals('My Chart', $payload->options['plugins']['title']['text']);
-    }
+    expect($payload->options['responsive'])->toBeFalse();
+    expect($payload->options['plugins']['title']['display'])->toBeTrue();
+    expect($payload->options['plugins']['title']['text'])->toBe('My Chart');
+});
 
-    public function test_it_serializes_to_normalized_json()
-    {
-        $payload = ChartBuilder::make()
-            ->type(ChartType::BAR)
-            ->labels(['A'])
-            ->dataset('D1', [10])
-            ->build();
+test('it serializes to normalized json', function () {
+    $payload = ChartBuilder::make()
+        ->type(ChartType::BAR)
+        ->labels(['A'])
+        ->dataset('D1', [10])
+        ->build();
 
-        $json = \json_encode($payload);
-        $array = \json_decode($json, true);
+    $json = \json_encode($payload);
+    $array = \json_decode($json, true);
 
-        $this->assertEquals('bar', $array['type']);
-        $this->assertEquals(['A'], $array['data']['labels']);
-        $this->assertEquals('D1', $array['data']['datasets'][0]['label']);
-    }
-}
+    expect($array['type'])->toBe('bar');
+    expect($array['data']['labels'])->toBe(['A']);
+    expect($array['data']['datasets'][0]['label'])->toBe('D1');
+});

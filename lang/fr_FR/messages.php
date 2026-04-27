@@ -29,4 +29,15 @@ return [
     'common' => [
         'no_email' => 'Aucune adresse e-mail',
     ],
+
+    // Database
+    'database' => [
+        'setup' => [
+            'master_ready' => 'Base de données Master prête',
+            'tenant_ready' => 'Base de données Tenant prête',
+            'success_content' => "La base de données :type ':db' a été configurée avec succès.",
+            'failure_title' => 'Échec de la configuration de la base de données',
+            'failure_content' => "Échec de la configuration de la base de données :type ':db' : :error",
+        ],
+    ],
 ];

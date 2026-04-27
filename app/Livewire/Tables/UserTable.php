@@ -159,7 +159,9 @@ class UserTable extends Datatable
      */
     protected function getRoleOptions(): array
     {
-        return $this->memoize('filter:roles', fn () => Role::pluck('name', 'name')->toArray(),
+        return $this->memoize(
+            'filter:roles',
+            fn () => Role::pluck('name', 'name')->toArray(),
         );
     }
 

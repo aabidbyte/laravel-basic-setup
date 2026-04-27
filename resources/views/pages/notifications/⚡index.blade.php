@@ -1,7 +1,7 @@
 <?php
 
-use App\Events\Notifications\DatabaseNotificationChanged;
 use App\Enums\Ui\PlaceholderType;
+use App\Events\Notifications\DatabaseNotificationChanged;
 use App\Livewire\Bases\BasePageComponent;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;

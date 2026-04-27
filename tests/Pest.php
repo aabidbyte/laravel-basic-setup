@@ -1,5 +1,7 @@
 <?php
 
+$_SERVER['LARAVEL_PARALLEL_TESTING_WITHOUT_DATABASES'] = true;
+
 /*
 |--------------------------------------------------------------------------
 | Test Case
@@ -12,11 +14,13 @@
 */
 
 pest()->extend(Tests\TestCase::class)
-    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
-    ->beforeEach(function () {
-        $this->seed(Database\Seeders\EmailTemplateSeeder::class);
-    })
-    ->in('Feature');
+    ->in('Feature', 'Unit');
+
+use Tests\Traits\UsesMasterDb;
+use Tests\Traits\UsesTenantDb;
+
+pest()->uses(UsesMasterDb::class)->in('Feature/Master', 'Feature/Admin');
+pest()->uses(UsesTenantDb::class)->in('Feature/Tenant');
 
 /*
 |--------------------------------------------------------------------------

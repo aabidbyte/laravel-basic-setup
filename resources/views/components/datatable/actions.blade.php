@@ -30,14 +30,18 @@
                 $actionType = 'link';
                 $actionHref = $action['route'];
             } elseif ($action['hasModal']) {
-                $actionClick = "openModalOptimistically('{$action['key']}', '{$row->uuid}', " . \json_encode($action) . ')';
+                $actionClick =
+                    "openModalOptimistically('{$action['key']}', '{$row->uuid}', " . \json_encode($action) . ')';
                 $wireClick = null; // Handled by Alpine trigger
             } elseif ($action['confirm']) {
-                $actionClick = "executeActionWithConfirmation('{$action['key']}', '{$row->uuid}', false, " . \json_encode($action) . ')';
+                $actionClick =
+                    "executeActionWithConfirmation('{$action['key']}', '{$row->uuid}', false, " .
+                    \json_encode($action) .
+                    ')';
             } else {
                 $wireClick = "executeAction('{$action['key']}', '{$row->uuid}')";
             }
-@endphp
+        @endphp
 
         <x-ui.button :href="$actionHref"
                      :type="$actionHref ? null : 'button'"

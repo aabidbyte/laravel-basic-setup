@@ -4,16 +4,16 @@ use App\Constants\Auth\Permissions;
 use App\Constants\Auth\Roles;
 use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\BasePageComponent;
+use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Team;
 use App\Models\User;
-use App\Services\Notifications\NotificationBuilder;
 use App\Services\Users\UserService;
+use App\Support\Users\UserData;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
-use App\Support\Users\UserData;
-use Illuminate\Database\Eloquent\Collection;
 
 new class extends BasePageComponent {
     public ?string $pageSubtitle = null;
@@ -47,7 +47,7 @@ new class extends BasePageComponent {
     public function mount(?User $user = null): void
     {
         $this->authorizeAccess($user);
-        $this->initializeUnifiedModel($user, fn($u) => $this->loadExistingUser($u), fn() => $this->prepareNewUser());
+        $this->initializeUnifiedModel($user, fn ($u) => $this->loadExistingUser($u), fn () => $this->prepareNewUser());
 
         $this->modelTypeLabel = __('types.user');
 
@@ -120,7 +120,7 @@ new class extends BasePageComponent {
      */
     public function getTimezonesProperty(): array
     {
-        return collect(DateTimeZone::listIdentifiers())->mapWithKeys(fn($tz) => [$tz => $tz])->toArray();
+        return collect(DateTimeZone::listIdentifiers())->mapWithKeys(fn ($tz) => [$tz => $tz])->toArray();
     }
 
     /**
@@ -130,17 +130,17 @@ new class extends BasePageComponent {
      */
     public function getLocalesProperty(): array
     {
-        return collect(config('i18n.supported_locales'))->mapWithKeys(fn($data, $locale) => [$locale => $data['native_name']])->toArray();
+        return collect(config('i18n.supported_locales'))->mapWithKeys(fn ($data, $locale) => [$locale => $data['native_name']])->toArray();
     }
 
     /**
      * Get available permissions for selection.
      *
-     * @return Collection<int, \App\Models\Permission>
+     * @return Collection<int, Permission>
      */
     public function getPermissionsProperty()
     {
-        return \App\Models\Permission::orderBy('name', 'asc')->get();
+        return Permission::orderBy('name', 'asc')->get();
     }
 
     protected function rules(): array

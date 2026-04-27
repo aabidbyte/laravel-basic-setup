@@ -226,7 +226,7 @@ class BaseModal extends Component
     private function buildDialogAttributes(): ComponentAttributeBag
     {
         if ($this->transition === 'none') {
-            return new ComponentAttributeBag;
+            return new ComponentAttributeBag();
         }
 
         [$durationClass, $delayClass] = $this->buildDurationAndDelayClasses($this->transitionDuration, $this->transitionDelay);

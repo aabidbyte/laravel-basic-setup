@@ -5,9 +5,6 @@ declare(strict_types=1);
 use App\Constants\Preferences\FrontendPreferences;
 use App\Models\User;
 use App\Services\FrontendPreferences\FrontendPreferencesService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 test('guest can update theme preference', function () {
     $response = $this->post(route('preferences.theme'), [

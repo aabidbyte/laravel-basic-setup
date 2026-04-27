@@ -6,6 +6,7 @@ use App\Constants\Auth\PermissionAction;
 use App\Constants\Auth\PermissionEntity;
 use App\Enums\EmailTemplate\EmailTemplateStatus;
 use App\Enums\EmailTemplate\EmailTemplateType;
+use App\Services\EmailTemplate\EntityTypeRegistry;
 use App\Services\I18nService;
 
 return [
@@ -52,7 +53,7 @@ return [
         ),
 
         // Entity types
-        'types.$type' => fn () => resolve(\App\Services\EmailTemplate\EntityTypeRegistry::class)->getAvailableEntityTypes(),
-        'types.$entityType' => fn () => resolve(\App\Services\EmailTemplate\EntityTypeRegistry::class)->getAvailableEntityTypes(),
+        'types.$type' => fn () => resolve(EntityTypeRegistry::class)->getAvailableEntityTypes(),
+        'types.$entityType' => fn () => resolve(EntityTypeRegistry::class)->getAvailableEntityTypes(),
     ],
 ];

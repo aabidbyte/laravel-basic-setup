@@ -4,119 +4,101 @@ namespace Tests\Feature\EmailTemplate;
 
 use App\Models\User;
 use App\Services\EmailTemplate\MergeTagEngine;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
-class MergeTagTest extends TestCase
-{
-    use RefreshDatabase;
+beforeEach(function () {
+    $this->engine = app(MergeTagEngine::class);
+});
 
-    protected MergeTagEngine $engine;
+test('resolves global tags', function () {
+    $content = 'Hello from {{ app.name }}';
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->engine = app(MergeTagEngine::class);
-    }
+    // Mock app name
+    config(['app.name' => 'TestApp']);
+    // Re-initialize to pick up config change
+    $this->engine->reset();
 
-    public function test_resolves_global_tags()
-    {
-        $content = 'Hello from {{ app.name }}';
+    $resolved = $this->engine->resolve($content);
 
-        // Mock app name
-        config(['app.name' => 'TestApp']);
-        // Re-initialize to pick up config change
-        $this->engine->reset();
+    expect($resolved)->toBe('Hello from TestApp');
+});
 
-        $resolved = $this->engine->resolve($content);
+test('resolves entity tags', function () {
+    $user = User::factory()->create([
+        'name' => 'John Doe',
+        'email' => 'john@example.com',
+    ]);
 
-        $this->assertEquals('Hello from TestApp', $resolved);
-    }
+    $this->engine->setEntity('user', $user);
 
-    public function test_resolves_entity_tags()
-    {
-        $user = User::factory()->create([
-            'name' => 'John Doe',
-            'email' => 'john@example.com',
-        ]);
+    $content = 'Hello {{ user.name }}, your email is {{ user.email }}';
+    $resolved = $this->engine->resolve($content);
 
-        $this->engine->setEntity('user', $user);
+    expect($resolved)->toBe('Hello John Doe, your email is john@example.com');
+});
 
-        $content = 'Hello {{ user.name }}, your email is {{ user.email }}';
-        $resolved = $this->engine->resolve($content);
+test('resolves context variables', function () {
+    $this->engine->setContextVariable('reset_url', 'https://example.com/reset');
 
-        $this->assertEquals('Hello John Doe, your email is john@example.com', $resolved);
-    }
+    $content = 'Click here: {{ action.reset_url }}';
+    $resolved = $this->engine->resolve($content);
 
-    public function test_resolves_context_variables()
-    {
-        $this->engine->setContextVariable('reset_url', 'https://example.com/reset');
+    expect($resolved)->toBe('Click here: https://example.com/reset');
+});
 
-        $content = 'Click here: {{ action.reset_url }}';
-        $resolved = $this->engine->resolve($content);
+test('resolves mixed value context variables', function () {
+    // Test integer casting
+    $this->engine->setContextVariable('count', 60);
 
-        $this->assertEquals('Click here: https://example.com/reset', $resolved);
-    }
+    $content = 'Expires in {{ action.count }} minutes';
+    $resolved = $this->engine->resolve($content);
 
-    public function test_resolves_mixed_value_context_variables()
-    {
-        // Test integer casting
-        $this->engine->setContextVariable('count', 60);
+    expect($resolved)->toBe('Expires in 60 minutes');
+});
 
-        $content = 'Expires in {{ action.count }} minutes';
-        $resolved = $this->engine->resolve($content);
+test('handles missing tags', function () {
+    $content = 'Hello {{ user.unknown_property }}';
 
-        $this->assertEquals('Expires in 60 minutes', $resolved);
-    }
+    $user = User::factory()->create();
+    $this->engine->setEntity('user', $user);
 
-    public function test_handles_missing_tags()
-    {
-        $content = 'Hello {{ user.unknown_property }}';
+    $resolved = $this->engine->resolve($content);
 
-        $user = User::factory()->create();
-        $this->engine->setEntity('user', $user);
+    // Should return the original tag if not found
+    expect($resolved)->toBe('Hello {{ user.unknown_property }}');
+});
 
-        $resolved = $this->engine->resolve($content);
+test('handles escaped vs raw tags', function () {
+    $this->engine->setContextVariable('danger', '<script>alert(1)</script>');
 
-        // Should return the original tag if not found
-        $this->assertEquals('Hello {{ user.unknown_property }}', $resolved);
-    }
+    $escapedContent = 'Escaped: {{ action.danger }}';
+    $rawContent = 'Raw: {{{ action.danger }}}';
 
-    public function test_handles_escaped_vs_raw_tags()
-    {
-        $this->engine->setContextVariable('danger', '<script>alert(1)</script>');
+    $resolvedEscaped = $this->engine->resolve($escapedContent);
+    $resolvedRaw = $this->engine->resolve($rawContent);
 
-        $escapedContent = 'Escaped: {{ action.danger }}';
-        $rawContent = 'Raw: {{{ action.danger }}}';
+    expect($resolvedEscaped)->toBe('Escaped: &lt;script&gt;alert(1)&lt;/script&gt;');
+    expect($resolvedRaw)->toBe('Raw: <script>alert(1)</script>');
+});
 
-        $resolvedEscaped = $this->engine->resolve($escapedContent);
-        $resolvedRaw = $this->engine->resolve($rawContent);
+test('extract and validate tags', function () {
+    $content = 'Hello {{ user.name }}, click {{ action.link }} or {{ app.unknown }}';
 
-        $this->assertEquals('Escaped: &lt;script&gt;alert(1)&lt;/script&gt;', $resolvedEscaped);
-        $this->assertEquals('Raw: <script>alert(1)</script>', $resolvedRaw);
-    }
+    $extracted = $this->engine->extractTags($content);
 
-    public function test_extract_and_validate_tags()
-    {
-        $content = 'Hello {{ user.name }}, click {{ action.link }} or {{ app.unknown }}';
+    expect($extracted)->toContain('user.name')
+        ->and($extracted)->toContain('action.link')
+        ->and($extracted)->toContain('app.unknown');
 
-        $extracted = $this->engine->extractTags($content);
+    // Validation
+    // Assuming 'user' is a valid entity type and 'link' is a allowed context variable
+    $invalid = $this->engine->validateTags($content, ['user'], ['link']);
 
-        $this->assertContains('user.name', $extracted);
-        $this->assertContains('action.link', $extracted);
-        $this->assertContains('app.unknown', $extracted);
+    // 'app.unknown' should be invalid as it's not a known global tag (assuming it's not in default global tags)
+    // Actually app.unknown IS caught if not in global tags list.
+    // Let's check a definitely invalid one.
 
-        // Validation
-        // Assuming 'user' is a valid entity type and 'link' is a allowed context variable
-        $invalid = $this->engine->validateTags($content, ['user'], ['link']);
+    $contentInvalid = 'Hello {{ invalid.tag }}';
+    $invalidTags = $this->engine->validateTags($contentInvalid, ['user']);
 
-        // 'app.unknown' should be invalid as it's not a known global tag (assuming it's not in default global tags)
-        // Actually app.unknown IS caught if not in global tags list.
-        // Let's check a definitely invalid one.
-
-        $contentInvalid = 'Hello {{ invalid.tag }}';
-        $invalidTags = $this->engine->validateTags($contentInvalid, ['user']);
-
-        $this->assertContains('invalid.tag', $invalidTags);
-    }
-}
+    expect($invalidTags)->toContain('invalid.tag');
+});

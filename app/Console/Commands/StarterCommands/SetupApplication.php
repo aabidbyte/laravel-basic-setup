@@ -48,7 +48,7 @@ class SetupApplication extends Command
             }
         }
 
-        $envManager = new EnvFileManager;
+        $envManager = new EnvFileManager();
 
         // Ask if user wants to set up database
         $setupDatabase = confirm(

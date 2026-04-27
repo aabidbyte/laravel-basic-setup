@@ -24,7 +24,7 @@ use Illuminate\Support\Str;
  * All new authenticatable models should extend this class instead of
  * Illuminate\Foundation\Auth\User directly.
  *
- * @see \App\Models\Base\BaseModel For regular models
+ * @see BaseModel For regular models
  */
 abstract class BaseUserModel extends Authenticatable
 {

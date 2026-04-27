@@ -5,11 +5,8 @@ declare(strict_types=1);
 use App\Constants\Preferences\FrontendPreferences;
 use App\Models\User;
 use App\Services\FrontendPreferences\FrontendPreferencesService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Route;
-
-uses(RefreshDatabase::class);
 
 test('middleware applies locale preference', function () {
     $user = User::factory()->create([

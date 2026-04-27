@@ -2,13 +2,11 @@
 
 declare(strict_types=1);
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Tests\Support\Models\TestModel;
 
-uses(RefreshDatabase::class);
-
 beforeEach(function (): void {
+    Schema::dropIfExists('test_models');
     Schema::create('test_models', function ($table): void {
         $table->id();
         $table->uuid('uuid')->unique()->index();
@@ -16,6 +14,10 @@ beforeEach(function (): void {
         $table->timestamps();
         $table->softDeletes();
     });
+});
+
+afterEach(function (): void {
+    Schema::dropIfExists('test_models');
 });
 
 it('automatically generates a UUID when creating a model', function (): void {

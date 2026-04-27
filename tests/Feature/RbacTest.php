@@ -7,10 +7,7 @@ use App\Models\Role;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\Auth\PermissionMatrix;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
-
-uses(RefreshDatabase::class);
 
 /**
  * Tests for the custom RBAC system.
@@ -20,22 +17,22 @@ uses(RefreshDatabase::class);
  * not by team-specific roles/permissions.
  */
 test('can create a role', function () {
-    $role = Role::create(['name' => Roles::ADMIN]);
+    $role = Role::firstOrCreate(['name' => Roles::ADMIN]);
 
     expect($role->name)->toBe(Roles::ADMIN)
         ->and($role->uuid)->not->toBeNull();
 });
 
 test('can create a permission', function () {
-    $permission = Permission::create(['name' => Permissions::EDIT_USERS()]);
+    $permission = Permission::firstOrCreate(['name' => Permissions::EDIT_USERS()]);
 
     expect($permission->name)->toBe(Permissions::EDIT_USERS())
         ->and($permission->uuid)->not->toBeNull();
 });
 
 test('role can have permissions', function () {
-    $role = Role::create(['name' => Roles::ADMIN]);
-    $permission = Permission::create(['name' => Permissions::EDIT_USERS()]);
+    $role = Role::firstOrCreate(['name' => Roles::ADMIN]);
+    $permission = Permission::firstOrCreate(['name' => Permissions::EDIT_USERS()]);
 
     $role->givePermissionTo($permission);
 
@@ -45,7 +42,7 @@ test('role can have permissions', function () {
 
 test('user can be assigned a role', function () {
     $user = User::factory()->create();
-    $role = Role::create(['name' => Roles::ADMIN]);
+    $role = Role::firstOrCreate(['name' => Roles::ADMIN]);
 
     $user->assignRole($role);
 
@@ -54,8 +51,8 @@ test('user can be assigned a role', function () {
 
 test('user gets permissions through role', function () {
     $user = User::factory()->create();
-    $role = Role::create(['name' => Roles::ADMIN]);
-    $permission = Permission::create(['name' => Permissions::EDIT_USERS()]);
+    $role = Role::firstOrCreate(['name' => Roles::ADMIN]);
+    $permission = Permission::firstOrCreate(['name' => Permissions::EDIT_USERS()]);
 
     $role->givePermissionTo($permission);
     $user->assignRole($role);
@@ -65,8 +62,8 @@ test('user gets permissions through role', function () {
 
 test('user can have multiple roles', function () {
     $user = User::factory()->create();
-    $adminRole = Role::create(['name' => Roles::ADMIN]);
-    $memberRole = Role::create(['name' => Roles::MEMBER]);
+    $adminRole = Role::firstOrCreate(['name' => Roles::ADMIN]);
+    $memberRole = Role::firstOrCreate(['name' => Roles::MEMBER]);
 
     $user->assignRole($adminRole, $memberRole);
 
@@ -76,7 +73,7 @@ test('user can have multiple roles', function () {
 
 test('can check if user has any of given roles', function () {
     $user = User::factory()->create();
-    $role = Role::create(['name' => Roles::ADMIN]);
+    $role = Role::firstOrCreate(['name' => Roles::ADMIN]);
 
     $user->assignRole($role);
 
@@ -86,8 +83,8 @@ test('can check if user has any of given roles', function () {
 
 test('can check if user has all given roles', function () {
     $user = User::factory()->create();
-    $adminRole = Role::create(['name' => Roles::ADMIN]);
-    $memberRole = Role::create(['name' => Roles::MEMBER]);
+    $adminRole = Role::firstOrCreate(['name' => Roles::ADMIN]);
+    $memberRole = Role::firstOrCreate(['name' => Roles::MEMBER]);
 
     $user->assignRole($adminRole, $memberRole);
 
@@ -97,9 +94,9 @@ test('can check if user has all given roles', function () {
 
 test('can sync roles to user', function () {
     $user = User::factory()->create();
-    $adminRole = Role::create(['name' => Roles::ADMIN]);
-    $memberRole = Role::create(['name' => Roles::MEMBER]);
-    $superAdminRole = Role::create(['name' => Roles::SUPER_ADMIN]);
+    $adminRole = Role::firstOrCreate(['name' => Roles::ADMIN]);
+    $memberRole = Role::firstOrCreate(['name' => Roles::MEMBER]);
+    $superAdminRole = Role::firstOrCreate(['name' => Roles::SUPER_ADMIN]);
 
     $user->assignRole($adminRole);
     expect($user->hasRole(Roles::ADMIN))->toBeTrue();
@@ -114,7 +111,7 @@ test('can sync roles to user', function () {
 
 test('can remove role from user', function () {
     $user = User::factory()->create();
-    $role = Role::create(['name' => Roles::ADMIN]);
+    $role = Role::firstOrCreate(['name' => Roles::ADMIN]);
 
     $user->assignRole($role);
     expect($user->hasRole(Roles::ADMIN))->toBeTrue();
@@ -125,9 +122,9 @@ test('can remove role from user', function () {
 
 test('can get all permissions for user', function () {
     $user = User::factory()->create();
-    $role = Role::create(['name' => Roles::ADMIN]);
-    $permission1 = Permission::create(['name' => Permissions::EDIT_USERS()]);
-    $permission2 = Permission::create(['name' => Permissions::DELETE_USERS()]);
+    $role = Role::firstOrCreate(['name' => Roles::ADMIN]);
+    $permission1 = Permission::firstOrCreate(['name' => Permissions::EDIT_USERS()]);
+    $permission2 = Permission::firstOrCreate(['name' => Permissions::DELETE_USERS()]);
 
     $role->givePermissionTo($permission1, $permission2);
     $user->assignRole($role);
@@ -140,9 +137,9 @@ test('can get all permissions for user', function () {
 });
 
 test('role permissions can be synced', function () {
-    $role = Role::create(['name' => Roles::ADMIN]);
-    $permission1 = Permission::create(['name' => Permissions::EDIT_USERS()]);
-    $permission2 = Permission::create(['name' => Permissions::DELETE_USERS()]);
+    $role = Role::firstOrCreate(['name' => Roles::ADMIN]);
+    $permission1 = Permission::firstOrCreate(['name' => Permissions::EDIT_USERS()]);
+    $permission2 = Permission::firstOrCreate(['name' => Permissions::DELETE_USERS()]);
 
     $role->givePermissionTo($permission1);
     expect($role->hasPermissionTo(Permissions::EDIT_USERS()))->toBeTrue();
@@ -155,8 +152,8 @@ test('role permissions can be synced', function () {
 });
 
 test('can revoke permission from role', function () {
-    $role = Role::create(['name' => Roles::ADMIN]);
-    $permission = Permission::create(['name' => Permissions::EDIT_USERS()]);
+    $role = Role::firstOrCreate(['name' => Roles::ADMIN]);
+    $permission = Permission::firstOrCreate(['name' => Permissions::EDIT_USERS()]);
 
     $role->givePermissionTo($permission);
     expect($role->hasPermissionTo(Permissions::EDIT_USERS()))->toBeTrue();
@@ -188,7 +185,7 @@ test('user can belong to multiple teams', function () {
 
 test('super admin role bypass works via Gate::before', function () {
     $user = User::factory()->create();
-    $superAdminRole = Role::create(['name' => Roles::SUPER_ADMIN]);
+    $superAdminRole = Role::firstOrCreate(['name' => Roles::SUPER_ADMIN]);
 
     $user->assignRole($superAdminRole);
 
@@ -199,7 +196,7 @@ test('super admin role bypass works via Gate::before', function () {
 });
 
 test('permission matrix generates correct permission names', function () {
-    $matrix = new PermissionMatrix;
+    $matrix = new PermissionMatrix();
 
     $permissionNames = $matrix->getAllPermissionNames();
 
@@ -210,7 +207,7 @@ test('permission matrix generates correct permission names', function () {
 });
 
 test('permission matrix returns correct actions for entity', function () {
-    $matrix = new PermissionMatrix;
+    $matrix = new PermissionMatrix();
 
     $userActions = $matrix->getActionsForEntity('users');
 
@@ -223,7 +220,7 @@ test('permission matrix returns correct actions for entity', function () {
 });
 
 test('permission matrix correctly identifies entity-action support', function () {
-    $matrix = new PermissionMatrix;
+    $matrix = new PermissionMatrix();
 
     // Users support activate
     expect($matrix->entitySupportsAction('users', 'activate'))->toBeTrue();

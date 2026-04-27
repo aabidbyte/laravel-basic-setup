@@ -8,6 +8,7 @@ use App\Enums\EmailTemplate\EmailTemplateStatus;
 use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\BasePageComponent;
 use App\Models\EmailTemplate\EmailTemplate;
+use App\Services\EmailTemplate\EmailTemplateService;
 use App\Services\Notifications\NotificationBuilder;
 
 new class extends BasePageComponent {
@@ -37,7 +38,7 @@ new class extends BasePageComponent {
     public function mount(?EmailTemplate $template = null): void
     {
         $this->authorizeAccess($template);
-        $this->initializeUnifiedModel($template, fn($t) => $this->loadExistingTemplate($t), fn() => $this->prepareNewTemplate());
+        $this->initializeUnifiedModel($template, fn ($t) => $this->loadExistingTemplate($t), fn () => $this->prepareNewTemplate());
 
         $this->modelTypeLabel = $this->isLayout ? __('types.email_layout') : __('types.email_content');
 
@@ -151,7 +152,7 @@ new class extends BasePageComponent {
             $this->persistEmailTemplate(EmailTemplateStatus::DRAFT);
         }
 
-        $service = resolve(\App\Services\EmailTemplate\EmailTemplateService::class);
+        $service = resolve(EmailTemplateService::class);
         $service->saveDraft($this->model, $this->translations);
 
         $this->handleSuccess($this->model, 'email_templates.messages.draft_saved');
@@ -167,7 +168,7 @@ new class extends BasePageComponent {
             $this->persistEmailTemplate(EmailTemplateStatus::DRAFT);
         }
 
-        $service = resolve(\App\Services\EmailTemplate\EmailTemplateService::class);
+        $service = resolve(EmailTemplateService::class);
 
         // Save draft first to ensure latest content is used
         $service->saveDraft($this->model, $this->translations);
@@ -180,7 +181,7 @@ new class extends BasePageComponent {
     {
         $this->authorize(Permissions::EDIT_BUILDER_EMAIL_TEMPLATES());
 
-        $service = resolve(\App\Services\EmailTemplate\EmailTemplateService::class);
+        $service = resolve(EmailTemplateService::class);
         $service->restoreToDraft($this->model);
 
         // Reload model and form
@@ -272,7 +273,7 @@ new class extends BasePageComponent {
 
     public function getSupportedLocalesProperty(): array
     {
-        return resolve(\App\Services\I18nService::class)->getSupportedLocales();
+        return resolve(App\Services\I18nService::class)->getSupportedLocales();
     }
 
     public function getCancelUrlProperty(): string

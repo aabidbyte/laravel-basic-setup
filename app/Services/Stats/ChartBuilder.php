@@ -21,7 +21,7 @@ class ChartBuilder
 
     public static function make(): self
     {
-        return new self;
+        return new self();
     }
 
     public function type(ChartType $type): self

@@ -8,7 +8,7 @@ use Carbon\Carbon;
  * Format a date according to the locale's format.
  * Uses Carbon's isoFormat('L') for localized date (e.g., 12/31/2024 or 31/12/2024).
  *
- * @param  \Carbon\Carbon|\DateTime|string|null  $date
+ * @param  Carbon|DateTime|string|null  $date
  * @param  string|null  $locale  Locale override
  * @param  string|null  $timezone  Timezone override (for display only)
  * @return string Formatted date string
@@ -21,7 +21,7 @@ function formatDate($date, ?string $locale = null, ?string $timezone = null): st
 
     try {
         $carbon = Carbon::parse($date);
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
         return '';
     }
 
@@ -46,7 +46,7 @@ function formatDate($date, ?string $locale = null, ?string $timezone = null): st
  * Format a time according to the locale's format.
  * Uses Carbon's isoFormat('LT') for localized time (e.g., 8:30 PM or 20:30).
  *
- * @param  \Carbon\Carbon|\DateTime|string|null  $time
+ * @param  Carbon|DateTime|string|null  $time
  * @param  string|null  $locale  Locale override
  * @param  string|null  $timezone  Timezone override (for display only)
  * @return string Formatted time string
@@ -59,7 +59,7 @@ function formatTime($time, ?string $locale = null, ?string $timezone = null): st
 
     try {
         $carbon = Carbon::parse($time);
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
         return '';
     }
 
@@ -80,7 +80,7 @@ function formatTime($time, ?string $locale = null, ?string $timezone = null): st
  * Format a datetime according to the locale's format.
  * Uses Carbon's isoFormat('L LT') for localized date and time.
  *
- * @param  \Carbon\Carbon|\DateTime|string|null  $datetime
+ * @param  Carbon|DateTime|string|null  $datetime
  * @param  string|null  $locale  Locale override
  * @param  string|null  $timezone  Timezone override (for display only)
  * @return string Formatted datetime string
@@ -93,7 +93,7 @@ function formatDateTime($datetime, ?string $locale = null, ?string $timezone = n
 
     try {
         $carbon = Carbon::parse($datetime);
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
         return '';
     }
 

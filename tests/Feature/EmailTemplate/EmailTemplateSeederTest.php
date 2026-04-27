@@ -1,80 +1,64 @@
 <?php
 
-namespace Tests\Feature\EmailTemplate;
-
 use App\Enums\EmailTemplate\EmailTemplateStatus;
 use App\Models\EmailTemplate\EmailTemplate;
-use Database\Seeders\EmailTemplateSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
+use Database\Seeders\Masters\CommonSeeders\Production\EmailTemplateSeeder;
 
-class EmailTemplateSeederTest extends TestCase
-{
-    use RefreshDatabase;
+beforeEach(function () {
+    EmailTemplate::query()->delete();
+});
 
-    protected function setUp(): void
-    {
-        parent::setUp();
+test('it seeds layouts and contents', function () {
+    $this->seed(EmailTemplateSeeder::class);
 
-        // Ensure we have a clean slate
-        EmailTemplate::query()->delete();
+    // Check Layouts exist (is_layout = true)
+    $this->assertDatabaseHas('email_templates', [
+        'name' => 'default',
+        'is_layout' => 1,
+        'is_default' => 1,
+    ]);
+
+    // Check at least one layout exists
+    $layouts = EmailTemplate::query()->layouts()->get();
+    expect($layouts->count())->toBeGreaterThan(0);
+
+    // Check Contents exist (is_layout = false)
+    $contents = EmailTemplate::query()->contents()->get();
+    expect($contents->count())->toBeGreaterThan(0);
+
+    $content = $contents->first();
+    // Reload with relationships to avoid lazy loading violation
+    $content = $content->fresh(['layout']);
+    expect($content->layout)->not->toBeNull();
+    expect($content->status)->toBe(EmailTemplateStatus::PUBLISHED);
+    expect($content->is_system)->toBeTrue();
+    expect($content->is_layout)->toBeFalse();
+
+    // Check translations are created
+    expect($content->translations->count())->toBeGreaterThan(0);
+});
+
+test('layouts have correct structure', function () {
+    $this->seed(EmailTemplateSeeder::class);
+
+    $layout = EmailTemplate::query()->layouts()->where('is_default', true)->first();
+
+    expect($layout)->not->toBeNull();
+    expect($layout->is_layout)->toBeTrue();
+    expect($layout->is_system)->toBeTrue();
+    expect($layout->status)->toBe(EmailTemplateStatus::PUBLISHED);
+    expect($layout->translations->count())->toBeGreaterThan(0);
+});
+
+test('contents reference layouts', function () {
+    $this->seed(EmailTemplateSeeder::class);
+
+    $contentWithLayout = EmailTemplate::query()->contents()
+        ->whereNotNull('layout_id')
+        ->first();
+
+    if ($contentWithLayout) {
+        expect($contentWithLayout->layout)->not->toBeNull();
+        expect($contentWithLayout->layout->is_layout)->toBeTrue();
     }
-
-    public function test_it_seeds_layouts_and_contents(): void
-    {
-        $this->seed(EmailTemplateSeeder::class);
-
-        // Check Layouts exist (is_layout = true)
-        $this->assertDatabaseHas('email_templates', [
-            'name' => 'default',
-            'is_layout' => 1,
-            'is_default' => 1,
-        ]);
-
-        // Check at least one layout exists
-        $layouts = EmailTemplate::query()->layouts()->get();
-        $this->assertGreaterThan(0, $layouts->count());
-
-        // Check Contents exist (is_layout = false)
-        $contents = EmailTemplate::query()->contents()->get();
-        $this->assertGreaterThan(0, $contents->count());
-
-        $content = $contents->first();
-        // Reload with relationships to avoid lazy loading violation
-        $content = $content->fresh(['layout']);
-        $this->assertNotNull($content->layout);
-        $this->assertEquals(EmailTemplateStatus::PUBLISHED, $content->status);
-        $this->assertTrue($content->is_system);
-        $this->assertFalse($content->is_layout);
-
-        // Check translations are created
-        $this->assertGreaterThan(0, $content->translations->count());
-    }
-
-    public function test_layouts_have_correct_structure(): void
-    {
-        $this->seed(EmailTemplateSeeder::class);
-
-        $layout = EmailTemplate::query()->layouts()->where('is_default', true)->first();
-
-        $this->assertNotNull($layout);
-        $this->assertTrue($layout->is_layout);
-        $this->assertTrue($layout->is_system);
-        $this->assertEquals(EmailTemplateStatus::PUBLISHED, $layout->status);
-        $this->assertGreaterThan(0, $layout->translations->count());
-    }
-
-    public function test_contents_reference_layouts(): void
-    {
-        $this->seed(EmailTemplateSeeder::class);
-
-        $contentWithLayout = EmailTemplate::query()->contents()
-            ->whereNotNull('layout_id')
-            ->first();
-
-        if ($contentWithLayout) {
-            $this->assertNotNull($contentWithLayout->layout);
-            $this->assertTrue($contentWithLayout->layout->is_layout);
-        }
-    }
-}
+});

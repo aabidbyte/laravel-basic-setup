@@ -3,22 +3,20 @@
 declare(strict_types=1);
 
 use App\Constants\Auth\Permissions;
+use App\Mail\UserActivationMail;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Mail\MailpitClient;
 use App\Services\Users\UserService;
 use App\Support\Users\UserData;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     // Create required permissions and roles
-    $createPerm = Permission::create(['name' => Permissions::CREATE_USERS()]);
-    $editPerm = Permission::create(['name' => Permissions::EDIT_USERS()]);
-    $this->adminRole = Role::create(['name' => 'admin']);
+    $createPerm = Permission::firstOrCreate(['name' => Permissions::CREATE_USERS()]);
+    $editPerm = Permission::firstOrCreate(['name' => Permissions::EDIT_USERS()]);
+    $this->adminRole = Role::firstOrCreate(['name' => 'admin']);
     $this->adminRole->givePermissionTo($createPerm, $editPerm);
 
     // Create admin user
@@ -27,7 +25,7 @@ beforeEach(function () {
     $this->actingAs($this->admin);
 
     // Initialize Mailpit client
-    $this->mailpit = new MailpitClient;
+    $this->mailpit = new MailpitClient();
 });
 
 describe('User CRUD Email Verification', function () {
@@ -50,7 +48,7 @@ describe('User CRUD Email Verification', function () {
         expect($user->is_active)->toBeFalse();
 
         // Verify mail was queued (UserActivationMail implements ShouldQueue)
-        Mail::assertQueued(\App\Mail\UserActivationMail::class, function ($mail) {
+        Mail::assertQueued(UserActivationMail::class, function ($mail) {
             return $mail->hasTo('fake-mail@example.com');
         });
     });

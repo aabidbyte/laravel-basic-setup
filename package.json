@@ -8,7 +8,7 @@
         "format:php": "composer run pint",
         "format:blade": "blade-formatter \"resources/views/**/*.blade.php\" \"app/**/*.blade.php\" -w",
         "format:js": "prettier --write \"resources/js/**/*.js\"",
-        "format:all": "npm run format:php && npm run format:blade && npm run format:js"
+        "format:all": "npm run format:js && npm run format:blade && npm run format:php"
     },
     "dependencies": {
         "@alpinejs/anchor": "^3.15.3",

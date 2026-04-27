@@ -10,19 +10,16 @@ use App\Models\Team;
 use App\Models\User;
 use App\Services\Users\UserService;
 use App\Support\Users\UserData;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 
-uses(RefreshDatabase::class);
-
 beforeEach(function () {
     // Create permissions
-    Permission::create(['name' => Permissions::CREATE_USERS()]);
-    Permission::create(['name' => Permissions::EDIT_USERS()]);
+    Permission::firstOrCreate(['name' => Permissions::CREATE_USERS()]);
+    Permission::firstOrCreate(['name' => Permissions::EDIT_USERS()]);
 
     // Create a role with permissions
-    $adminRole = Role::create(['name' => 'admin']);
+    $adminRole = Role::firstOrCreate(['name' => 'admin']);
     $adminRole->givePermissionTo(Permissions::CREATE_USERS(), Permissions::EDIT_USERS());
 
     // Create a super-admin user to act as the creator
@@ -81,8 +78,8 @@ describe('UserService', function () {
 
         it('assigns roles to user', function () {
             // Create roles
-            $writerRole = Role::create(['name' => 'writer']);
-            $editorRole = Role::create(['name' => 'editor']);
+            $writerRole = Role::firstOrCreate(['name' => 'writer']);
+            $editorRole = Role::firstOrCreate(['name' => 'editor']);
 
             $userService = app(UserService::class);
 
@@ -127,7 +124,7 @@ describe('UserService', function () {
                     'username' => 'noemaila',
                 ],
                 sendActivation: true,
-            )))->toThrow(\InvalidArgumentException::class);
+            )))->toThrow(InvalidArgumentException::class);
         });
     });
 
@@ -169,8 +166,8 @@ describe('UserService', function () {
 
         it('updates user roles', function () {
             // Create roles
-            $writerRole = Role::create(['name' => 'writer']);
-            $editorRole = Role::create(['name' => 'editor']);
+            $writerRole = Role::firstOrCreate(['name' => 'writer']);
+            $editorRole = Role::firstOrCreate(['name' => 'editor']);
 
             $user = User::factory()->create();
             $user->assignRole($writerRole);
@@ -208,7 +205,7 @@ describe('UserService', function () {
             $userService = app(UserService::class);
 
             // Assign super admin role to acting user
-            $superAdminRole = Role::create(['name' => Roles::SUPER_ADMIN]);
+            $superAdminRole = Role::firstOrCreate(['name' => Roles::SUPER_ADMIN]);
             $this->admin->assignRole($superAdminRole);
 
             $userService->updateUser($user, UserData::forUpdate(['password' => 'new_password']));

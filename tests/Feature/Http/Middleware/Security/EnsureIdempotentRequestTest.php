@@ -5,11 +5,8 @@ declare(strict_types=1);
 use App\Http\Middleware\Security\EnsureIdempotentRequest;
 use App\Models\User;
 use App\Services\Security\IdempotencyService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     // Enable idempotency for tests

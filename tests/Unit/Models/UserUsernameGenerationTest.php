@@ -1,11 +1,7 @@
 <?php
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
-use Tests\TestCase;
-
-uses(TestCase::class, RefreshDatabase::class);
 
 test('it auto-generates username from email if not provided', function () {
     $user = User::factory()->create([

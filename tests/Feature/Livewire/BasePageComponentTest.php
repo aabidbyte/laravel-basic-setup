@@ -6,8 +6,7 @@ use App\Livewire\Bases\BasePageComponent;
 use Illuminate\Support\Facades\View;
 
 test('BasePageComponent shares page title via View::share', function () {
-    $component = new class extends BasePageComponent
-    {
+    $component = new class extends BasePageComponent {
         public ?string $pageTitle = 'Test Page Title';
     };
 
@@ -17,8 +16,7 @@ test('BasePageComponent shares page title via View::share', function () {
 });
 
 test('BasePageComponent translates page title when it contains dots', function () {
-    $component = new class extends BasePageComponent
-    {
+    $component = new class extends BasePageComponent {
         public ?string $pageTitle = 'ui.pages.dashboard';
     };
 
@@ -32,8 +30,7 @@ test('BasePageComponent translates page title when it contains dots', function (
 });
 
 test('BasePageComponent uses plain string when page title does not contain dots', function () {
-    $component = new class extends BasePageComponent
-    {
+    $component = new class extends BasePageComponent {
         public ?string $pageTitle = 'Plain Title';
     };
 
@@ -43,8 +40,7 @@ test('BasePageComponent uses plain string when page title does not contain dots'
 });
 
 test('BasePageComponent falls back to app name when page title is null', function () {
-    $component = new class extends BasePageComponent
-    {
+    $component = new class extends BasePageComponent {
         public ?string $pageTitle = null;
     };
 
@@ -54,8 +50,7 @@ test('BasePageComponent falls back to app name when page title is null', functio
 });
 
 test('BasePageComponent falls back to app name when page title is empty string', function () {
-    $component = new class extends BasePageComponent
-    {
+    $component = new class extends BasePageComponent {
         public ?string $pageTitle = '';
     };
 
@@ -65,8 +60,7 @@ test('BasePageComponent falls back to app name when page title is empty string',
 });
 
 test('BasePageComponent shares page subtitle via View::share', function () {
-    $component = new class extends BasePageComponent
-    {
+    $component = new class extends BasePageComponent {
         public ?string $pageTitle = 'Test Page';
 
         public ?string $pageSubtitle = 'Test Subtitle';
@@ -78,8 +72,7 @@ test('BasePageComponent shares page subtitle via View::share', function () {
 });
 
 test('BasePageComponent translates page subtitle when it contains dots', function () {
-    $component = new class extends BasePageComponent
-    {
+    $component = new class extends BasePageComponent {
         public ?string $pageTitle = 'Test Page';
 
         public ?string $pageSubtitle = 'ui.pages.dashboard.description';
@@ -96,8 +89,7 @@ test('BasePageComponent translates page subtitle when it contains dots', functio
 });
 
 test('BasePageComponent returns null for subtitle when not set', function () {
-    $component = new class extends BasePageComponent
-    {
+    $component = new class extends BasePageComponent {
         public ?string $pageTitle = 'Test Page';
 
         public ?string $pageSubtitle = null;
@@ -109,8 +101,7 @@ test('BasePageComponent returns null for subtitle when not set', function () {
 });
 
 test('BasePageComponent returns null for subtitle when empty string', function () {
-    $component = new class extends BasePageComponent
-    {
+    $component = new class extends BasePageComponent {
         public ?string $pageTitle = 'Test Page';
 
         public ?string $pageSubtitle = '';
@@ -122,8 +113,7 @@ test('BasePageComponent returns null for subtitle when empty string', function (
 });
 
 test('BasePageComponent updates shared title when pageTitle property is updated', function () {
-    $component = new class extends BasePageComponent
-    {
+    $component = new class extends BasePageComponent {
         public ?string $pageTitle = 'Initial Title';
     };
 
@@ -137,8 +127,7 @@ test('BasePageComponent updates shared title when pageTitle property is updated'
 });
 
 test('BasePageComponent updates shared subtitle when pageSubtitle property is updated', function () {
-    $component = new class extends BasePageComponent
-    {
+    $component = new class extends BasePageComponent {
         public ?string $pageTitle = 'Test Page';
 
         public ?string $pageSubtitle = 'Initial Subtitle';

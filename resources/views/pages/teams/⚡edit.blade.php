@@ -4,7 +4,6 @@ use App\Constants\Auth\Permissions;
 use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\BasePageComponent;
 use App\Models\Team;
-use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Validation\Rule;
 
 new class extends BasePageComponent {
@@ -23,7 +22,7 @@ new class extends BasePageComponent {
     public function mount(?Team $team = null): void
     {
         $this->authorizeAccess($team);
-        $this->initializeUnifiedModel($team, fn($t) => $this->loadExistingTeam($t), fn() => $this->prepareNewTeam());
+        $this->initializeUnifiedModel($team, fn ($t) => $this->loadExistingTeam($t), fn () => $this->prepareNewTeam());
         $this->updatePageHeader();
     }
 

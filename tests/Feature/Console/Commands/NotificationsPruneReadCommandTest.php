@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 test('prunes read notifications older than 30 days by default', function () {
     $user = User::factory()->create();
 
     // Create old read notification (35 days ago)
     $oldNotification = DB::table('notifications')->insert([
-        'uuid' => \Illuminate\Support\Str::uuid()->toString(),
+        'uuid' => Str::uuid()->toString(),
         'type' => 'App\Notifications\GeneralNotification',
         'notifiable_type' => User::class,
         'notifiable_id' => $user->id,
@@ -22,7 +23,7 @@ test('prunes read notifications older than 30 days by default', function () {
 
     // Create recent read notification (10 days ago)
     $recentNotification = DB::table('notifications')->insert([
-        'uuid' => \Illuminate\Support\Str::uuid()->toString(),
+        'uuid' => Str::uuid()->toString(),
         'type' => 'App\Notifications\GeneralNotification',
         'notifiable_type' => User::class,
         'notifiable_id' => $user->id,
@@ -34,7 +35,7 @@ test('prunes read notifications older than 30 days by default', function () {
 
     // Create unread notification (should not be pruned)
     $unreadNotification = DB::table('notifications')->insert([
-        'uuid' => \Illuminate\Support\Str::uuid()->toString(),
+        'uuid' => Str::uuid()->toString(),
         'type' => 'App\Notifications\GeneralNotification',
         'notifiable_type' => User::class,
         'notifiable_id' => $user->id,
@@ -62,7 +63,7 @@ test('allows custom days option', function () {
 
     // Create notification read 15 days ago
     DB::table('notifications')->insert([
-        'uuid' => \Illuminate\Support\Str::uuid()->toString(),
+        'uuid' => Str::uuid()->toString(),
         'type' => 'App\Notifications\GeneralNotification',
         'notifiable_type' => User::class,
         'notifiable_id' => $user->id,

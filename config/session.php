@@ -17,7 +17,7 @@ return [
     |
     */
 
-    'driver' => 'database',
+    'driver' => env('SESSION_DRIVER', isTesting() ? 'array' : 'database'),
 
     /*
     |--------------------------------------------------------------------------

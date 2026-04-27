@@ -16,7 +16,8 @@
                      :show-close-button="$modalType !== 'confirm'">
 
         {{-- Loading State --}}
-        <div x-show="isLoading" x-cloak>
+        <div x-show="isLoading"
+             x-cloak>
             <x-ui.loading></x-ui.loading>
         </div>
 

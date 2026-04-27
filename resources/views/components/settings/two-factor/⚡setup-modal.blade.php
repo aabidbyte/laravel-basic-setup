@@ -1,11 +1,11 @@
 <?php
 
+use App\Livewire\Bases\LivewireBaseComponent;
 use App\Services\Notifications\NotificationBuilder;
+use Illuminate\Support\Facades\Auth;
 use Laravel\Fortify\Actions\ConfirmTwoFactorAuthentication;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Validate;
-use App\Livewire\Bases\LivewireBaseComponent;
-use Illuminate\Support\Facades\Auth;
 
 new class extends LivewireBaseComponent {
     #[Locked]

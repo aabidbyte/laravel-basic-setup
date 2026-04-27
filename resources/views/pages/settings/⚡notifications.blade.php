@@ -2,7 +2,6 @@
 
 use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\BasePageComponent;
-use App\Models\User;
 use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Support\Facades\Auth;
 

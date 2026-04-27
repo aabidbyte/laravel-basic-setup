@@ -16,7 +16,7 @@
 
   "noMultipleEmptyLines": true,
 
-  "noPhpSyntaxCheck": false,
+  "noPhpSyntaxCheck": true,
   "noSingleQuote": false,
   "noTrailingCommaPhp": false,
 

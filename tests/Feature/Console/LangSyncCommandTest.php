@@ -75,7 +75,7 @@ test('lang:sync command orchestrates strict services correctly', function () {
 
     // Run command
     $input = new \Symfony\Component\Console\Input\ArrayInput(['--write' => false], $command->getDefinition());
-    $output = new \Symfony\Component\Console\Output\BufferedOutput;
+    $output = new \Symfony\Component\Console\Output\BufferedOutput();
     $command->run($input, $output);
 });
 
@@ -116,6 +116,6 @@ test('lang:sync prunes when requested', function () {
 
     // Run command
     $input = new \Symfony\Component\Console\Input\ArrayInput(['--prune' => true], $command->getDefinition());
-    $output = new \Symfony\Component\Console\Output\BufferedOutput;
+    $output = new \Symfony\Component\Console\Output\BufferedOutput();
     $command->run($input, $output);
 });

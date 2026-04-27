@@ -117,7 +117,7 @@ new class extends BasePageComponent {
         $originalSlug = $slug;
         $counter = 1;
 
-        while (Role::where('name', $slug)->when($currentName, fn($q) => $q->where('name', '!=', $currentName))->exists()) {
+        while (Role::where('name', $slug)->when($currentName, fn ($q) => $q->where('name', '!=', $currentName))->exists()) {
             $slug = $originalSlug . '_' . $counter;
             $counter++;
         }

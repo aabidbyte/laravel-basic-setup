@@ -12,8 +12,8 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  *
  * All new pivot models should extend this class instead of Eloquent\Pivot directly.
  *
- * @see \App\Models\Base\BaseModel For regular models
- * @see \App\Models\Base\BaseUserModel For authenticatable models
+ * @see BaseModel For regular models
+ * @see BaseUserModel For authenticatable models
  */
 abstract class BasePivotModel extends Pivot
 {

@@ -345,6 +345,6 @@ class User extends BaseUserModel implements MustVerifyEmail
      */
     public function sendEmailVerificationNotification()
     {
-        $this->notify(new VerifyEmail);
+        $this->notify(new VerifyEmail());
     }
 }

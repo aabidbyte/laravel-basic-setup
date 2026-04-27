@@ -39,4 +39,15 @@ return [
     'common' => [
         'no_email' => 'No email address',
     ],
+
+    // Database
+    'database' => [
+        'setup' => [
+            'master_ready' => 'Master Database Ready',
+            'tenant_ready' => 'Tenant Database Ready',
+            'success_content' => "The :type database ':db' has been successfully set up.",
+            'failure_title' => 'Database Setup Failed',
+            'failure_content' => "Failed to set up :type database ':db': :error",
+        ],
+    ],
 ];

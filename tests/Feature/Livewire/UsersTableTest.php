@@ -6,15 +6,12 @@ use App\Constants\Auth\Permissions;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     // Create permission and role
-    $permission = Permission::create(['name' => Permissions::VIEW_USERS()]);
-    $viewerRole = Role::create(['name' => 'viewer']);
+    $permission = Permission::firstOrCreate(['name' => Permissions::VIEW_USERS()]);
+    $viewerRole = Role::firstOrCreate(['name' => 'viewer']);
     $viewerRole->givePermissionTo($permission);
 
     $this->user = User::factory()->create();

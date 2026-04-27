@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 use App\Models\EmailTemplate\EmailTemplate;
 use App\Services\EmailTemplate\EmailRenderer;
+use App\Services\Notifications\NotificationBuilder;
 use Livewire\Attributes\Lazy;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
-use App\Services\Notifications\NotificationBuilder;
 
 new #[Lazy] class extends Component {
     #[Locked]

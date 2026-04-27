@@ -29,7 +29,7 @@ class LevelSpecificLogChannelFactory
         );
 
         $logger->pushHandler($filteredHandler);
-        $logger->pushProcessor(new PsrLogMessageProcessor);
+        $logger->pushProcessor(new PsrLogMessageProcessor());
 
         return $logger;
     }

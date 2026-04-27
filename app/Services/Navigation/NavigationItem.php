@@ -54,7 +54,7 @@ class NavigationItem implements Arrayable
      */
     public static function make(): static
     {
-        return new static;
+        return new static();
     }
 
     /**

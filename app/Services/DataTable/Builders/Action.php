@@ -115,7 +115,7 @@ class Action
      */
     public static function make(string $key = '', string $label = ''): self
     {
-        $instance = new self;
+        $instance = new self();
         $instance->key = $key;
         $instance->label = $label;
 

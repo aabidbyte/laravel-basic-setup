@@ -4,11 +4,8 @@ use App\Constants\Auth\Permissions;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
 use Livewire\Livewire;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $permission = Permission::firstOrCreate(['name' => Permissions::VIEW_USERS()]);
@@ -146,8 +143,8 @@ it('detects row click opens modal when action has modal', function () {
 });
 
 it('returns false for rowClickOpensModal when no rows exist', function () {
-    // Clear all users
-    User::query()->forceDelete();
+    // Clear all users except the admin
+    User::where('id', '!=', $this->admin->id)->forceDelete();
 
     $component = Livewire::actingAs($this->admin)
         ->test('tables.user-table');

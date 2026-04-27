@@ -27,7 +27,7 @@ class GenerateAppKeys extends Command
      */
     public function handle(): int
     {
-        $envManager = new EnvFileManager;
+        $envManager = new EnvFileManager();
 
         // Generate APP_KEY if not set
         $appKey = config('app.key');

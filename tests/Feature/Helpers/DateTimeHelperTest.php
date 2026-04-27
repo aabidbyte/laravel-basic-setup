@@ -128,7 +128,7 @@ test('formatDate falls back to default locale for unsupported locale', function 
 });
 
 test('formatDate uses user timezone preference for display', function () {
-    $preferences = app(\App\Services\FrontendPreferences\FrontendPreferencesService::class);
+    $preferences = app(FrontendPreferencesService::class);
     $preferences->setTimezone('America/New_York');
 
     // Date stored in UTC (app timezone) - use noon to avoid day boundary issues
@@ -142,7 +142,7 @@ test('formatDate uses user timezone preference for display', function () {
 });
 
 test('formatTime uses user timezone preference for display', function () {
-    $preferences = app(\App\Services\FrontendPreferences\FrontendPreferencesService::class);
+    $preferences = app(FrontendPreferencesService::class);
     $preferences->setTimezone('America/New_York');
 
     // Time stored in UTC (app timezone)
@@ -156,7 +156,7 @@ test('formatTime uses user timezone preference for display', function () {
 });
 
 test('formatDateTime uses user timezone preference for display', function () {
-    $preferences = app(\App\Services\FrontendPreferences\FrontendPreferencesService::class);
+    $preferences = app(FrontendPreferencesService::class);
     $preferences->setTimezone('America/New_York');
 
     // DateTime stored in UTC (app timezone)

@@ -22,3 +22,4 @@ yarn-error.log
 /.vscode
 /.zed
 .cursor/debug.log
+.php-cs-fixer.cache

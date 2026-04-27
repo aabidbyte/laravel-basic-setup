@@ -99,7 +99,7 @@ class ColumnTagDiscovery
      */
     public function getTagsForModel(string $modelClass, string $entityType): array
     {
-        $model = new $modelClass;
+        $model = new $modelClass();
         $table = $model->getTable();
         $columns = Schema::getColumnListing($table);
 

@@ -158,7 +158,7 @@ class Permissions
     private static function getMatrix(): PermissionMatrix
     {
         if (self::$matrix === null) {
-            self::$matrix = new PermissionMatrix;
+            self::$matrix = new PermissionMatrix();
         }
 
         return self::$matrix;

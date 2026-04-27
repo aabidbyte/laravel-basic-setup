@@ -48,7 +48,9 @@
 *   **Livewire Entangle:** When entangling nested array keys (`$wire.entangle('filters.role')`), the key MUST exist in the backend array initialization (e.g., in `mount()`). Use `mountHasDatatableLivewireFilters` for DataTables.
 
 ### Testing
-*   **Framework:** Pest (v4)
+*   **Framework:** Pest (v4) MUST BE USED EXCLUSIVELY.
+    *   **ALL tests MUST use Pest's functional API** (`it()` or `test()`).
+    *   **Class-based tests extending `TestCase` are STRICTLY FORBIDDEN.**
 *   **Location:** `tests/Feature` and `tests/Unit`
 *   **Command:** `php artisan test --parallel` or `composer run test`
 **When to Run Tests:**

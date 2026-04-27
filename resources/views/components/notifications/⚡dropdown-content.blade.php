@@ -2,6 +2,7 @@
 
 use App\Livewire\Bases\LivewireBaseComponent;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 
 new class extends LivewireBaseComponent {
@@ -21,7 +22,7 @@ new class extends LivewireBaseComponent {
     /**
      * Get all sorted notifications (cached for request).
      */
-    public function getAllSortedNotificationsProperty(): \Illuminate\Database\Eloquent\Collection
+    public function getAllSortedNotificationsProperty(): Collection
     {
         $user = Auth::user();
         if (!$user) {
@@ -38,7 +39,7 @@ new class extends LivewireBaseComponent {
     /**
      * Get the user's notifications (limited).
      */
-    public function getNotificationsProperty(): \Illuminate\Database\Eloquent\Collection
+    public function getNotificationsProperty(): Collection
     {
         return $this->allSortedNotifications->values()->take($this->limit);
     }

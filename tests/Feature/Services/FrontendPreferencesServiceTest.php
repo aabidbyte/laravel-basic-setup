@@ -6,11 +6,8 @@ use App\Constants\Preferences\FrontendPreferences;
 use App\Models\User;
 use App\Services\FrontendPreferences\FrontendPreferencesService;
 use Illuminate\Auth\Events\Login;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Session;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     Session::start();

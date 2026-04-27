@@ -202,7 +202,7 @@ class ActivationService
     public function notifyCreatorAndAdmins(User $user): void
     {
         // Collect users to notify (with deduplication)
-        $notifiedUserIds = new Collection;
+        $notifiedUserIds = new Collection();
 
         // 1. Notify the creator
         $creator = $user->createdBy;

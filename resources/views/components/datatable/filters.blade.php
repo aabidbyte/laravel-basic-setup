@@ -38,7 +38,9 @@
                 @foreach ($this->getBulkActions() as $action)
                     @php
                         $actionClick = $action['confirm']
-                            ? "executeActionWithConfirmation('{$action['key']}', null, true, " . \json_encode($action) . ')'
+                            ? "executeActionWithConfirmation('{$action['key']}', null, true, " .
+                                \json_encode($action) .
+                                ')'
                             : null;
 
                         $wireClick = !$action['confirm'] ? "executeBulkAction('{$action['key']}')" : null;

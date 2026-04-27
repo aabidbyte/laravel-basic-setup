@@ -15,4 +15,6 @@ return [
     'email_content' => 'Contenu d\'email',
     'email_layouts' => 'Mises en page d\'email',
     'email_contents' => 'Contenus d\'email',
+    'master' => 'Master',
+    'tenant' => 'Tenant',
 ];
