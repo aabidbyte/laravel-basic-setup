@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Models\Base\BaseModel;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -27,10 +28,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $user_agent
  * @property array|null $context
  * @property array|null $resolved_data
- * @property \Carbon\Carbon|null $resolved_at
- * @property \Carbon\Carbon $created_at
- * @property \Carbon\Carbon $updated_at
- * @property \Carbon\Carbon|null $deleted_at
+ * @property Carbon|null $resolved_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property Carbon|null $deleted_at
  * @property-read User|null $user
  */
 class ErrorLog extends BaseModel

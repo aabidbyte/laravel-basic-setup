@@ -4,13 +4,14 @@ namespace App\Notifications\Auth;
 
 use App\Services\Mail\MailBuilder;
 use Illuminate\Auth\Notifications\VerifyEmail as BaseVerifyEmail;
+use Illuminate\Contracts\Mail\Mailable;
 
 class VerifyEmail extends BaseVerifyEmail
 {
     /**
      * Get the verify email notification mail message for the given URL.
      *
-     * @return \Illuminate\Contracts\Mail\Mailable
+     * @return Mailable
      */
     public function toMail($notifiable)
     {

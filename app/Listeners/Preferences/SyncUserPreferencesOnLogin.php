@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Listeners\Preferences;
 
+use App\Models\User;
 use App\Services\FrontendPreferences\FrontendPreferencesService;
 use Illuminate\Auth\Events\Login;
 
@@ -27,7 +28,7 @@ class SyncUserPreferencesOnLogin
     {
         $user = $event->user;
 
-        if (! $user instanceof \App\Models\User) {
+        if (! $user instanceof User) {
             return;
         }
 

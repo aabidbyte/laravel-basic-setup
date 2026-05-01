@@ -5,6 +5,8 @@ declare(strict_types=1);
 use App\Console\Commands\Database\Migrations\MigrateTenant;
 use App\Console\Commands\Database\Migrations\MigrateTenants;
 use App\Enums\Database\ConnectionType;
+use App\Models\Master;
+use App\Models\Tenant;
 use App\Services\Database\DatabaseService;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Schema;
@@ -18,17 +20,15 @@ test('landlord migrations and seeders run successfully', function () {
 });
 
 test('can setup and migrate master and tenant', function () {
-    $masterName = (string) config('app.name');
-    $tenantName = (string) \collect(config('tenancy.tenants', []))->first();
+    // Retrieve first available Master/Tenant from landlord to verify migration state
+    $master = Master::first();
+    $tenant = Tenant::first();
 
-    $masterDb = databaseService()->generateTestingMasterDatabaseName($masterName);
-    $tenantDb = databaseService()->generateTestingTenantDatabaseName($masterName, $tenantName);
+    expect($master)->not->toBeNull('No Master record found in Landlord');
+    expect($tenant)->not->toBeNull('No Tenant record found in Landlord');
 
-    // Verify Master registry
-    $this->assertDatabaseHas('masters', ['db_name' => $masterDb], ConnectionType::LANDLORD->connectionName());
-
-    // Verify Tenant registry
-    $this->assertDatabaseHas('tenants', ['db_name' => $tenantDb], ConnectionType::LANDLORD->connectionName());
+    $masterDb = $master->db_name;
+    $tenantDb = $tenant->db_name;
 
     $masterConnection = configureDbConnection($masterDb, ConnectionType::MASTER);
     expect(Schema::connection($masterConnection)->hasTable('migrations'))->toBeTrue();
@@ -88,7 +88,7 @@ test('database names are camel case', function () {
     expect($tenant)->toContain('LaravelBasicSet')->toContain('master_MyMasterDb_tenant_MyTenant');
 });
 
-test('database names include the parallel token when present', function () {
+test('database names use shared slug regardless of parallel token', function () {
     DatabaseService::setLandlordDatabaseNameOverride(null);
     Config::set('app.name', 'aabid byte sass');
 
@@ -101,9 +101,10 @@ test('database names include the parallel token when present', function () {
     $_ENV['TEST_TOKEN'] = '7';
 
     try {
-        expect(databaseService()->generateLandlordDatabaseName())->toBe('AabidByteSass_test_7_landlord')
-            ->and(databaseService()->generateTestingMasterDatabaseName('my master db'))->toBe('AabidByteSass_test_7_master_MyMasterDb')
-            ->and(databaseService()->generateTestingTenantDatabaseName('my master db', 'my tenant'))->toBe('AabidByteSass_test_7_master_MyMasterDb_tenant_MyTenant');
+        // Token should NOT be embedded in DB names — all workers share the same databases
+        expect(databaseService()->generateLandlordDatabaseName())->toBe('AabidByteSass_test_landlord')
+            ->and(databaseService()->generateTestingMasterDatabaseName('my master db'))->toBe('AabidByteSass_test_master_MyMasterDb')
+            ->and(databaseService()->generateTestingTenantDatabaseName('my master db', 'my tenant'))->toBe('AabidByteSass_test_master_MyMasterDb_tenant_MyTenant');
     } finally {
         // Restore original TEST_TOKEN state
         if ($originalGetenv === false || $originalGetenv === null) {

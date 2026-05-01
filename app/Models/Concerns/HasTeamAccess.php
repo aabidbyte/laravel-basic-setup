@@ -3,6 +3,7 @@
 namespace App\Models\Concerns;
 
 use App\Models\Scopes\TeamScope;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Trait for models that need team-based access control.
@@ -27,8 +28,8 @@ trait HasTeamAccess
      *
      * Use this when you need to access all records regardless of team.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param  Builder  $query
+     * @return Builder
      */
     public function scopeWithoutTeamScope($query)
     {
@@ -38,9 +39,9 @@ trait HasTeamAccess
     /**
      * Query for specific team(s).
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  Builder  $query
      * @param  int|array<int>  $teamIds
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @return Builder
      */
     public function scopeForTeams($query, int|array $teamIds)
     {

@@ -7,14 +7,19 @@ namespace Tests;
 use App\Enums\Database\ConnectionType;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Testing\CachedState;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Foundation\Testing\WithCachedConfig;
+use Illuminate\Foundation\Testing\WithCachedRoutes;
 use Illuminate\Support\Facades\DB;
 use ReflectionClass;
 use ReflectionMethod;
 use Tests\Attributes\UseDb;
 use Tests\Attributes\UseMasterDb;
 use Tests\Support\MultiTenancyTestCase;
+use Tests\Traits\UsesMasterDb;
+use Tests\Traits\UsesTenantDb;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -27,13 +32,13 @@ abstract class TestCase extends BaseTestCase
 
         $this->traitsUsedByTest = \array_flip(class_uses_recursive(static::class));
 
-        if (isset(\Illuminate\Foundation\Testing\CachedState::$cachedConfig) &&
-            isset($this->traitsUsedByTest[\Illuminate\Foundation\Testing\WithCachedConfig::class])) {
+        if (isset(CachedState::$cachedConfig) &&
+            isset($this->traitsUsedByTest[WithCachedConfig::class])) {
             $this->markConfigCached($app);
         }
 
-        if (isset(\Illuminate\Foundation\Testing\CachedState::$cachedRoutes) &&
-            isset($this->traitsUsedByTest[\Illuminate\Foundation\Testing\WithCachedRoutes::class])) {
+        if (isset(CachedState::$cachedRoutes) &&
+            isset($this->traitsUsedByTest[WithCachedRoutes::class])) {
             $app->booting(fn () => $this->markRoutesCached($app));
         }
 
@@ -60,6 +65,16 @@ abstract class TestCase extends BaseTestCase
 
         config(['database.default' => $connection]);
         DB::setDefaultConnection($connection);
+
+        // Safety: Override base connection configs to ensure explicit connection calls (e.g., DB::connection('landlord'))
+        // do not accidentally hit production databases.
+        $testLandlordDb = databaseService()->generateLandlordDatabaseName();
+        $landlordConnectionName = databaseService()->configureConnection($testLandlordDb, ConnectionType::LANDLORD);
+
+        config([
+            'database.connections.' . ConnectionType::LANDLORD->value => config("database.connections.{$landlordConnectionName}"),
+        ]);
+
         databaseService()->purgeConnections([
             ConnectionType::LANDLORD->value,
             ConnectionType::MASTER->value,
@@ -82,8 +97,7 @@ abstract class TestCase extends BaseTestCase
 
         $connectionType = $this->resolveConnectionFromReflector($class, $connectionType);
 
-        $token = databaseService()->getParallelTestingToken() ?: '1';
-        $testSlug = "test_{$token}";
+        $testSlug = 'test';
 
         $dbName = match ($connectionType) {
             ConnectionType::MASTER => databaseService()->generateMasterDatabaseName($testSlug),
@@ -96,11 +110,11 @@ abstract class TestCase extends BaseTestCase
 
     protected function resolveConnectionFromReflector(ReflectionClass|ReflectionMethod $reflector, ConnectionType $fallback): ConnectionType
     {
-        if ($reflector->getAttributes(UseMasterDb::class) !== [] || in_array(\Tests\Traits\UsesMasterDb::class, class_uses_recursive($this), true)) {
+        if ($reflector->getAttributes(UseMasterDb::class) !== [] || in_array(UsesMasterDb::class, class_uses_recursive($this), true)) {
             return ConnectionType::MASTER;
         }
 
-        if (in_array(\Tests\Traits\UsesTenantDb::class, class_uses_recursive($this), true)) {
+        if (in_array(UsesTenantDb::class, class_uses_recursive($this), true)) {
             return ConnectionType::TENANT;
         }
 

@@ -16,6 +16,7 @@ use App\Livewire\DataTable\Concerns\HasDatatableLivewireRendering;
 use App\Livewire\DataTable\Concerns\HasDatatableLivewireSelection;
 use App\Livewire\DataTable\Concerns\HasDatatableLivewireSorting;
 use App\Services\DataTable\Builders\Action;
+use App\Services\DataTable\Builders\Column;
 use App\Services\DataTable\DataTableQueryBuilder;
 use App\Support\DataTable\QueryOptions;
 use Illuminate\Database\Eloquent\Builder;
@@ -65,7 +66,7 @@ abstract class Datatable extends LivewireBaseComponent
     /**
      * Get column definitions
      *
-     * @return array<int, \App\Services\DataTable\Builders\Column>
+     * @return array<int, Column>
      */
     abstract protected function columns(): array;
 

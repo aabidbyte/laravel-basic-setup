@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware\Auth;
 
+use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -49,7 +50,7 @@ class ResolveRequestIdentifier
             $identifier = $request->input('identifier');
 
             // Try to find user by identifier
-            $user = \App\Models\User::findByIdentifier($identifier)->first();
+            $user = User::findByIdentifier($identifier)->first();
 
             if ($user && $user->email) {
                 // Found user, use their real email

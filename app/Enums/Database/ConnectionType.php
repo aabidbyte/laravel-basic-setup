@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\Enums\Database;
 
+use Database\Seeders\DatabaseSeeder;
+use Database\Seeders\LandlordSeeder;
+use Database\Seeders\MasterSeeder;
+use Database\Seeders\TenantSeeder;
+
 /**
  * multi-tenancy database connection tiers
  */
@@ -45,10 +50,10 @@ enum ConnectionType: string
     public function seederClass(): string
     {
         return match ($this) {
-            self::LANDLORD => \Database\Seeders\LandlordSeeder::class,
-            self::MASTER => \Database\Seeders\MasterSeeder::class,
-            self::TENANT => \Database\Seeders\TenantSeeder::class,
-            default => \Database\Seeders\DatabaseSeeder::class,
+            self::LANDLORD => LandlordSeeder::class,
+            self::MASTER => MasterSeeder::class,
+            self::TENANT => TenantSeeder::class,
+            default => DatabaseSeeder::class,
         };
     }
 

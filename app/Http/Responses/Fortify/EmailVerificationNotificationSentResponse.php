@@ -7,6 +7,7 @@ namespace App\Http\Responses\Fortify;
 use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Laravel\Fortify\Contracts\EmailVerificationNotificationSentResponse as EmailVerificationNotificationSentResponseContract;
 
 class EmailVerificationNotificationSentResponse implements EmailVerificationNotificationSentResponseContract
@@ -14,7 +15,7 @@ class EmailVerificationNotificationSentResponse implements EmailVerificationNoti
     /**
      * Create an HTTP response that represents the object.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  Request  $request
      */
     public function toResponse($request): JsonResponse|RedirectResponse
     {

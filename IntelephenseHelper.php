@@ -2,12 +2,14 @@
 
 namespace Illuminate\Contracts\Auth;
 
+use App\Models\User;
+
 interface Guard
 {
     /**
      * Get the currently authenticated user.
      *
-     * @return \App\Models\User|null
+     * @return User|null
      */
     public function user();
 
@@ -34,7 +36,7 @@ interface StatefulGuard
     /**
      * Get the currently authenticated user.
      *
-     * @return \App\Models\User|null
+     * @return User|null
      */
     public function user();
 
@@ -71,7 +73,7 @@ interface Factory
     /**
      * Get the currently authenticated user.
      *
-     * @return \App\Models\User|null
+     * @return User|null
      */
     public function user();
 
@@ -84,6 +86,16 @@ interface Factory
 }
 
 namespace Illuminate\Support\Facades;
+
+use App\Models\User;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Contracts\Auth\StatefulGuard;
+use Illuminate\Contracts\Filesystem\Filesystem;
+use Illuminate\Database\Connection;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Http\File;
+use Illuminate\Http\UploadedFile;
+use Psr\Log\LoggerInterface;
 
 interface Log
 {
@@ -155,7 +167,7 @@ interface Log
      * Get a log channel instance.
      *
      * @param  string|null  $channel
-     * @return \Psr\Log\LoggerInterface
+     * @return LoggerInterface
      */
     public static function channel($channel = null);
 }
@@ -238,7 +250,7 @@ interface DB
      * Begin a fluent query against a database table.
      *
      * @param  string  $table
-     * @return \Illuminate\Database\Query\Builder
+     * @return Builder
      */
     public static function table($table);
 
@@ -295,7 +307,7 @@ interface DB
      * Get the database connection.
      *
      * @param  string|null  $name
-     * @return \Illuminate\Database\Connection
+     * @return Connection
      */
     public static function connection($name = null);
 }
@@ -305,7 +317,7 @@ interface Auth
     /**
      * Get the currently authenticated user.
      *
-     * @return \App\Models\User|null
+     * @return User|null
      */
     public static function user();
 
@@ -330,7 +342,7 @@ interface Auth
      * Get the guard instance.
      *
      * @param  string|null  $guard
-     * @return \Illuminate\Contracts\Auth\StatefulGuard
+     * @return StatefulGuard
      */
     public static function guard($guard = null);
 
@@ -349,7 +361,7 @@ interface Auth
     /**
      * Log a user into the application.
      *
-     * @param  \Illuminate\Contracts\Auth\Authenticatable  $user
+     * @param  Authenticatable  $user
      * @param  bool  $remember
      */
     public static function login($user, $remember = false): void;
@@ -505,7 +517,7 @@ interface Storage
      * Get a filesystem instance.
      *
      * @param  string|null  $disk
-     * @return \Illuminate\Contracts\Filesystem\Filesystem
+     * @return Filesystem
      */
     public static function disk($disk = null);
 
@@ -513,7 +525,7 @@ interface Storage
      * Store the uploaded file on the disk.
      *
      * @param  string  $path
-     * @param  \Illuminate\Http\File|\Illuminate\Http\UploadedFile|string  $file
+     * @param  File|UploadedFile|string  $file
      * @param  array  $options
      * @return string|false
      */
@@ -523,7 +535,7 @@ interface Storage
      * Store the uploaded file on the disk with a given name.
      *
      * @param  string  $path
-     * @param  \Illuminate\Http\File|\Illuminate\Http\UploadedFile|string  $file
+     * @param  File|UploadedFile|string  $file
      * @param  string  $name
      * @param  array  $options
      * @return string|false
@@ -597,12 +609,14 @@ interface Schema
 
 namespace Tests;
 
+use Illuminate\Contracts\Auth\Authenticatable;
+
 interface TestCase
 {
     /**
      * Set the currently logged in user for the application.
      *
-     * @param  \Illuminate\Contracts\Auth\Authenticatable  $user
+     * @param  Authenticatable  $user
      * @param  string|null  $driver
      * @return $this
      */
@@ -611,6 +625,8 @@ interface TestCase
 
 namespace Illuminate\Database\Eloquent\Concerns;
 
+use Illuminate\Database\Eloquent\Factories\Factory;
+
 interface HasFactory
 {
     /**
@@ -618,45 +634,51 @@ interface HasFactory
      *
      * @param  callable|int|null  $count
      * @param  callable|array  $state
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public static function factory($count = null, $state = []);
 }
 
 namespace Illuminate\Database\Eloquent\Factories;
 
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
+
 interface Factory
 {
     /**
      * Create a new model instance.
      *
-     * @return \Illuminate\Database\Eloquent\Model
+     * @return Model
      */
     public function create(array $attributes = []);
 
     /**
      * Create a new model instance without persisting it.
      *
-     * @return \Illuminate\Database\Eloquent\Model
+     * @return Model
      */
     public function make(array $attributes = []);
 
     /**
      * Create a collection of models.
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return Collection
      */
     public function createMany(int $count, array $attributes = []);
 
     /**
      * Create a collection of models without persisting them.
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return Collection
      */
     public function makeMany(int $count, array $attributes = []);
 }
 
 namespace Illuminate\Database\Eloquent;
+
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Contracts\Pagination\Paginator;
 
 /**
  * Eloquent Builder interface for Intelephense
@@ -976,14 +998,14 @@ interface Builder
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     * @return LengthAwarePaginator
      */
     public function paginate($perPage = 15, $columns = ['*'], $pageName = 'page', $page = null);
 
     /**
      * Get the first result from the query or create a new instance.
      *
-     * @return \Illuminate\Contracts\Pagination\Paginator
+     * @return Paginator
      */
     public function simplePaginate($perPage = 15, $columns = ['*'], $pageName = 'page', $page = null);
 
@@ -1235,12 +1257,14 @@ interface Builder
     /**
      * Modal search macro for consistent modal search functionality.
      *
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     * @return LengthAwarePaginator
      */
     public function modalSearch(string $query = '', array|string $columns = [], int $perPage = 10);
 }
 
 namespace Inertia;
+
+use Illuminate\Http\Request;
 
 /**
  * Inertia response class.
@@ -1271,7 +1295,7 @@ abstract class Middleware
     /**
      * Determine the current asset version.
      */
-    public function version(\Illuminate\Http\Request $request): ?string
+    public function version(Request $request): ?string
     {
         return null;
     }
@@ -1281,7 +1305,7 @@ abstract class Middleware
      *
      * @return array<string, mixed>
      */
-    public function share(\Illuminate\Http\Request $request): array
+    public function share(Request $request): array
     {
         return [];
     }
@@ -1364,6 +1388,8 @@ class Livewire
 
 namespace Livewire\Volt;
 
+use Illuminate\Routing\Route;
+
 /**
  * Livewire Volt class for creating Volt routes.
  *
@@ -1375,7 +1401,7 @@ class Volt
     /**
      * Create a new Volt route.
      *
-     * @return \Illuminate\Routing\Route
+     * @return Route
      */
     public static function route(string $uri, string $view)
     {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Database\Concerns;
 
+use App\Services\Database\DatabaseService;
 use Illuminate\Process\Pool;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Process;
@@ -56,6 +57,11 @@ trait CanRunInParallel
                         ...$flattenedArgs,
                         '--ansi',
                         '--no-interaction',
+                    ])->env([
+                        'APP_ENV' => config('app.env'),
+                        'APP_NAME' => config('app.name'),
+                        'TENANCY_TENANTS' => env('TENANCY_TENANTS'),
+                        'DB_LANDLORD_OVERRIDE' => DatabaseService::$landlordDatabaseNameOverride,
                     ]);
                 }
             })->start(function (string $type, string $output, string $key) {

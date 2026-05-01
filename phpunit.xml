@@ -33,5 +33,7 @@
         <env name="NIGHTWATCH_ENABLED" value="false"/>
         <env name="DEBUGBAR_ENABLED" value="false"/>
         <env name="IDEMPOTENCY_CACHE_STORE" value="array"/>
+        <env name="APP_NAME" value="AabidByteSass"/>
+        <env name="LARAVEL_PARALLEL_TESTING_WITHOUT_DATABASES" value="true"/>
     </php>
 </phpunit>

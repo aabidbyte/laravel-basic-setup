@@ -33,21 +33,6 @@ class AppServiceProvider extends ServiceProvider
             ParallelTesting::setUpProcess(function (int|string $token) {
                 $this->setParallelTestingToken((string) $token);
                 $this->configureTestingDatabaseConnections((string) $token);
-
-                try {
-                    Artisan::call(MigrateAll::class, [
-                        '--fresh' => true,
-                        '--force' => true,
-                        '--seed' => true,
-                    ]);
-                } catch (Throwable $e) {
-                    Log::error('ParallelTesting MigrateAll Error: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
-                    throw $e;
-                }
-            });
-
-            ParallelTesting::tearDownProcess(function () {
-                Artisan::call(WipeTestDatabases::class, ['--force' => true]);
             });
         }
     }

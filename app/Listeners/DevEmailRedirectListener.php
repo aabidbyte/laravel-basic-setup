@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\Mime\Address;
+use Symfony\Component\Mime\Email;
 
 /**
  * Development Email Redirect Listener.
@@ -133,7 +134,7 @@ class DevEmailRedirectListener
      * Note: Symfony\Component\Mime\Email stores recipients in headers, not properties.
      * We need to use getHeaders() to properly clear them.
      */
-    protected function clearRecipients(\Symfony\Component\Mime\Email $message): void
+    protected function clearRecipients(Email $message): void
     {
         $headers = $message->getHeaders();
 

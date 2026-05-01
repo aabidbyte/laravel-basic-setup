@@ -217,8 +217,9 @@ describe('UserService', function () {
         it('initiates email change flow for verified user', function () {
             Mail::fake();
 
+            $oldEmail = fake()->unique()->safeEmail();
             $user = User::factory()->create([
-                'email' => 'old@example.com',
+                'email' => $oldEmail,
                 'email_verified_at' => now(),
             ]);
             $userService = app(UserService::class);
@@ -226,7 +227,7 @@ describe('UserService', function () {
             $userService->updateUser($user, UserData::forUpdate(['email' => 'new@example.com']));
 
             $user->refresh();
-            expect($user->email)->toBe('old@example.com');
+            expect($user->email)->toBe($oldEmail);
             expect($user->pending_email)->toBe('new@example.com');
             expect($user->pending_email_token)->not->toBeNull();
 
@@ -236,16 +237,18 @@ describe('UserService', function () {
         it('directly updates email for unverified user', function () {
             Mail::fake();
 
+            $oldEmail = fake()->unique()->safeEmail();
+            $newEmail = fake()->unique()->safeEmail();
             $user = User::factory()->create([
-                'email' => 'old@example.com',
+                'email' => $oldEmail,
                 'email_verified_at' => null,
             ]);
             $userService = app(UserService::class);
 
-            $userService->updateUser($user, UserData::forUpdate(['email' => 'new@example.com']));
+            $userService->updateUser($user, UserData::forUpdate(['email' => $newEmail]));
 
             $user->refresh();
-            expect($user->email)->toBe('new@example.com');
+            expect($user->email)->toBe($newEmail);
             expect($user->pending_email)->toBeNull();
 
             Mail::assertNothingQueued();

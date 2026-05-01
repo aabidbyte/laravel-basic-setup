@@ -6,6 +6,7 @@ use App\Constants\Auth\Permissions;
 use App\Enums\EmailTemplate\EmailTemplateStatus;
 use App\Enums\EmailTemplate\EmailTemplateType;
 use App\Models\EmailTemplate\EmailTemplate;
+use App\Models\Permission;
 use App\Models\User;
 
 beforeEach(function () {
@@ -17,7 +18,7 @@ beforeEach(function () {
     ];
 
     foreach ($permissions as $perm) {
-        \App\Models\Permission::firstOrCreate(['name' => $perm]);
+        Permission::firstOrCreate(['name' => $perm]);
     }
 
     $this->admin->assignPermission(...$permissions);

@@ -2,7 +2,10 @@
 
 namespace App\Notifications\Auth;
 
+use App\Services\Mail\MailBuilder;
 use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Contracts\Mail\Mailable;
+use Illuminate\Notifications\Messages\MailMessage;
 
 class ResetPasswordNotification extends ResetPassword
 {
@@ -10,7 +13,7 @@ class ResetPasswordNotification extends ResetPassword
      * Build the mail representation of the notification.
      *
      * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage|\Illuminate\Contracts\Mail\Mailable
+     * @return MailMessage|Mailable
      */
     public function toMail($notifiable)
     {
@@ -22,7 +25,7 @@ class ResetPasswordNotification extends ResetPassword
         $count = config('auth.passwords.' . config('auth.defaults.passwords') . '.expire');
 
         // Use MailBuilder with Database Template
-        return \App\Services\Mail\MailBuilder::make()
+        return MailBuilder::make()
             ->to($notifiable)
             ->template('Password Reset', [
                 'user' => $notifiable,

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Notifications;
 
 use App\Models\User;
+use App\Services\Mail\MailBuilder;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Mail\Mailable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
@@ -42,9 +44,9 @@ class UserActivatedNotification extends Notification implements ShouldQueue
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail(object $notifiable): \Illuminate\Contracts\Mail\Mailable
+    public function toMail(object $notifiable): Mailable
     {
-        return \App\Services\Mail\MailBuilder::make()
+        return MailBuilder::make()
             ->to($notifiable)
             ->template('User Activated', [
                 'user' => $notifiable,

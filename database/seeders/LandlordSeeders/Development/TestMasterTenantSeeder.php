@@ -19,9 +19,8 @@ class TestMasterTenantSeeder extends Seeder
     {
         $this->command->info('🧪 Seeding test master and tenant...');
 
-        $token = databaseService()->getParallelTestingToken() ?: '1';
-        $masterName = "test_{$token}";
-        $tenantName = "test_{$token}";
+        $masterName = 'test';
+        $tenantName = 'test';
 
         $master = Master::firstOrCreate(
             ['name' => $masterName],

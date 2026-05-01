@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\Database\ConnectionType;
+use App\Events\Database\TenantCreated;
 use App\Models\Base\BaseLandlordModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Facades\DB;
 
 class Tenant extends BaseLandlordModel
 {
@@ -30,13 +32,13 @@ class Tenant extends BaseLandlordModel
         });
 
         static::created(function (Tenant $tenant) {
-            \Illuminate\Support\Facades\DB::afterCommit(function () use ($tenant) {
+            DB::afterCommit(function () use ($tenant) {
                 $creatorConnection = null;
                 if (auth()->check()) {
                     $creatorConnection = config('database.default');
                 }
 
-                event(new \App\Events\Database\TenantCreated(
+                event(new TenantCreated(
                     tenant: $tenant,
                     creatorUserUuid: $tenant->created_by_user_uuid,
                     creatorConnection: $creatorConnection,

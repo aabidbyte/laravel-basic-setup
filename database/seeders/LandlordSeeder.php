@@ -6,6 +6,10 @@ namespace Database\Seeders;
 
 use Database\Seeders\LandlordSeeders\Development\SampleTenantSeeder;
 use Database\Seeders\LandlordSeeders\Production\EssentialMasterSeeder;
+use Database\Seeders\Masters\CommonSeeders\Production\EmailTemplateSeeder;
+use Database\Seeders\Masters\CommonSeeders\Production\EssentialTeamSeeder;
+use Database\Seeders\Masters\CommonSeeders\Production\EssentialUserSeeder;
+use Database\Seeders\Masters\CommonSeeders\Production\RoleAndPermissionSeeder;
 use Illuminate\Database\Seeder;
 
 class LandlordSeeder extends Seeder
@@ -17,10 +21,10 @@ class LandlordSeeder extends Seeder
     {
         // Common Seeders (Required in Landlord DB so generic tests not scoped to Master/Tenant work)
         $this->call([
-            \Database\Seeders\Masters\CommonSeeders\Production\RoleAndPermissionSeeder::class,
-            \Database\Seeders\Masters\CommonSeeders\Production\EssentialTeamSeeder::class,
-            \Database\Seeders\Masters\CommonSeeders\Production\EssentialUserSeeder::class,
-            \Database\Seeders\Masters\CommonSeeders\Production\EmailTemplateSeeder::class,
+            RoleAndPermissionSeeder::class,
+            EssentialTeamSeeder::class,
+            EssentialUserSeeder::class,
+            EmailTemplateSeeder::class,
         ]);
 
         // Production Seeders

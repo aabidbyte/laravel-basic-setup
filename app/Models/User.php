@@ -9,8 +9,10 @@ use App\Models\Pivots\TeamUser;
 use App\Notifications\Auth\ResetPasswordNotification;
 use App\Notifications\Auth\VerifyEmail;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -117,7 +119,7 @@ class User extends BaseUserModel implements MustVerifyEmail
     /**
      * Get the users created by this user.
      */
-    public function createdUsers(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function createdUsers(): HasMany
     {
         return $this->hasMany(User::class, 'created_by_user_id');
     }
@@ -272,7 +274,7 @@ class User extends BaseUserModel implements MustVerifyEmail
     /**
      * Find user by identifier (email or username).
      *
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @return Builder
      */
     public static function findByIdentifier(string $identifier)
     {

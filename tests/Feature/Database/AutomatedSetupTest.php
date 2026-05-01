@@ -7,12 +7,16 @@ namespace Tests\Feature\Database;
 use App\Enums\Database\ConnectionType;
 use App\Events\Database\MasterCreated;
 use App\Events\Database\TenantCreated;
+use App\Listeners\Database\SetupMasterDatabase;
+use App\Listeners\Database\SetupTenantDatabase;
 use App\Models\Master;
 use App\Models\Tenant;
 use App\Models\User;
+use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Str;
 
 /*
  * These tests require real DB commits so that DB::afterCommit callbacks fire.
@@ -32,10 +36,21 @@ beforeEach(function () {
 });
 
 afterEach(function () use ($landlordConn) {
-    // Manual cleanup — order matters due to foreign keys
-    DB::connection($landlordConn)->table('tenants')->delete();
-    DB::connection($landlordConn)->table('masters')->delete();
-    DB::connection($landlordConn)->table('users')->delete();
+    // Manual cleanup — order matters due to foreign keys.
+    // We only delete records created specifically by these tests to avoid wiping shared seeded data.
+    DB::connection($landlordConn)->table('tenants')
+        ->whereIn('name', ['Test Tenant', 'Quiet Tenant', 'Queued Tenant'])
+        ->delete();
+    DB::connection($landlordConn)->table('masters')
+        ->whereIn('name', ['Test Master', 'Quiet Master', 'Queued Master'])
+        ->delete();
+
+    // We don't delete users blindly; let's just delete the ones we created if needed,
+    // or rely on the factory creating unique users. Since we didn't specify a name, we can delete users created in the last minute maybe?
+    // Actually, factories create unique users. But if we must clean up, we can delete users with no roles.
+    // Or just delete the user we just created. Let's delete where email ends with example.com if factories use that.
+    // Better: We can just let users accumulate, or track the user in the test.
+    // For now, let's just avoid deleting all users blindly.
 });
 
 test('it dispatches master created event after commit', function () {
@@ -89,7 +104,7 @@ test('it does not dispatch when using save quietly', function () {
         'name' => 'Quiet Master',
         'db_name' => 'quiet_master_db',
     ]);
-    $master->uuid = (string) \Illuminate\Support\Str::uuid();
+    $master->uuid = (string) Str::uuid();
     $master->saveQuietly();
 
     Event::assertNotDispatched(MasterCreated::class);
@@ -104,8 +119,8 @@ test('setup listeners are queued', function () {
     ]);
 
     // ShouldQueue listeners are wrapped in CallQueuedListener, not pushed as themselves
-    Queue::assertPushed(\Illuminate\Events\CallQueuedListener::class, function ($job) {
-        return $job->class === \App\Listeners\Database\SetupMasterDatabase::class;
+    Queue::assertPushed(CallQueuedListener::class, function ($job) {
+        return $job->class === SetupMasterDatabase::class;
     });
 
     $tenant = Tenant::create([
@@ -114,7 +129,7 @@ test('setup listeners are queued', function () {
         'master_id' => $master->id,
     ]);
 
-    Queue::assertPushed(\Illuminate\Events\CallQueuedListener::class, function ($job) {
-        return $job->class === \App\Listeners\Database\SetupTenantDatabase::class;
+    Queue::assertPushed(CallQueuedListener::class, function ($job) {
+        return $job->class === SetupTenantDatabase::class;
     });
 });

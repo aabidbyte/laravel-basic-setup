@@ -2,14 +2,17 @@
 
 namespace Tests\Feature\Console;
 
+use App\Console\Commands\LangSyncCommand;
 use App\Services\Translation\DynamicKeyResolver;
 use App\Services\Translation\LocaleManager;
 use App\Services\Translation\TranslationPruner;
 use App\Services\Translation\TranslationScanner;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\File;
 // Use 'pest' for testing
+use Illuminate\Support\Facades\File;
 use Mockery;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\BufferedOutput;
 
 beforeEach(function () {
     // Setup temporary lang directory
@@ -70,12 +73,12 @@ test('lang:sync command orchestrates strict services correctly', function () {
     Config::set('i18n.supported_locales', ['en_US' => []]);
 
     // Manual instantiation to ensure mocks are used
-    $command = new \App\Console\Commands\LangSyncCommand($scanner, $keyResolver, $localeManager, $pruner);
+    $command = new LangSyncCommand($scanner, $keyResolver, $localeManager, $pruner);
     $command->setLaravel($this->app);
 
     // Run command
-    $input = new \Symfony\Component\Console\Input\ArrayInput(['--write' => false], $command->getDefinition());
-    $output = new \Symfony\Component\Console\Output\BufferedOutput();
+    $input = new ArrayInput(['--write' => false], $command->getDefinition());
+    $output = new BufferedOutput();
     $command->run($input, $output);
 });
 
@@ -111,11 +114,11 @@ test('lang:sync prunes when requested', function () {
     $pruner->shouldReceive('getKeysPruned')->andReturn(10);
 
     // Manual instantiation
-    $command = new \App\Console\Commands\LangSyncCommand($scanner, $keyResolver, $localeManager, $pruner);
+    $command = new LangSyncCommand($scanner, $keyResolver, $localeManager, $pruner);
     $command->setLaravel($this->app);
 
     // Run command
-    $input = new \Symfony\Component\Console\Input\ArrayInput(['--prune' => true], $command->getDefinition());
-    $output = new \Symfony\Component\Console\Output\BufferedOutput();
+    $input = new ArrayInput(['--prune' => true], $command->getDefinition());
+    $output = new BufferedOutput();
     $command->run($input, $output);
 });

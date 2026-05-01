@@ -31,7 +31,7 @@ test('can create a permission', function () {
 });
 
 test('role can have permissions', function () {
-    $role = Role::firstOrCreate(['name' => Roles::ADMIN]);
+    $role = Role::create(['name' => 'rbac-test-role']);
     $permission = Permission::firstOrCreate(['name' => Permissions::EDIT_USERS()]);
 
     $role->givePermissionTo($permission);
@@ -122,7 +122,7 @@ test('can remove role from user', function () {
 
 test('can get all permissions for user', function () {
     $user = User::factory()->create();
-    $role = Role::firstOrCreate(['name' => Roles::ADMIN]);
+    $role = Role::create(['name' => 'rbac-user-permissions-role']);
     $permission1 = Permission::firstOrCreate(['name' => Permissions::EDIT_USERS()]);
     $permission2 = Permission::firstOrCreate(['name' => Permissions::DELETE_USERS()]);
 

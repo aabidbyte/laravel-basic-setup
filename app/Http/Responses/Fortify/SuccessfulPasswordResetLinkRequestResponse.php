@@ -7,6 +7,8 @@ namespace App\Http\Responses\Fortify;
 use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Lang;
 use Laravel\Fortify\Contracts\SuccessfulPasswordResetLinkRequestResponse as SuccessfulPasswordResetLinkRequestResponseContract;
 
 class SuccessfulPasswordResetLinkRequestResponse implements SuccessfulPasswordResetLinkRequestResponseContract
@@ -27,11 +29,11 @@ class SuccessfulPasswordResetLinkRequestResponse implements SuccessfulPasswordRe
     /**
      * Create an HTTP response that represents the object.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  Request  $request
      */
     public function toResponse($request): JsonResponse|RedirectResponse
     {
-        $titleKey = \Illuminate\Support\Facades\Lang::has('authentication.forgot_password.success')
+        $titleKey = Lang::has('authentication.forgot_password.success')
             ? 'authentication.forgot_password.success'
             : 'messages.auth.password_reset_link_sent';
 

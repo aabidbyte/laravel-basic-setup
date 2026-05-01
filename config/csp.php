@@ -1,6 +1,7 @@
 <?php
 
 use App\Support\Csp\LaravelViteNonceGenerator;
+use App\Support\Csp\MyCspPreset;
 use Spatie\Csp\Presets\BunnyFonts;
 use Spatie\Csp\Presets\GoogleFonts;
 
@@ -16,7 +17,7 @@ return [
         // Using our comprehensive standalone preset (replaces Basic)
         BunnyFonts::class,
         GoogleFonts::class,
-        App\Support\Csp\MyCspPreset::class,
+        MyCspPreset::class,
     ],
 
     /**

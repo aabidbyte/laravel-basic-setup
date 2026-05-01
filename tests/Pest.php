@@ -13,9 +13,10 @@ $_SERVER['LARAVEL_PARALLEL_TESTING_WITHOUT_DATABASES'] = true;
 |
 */
 
-pest()->extend(Tests\TestCase::class)
-    ->in('Feature', 'Unit');
+use Tests\TestCase;
 
+pest()->extend(TestCase::class)
+    ->in('Feature', 'Unit');
 use Tests\Traits\UsesMasterDb;
 use Tests\Traits\UsesTenantDb;
 

@@ -6,13 +6,15 @@ namespace App\Livewire\DataTable\Concerns;
 
 use App\Services\DataTable\Builders\Action;
 use App\Services\DataTable\Builders\BulkAction;
+use App\Services\Notifications\NotificationBuilder;
 use Closure;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 /**
  * Trait for handling DataTable row and bulk actions logic.
  *
- * @property \Illuminate\Pagination\LengthAwarePaginator $rows
+ * @property LengthAwarePaginator $rows
  * @property array $selected
  *
  * @method \Illuminate\Database\Eloquent\Builder baseQuery()
@@ -281,7 +283,7 @@ trait HasDatatableLivewireActions
 
         if ($action && $action->getExecute()) {
             if (empty($this->selected)) {
-                \App\Services\Notifications\NotificationBuilder::make()
+                NotificationBuilder::make()
                     ->title('actions.select_at_least_one')
                     ->error()
                     ->send();

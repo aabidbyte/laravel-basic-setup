@@ -5,6 +5,7 @@ namespace Database\Seeders\LandlordSeeders\Development;
 use App\Models\Master;
 use App\Models\Tenant;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class SampleTenantSeeder extends Seeder
 {
@@ -31,7 +32,7 @@ class SampleTenantSeeder extends Seeder
                     }
 
                     $tenant = new Tenant([
-                        'uuid' => (string) \Illuminate\Support\Str::uuid(),
+                        'uuid' => (string) Str::uuid(),
                         'name' => $tenantName,
                         'db_name' => $dbName,
                         'master_id' => $master->id,

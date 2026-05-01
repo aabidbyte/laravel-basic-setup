@@ -33,12 +33,16 @@ class DatabaseService
 
     public function generateLandlordDatabaseName(): string
     {
-        if ($this->isRunningTests()) {
-            return $this->generateTestingLandlordDatabaseName();
-        }
-
         if (self::$landlordDatabaseNameOverride) {
             return self::$landlordDatabaseNameOverride;
+        }
+
+        if ($override = env('DB_LANDLORD_OVERRIDE')) {
+            return $override;
+        }
+
+        if ($this->isRunningTests()) {
+            return $this->generateTestingLandlordDatabaseName();
         }
         $appSlug = $this->generateDatabasesAppSlug();
 
@@ -153,12 +157,6 @@ class DatabaseService
         $slug = Str::limit(ucfirst(Str::camel(config('app.name'))), 15, '');
 
         if ($this->isRunningTests()) {
-            $resolvedToken = $testToken ?? $this->getParallelTestingToken();
-
-            if ($resolvedToken !== null) {
-                return "{$slug}_test_{$resolvedToken}";
-            }
-
             return "{$slug}_test";
         }
 

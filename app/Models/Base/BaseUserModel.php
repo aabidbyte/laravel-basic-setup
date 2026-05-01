@@ -4,6 +4,7 @@ namespace App\Models\Base;
 
 use App\Models\Concerns\HasUuid;
 use Exception;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -58,8 +59,8 @@ abstract class BaseUserModel extends Authenticatable
         // The trigger requires @laravel_user_id_1_self_edit to be set to 1
         static::updating(function (BaseUserModel $user) {
             if ($user->id === 1) {
-                // Skip protection in testing environment or non-MySQL databases
-                if (isTesting() || DB::getDriverName() !== 'mysql') {
+                // Skip protection for non-MySQL databases
+                if (DB::getDriverName() !== 'mysql') {
                     return;
                 }
 
@@ -71,8 +72,8 @@ abstract class BaseUserModel extends Authenticatable
                     // Variable not set, check if user is updating themselves
                     $currentUser = Auth::user();
 
-                    if ($currentUser && $currentUser->id === 1) {
-                        // User ID 1 is updating themselves - allow it
+                    if (isTesting() || ($currentUser && $currentUser->id === 1)) {
+                        // User ID 1 is updating themselves or we are in testing - allow it
                         DB::statement('SET @laravel_user_id_1_self_edit = 1');
                     } else {
                         throw new Exception('Cannot edit user ID 1 - only user ID 1 can edit themselves');
@@ -127,8 +128,8 @@ abstract class BaseUserModel extends Authenticatable
     /**
      * Scope a query to only include active users.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param  Builder  $query
+     * @return Builder
      */
     public function scopeActive($query)
     {
@@ -138,8 +139,8 @@ abstract class BaseUserModel extends Authenticatable
     /**
      * Scope a query to only include inactive users.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param  Builder  $query
+     * @return Builder
      */
     public function scopeInactive($query)
     {

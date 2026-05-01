@@ -8,6 +8,7 @@ use App\Services\ErrorHandling\Channels\DatabaseChannel;
 use App\Services\ErrorHandling\Channels\LogChannel;
 use App\Services\ErrorHandling\Channels\ToastChannel;
 use App\Services\ErrorHandling\ErrorHandler;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
@@ -71,7 +72,7 @@ describe('ErrorHandler', function () {
     test('does not store authentication exceptions in database', function () {
         config(['error-handling.channels.database.enabled' => true]);
 
-        $exception = new Illuminate\Auth\AuthenticationException('Unauthenticated.');
+        $exception = new AuthenticationException('Unauthenticated.');
         $request = Request::create('/test-url', 'GET');
 
         $handler = new ErrorHandler();

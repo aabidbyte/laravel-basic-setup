@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\Database\ConnectionType;
+use App\Events\Database\MasterCreated;
 use App\Models\Base\BaseLandlordModel;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Facades\DB;
 
 class Master extends BaseLandlordModel
 {
@@ -29,13 +31,13 @@ class Master extends BaseLandlordModel
         });
 
         static::created(function (Master $master) {
-            \Illuminate\Support\Facades\DB::afterCommit(function () use ($master) {
+            DB::afterCommit(function () use ($master) {
                 $creatorConnection = null;
                 if (auth()->check()) {
                     $creatorConnection = config('database.default');
                 }
 
-                event(new \App\Events\Database\MasterCreated(
+                event(new MasterCreated(
                     master: $master,
                     creatorUserUuid: $master->created_by_user_uuid,
                     creatorConnection: $creatorConnection,

@@ -6,6 +6,9 @@ namespace App\Livewire\Bases;
 
 use App\Enums\Stats\ChartComponentType;
 use App\Enums\Ui\PlaceholderType;
+use App\Services\Stats\Data\ChartPayload;
+use App\Services\Stats\Data\MetricPayload;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 use ReflectionClass;
 use ReflectionMethod;
@@ -134,13 +137,13 @@ abstract class BaseChartsComponent extends LivewireBaseComponent
 
                 $value = $this->$methodName();
 
-                if ($value instanceof \App\Services\Stats\Data\MetricPayload) {
+                if ($value instanceof MetricPayload) {
                     $components[] = [
                         'type' => ChartComponentType::STAT,
                         'payload' => $value,
                         'class' => $itemConfig['class'] ?? null,
                     ];
-                } elseif ($value instanceof \App\Services\Stats\Data\ChartPayload) {
+                } elseif ($value instanceof ChartPayload) {
                     $components[] = [
                         'type' => ChartComponentType::CHART,
                         'payload' => $value,
@@ -157,19 +160,19 @@ abstract class BaseChartsComponent extends LivewireBaseComponent
         $methods = $reflection->getMethods(ReflectionMethod::IS_PUBLIC);
 
         foreach ($methods as $method) {
-            $attributes = $method->getAttributes(\Livewire\Attributes\Computed::class);
+            $attributes = $method->getAttributes(Computed::class);
             if (! empty($attributes)) {
                 $propertyName = $method->getName();
 
                 $value = $this->$propertyName();
 
-                if ($value instanceof \App\Services\Stats\Data\MetricPayload) {
+                if ($value instanceof MetricPayload) {
                     $components[] = [
                         'type' => ChartComponentType::STAT,
                         'payload' => $value,
                         'class' => null,
                     ];
-                } elseif ($value instanceof \App\Services\Stats\Data\ChartPayload) {
+                } elseif ($value instanceof ChartPayload) {
                     $components[] = [
                         'type' => ChartComponentType::CHART,
                         'payload' => $value,

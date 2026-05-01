@@ -7,6 +7,8 @@ use App\Console\Commands\Database\Migrations\MigrateMasters;
 use App\Console\Commands\Database\Migrations\MigrateTenant;
 use App\Console\Commands\Database\Migrations\MigrateTenants;
 use App\Enums\Database\ConnectionType;
+use App\Models\Master;
+use App\Models\Tenant;
 use App\Services\Database\DatabaseService;
 use Illuminate\Contracts\Process\ProcessResult;
 use Illuminate\Support\Facades\DB;
@@ -43,6 +45,9 @@ it('aborts migrate:all if migrate:masters fails', function () {
 });
 
 it('returns 1 from migrate:masters if any master fails', function () {
+    // Ensure there is at least one master so it doesn't return early
+    Master::firstOrCreate(['name' => 'Test Master'], ['db_name' => 'test_master_db']);
+
     $command = Mockery::mock(MigrateMasters::class)->makePartial();
     $command->shouldAllowMockingProtectedMethods();
     $command->shouldReceive('info')->andReturnNull();
@@ -68,6 +73,9 @@ it('returns 1 from migrate:masters if any master fails', function () {
 });
 
 it('returns 1 from migrate:tenants if any tenant fails', function () {
+    $master = Master::firstOrCreate(['name' => 'Test Master'], ['db_name' => 'test_master_db']);
+    Tenant::firstOrCreate(['name' => 'Test Tenant', 'master_id' => $master->id], ['db_name' => 'test_tenant_db']);
+
     $command = Mockery::mock(MigrateTenants::class)->makePartial();
     $command->shouldAllowMockingProtectedMethods();
     $command->shouldReceive('info')->andReturnNull();

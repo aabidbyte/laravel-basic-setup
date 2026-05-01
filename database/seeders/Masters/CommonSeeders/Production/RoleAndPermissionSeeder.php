@@ -116,6 +116,18 @@ class RoleAndPermissionSeeder extends Seeder
             Roles::MEMBER => 'Member',
         ];
 
+        if (app()->environment('testing')) {
+            $roles = array_merge($roles, [
+                'viewer' => 'Viewer',
+                'creator' => 'Creator',
+                'editor' => 'Editor',
+                'deleter' => 'Deleter',
+                'test-role' => 'Test Role',
+                'target-role' => 'Target Role',
+                'writer' => 'Writer',
+            ]);
+        }
+
         foreach ($roles as $roleName => $displayName) {
             $role = Role::withTrashed()->firstOrCreate(
                 ['name' => $roleName],
@@ -124,6 +136,11 @@ class RoleAndPermissionSeeder extends Seeder
 
             if ($role->trashed()) {
                 $role->restore();
+            }
+
+            // Assign all permissions to test roles to prevent lock contention in tests
+            if (app()->environment('testing')) {
+                $role->syncPermissions(Permission::all()->all());
             }
         }
 

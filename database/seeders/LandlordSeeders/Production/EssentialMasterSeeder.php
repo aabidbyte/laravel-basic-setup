@@ -5,6 +5,7 @@ namespace Database\Seeders\LandlordSeeders\Production;
 use App\Enums\Database\ConnectionType;
 use App\Models\Master;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class EssentialMasterSeeder extends Seeder
 {
@@ -25,7 +26,7 @@ class EssentialMasterSeeder extends Seeder
         }
 
         $master = new Master([
-            'uuid' => (string) \Illuminate\Support\Str::uuid(),
+            'uuid' => (string) Str::uuid(),
             'name' => $masterName,
             'db_name' => $dbName,
         ]);

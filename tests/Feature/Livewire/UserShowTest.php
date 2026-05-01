@@ -6,6 +6,7 @@ use App\Constants\Auth\Permissions;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -34,7 +35,7 @@ test('authorized user can see all user details on show page', function () {
     // Create a user by this user
     User::factory()->create(['created_by_user_id' => $this->targetUser->id]);
 
-    Illuminate\Support\Carbon::setTestNow($now);
+    Carbon::setTestNow($now);
 
     Livewire::actingAs($this->admin)
         ->test('pages::users.show', ['user' => $this->targetUser])
@@ -47,7 +48,7 @@ test('authorized user can see all user details on show page', function () {
         ->assertSee('Database')
         ->assertSee($this->targetUser->updated_at->diffForHumans());
 
-    Illuminate\Support\Carbon::setTestNow();
+    Carbon::setTestNow();
 });
 
 test('authorized user can delete a user from show page', function () {
@@ -62,7 +63,7 @@ test('authorized user can delete a user from show page', function () {
 });
 
 test('unauthorized user cannot see delete button on show page', function () {
-    $viewerRole = Role::firstOrCreate(['name' => 'viewer']);
+    $viewerRole = Role::create(['name' => 'user-show-viewer-role']);
     $viewerRole->givePermissionTo(Permission::where('name', Permissions::VIEW_USERS())->first());
 
     $viewer = User::factory()->create();

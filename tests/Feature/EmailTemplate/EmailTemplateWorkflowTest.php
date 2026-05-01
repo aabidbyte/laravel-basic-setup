@@ -4,8 +4,11 @@ namespace Tests\Feature\EmailTemplate;
 
 use App\Constants\Auth\Permissions;
 use App\Enums\EmailTemplate\EmailTemplateStatus;
+use App\Enums\EmailTemplate\EmailTemplateType;
 use App\Models\EmailTemplate\EmailTemplate;
+use App\Models\Permission;
 use App\Models\User;
+use App\Services\EmailTemplate\EmailRenderer;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -21,14 +24,14 @@ beforeEach(function () {
 
     foreach ($permissions as $perm) {
         // Using firstOrCreate to avoid duplicates if seeder runs
-        \App\Models\Permission::firstOrCreate(['name' => $perm]);
+        Permission::firstOrCreate(['name' => $perm]);
     }
 
     // Add heler method
     $this->createUserWithPermissions = function (array $permissions = []) {
         $user = User::factory()->create();
         foreach ($permissions as $perm) {
-            $permission = \App\Models\Permission::where('name', '=', $perm)->first();
+            $permission = Permission::where('name', '=', $perm)->first();
             if ($permission) {
                 if (\method_exists($user, 'givePermissionTo')) {
                     $user->givePermissionTo($permission);
@@ -46,7 +49,7 @@ test('new template defaults to draft', function () {
     $template = EmailTemplate::create([
         'name' => 'Test Template',
         'is_layout' => false,
-        'type' => \App\Enums\EmailTemplate\EmailTemplateType::TRANSACTIONAL,
+        'type' => EmailTemplateType::TRANSACTIONAL,
     ]);
 
     expect($template->refresh()->status)->toBe(EmailTemplateStatus::DRAFT);
@@ -63,7 +66,7 @@ test('show page can publish draft template', function () {
         'name' => 'Draft Template',
         'status' => EmailTemplateStatus::DRAFT,
         'is_layout' => false,
-        'type' => \App\Enums\EmailTemplate\EmailTemplateType::TRANSACTIONAL,
+        'type' => EmailTemplateType::TRANSACTIONAL,
     ]);
 
     Livewire::test('pages::emailTemplates.show', ['template' => $template])
@@ -83,7 +86,7 @@ test('show page can archive template', function () {
         'name' => 'Published Template',
         'status' => EmailTemplateStatus::PUBLISHED,
         'is_layout' => false,
-        'type' => \App\Enums\EmailTemplate\EmailTemplateType::TRANSACTIONAL,
+        'type' => EmailTemplateType::TRANSACTIONAL,
     ]);
 
     Livewire::test('pages::emailTemplates.show', ['template' => $template])
@@ -104,7 +107,7 @@ test('cannot publish system template', function () {
         'status' => EmailTemplateStatus::DRAFT,
         'is_system' => true,
         'is_layout' => false,
-        'type' => \App\Enums\EmailTemplate\EmailTemplateType::TRANSACTIONAL,
+        'type' => EmailTemplateType::TRANSACTIONAL,
     ]);
 
     Livewire::test('pages::emailTemplates.show', ['template' => $template])
@@ -125,7 +128,7 @@ test('cannot archive default template', function () {
         'status' => EmailTemplateStatus::PUBLISHED,
         'is_default' => true,
         'is_layout' => false,
-        'type' => \App\Enums\EmailTemplate\EmailTemplateType::TRANSACTIONAL,
+        'type' => EmailTemplateType::TRANSACTIONAL,
     ]);
 
     Livewire::test('pages::emailTemplates.show', ['template' => $template])
@@ -145,7 +148,7 @@ test('builder can save as draft', function () {
         'name' => 'Draft Content',
         'status' => EmailTemplateStatus::DRAFT,
         'is_layout' => false,
-        'type' => \App\Enums\EmailTemplate\EmailTemplateType::TRANSACTIONAL,
+        'type' => EmailTemplateType::TRANSACTIONAL,
     ]);
 
     Livewire::test('pages::emailTemplates.edit-builder', ['template' => $template])
@@ -172,7 +175,7 @@ test('builder can publish', function () {
         'name' => 'Draft Content to Publish',
         'status' => EmailTemplateStatus::DRAFT,
         'is_layout' => false,
-        'type' => \App\Enums\EmailTemplate\EmailTemplateType::TRANSACTIONAL,
+        'type' => EmailTemplateType::TRANSACTIONAL,
     ]);
 
     Livewire::test('pages::emailTemplates.edit-builder', ['template' => $template])
@@ -196,7 +199,7 @@ test('builder can restore draft from published', function () {
         'name' => 'Restore Test',
         'status' => EmailTemplateStatus::DRAFT, // User requirement: status must be draft
         'is_layout' => false,
-        'type' => \App\Enums\EmailTemplate\EmailTemplateType::TRANSACTIONAL,
+        'type' => EmailTemplateType::TRANSACTIONAL,
     ]);
 
     $template->translations()->create([
@@ -232,7 +235,7 @@ test('builder can manage layout drafts', function () {
         'name' => 'Test Layout',
         'status' => EmailTemplateStatus::DRAFT,
         'is_layout' => true,
-        'type' => \App\Enums\EmailTemplate\EmailTemplateType::TRANSACTIONAL,
+        'type' => EmailTemplateType::TRANSACTIONAL,
     ]);
 
     // 2. Save as Draft
@@ -286,7 +289,7 @@ test('preview system works correctly for layouts and contents', function () {
         'name' => 'Content Preview Test',
         'status' => EmailTemplateStatus::PUBLISHED,
         'is_layout' => false,
-        'type' => \App\Enums\EmailTemplate\EmailTemplateType::TRANSACTIONAL,
+        'type' => EmailTemplateType::TRANSACTIONAL,
     ]);
 
     $template->translations()->create([
@@ -297,7 +300,7 @@ test('preview system works correctly for layouts and contents', function () {
         'draft_html_content' => '<p>Draft Content</p>',
     ]);
 
-    $renderer = app(\App\Services\EmailTemplate\EmailRenderer::class);
+    $renderer = app(EmailRenderer::class);
 
     // Published
     $preview = $renderer->preview($template, 'en_US', preferDraft: false);
@@ -314,7 +317,7 @@ test('preview system works correctly for layouts and contents', function () {
         'name' => 'Layout Preview Test',
         'status' => EmailTemplateStatus::DRAFT,
         'is_layout' => true,
-        'type' => \App\Enums\EmailTemplate\EmailTemplateType::TRANSACTIONAL,
+        'type' => EmailTemplateType::TRANSACTIONAL,
     ]);
 
     $layout->translations()->create([
