@@ -61,27 +61,31 @@ it('returns confirmation config for bulk action', function () {
 });
 
 it('refreshes rows after row deletion', function () {
-    $user = User::factory()->create(['name' => 'To Be Deleted']);
+    $uniqueName = 'To Be Deleted ' . \bin2hex(\random_bytes(4));
+    $user = User::factory()->create(['name' => $uniqueName]);
 
     Livewire::actingAs($this->admin)
         ->test('tables.user-table')
-        ->assertSee('To Be Deleted')
+        ->set('search', $uniqueName)
+        ->assertSee($uniqueName)
         ->call('executeAction', 'delete', $user->uuid)
-        ->assertDontSee('To Be Deleted');
+        ->assertDontSee($uniqueName);
 
     expect(User::where('uuid', $user->uuid)->exists())->toBeFalse();
 });
 
 it('refreshes rows after bulk deletion', function () {
-    $users = User::factory()->count(2)->create(['name' => 'Bulk Delete']);
+    $uniqueName = 'Bulk Delete ' . \bin2hex(\random_bytes(4));
+    $users = User::factory()->count(2)->create(['name' => $uniqueName]);
     $uuids = $users->pluck('uuid')->toArray();
 
     Livewire::actingAs($this->admin)
         ->test('tables.user-table')
+        ->set('search', $uniqueName)
         ->set('selected', $uuids)
-        ->assertSee('Bulk Delete')
+        ->assertSee($uniqueName)
         ->call('executeBulkAction', 'delete')
-        ->assertDontSee('Bulk Delete');
+        ->assertDontSee($uniqueName);
 
     expect(User::whereIn('uuid', $uuids)->count())->toBe(0);
 });
