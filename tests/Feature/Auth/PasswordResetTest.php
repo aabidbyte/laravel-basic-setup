@@ -37,6 +37,7 @@ test('reset password link can be requested', function () {
     ]);
 
     $response->assertSessionHasNoErrors();
+
     Notification::assertSentTo($user, ResetPasswordNotification::class, function ($notification, $channels, $notifiable) use ($user) {
         $mailData = $notification->toMail($notifiable);
         $rendered = $mailData->render();

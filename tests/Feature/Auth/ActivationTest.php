@@ -2,7 +2,7 @@
 
 use App\Models\User;
 use App\Services\Users\ActivationService;
-use Database\Seeders\Masters\CommonSeeders\Production\EmailTemplateSeeder;
+use Database\Seeders\CommonSeeders\EmailTemplateSeeder;
 use Illuminate\Support\Facades\Hash;
 
 beforeEach(function () {

@@ -27,34 +27,9 @@ trait HasUuid
                 ?? ($model->attributes['uuid'] ?? null);
 
             if (empty($uuid)) {
-                $model->uuid = static::generateUniqueUuid($model);
+                $model->uuid = (string) Str::uuid();
             }
         });
-    }
-
-    /**
-     * Generate a unique UUID for the model.
-     */
-    protected static function generateUniqueUuid(Model $model): string
-    {
-        $maxAttempts = 10;
-        $attempt = 0;
-
-        do {
-            $uuid = (string) Str::uuid();
-
-            $exists = $model->newQuery()
-                ->where('uuid', $uuid)
-                ->exists();
-
-            $attempt++;
-        } while ($exists && $attempt < $maxAttempts);
-
-        if ($exists) {
-            throw new RuntimeException('Unable to generate unique UUID after ' . $maxAttempts . ' attempts.');
-        }
-
-        return $uuid;
     }
 
     /**

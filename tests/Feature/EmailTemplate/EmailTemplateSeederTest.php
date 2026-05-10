@@ -5,7 +5,7 @@ use App\Models\EmailTemplate\EmailTemplate;
 use Database\Seeders\CommonSeeders\EmailTemplateSeeder;
 
 beforeEach(function () {
-    EmailTemplate::query()->delete();
+    EmailTemplate::query()->forceDelete();
 });
 
 test('it seeds layouts and contents', function () {

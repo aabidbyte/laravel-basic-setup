@@ -17,9 +17,10 @@ class EmailTemplateSeeder extends Seeder
     public function run(): void
     {
         // 1. Create Default Layout
-        $layout = EmailTemplate::firstOrCreate(
-            ['name' => 'default', 'is_layout' => true],
+        $layout = EmailTemplate::withTrashed()->firstOrCreate(
+            ['name' => 'default'],
             [
+                'is_layout' => true,
                 'description' => 'Standard application email layout',
                 'status' => EmailTemplateStatus::PUBLISHED,
                 'is_system' => true,
@@ -29,12 +30,14 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
+        $layout->restore();
+
         $layout->translations()->updateOrCreate(
             ['locale' => 'en_US'],
             [
                 'subject' => 'Default Layout',
-                'html_content' => '{{ content }}',
-                'text_content' => '{{ content }}',
+                'html_content' => '{!! $slot !!}',
+                'text_content' => '{{ $slot }}',
             ]
         );
 
@@ -49,9 +52,10 @@ class EmailTemplateSeeder extends Seeder
 
     private function createSystemTemplate(string $name, string $description, int|string $layoutId): void
     {
-        $template = EmailTemplate::firstOrCreate(
-            ['name' => $name, 'is_layout' => false],
+        $template = EmailTemplate::withTrashed()->firstOrCreate(
+            ['name' => $name],
             [
+                'is_layout' => false,
                 'description' => $description,
                 'status' => EmailTemplateStatus::PUBLISHED,
                 'is_system' => true,
@@ -61,6 +65,8 @@ class EmailTemplateSeeder extends Seeder
                 'type' => EmailTemplateType::TRANSACTIONAL,
             ]
         );
+
+        $template->restore();
 
         $template->translations()->updateOrCreate(
             ['locale' => 'en_US'],
