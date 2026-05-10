@@ -37,4 +37,5 @@ This documentation is organized into sections for easy navigation. Each section 
 - [Colocated Scripts Pattern](colocated-scripts.md)
 - [Routes](routes.md)
 - [Intelephense Helper](intelephense-helper.md)
+- [Tenancy Laravel Skill](tenancy-laravel-skill.md)
 - [Notes for AI Agents](notes-for-ai-agents.md)

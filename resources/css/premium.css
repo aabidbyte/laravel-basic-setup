@@ -1,0 +1,53 @@
+/* Premium Design Tokens & Utilities */
+
+@theme {
+    --shadow-premium: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05), inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+    --shadow-premium-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04), inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+}
+
+@layer utilities {
+    .premium-glass {
+        @apply backdrop-blur-md bg-base-100/60 border border-base-content/10 shadow-premium;
+    }
+
+    .premium-card {
+        @apply bg-base-100 border border-base-content/5 shadow-premium rounded-2xl transition-all duration-300;
+    }
+
+    .premium-card:hover {
+        @apply shadow-premium-lg -translate-y-1;
+    }
+
+    .text-premium-gradient {
+        @apply bg-clip-text text-transparent bg-linear-to-r from-primary to-secondary;
+    }
+
+    .premium-border {
+        @apply border border-base-content/10;
+    }
+
+    .premium-focus-ring {
+        @apply focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-hidden;
+    }
+
+    /* Spring Animations */
+    .animate-spring {
+        transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+}
+
+@layer base {
+    /* Custom Scrollbar for premium feel */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        @apply bg-transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        @apply bg-base-content/10 rounded-full hover:bg-base-content/20 transition-colors;
+    }
+}

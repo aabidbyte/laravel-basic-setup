@@ -1,51 +1,10 @@
 <?php
 
-use App\Enums\Database\ConnectionType;
 use Illuminate\Support\Str;
 use Pdo\Mysql;
 
-$defaultConnection = env('DB_CONNECTION', ConnectionType::LANDLORD->connectionName());
-
-$mysqlDefault = [
-    'driver' => 'mysql',
-    'url' => env('DB_URL'),
-    'host' => env('DB_HOST', '127.0.0.1'),
-    'port' => env('DB_PORT', '3306'),
-    'username' => env('DB_USERNAME', 'root'),
-    'password' => env('DB_PASSWORD', ''),
-    'unix_socket' => env('DB_SOCKET', ''),
-    'charset' => env('DB_CHARSET', 'utf8mb4'),
-    'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
-    'prefix' => '',
-    'prefix_indexes' => true,
-    'strict' => true,
-    'engine' => null,
-    'options' => extension_loaded('pdo_mysql') ? array_filter([
-        (PHP_VERSION_ID >= 80500 ? Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
-    ]) : [],
-];
-
-$redisDefault = [
-    'url' => env('REDIS_URL'),
-    'host' => env('REDIS_HOST', '127.0.0.1'),
-    'username' => env('REDIS_USERNAME'),
-    'password' => env('REDIS_PASSWORD'),
-    'port' => env('REDIS_PORT', '6379'),
-    'database' => env('REDIS_DB', '0'),
-    'max_retries' => 3,
-    'backoff_algorithm' => 'decorrelated_jitter',
-    'backoff_base' => 100,
-    'backoff_cap' => 1000,
-];
-
-$redisClient = 'predis';
-
-// In production/staging, prefer phpredis if extension is available
-if ((isProduction() || isStaging()) && extension_loaded('redis')) {
-    $redisClient = 'phpredis';
-}
-
 return [
+
     /*
     |--------------------------------------------------------------------------
     | Default Database Connection Name
@@ -58,7 +17,7 @@ return [
     |
     */
 
-    'default' => $defaultConnection,
+    'default' => env('DB_CONNECTION', 'mysql'),
 
     /*
     |--------------------------------------------------------------------------
@@ -72,42 +31,88 @@ return [
     */
 
     'connections' => [
-        ConnectionType::LANDLORD->connectionName() => array_merge($mysqlDefault, [
-            'database' => env('DB_DATABASE', Str::ucfirst(Str::camel(env('APP_NAME', 'laravel')) . '_landlord')),
-            'url' => env('DB_LANDLORD_URL', $mysqlDefault['url']),
-            'host' => env('DB_LANDLORD_HOST', $mysqlDefault['host']),
-            'port' => env('DB_LANDLORD_PORT', $mysqlDefault['port']),
-            'username' => env('DB_LANDLORD_USERNAME', $mysqlDefault['username']),
-            'password' => env('DB_LANDLORD_PASSWORD', $mysqlDefault['password']),
-        ]),
 
-        ConnectionType::MASTER->connectionName() => array_merge($mysqlDefault, [
-            'database' => null, // Set at runtime
-            'url' => env('DB_MASTERS_URL', $mysqlDefault['url']),
-            'host' => env('DB_MASTERS_HOST', $mysqlDefault['host']),
-            'port' => env('DB_MASTERS_PORT', $mysqlDefault['port']),
-            'username' => env('DB_MASTERS_USERNAME', $mysqlDefault['username']),
-            'password' => env('DB_MASTERS_PASSWORD', $mysqlDefault['password']),
-        ]),
+        'sqlite' => [
+            'driver' => 'sqlite',
+            'url' => env('DB_URL'),
+            'database' => env('DB_DATABASE', database_path('database.sqlite')),
+            'prefix' => '',
+            'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
+            'busy_timeout' => null,
+            'journal_mode' => null,
+            'synchronous' => null,
+        ],
 
-        ConnectionType::TENANT->connectionName() => array_merge($mysqlDefault, [
-            'database' => null, // Set at runtime
-            'url' => env('DB_TENANTS_URL', $mysqlDefault['url']),
-            'host' => env('DB_TENANTS_HOST', $mysqlDefault['host']),
-            'port' => env('DB_TENANTS_PORT', $mysqlDefault['port']),
-            'username' => env('DB_TENANTS_USERNAME', $mysqlDefault['username']),
-            'password' => env('DB_TENANTS_PASSWORD', $mysqlDefault['password']),
-        ]),
+        'mysql' => [
+            'driver' => 'mysql',
+            'url' => env('DB_URL'),
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '3306'),
+            'database' => env('DB_DATABASE', 'laravel'),
+            'username' => env('DB_USERNAME', 'root'),
+            'password' => env('DB_PASSWORD', ''),
+            'unix_socket' => env('DB_SOCKET', ''),
+            'charset' => env('DB_CHARSET', 'utf8mb4'),
+            'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                (PHP_VERSION_ID >= 80500 ? Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
 
-        ConnectionType::TESTS->connectionName() => array_merge($mysqlDefault, [
-            'database' => null, // Set at runtime
-            'prefix' => 'tests_',
-            'url' => env('DB_URL_TESTS', $mysqlDefault['url']),
-            'host' => env('DB_HOST_TESTS', $mysqlDefault['host']),
-            'port' => env('DB_PORT_TESTS', $mysqlDefault['port']),
-            'username' => env('DB_USERNAME_TESTS', $mysqlDefault['username']),
-            'password' => env('DB_PASSWORD_TESTS', $mysqlDefault['password']),
-        ]),
+        'mariadb' => [
+            'driver' => 'mariadb',
+            'url' => env('DB_URL'),
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '3306'),
+            'database' => env('DB_DATABASE', 'laravel'),
+            'username' => env('DB_USERNAME', 'root'),
+            'password' => env('DB_PASSWORD', ''),
+            'unix_socket' => env('DB_SOCKET', ''),
+            'charset' => env('DB_CHARSET', 'utf8mb4'),
+            'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                (PHP_VERSION_ID >= 80500 ? Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
+
+        'pgsql' => [
+            'driver' => 'pgsql',
+            'url' => env('DB_URL'),
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '5432'),
+            'database' => env('DB_DATABASE', 'laravel'),
+            'username' => env('DB_USERNAME', 'root'),
+            'password' => env('DB_PASSWORD', ''),
+            'charset' => env('DB_CHARSET', 'utf8'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => 'public',
+            'sslmode' => 'prefer',
+        ],
+
+        'sqlsrv' => [
+            'driver' => 'sqlsrv',
+            'url' => env('DB_URL'),
+            'host' => env('DB_HOST', 'localhost'),
+            'port' => env('DB_PORT', '1433'),
+            'database' => env('DB_DATABASE', 'laravel'),
+            'username' => env('DB_USERNAME', 'root'),
+            'password' => env('DB_PASSWORD', ''),
+            'charset' => env('DB_UTF8', 'utf8'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            // 'encrypt' => env('DB_ENCRYPT', 'yes'),
+            // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
+        ],
+
     ],
 
     /*
@@ -138,25 +143,32 @@ return [
     */
 
     'redis' => [
-        'client' => $redisClient,
+
+        'client' => env('REDIS_CLIENT', 'phpredis'),
 
         'options' => [
-            'cluster' => 'redis',
-            // In tests we must not prefix keys to satisfy Redis key format assertions
-            'prefix' => isTesting() ? '' : Str::slug(config('app.name'), '_') . '_database_',
+            'cluster' => env('REDIS_CLUSTER', 'redis'),
+            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_database_'),
         ],
 
-        'default' => $redisDefault,
-
-        // Alias for legacy configs that reference a connection named "redis".
-        // Some config files (session.php, horizon defaults, etc.) expect
-        // a Redis connection named `redis`. Reuse the same settings to
-        // avoid duplicated arrays.
-        'redis' => $redisDefault,
+        'default' => [
+            'url' => env('REDIS_URL'),
+            'host' => env('REDIS_HOST', '127.0.0.1'),
+            'username' => env('REDIS_USERNAME'),
+            'password' => env('REDIS_PASSWORD'),
+            'port' => env('REDIS_PORT', '6379'),
+            'database' => env('REDIS_DB', '0'),
+        ],
 
         'cache' => [
-            ...$redisDefault,
+            'url' => env('REDIS_URL'),
+            'host' => env('REDIS_HOST', '127.0.0.1'),
+            'username' => env('REDIS_USERNAME'),
+            'password' => env('REDIS_PASSWORD'),
+            'port' => env('REDIS_PORT', '6379'),
             'database' => env('REDIS_CACHE_DB', '1'),
         ],
+
     ],
+
 ];

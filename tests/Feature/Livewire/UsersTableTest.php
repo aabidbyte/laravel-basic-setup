@@ -79,16 +79,14 @@ test('clear selection empties selected array', function () {
 });
 
 test('datatable shows status and last login columns', function () {
-    $uniqueName = 'Status Test User ' . \bin2hex(\random_bytes(4));
     $targetUser = User::factory()->create([
-        'name' => $uniqueName,
+        'name' => 'Test User',
         'is_active' => true,
         'last_login_at' => now()->subHours(2),
     ]);
 
     Livewire::actingAs($this->user)
         ->test('tables.user-table')
-        ->set('search', $uniqueName)
         ->assertSee(__('table.users.status'))
         ->assertSee(__('table.users.last_login_at'))
         ->assertSee(__('users.active'))

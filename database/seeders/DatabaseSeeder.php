@@ -2,29 +2,19 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\CommonSeeders\RoleAndPermissionSeeder;
 use Illuminate\Database\Seeder;
-use Illuminate\Process\Pool;
 
 class DatabaseSeeder extends Seeder
 {
+    /**
+     * Seed the application's database.
+     */
     public function run(): void
     {
-        Pool::command([
-            PHP_BINARY,
-            base_path('artisan'),
-            'db:seed:landlord',
-        ]);
-
-        Pool::command([
-            PHP_BINARY,
-            base_path('artisan'),
-            'db:seed:masters',
-        ]);
-
-        Pool::command([
-            PHP_BINARY,
-            base_path('artisan'),
-            'db:seed:tenants',
+        $this->call([
+            RoleAndPermissionSeeder::class,
+            \Database\Seeders\CommonSeeders\EmailTemplateSeeder::class,
         ]);
     }
 }

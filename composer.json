@@ -52,15 +52,14 @@
             "Database\\Seeders\\": "database/seeders/"
         },
         "files": [
-            "app/helpers/app-helpers.php",
-            "app/helpers/auth-helpers.php",
-            "app/helpers/permission-helpers.php",
-            "app/helpers/dateTime.php",
-            "app/helpers/currency.php",
-            "app/helpers/form-helpers.php",
-            "app/helpers/ui-helpers.php",
-            "app/helpers/view-helpers.php",
-            "app/Helpers/database-helpers.php"
+            "app/Helpers/app-helpers.php",
+            "app/Helpers/auth-helpers.php",
+            "app/Helpers/permission-helpers.php",
+            "app/Helpers/dateTime.php",
+            "app/Helpers/currency.php",
+            "app/Helpers/form-helpers.php",
+            "app/Helpers/ui-helpers.php",
+            "app/Helpers/view-helpers.php"
         ]
     },
     "autoload-dev": {
@@ -87,7 +86,7 @@
         ],
         "test": [
             "@php artisan config:clear --ansi",
-            "@php artisan test"
+            "@php artisan test --parallel"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

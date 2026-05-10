@@ -1,0 +1,48 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Support\Facades\Route;
+use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
+use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
+
+/*
+|--------------------------------------------------------------------------
+| Tenant Routes
+|--------------------------------------------------------------------------
+|
+| Here you can register the tenant routes for your application.
+| These routes are loaded by the TenantRouteServiceProvider.
+|
+| Feel free to customize them however you want. Good luck!
+|
+*/
+
+Route::middleware([
+    'web',
+    InitializeTenancyByDomain::class,
+    PreventAccessFromCentralDomains::class,
+])->group(function () {
+    // Public routes (no auth required)
+    require __DIR__ . '/web/public/preferences.php';
+    require __DIR__ . '/web/public/activation.php';
+    require __DIR__ . '/web/public/verification.php';
+
+    // Development-only routes
+    if (app()->environment('local', 'development')) {
+        require __DIR__ . '/web/dev/development.php';
+    }
+
+    // Authenticated routes
+    Route::middleware(['auth'])->group(function () {
+        require __DIR__ . '/web/auth/dashboard.php';
+        require __DIR__ . '/web/auth/notifications.php';
+        require __DIR__ . '/web/auth/users.php';
+        require __DIR__ . '/web/auth/roles.php';
+        require __DIR__ . '/web/auth/teams.php';
+        require __DIR__ . '/web/auth/settings.php';
+        require __DIR__ . '/web/auth/admin.php';
+        require __DIR__ . '/web/auth/trash.php';
+        require __DIR__ . '/web/auth/emailTemplates.php';
+    });
+});
