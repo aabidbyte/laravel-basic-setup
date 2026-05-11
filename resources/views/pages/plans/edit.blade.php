@@ -10,6 +10,7 @@ use Livewire\Attributes\Locked;
 
 new class extends BasePageComponent {
     public ?string $modelTypeLabel = 'plans.plan';
+    public ?Plan $model = null;
 
     /**
      * Form fields

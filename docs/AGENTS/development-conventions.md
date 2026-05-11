@@ -621,6 +621,15 @@ public function getSubmitButtonTextProperty(): string
     ->bladeModal('view-modal', fn (User $user) => ['userUuid' => $user->uuid])
     ```
 
+### Task-Specific Commands
+
+-   **Database Migrations**: **ALWAYS use composer scripts for migration commands**. Do not use `php artisan migrate` commands directly. Use the predefined scripts in `composer.json`:
+    -   `composer run migrate` (standard migrate with seed)
+    -   `composer run migrate-fresh` (fresh migration for both central and tenant)
+    -   `composer run migrate-fresh-seed` (fresh migration with seed for both central and tenant)
+    -   `composer run migrate-force` (migrate with force for production)
+-   **Why**: These scripts ensure that both central and tenant migrations are handled correctly in a single command, maintaining consistency across the multi-tenant architecture.
+
 ### Database & Models
 
 -   **ORM**: Eloquent (prefer over raw queries)

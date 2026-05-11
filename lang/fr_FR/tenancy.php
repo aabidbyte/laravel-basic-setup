@@ -10,6 +10,9 @@ return [
     'free_plan' => 'Plan Gratuit',
     'access_denied' => 'Vous n\'avez pas accès à cette organisation.',
     'domain_not_found' => 'Domaine de l\'organisation introuvable.',
+    'central_platform' => 'Plateforme Centrale',
+    'platform_initials' => 'P',
+    'system_admin' => 'Administration Système',
 
     // Impersonation
     'impersonate_user' => 'Impersonner un utilisateur',
