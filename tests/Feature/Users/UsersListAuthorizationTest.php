@@ -8,7 +8,7 @@ use App\Models\Role;
 use App\Models\User;
 
 test('unauthenticated user is redirected to login for users.index', function () {
-    $response = $this->get(route('users.index'));
+    $response = asTenant()->get(route('users.index'));
 
     $response->assertRedirect(route('login'));
 });
@@ -16,7 +16,7 @@ test('unauthenticated user is redirected to login for users.index', function () 
 test('authenticated user without VIEW_USERS permission receives 403', function () {
     $user = User::factory()->create();
 
-    $response = $this->actingAs($user)->get(route('users.index'));
+    $response = asTenant()->actingAs($user)->get(route('users.index'));
 
     $response->assertForbidden();
 });
@@ -32,7 +32,7 @@ test('authenticated user with VIEW_USERS permission gets 200', function () {
     // Assign role to user
     $user->assignRole($role);
 
-    $response = $this->actingAs($user)->get(route('users.index'));
+    $response = asTenant()->actingAs($user)->get(route('users.index'));
 
     $response->assertOk();
 });

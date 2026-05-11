@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Auth\ImpersonationController;
+
 /**
  * Admin Routes
  *
@@ -9,3 +11,10 @@
 
 // Error Logs management
 require __DIR__ . '/admin/error-logs.php';
+
+// Plans management
+require __DIR__ . '/admin/plans.php';
+
+// User Impersonation
+Route::get('/stop-impersonating', [ImpersonationController::class, 'stop'])
+    ->name('administration.instance.stop-impersonating');

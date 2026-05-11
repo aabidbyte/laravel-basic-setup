@@ -62,4 +62,5 @@ return [
     'show_password' => 'Afficher le mot de passe',
     'hide_password' => 'Masquer le mot de passe',
     'select_at_least_one' => 'Veuillez sélectionner au moins un élément.',
+    'stop_impersonating' => 'Arrêter l\'impersonnation',
 ];

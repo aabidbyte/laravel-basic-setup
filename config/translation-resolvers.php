@@ -6,6 +6,7 @@ use App\Constants\Auth\PermissionAction;
 use App\Constants\Auth\PermissionEntity;
 use App\Enums\EmailTemplate\EmailTemplateStatus;
 use App\Enums\EmailTemplate\EmailTemplateType;
+use App\Enums\Tenancy\TenantPlan;
 use App\Services\EmailTemplate\EntityTypeRegistry;
 use App\Services\I18nService;
 
@@ -55,5 +56,11 @@ return [
         // Entity types
         'types.$type' => fn () => resolve(EntityTypeRegistry::class)->getAvailableEntityTypes(),
         'types.$entityType' => fn () => resolve(EntityTypeRegistry::class)->getAvailableEntityTypes(),
+
+        // Tenant plans (enum)
+        'tenancy.plans.{$tenant->plan}' => fn () => array_map(
+            fn ($case) => $case->value,
+            TenantPlan::cases(),
+        ),
     ],
 ];

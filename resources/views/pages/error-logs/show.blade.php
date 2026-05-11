@@ -3,7 +3,7 @@
 use App\Constants\Auth\Permissions;
 use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\BasePageComponent;
-use App\Models\Tenant\ErrorLog;
+use App\Models\ErrorLog;
 use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Support\Facades\Auth;
 

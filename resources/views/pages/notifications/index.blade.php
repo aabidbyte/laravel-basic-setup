@@ -45,7 +45,7 @@ new class extends BasePageComponent {
     {
         $count = Auth::user()->notifications()->count();
         if (isTesting()) {
-            Illuminate\Support\Facades\Log::info("Actual Database Notification Count: " . $count);
+            Illuminate\Support\Facades\Log::info('Actual Database Notification Count: ' . $count);
         }
 
         return Auth::user()

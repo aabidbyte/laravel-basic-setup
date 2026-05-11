@@ -11,9 +11,23 @@
 |
 */
 
+use App\Models\Tenant;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\InteractsWithTenancy;
 use Tests\TestCase;
 
 pest()->extend(TestCase::class)
+    ->use(RefreshDatabase::class)
+    ->use(InteractsWithTenancy::class)
+    ->afterEach(function () {
+        if (isset($this->tenant) && $this->tenant instanceof Tenant) {
+            $this->tenant->delete();
+            unset($this->tenant);
+        }
+        if (function_exists('tenancy')) {
+            tenancy()->end();
+        }
+    })
     ->in('Feature', 'Unit');
 
 /*
@@ -45,4 +59,14 @@ expect()->extend('toBeOne', function () {
 function something()
 {
     // ..
+}
+
+/**
+ * Run the test as a specific tenant or create a new one.
+ */
+function asTenant(?Tenant $tenant = null)
+{
+    test()->setUpTenancy($tenant);
+
+    return test();
 }

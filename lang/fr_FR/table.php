@@ -32,6 +32,7 @@ return [
         'email' => 'E-mail',
         'roles' => 'Rôles',
         'teams' => 'Équipes',
+        'tenants' => 'Espaces de travail',
         'verified' => 'Vérifié',
         'verified_yes' => 'Oui',
         'verified_no' => 'Non',
@@ -43,6 +44,8 @@ return [
         'filters' => [
             'role' => 'Rôle',
             'all_roles' => 'Tous les rôles',
+            'tenant' => 'Espace de travail',
+            'all_tenants' => 'Tous les espaces de travail',
             'status' => 'Statut',
             'all_status' => 'Tous les statuts',
             'verified' => 'Vérifié',

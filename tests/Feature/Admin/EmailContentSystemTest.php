@@ -10,6 +10,8 @@ use App\Models\Permission;
 use App\Models\User;
 
 beforeEach(function () {
+    asTenant();
+
     $this->admin = User::factory()->create();
     $permissions = [
         Permissions::VIEW_EMAIL_TEMPLATES(),
@@ -25,26 +27,26 @@ beforeEach(function () {
 });
 
 test('admin can view contents index', function () {
-    $this->actingAs($this->admin)
+    asTenant()->actingAs($this->admin)
         ->get(route('emailTemplates.contents.index'))
         ->assertStatus(200);
 });
 
 test('admin can view layouts index', function () {
-    $this->actingAs($this->admin)
+    asTenant()->actingAs($this->admin)
         ->get(route('emailTemplates.layouts.index'))
         ->assertStatus(200);
 });
 
 test('admin can view create page for content', function () {
-    $this->actingAs($this->admin)
+    asTenant()->actingAs($this->admin)
         ->get(route('emailTemplates.settings.edit', ['type' => 'content']))
         ->assertStatus(200)
         ->assertSee('Create New Email Content');
 });
 
 test('admin can view create page for layout', function () {
-    $this->actingAs($this->admin)
+    asTenant()->actingAs($this->admin)
         ->get(route('emailTemplates.settings.edit', ['type' => 'layout']))
         ->assertStatus(200)
         ->assertSee('Create New Email Layout');
@@ -58,7 +60,7 @@ test('admin can view edit page for content', function () {
         'status' => EmailTemplateStatus::DRAFT,
     ]);
 
-    $this->actingAs($this->admin)
+    asTenant()->actingAs($this->admin)
         ->get(route('emailTemplates.settings.edit', $content))
         ->assertStatus(200)
         ->assertSee('Edit Email Content');
@@ -72,7 +74,7 @@ test('admin can view edit page for layout', function () {
         'status' => EmailTemplateStatus::PUBLISHED,
     ]);
 
-    $this->actingAs($this->admin)
+    asTenant()->actingAs($this->admin)
         ->get(route('emailTemplates.settings.edit', $layout))
         ->assertStatus(200)
         ->assertSee('Edit Email Layout');

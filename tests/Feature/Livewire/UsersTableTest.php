@@ -79,10 +79,10 @@ test('clear selection empties selected array', function () {
 });
 
 test('datatable shows status and last login columns', function () {
-    $targetUser = User::factory()->create([
-        'name' => 'Test User',
+    User::query()->where('id', '!=', $this->user->id)->delete();
+    $this->user->update([
         'is_active' => true,
-        'last_login_at' => now()->subHours(2),
+        'last_login_at' => now()->subDays(1),
     ]);
 
     Livewire::actingAs($this->user)
@@ -90,5 +90,5 @@ test('datatable shows status and last login columns', function () {
         ->assertSee(__('table.users.status'))
         ->assertSee(__('table.users.last_login_at'))
         ->assertSee(__('users.active'))
-        ->assertSee($targetUser->last_login_at->diffForHumans());
+        ->assertSee('1 day ago');
 });

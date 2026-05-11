@@ -62,8 +62,10 @@ trait HasDatatableLivewireRendering
 
         // 1. Resolve Value (Component, Label, or Field)
         $value = '';
-        if ($column->getContentCallback() !== null && $column->getComponentType() !== null) {
+        if ($column->getComponentType() !== null) {
             $value = $column->resolve($row);
+            // If it's a component, we return here as resolve handles formatting and views if needed
+            return $value;
         } elseif ($column->getLabelCallback() !== null) {
             $value = ($column->getLabelCallback())($row, $column);
         } else {

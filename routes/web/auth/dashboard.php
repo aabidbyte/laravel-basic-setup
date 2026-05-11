@@ -8,5 +8,5 @@ use Illuminate\Support\Facades\Route;
  * Main application dashboard.
  * Requires authentication.
  */
-Route::livewire('/', 'pages::dashboard')
+Route::livewire('/dashboard', 'pages::dashboard')
     ->name('dashboard');

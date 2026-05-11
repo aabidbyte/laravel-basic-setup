@@ -435,3 +435,14 @@ If the parent component (`Select`) uses `open` and the child component (`Sheet`)
 { open: false } // x-model="selectOpen" -> Binds correctly
 ```
 
+### Two-Factor Authentication Error Handling
+ 
+**CRITICAL RULE**: To prevent system-level authentication crashes in multi-tenant environments (e.g., due to `APP_KEY` mismatches or malformed `two_factor_secret` strings), the `ErrorHandler` specifically intercepts `DecryptException` during the two-factor challenge process.
+ 
+**Behavior**:
+-   Catches `Illuminate\Contracts\Encryption\DecryptException` on `two-factor.login.store` route.
+-   Logs the error for administrative investigation (with reference ID).
+-   Clears the temporary login session (`login.id`).
+-   Redirects the user back to the login page with a localized error notification (`auth.two_factor_error`).
+ 
+This prevents the "500 Internal Server Error" (The payload is invalid) from being displayed to users when their 2FA secret cannot be decrypted, allowing them to attempt login again or contact support.

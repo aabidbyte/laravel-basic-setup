@@ -12,6 +12,8 @@
     <body>
         @stack('beginBody')
 
+        <x-layouts.app.impersonation-banner />
+
         <x-layouts.app.sidebar>
             {{ $slot }}
         </x-layouts.app.sidebar>

@@ -26,6 +26,13 @@ class User extends BaseUserModel implements MustVerifyEmail
     use TwoFactorAuthenticatable;
 
     /**
+     * The connection name for the model.
+     *
+     * @var string|null
+     */
+    protected $connection = 'central';
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
@@ -105,6 +112,15 @@ class User extends BaseUserModel implements MustVerifyEmail
     {
         return $this->belongsToMany(Team::class, 'team_user')
             ->using(TeamUser::class)
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the tenants that the user belongs to.
+     */
+    public function tenants(): BelongsToMany
+    {
+        return $this->belongsToMany(Tenant::class, 'tenant_user')
             ->withTimestamps();
     }
 
@@ -246,6 +262,16 @@ class User extends BaseUserModel implements MustVerifyEmail
     }
 
     /**
+     * Get the user's avatar URL.
+     */
+    public function getAvatarUrlAttribute(): string
+    {
+        $hash = \md5(\strtolower(\trim($this->email ?? $this->username ?? '')));
+
+        return "https://www.gravatar.com/avatar/{$hash}?s=200&d=mp";
+    }
+
+    /**
      * Get roles for datatable display
      *
      * @return array<int, array<string, string>>
@@ -268,6 +294,19 @@ class User extends BaseUserModel implements MustVerifyEmail
         return $this->teams->map(fn ($team) => [
             'label' => $team->name,
             'color' => 'secondary',
+        ])->toArray();
+    }
+
+    /**
+     * Get tenants for datatable display
+     *
+     * @return array<int, array<string, string>>
+     */
+    public function getTenantsForDatatableAttribute(): array
+    {
+        return $this->tenants->map(fn ($tenant) => [
+            'label' => $tenant->name,
+            'color' => 'neutral',
         ])->toArray();
     }
 

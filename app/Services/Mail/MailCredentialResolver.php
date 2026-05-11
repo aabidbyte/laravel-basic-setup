@@ -9,6 +9,7 @@ use App\Models\MailSettings;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Hierarchical mail credential resolver.
@@ -84,14 +85,35 @@ class MailCredentialResolver
     {
         // If no team provided, try to get from user's first team
         if ($team === null && $user !== null) {
-            $team = $user->teams()->first();
+            // Fix: User is central, Team is tenant.
+            // If tenancy is initialized, we query the current tenant's team_user table.
+            if (\function_exists('tenancy') && tenancy()->initialized) {
+                $teamId = DB::connection('central')->table('team_user')
+                    ->where('user_id', $user->id)
+                    ->value('team_id');
+
+                if ($teamId) {
+                    $team = Team::find($teamId);
+                }
+            } else {
+                // On central, user has no teams (teams are tenant-only)
+                return null;
+            }
         }
 
         // If still no team, try the current authenticated user's first team
         if ($team === null) {
             /** @var User|null $authUser */
             $authUser = Auth::user();
-            $team = $authUser?->teams()->first();
+            if ($authUser && \function_exists('tenancy') && tenancy()->initialized) {
+                $teamId = DB::connection('central')->table('team_user')
+                    ->where('user_id', $authUser->id)
+                    ->value('team_id');
+
+                if ($teamId) {
+                    $team = Team::find($teamId);
+                }
+            }
         }
 
         if ($team === null) {

@@ -9,6 +9,7 @@ use App\Constants\DataTable\DataTableUi;
 use App\Enums\DataTable\DataTableFilterType;
 use App\Livewire\DataTable\Datatable;
 use App\Models\Role;
+use App\Models\Tenant;
 use App\Models\User;
 use App\Services\DataTable\Builders\Action;
 use App\Services\DataTable\Builders\BulkAction;
@@ -17,6 +18,7 @@ use App\Services\DataTable\Builders\Filter;
 use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
 
 class UserTable extends Datatable
 {
@@ -34,7 +36,14 @@ class UserTable extends Datatable
      */
     public function baseQuery(): Builder
     {
-        return User::query()->with(['roles', 'teams'])->select('users.*');
+        $relations = ['roles', 'tenants'];
+
+        // Only include teams if we are in a tenant context or the table exists
+        if (tenant() || Schema::hasTable('teams')) {
+            $relations[] = 'teams';
+        }
+
+        return User::query()->with($relations)->select('users.*');
     }
 
     /**
@@ -44,7 +53,7 @@ class UserTable extends Datatable
      */
     public function columns(): array
     {
-        return [
+        $columns = [
             Column::make(__('table.users.name'), 'name')
                 ->sortable()
                 ->searchable()
@@ -65,7 +74,7 @@ class UserTable extends Datatable
 
             Column::make(__('table.users.roles'), 'roles_for_datatable')
                 ->content(function (User $user) {
-                    $roles = $user->roles->pluck('display_name')->toArray();
+                    $roles = $user->roles->map(fn (Role $role) => $role->display_name ?? $role->name)->toArray();
 
                     return \count($roles) > 3
                         ? [trans_choice('users.roles_count', \count($roles))]
@@ -73,7 +82,20 @@ class UserTable extends Datatable
                 })
                 ->type(DataTableUi::UI_BADGE, ['color' => 'primary', 'size' => 'sm']),
 
-            Column::make(__('table.users.teams'), 'teams_for_datatable')
+            Column::make(__('table.users.tenants'), 'tenants_for_datatable')
+                ->content(function (User $user) {
+                    $tenants = $user->tenants->pluck('name')->toArray();
+
+                    return \count($tenants) > 3
+                        ? [trans_choice('users.tenants_count', \count($tenants))]
+                        : $tenants;
+                })
+                ->type(DataTableUi::UI_BADGE, ['color' => 'neutral', 'size' => 'sm']),
+        ];
+
+        // Only add teams column if we are in a tenant context or the table exists
+        if (tenant() || Schema::hasTable('teams')) {
+            $columns[] = Column::make(__('table.users.teams'), 'teams_for_datatable')
                 ->content(function (User $user) {
                     $teams = $user->teams->pluck('name')->toArray();
 
@@ -81,12 +103,14 @@ class UserTable extends Datatable
                         ? [trans_choice('users.teams_count', \count($teams))]
                         : $teams;
                 })
-                ->type(DataTableUi::UI_BADGE, ['color' => 'secondary', 'size' => 'sm']),
+                ->type(DataTableUi::UI_BADGE, ['color' => 'secondary', 'size' => 'sm']);
+        }
 
-            Column::make(__('table.users.last_login_at'), 'last_login_at')
-                ->sortable()
-                ->format(fn ($value) => $value ? $value->diffForHumans() : '—'),
-        ];
+        $columns[] = Column::make(__('table.users.last_login_at'), 'last_login_at')
+            ->sortable()
+            ->label(fn (User $user) => $user->last_login_at ? $user->last_login_at->diffForHumans() : '—');
+
+        return $columns;
     }
 
     /**
@@ -102,6 +126,12 @@ class UserTable extends Datatable
                 ->type(DataTableFilterType::SELECT)
                 ->relationship('roles', 'name')
                 ->options($this->getRoleOptions()), // Use memoized options
+
+            Filter::make('tenant', __('table.users.filters.tenant'))
+                ->placeholder(__('table.users.filters.all_tenants'))
+                ->type(DataTableFilterType::SELECT)
+                ->relationship('tenants', 'name')
+                ->options($this->getTenantOptions()), // Use memoized options
 
             Filter::make('is_active', __('table.users.filters.status'))
                 ->placeholder(__('table.users.filters.all_status'))
@@ -162,6 +192,19 @@ class UserTable extends Datatable
         return $this->memoize(
             'filter:roles',
             fn () => Role::pluck('name', 'name')->toArray(),
+        );
+    }
+
+    /**
+     * Get tenant options (memoized).
+     *
+     * @return array<string, string>
+     */
+    protected function getTenantOptions(): array
+    {
+        return $this->memoize(
+            'filter:tenants',
+            fn () => Tenant::pluck('name', 'name')->toArray(),
         );
     }
 

@@ -77,7 +77,7 @@ class BladeServiceProvider extends ServiceProvider
 
             $notificationRealtimeConfig = [
                 'userUuid' => $user?->uuid,
-                'teamUuids' => $user ? $user->teams()->pluck('teams.uuid')->toArray() : [],
+                'tenantUuids' => $user ? $user->tenants()->pluck('tenants.id')->toArray() : [],
                 'sessionId' => session()->getId(),
                 'pendingNotifications' => $pendingNotifications,
             ];
@@ -91,7 +91,7 @@ class BladeServiceProvider extends ServiceProvider
 
             $notificationRealtimeConfig = [
                 'userUuid' => null,
-                'teamUuids' => [],
+                'tenantUuids' => [],
                 'sessionId' => session()->getId(),
                 'pendingNotifications' => $pendingNotifications,
             ];

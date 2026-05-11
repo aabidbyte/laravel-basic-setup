@@ -14,6 +14,7 @@ use App\Services\ErrorHandling\Channels\ToastChannel;
 use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -197,6 +198,11 @@ class ErrorHandler
         // Check if request expects JSON
         if ($request->expectsJson() || $request->ajax()) {
             return $this->renderJsonResponse($e);
+        }
+
+        // Handle DecryptException during 2FA specifically
+        if ($e instanceof DecryptException && $request->routeIs('two-factor.login.store')) {
+            return $this->handleTwoFactorDecryptionFailure($e, $request);
         }
 
         // Handle specific exception types
@@ -442,6 +448,34 @@ class ErrorHandler
 
         // For development, re-throw to show full error page
         throw $e;
+    }
+
+    /**
+     * Handle DecryptException during 2FA challenge.
+     *
+     * @param  DecryptException  $e  The exception
+     * @param  Request  $request  The request
+     */
+    protected function handleTwoFactorDecryptionFailure(DecryptException $e, Request $request): RedirectResponse
+    {
+        // Log the failure for investigation
+        logger()->warning('Two-factor secret decryption failed. Redirecting to login.', [
+            'user_id' => $request->session()->get('login.id'),
+            'reference_id' => $this->referenceId,
+            'error' => $e->getMessage(),
+        ]);
+
+        // Clear the bridge session data
+        $request->session()->forget(['login.id', 'login.remember']);
+
+        // Notify the user
+        NotificationBuilder::make()
+            ->title('auth.two_factor_error')
+            ->subtitle('auth.two_factor_session_expired')
+            ->error()
+            ->send();
+
+        return redirect()->route('login');
     }
 
     /**

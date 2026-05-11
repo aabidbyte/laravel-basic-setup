@@ -15,14 +15,14 @@
      data-confirm-event="{{ $confirmEvent }}"
      data-confirm-data='{{ \json_encode($confirmData) }}'
      class="space-y-4">
-    <div class="px-6 py-4 space-y-4">
+    <div class="space-y-4 px-6 py-4">
         {{-- Description --}}
         <p class="text-base-content/70">
             {{ $description }}
         </p>
 
         {{-- Item name to confirm --}}
-        <div class="bg-error/10 rounded-lg p-3 text-center border border-error/20">
+        <div class="bg-error/10 border-error/20 rounded-lg border p-3 text-center">
             <span class="text-error font-mono text-lg font-bold"
                   x-text="itemLabel"></span>
         </div>
@@ -37,7 +37,7 @@
                     autofocus />
     </div>
 
-    <div class="bg-base-200/50 border-t border-base-content/5 px-6 py-4 flex justify-end gap-2">
+    <div class="bg-base-200/50 border-base-content/5 flex justify-end gap-2 border-t px-6 py-4">
         <x-ui.button type="button"
                      variant="ghost"
                      @click="{{ $onCancel ?? 'closeModal()' }}">

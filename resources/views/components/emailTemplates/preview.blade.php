@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Models\Tenant\EmailTemplate\EmailTemplate;
+use App\Models\EmailTemplate\EmailTemplate;
 use App\Services\EmailTemplate\EmailRenderer;
 use App\Services\Notifications\NotificationBuilder;
 use Livewire\Attributes\Lazy;

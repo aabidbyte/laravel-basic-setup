@@ -4,10 +4,11 @@ use App\Constants\Auth\Permissions;
 use App\Constants\Auth\Roles;
 use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\BasePageComponent;
-use App\Models\Tenant\Permission;
-use App\Models\Tenant\Role;
-use App\Models\Tenant\Team;
-use App\Models\Tenant\User;
+use App\Models\Permission;
+use App\Models\Role;
+use App\Models\Team;
+use App\Models\Tenant;
+use App\Models\User;
 use App\Services\Users\UserService;
 use App\Support\Users\UserData;
 use Illuminate\Database\Eloquent\Collection;
@@ -43,6 +44,7 @@ new class extends BasePageComponent {
     public array $selectedRoles = [];
     public array $selectedTeams = [];
     public array $selectedDirectPermissions = [];
+    public array $selectedTenants = [];
 
     public function mount(?User $user = null): void
     {
@@ -73,6 +75,7 @@ new class extends BasePageComponent {
         $this->selectedRoles = $user->roles->pluck('uuid')->toArray();
         $this->selectedTeams = $user->teams->pluck('uuid')->toArray();
         $this->selectedDirectPermissions = $user->permissions->pluck('uuid')->toArray();
+        $this->selectedTenants = $user->tenants->pluck('id')->toArray();
     }
 
     protected function prepareNewUser(): void
@@ -111,6 +114,16 @@ new class extends BasePageComponent {
     public function getTeamsProperty()
     {
         return Team::orderBy('name', 'asc')->get();
+    }
+
+    /**
+     * Get available tenants for selection.
+     *
+     * @return Collection<int, Tenant>
+     */
+    public function getTenantsProperty()
+    {
+        return Tenant::orderBy('name', 'asc')->get();
     }
 
     /**
@@ -155,6 +168,8 @@ new class extends BasePageComponent {
             'selectedTeams.*' => [Rule::exists(Team::class, 'uuid')],
             'selectedDirectPermissions' => ['array'],
             'selectedDirectPermissions.*' => [Rule::exists(Permission::class, 'uuid')],
+            'selectedTenants' => ['array'],
+            'selectedTenants.*' => [Rule::exists(Tenant::class, 'id')],
         ];
 
         if ($this->isCreateMode) {
@@ -201,6 +216,7 @@ new class extends BasePageComponent {
                 roleUuids: $this->selectedRoles,
                 teamUuids: $this->selectedTeams,
                 permissionUuids: $this->selectedDirectPermissions,
+                tenantUuids: $this->selectedTenants,
             ),
         );
 
@@ -228,6 +244,7 @@ new class extends BasePageComponent {
                 roleUuids: $this->selectedRoles,
                 teamUuids: $this->selectedTeams,
                 permissionUuids: $this->selectedDirectPermissions,
+                tenantUuids: $this->selectedTenants,
             ),
         );
 
@@ -415,7 +432,8 @@ new class extends BasePageComponent {
                                 <x-ui.label :text="__('users.roles')"></x-ui.label>
                                 <div class="border-base-300 max-h-48 space-y-2 overflow-y-auto rounded-lg border p-2">
                                     @foreach ($this->roles as $role)
-                                        <x-ui.label class="hover:bg-base-200 flex cursor-pointer items-center gap-3 rounded p-2"
+                                        <x-ui.label wire:key="role-{{ $role->uuid }}"
+                                                    class="hover:bg-base-200 flex cursor-pointer items-center gap-3 rounded p-2"
                                                     variant="plain">
                                             <input type="checkbox"
                                                    wire:model="selectedRoles"
@@ -432,7 +450,8 @@ new class extends BasePageComponent {
                                 <x-ui.label :text="__('users.teams')"></x-ui.label>
                                 <div class="border-base-300 max-h-48 space-y-2 overflow-y-auto rounded-lg border p-2">
                                     @foreach ($this->teams as $team)
-                                        <x-ui.label class="hover:bg-base-200 flex cursor-pointer items-center gap-3 rounded p-2"
+                                        <x-ui.label wire:key="team-{{ $team->uuid }}"
+                                                    class="hover:bg-base-200 flex cursor-pointer items-center gap-3 rounded p-2"
                                                     variant="plain">
                                             <input type="checkbox"
                                                    wire:model="selectedTeams"
@@ -442,6 +461,24 @@ new class extends BasePageComponent {
                                         </x-ui.label>
                                     @endforeach
                                 </div>
+                            </div>
+                        </div>
+
+                        {{-- Tenants --}}
+                        <div class="space-y-2">
+                            <x-ui.label :text="__('navigation.tenants')"></x-ui.label>
+                            <div class="border-base-300 max-h-48 space-y-2 overflow-y-auto rounded-lg border p-2">
+                                @foreach ($this->tenants as $tenant)
+                                    <x-ui.label wire:key="tenant-{{ $tenant->id }}"
+                                                class="hover:bg-base-200 flex cursor-pointer items-center gap-3 rounded p-2"
+                                                variant="plain">
+                                        <input type="checkbox"
+                                               wire:model="selectedTenants"
+                                               value="{{ $tenant->id }}"
+                                               class="checkbox checkbox-sm checkbox-accent">
+                                        <span class="label-text">{{ $tenant->name }} ({{ $tenant->id }})</span>
+                                    </x-ui.label>
+                                @endforeach
                             </div>
                         </div>
                     </div>

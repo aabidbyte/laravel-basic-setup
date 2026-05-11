@@ -21,6 +21,7 @@ function shouldSkipRoute(string $uri, ?string $name = null): bool
     $skipPrefixes = [
         '_debugbar',
         'telescope',
+        'admin/system/debug/monitoring/telescope-api',
         'horizon',
         'livewire',
         'sanctum',

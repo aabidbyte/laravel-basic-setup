@@ -63,12 +63,23 @@ class SideBarMenuService
                             ->route('teams.index')
                             ->activeRoutes('teams.*')
                             ->show(Auth::user()?->can(Permissions::VIEW_TEAMS()) ?? false),
+                        NavigationItem::make()
+                            ->title(__('navigation.tenants'))
+                            ->route('tenants.index')
+                            ->activeRoutes('tenants.*')
+                            ->show(Auth::user()?->can(Permissions::VIEW_TENANTS()) ?? false),
+                        NavigationItem::make()
+                            ->title(__('navigation.plans'))
+                            ->route('plans.index')
+                            ->activeRoutes('plans.*')
+                            ->show(Auth::user()?->can(Permissions::VIEW_PLANS()) ?? false),
                     ),
 
                 // Email Templates (Unified)
                 NavigationItem::make()
                     ->title(__('types.email_templates'))
                     ->icon('envelope')
+                    ->show(tenant() && (Auth::user()?->can(Permissions::VIEW_EMAIL_TEMPLATES()) ?? false))
                     ->items(
                         NavigationItem::make()
                             ->title(__('types.email_contents'))
@@ -149,13 +160,16 @@ class SideBarMenuService
      */
     public function getUserMenus(): array
     {
+        $user = Auth::user();
+        $items = [
+            NavigationItem::make()
+                ->title(__('navigation.settings'))
+                ->route('settings.account'),
+        ];
+
         return NavigationBuilder::make()
             ->title(__('navigation.user'))
-            ->items(
-                NavigationItem::make()
-                    ->title(__('navigation.settings'))
-                    ->route('settings.account'),
-            )
+            ->items(...$items)
             ->toArray();
     }
 

@@ -3,6 +3,10 @@
 use App\Models\User;
 use Laravel\Fortify\Features;
 
+beforeEach(function () {
+    asTenant();
+});
+
 test('two factor challenge redirects to login when not authenticated', function () {
     if (! Features::canManageTwoFactorAuthentication()) {
         $this->markTestSkipped('Two-factor authentication is not enabled.');

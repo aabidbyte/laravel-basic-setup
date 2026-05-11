@@ -3,7 +3,7 @@
 use App\Constants\Auth\Permissions;
 use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\BasePageComponent;
-use App\Models\Tenant\Team;
+use App\Models\Team;
 use Illuminate\Validation\Rule;
 
 new class extends BasePageComponent {

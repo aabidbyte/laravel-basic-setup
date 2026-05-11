@@ -16,7 +16,7 @@ readonly class UserData
      * @param  bool  $sendActivation  Whether to send activation email (for creation)
      * @param  array<string>|null  $roleUuids  Role UUIDs
      * @param  array<string>|null  $teamUuids  Team UUIDs
-     * @param  array<string>|null  $permissionUuids  Permission UUIDs
+     * @param  array<string>|null  $tenantUuids  Tenant UUIDs
      */
     public function __construct(
         public array $attributes,
@@ -24,6 +24,7 @@ readonly class UserData
         public ?array $roleUuids = null,
         public ?array $teamUuids = null,
         public ?array $permissionUuids = null,
+        public ?array $tenantUuids = null,
     ) {}
 
     /**
@@ -40,8 +41,9 @@ readonly class UserData
         array $roleUuids = [],
         array $teamUuids = [],
         array $permissionUuids = [],
+        array $tenantUuids = [],
     ): self {
-        return new self($attributes, $sendActivation, $roleUuids, $teamUuids, $permissionUuids);
+        return new self($attributes, $sendActivation, $roleUuids, $teamUuids, $permissionUuids, $tenantUuids);
     }
 
     /**
@@ -57,7 +59,8 @@ readonly class UserData
         ?array $roleUuids = null,
         ?array $teamUuids = null,
         ?array $permissionUuids = null,
+        ?array $tenantUuids = null,
     ): self {
-        return new self($attributes, false, $roleUuids, $teamUuids, $permissionUuids);
+        return new self($attributes, false, $roleUuids, $teamUuids, $permissionUuids, $tenantUuids);
     }
 }

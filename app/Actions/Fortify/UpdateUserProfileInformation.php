@@ -24,14 +24,14 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
                 'string',
                 'email',
                 'max:255',
-                Rule::unique('users')->ignore($user->id),
+                Rule::unique(User::class)->ignore($user->id),
             ],
             'username' => [
                 'required',
                 'string',
                 'max:255',
                 'alpha_dash', // Ensures username is url-safe
-                Rule::unique('users')->ignore($user->id),
+                Rule::unique(User::class)->ignore($user->id),
             ],
         ])->validateWithBag('updateProfileInformation');
 

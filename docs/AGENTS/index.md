@@ -38,4 +38,5 @@ This documentation is organized into sections for easy navigation. Each section 
 - [Routes](routes.md)
 - [Intelephense Helper](intelephense-helper.md)
 - [Tenancy Laravel Skill](tenancy-laravel-skill.md)
+- [Entity Generator Skill (A-Z)](entity-generator-skill.md)
 - [Notes for AI Agents](notes-for-ai-agents.md)

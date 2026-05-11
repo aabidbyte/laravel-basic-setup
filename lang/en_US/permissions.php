@@ -19,6 +19,7 @@ return [
         'mail_settings' => 'Mail Settings',
         'email_templates' => 'Email Templates',
         'email_layouts' => 'Email Layouts',
+        'tenants' => 'Tenants',
     ],
     'actions' => [
         'view' => 'View',

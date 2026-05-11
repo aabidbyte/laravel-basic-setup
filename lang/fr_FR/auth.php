@@ -21,4 +21,6 @@ return [
     'inactive' => 'Votre compte est inactif.',
     'inactive_title' => 'Compte inactif',
     'inactive_subtitle' => 'Veuillez contacter l\'administrateur pour activer votre compte.',
+    'two_factor_error' => 'Erreur 2FA',
+    'two_factor_session_expired' => 'Votre session de double authentification a expiré ou la clé de sécurité est invalide. Veuillez vous reconnecter.',
 ];

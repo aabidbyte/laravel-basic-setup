@@ -105,7 +105,8 @@ new class extends LivewireBaseComponent {
                              role="list"
                              aria-label="Recovery codes">
                             @foreach ($recoveryCodes as $code)
-                                <div role="listitem"
+                                <div wire:key="recovery-code-{{ $loop->index }}"
+                                     role="listitem"
                                      class="select-text"
                                      wire:loading.class="opacity-50 animate-pulse">
                                     {{ $code }}

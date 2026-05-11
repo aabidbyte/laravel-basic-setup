@@ -8,7 +8,7 @@ use App\Enums\EmailTemplate\EmailTemplateStatus;
 use App\Enums\EmailTemplate\EmailTemplateType;
 use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\BasePageComponent;
-use App\Models\Tenant\EmailTemplate\EmailTemplate;
+use App\Models\EmailTemplate\EmailTemplate;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 use Livewire\Attributes\Locked;

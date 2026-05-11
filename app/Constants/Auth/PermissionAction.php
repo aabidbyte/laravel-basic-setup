@@ -47,6 +47,8 @@ class PermissionAction
 
     public const EDIT_BUILDER = 'edit_builder';
 
+    public const IMPERSONATE = 'impersonate';
+
     /**
      * Get all action constants as an array.
      *
@@ -69,6 +71,7 @@ class PermissionAction
             self::CONFIGURE,
             self::GENERATE_ACTIVATION,
             self::EDIT_BUILDER,
+            self::IMPERSONATE,
         ];
     }
 

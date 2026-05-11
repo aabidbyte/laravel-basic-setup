@@ -6,6 +6,10 @@ use App\Models\User;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Support\Facades\Event;
 
+beforeEach(function () {
+    asTenant();
+});
+
 test('last_login_at is updated when user logs in', function () {
     $user = User::factory()->create([
         'last_login_at' => null,

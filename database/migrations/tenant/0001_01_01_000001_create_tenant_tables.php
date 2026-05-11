@@ -1,0 +1,112 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        // Mail settings (Tenant-specific)
+        Schema::create('mail_settings', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->string('settable_type');
+            $table->unsignedBigInteger('settable_id');
+            $table->string('mail_driver')->nullable();
+            $table->string('mail_host')->nullable();
+            $table->integer('mail_port')->nullable();
+            $table->string('mail_username')->nullable();
+            $table->string('mail_password')->nullable();
+            $table->string('mail_encryption')->nullable();
+            $table->string('mail_from_address')->nullable();
+            $table->string('mail_from_name')->nullable();
+            $table->boolean('is_active')->default(true);
+            $table->timestampsTz();
+            $table->softDeletesTz();
+
+            $table->index(['settable_type', 'settable_id']);
+        });
+
+        // Email templates (Tenant-specific)
+        Schema::create('email_templates', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->string('name');
+            $table->string('type')->default('marketing');
+            $table->boolean('is_layout')->default(false);
+            $table->foreignId('layout_id')->nullable()->constrained('email_templates')->nullOnDelete();
+            $table->boolean('is_system')->default(false);
+            $table->boolean('is_default')->default(false);
+            $table->boolean('all_teams')->default(false);
+            $table->text('description')->nullable();
+            $table->string('status')->default('draft');
+            $table->json('builder_data')->nullable();
+            $table->json('entity_types')->nullable();
+            $table->json('context_variables')->nullable();
+            $table->text('preview')->nullable();
+            $table->timestampsTz();
+            $table->softDeletesTz();
+        });
+
+        Schema::create('email_translations', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->string('translatable_type');
+            $table->unsignedBigInteger('translatable_id');
+            $table->string('locale')->index();
+            $table->string('subject');
+            $table->longText('html_content');
+            $table->longText('text_content')->nullable();
+            $table->string('preheader')->nullable();
+
+            // Draft columns
+            $table->string('draft_subject')->nullable();
+            $table->longText('draft_html_content')->nullable();
+            $table->longText('draft_text_content')->nullable();
+            $table->string('draft_preheader')->nullable();
+
+            $table->unique(['translatable_type', 'translatable_id', 'locale'], 'translatable_locale_unique');
+            $table->timestampsTz();
+            $table->softDeletesTz();
+        });
+
+        // Error logs (Tenant-specific)
+        Schema::create('error_logs', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->string('reference_id')->unique()->index();
+            $table->string('exception_class')->index();
+            $table->text('message');
+            $table->longText('stack_trace');
+            $table->string('url')->nullable();
+            $table->string('method')->nullable();
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->string('ip')->nullable();
+            $table->text('user_agent')->nullable();
+            $table->json('context')->nullable();
+            $table->json('resolved_data')->nullable();
+            $table->timestampTz('resolved_at')->nullable()->index();
+            $table->timestampsTz();
+            $table->softDeletesTz();
+
+            $table->index('created_at');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('error_logs');
+        Schema::dropIfExists('email_translations');
+        Schema::dropIfExists('email_templates');
+        Schema::dropIfExists('mail_settings');
+    }
+};

@@ -1,7 +1,15 @@
 <?php
 
 use App\Models\User;
+use Database\Seeders\TenantSeeders\Production\EmailTemplateSeeder;
+use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
+
+beforeEach(function () {
+    asTenant();
+    $this->seed(EmailTemplateSeeder::class);
+    Mail::fake();
+});
 
 test('profile information can be updated', function () {
     $user = User::factory()->create();

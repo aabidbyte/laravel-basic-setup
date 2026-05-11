@@ -28,6 +28,11 @@ Route::middleware([
     require __DIR__ . '/web/public/activation.php';
     require __DIR__ . '/web/public/verification.php';
 
+    // User Impersonation
+    Route::get('/impersonate/{token}', function ($token) {
+        return tenancy()->impersonate($token, 10, '/dashboard');
+    })->name('impersonate');
+
     // Development-only routes
     if (app()->environment('local', 'development')) {
         require __DIR__ . '/web/dev/development.php';

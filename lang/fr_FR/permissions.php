@@ -19,6 +19,7 @@ return [
         'mail_settings' => 'Paramètres de messagerie',
         'email_templates' => 'Modèles d\'email',
         'email_layouts' => 'Mises en page d\'email',
+        'tenants' => 'Locataires',
     ],
     'actions' => [
         'view' => 'Voir',

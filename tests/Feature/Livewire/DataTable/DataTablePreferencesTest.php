@@ -1,27 +1,9 @@
 <?php
 
-use App\Livewire\DataTable\Datatable;
 use App\Models\User;
-use App\Services\DataTable\Builders\Column;
 use App\Services\FrontendPreferences\FrontendPreferencesService;
-use Illuminate\Database\Eloquent\Builder;
 use Livewire\Livewire;
-
-class TestDatatableForPreferences extends Datatable
-{
-    public function baseQuery(): Builder
-    {
-        return User::query();
-    }
-
-    public function columns(): array
-    {
-        return [
-            Column::make('name', 'Name'),
-            Column::make('email', 'Email'),
-        ];
-    }
-}
+use Tests\Fixtures\DataTables\TestDatatableForPreferences;
 
 it('saves and loads per page preference', function () {
     $user = User::factory()->create();

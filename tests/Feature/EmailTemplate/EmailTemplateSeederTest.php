@@ -2,9 +2,10 @@
 
 use App\Enums\EmailTemplate\EmailTemplateStatus;
 use App\Models\EmailTemplate\EmailTemplate;
-use Database\Seeders\CommonSeeders\EmailTemplateSeeder;
+use Database\Seeders\TenantSeeders\Production\EmailTemplateSeeder;
 
 beforeEach(function () {
+    asTenant();
     EmailTemplate::query()->forceDelete();
 });
 

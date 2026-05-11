@@ -4,22 +4,45 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Models\Base\BaseModel;
 use App\Observers\Notifications\NotificationObserver;
 use App\Services\Notifications\NotificationContent;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\DatabaseNotification as LaravelDatabaseNotification;
-use Illuminate\Support\Str;
 
 #[ObservedBy([NotificationObserver::class])]
-class Notification extends BaseModel
+class Notification extends Model
 {
+    use SoftDeletes;
+
+    /**
+     * The connection name for the model.
+     *
+     * @var string|null
+     */
+    protected $connection = 'central';
+
     /**
      * The table associated with the model.
      *
      * @var string
      */
     protected $table = 'notifications';
+
+    /**
+     * Indicates if the IDs are auto-incrementing.
+     *
+     * @var bool
+     */
+    public $incrementing = false;
+
+    /**
+     * The "type" of the primary key ID.
+     *
+     * @var string
+     */
+    protected $keyType = 'string';
 
     /**
      * The attributes that should be cast.
@@ -101,21 +124,6 @@ class Notification extends BaseModel
     public function notifiable()
     {
         return $this->morphTo();
-    }
-
-    /**
-     * Set the UUID from the ID provided by Laravel's notification channel.
-     * Laravel's DatabaseChannel passes a UUID string as 'id'.
-     * We map this to our 'uuid' column and let 'id' be auto-incrementing.
-     */
-    public function setIdAttribute(mixed $value)
-    {
-        // If the value is a valid UUID, set it as the uuid attribute
-        if (\is_string($value) && Str::isUuid((string) $value)) {
-            $this->attributes['uuid'] = $value;
-        } else {
-            $this->attributes['id'] = $value;
-        }
     }
 
     /**

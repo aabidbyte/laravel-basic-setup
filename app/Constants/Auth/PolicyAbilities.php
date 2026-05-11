@@ -27,6 +27,8 @@ class PolicyAbilities
 
     public const FORCE_DELETE = 'forceDelete';
 
+    public const IMPERSONATE = 'impersonate';
+
     /**
      * Get all ability constants as an array.
      *
@@ -42,6 +44,7 @@ class PolicyAbilities
             self::DELETE,
             self::RESTORE,
             self::FORCE_DELETE,
+            self::IMPERSONATE,
         ];
     }
 }

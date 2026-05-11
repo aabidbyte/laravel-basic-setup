@@ -3,6 +3,10 @@
 use App\Models\User;
 use Laravel\Fortify\Features;
 
+beforeEach(function () {
+    asTenant();
+});
+
 test('users can authenticate using the login screen', function () {
     $user = User::factory()->withoutTwoFactor()->create();
 

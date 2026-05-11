@@ -51,10 +51,10 @@ class RoleTable extends Datatable
     public function columns(): array
     {
         return [
-            Column::make(__('table.roles.name'), 'display_name')
+            Column::make(__('table.roles.name'), 'name')
                 ->sortable()
                 ->searchable()
-                ->format(fn ($value, $row) => "<strong>{$value}</strong>")
+                ->format(fn ($value, $row) => '<strong>' . ($row->display_name ?? $value) . '</strong>')
                 ->html(),
 
             Column::make(__('table.roles.users_count'), 'users_count')

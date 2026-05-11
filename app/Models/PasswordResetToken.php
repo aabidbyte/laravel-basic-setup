@@ -20,6 +20,13 @@ class PasswordResetToken extends Model
     use HasUuid;
 
     /**
+     * The connection name for the model.
+     *
+     * @var string|null
+     */
+    protected $connection = 'central';
+
+    /**
      * The table associated with the model.
      *
      * @var string

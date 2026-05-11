@@ -37,6 +37,12 @@ class PermissionEntity
 
     public const EMAIL_LAYOUTS = 'email_layouts';
 
+    public const TENANTS = 'tenants';
+
+    public const PLANS = 'plans';
+
+    public const SUBSCRIPTIONS = 'subscriptions';
+
     /**
      * Get all entity constants as an array.
      *
@@ -54,6 +60,9 @@ class PermissionEntity
             self::MAIL_SETTINGS,
             self::EMAIL_TEMPLATES,
             self::EMAIL_LAYOUTS,
+            self::TENANTS,
+            self::PLANS,
+            self::SUBSCRIPTIONS,
         ];
     }
 

@@ -32,6 +32,7 @@ return [
         'email' => 'Email',
         'roles' => 'Roles',
         'teams' => 'Teams',
+        'tenants' => 'Workspaces',
         'verified' => 'Verified',
         'verified_yes' => 'Yes',
         'verified_no' => 'No',
@@ -43,6 +44,8 @@ return [
         'filters' => [
             'role' => 'Role',
             'all_roles' => 'All Roles',
+            'tenant' => 'Workspace',
+            'all_tenants' => 'All Workspaces',
             'status' => 'Status',
             'all_status' => 'All Statuses',
             'verified' => 'Verified',

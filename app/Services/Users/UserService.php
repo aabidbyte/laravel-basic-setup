@@ -46,6 +46,7 @@ class UserService
         $roleUuids = $userData->roleUuids ?? [];
         $teamUuids = $userData->teamUuids ?? [];
         $permissionUuids = $userData->permissionUuids ?? [];
+        $tenantUuids = $userData->tenantUuids ?? [];
         // Validate: if sending activation, email is required
         if ($sendActivation && empty($data['email'])) {
             throw new InvalidArgumentException('Email is required when sending activation email.');
@@ -57,6 +58,7 @@ class UserService
             $roleUuids = $userData->roleUuids ?? [];
             $teamUuids = $userData->teamUuids ?? [];
             $permissionUuids = $userData->permissionUuids ?? [];
+            $tenantUuids = $userData->tenantUuids ?? [];
             // Get the creator (current authenticated user)
             /** @var User|null $creator */
             $creator = Auth::user();
@@ -93,6 +95,11 @@ class UserService
                 $user->syncPermissions($permissionIds);
             }
 
+            // Assign tenants (if provided) - lookup by ID/UUID
+            if (! empty($tenantUuids)) {
+                $this->syncTenants($user, $tenantUuids);
+            }
+
             // Send activation email if requested
             if ($sendActivation) {
                 $this->sendActivationEmail($user);
@@ -114,12 +121,14 @@ class UserService
         $roleUuids = $userData->roleUuids;
         $teamUuids = $userData->teamUuids;
         $permissionUuids = $userData->permissionUuids;
+        $tenantUuids = $userData->tenantUuids;
 
         return DB::transaction(function () use ($user, $userData) {
             $data = $userData->attributes;
             $roleUuids = $userData->roleUuids;
             $teamUuids = $userData->teamUuids;
             $permissionUuids = $userData->permissionUuids;
+            $tenantUuids = $userData->tenantUuids;
             // Build update data
             $updateData = [];
 
@@ -195,6 +204,11 @@ class UserService
             if ($permissionUuids !== null) {
                 $permissionIds = Permission::whereIn('uuid', $permissionUuids)->pluck('id')->toArray();
                 $user->syncPermissions($permissionIds);
+            }
+
+            // Update tenants if provided
+            if ($tenantUuids !== null) {
+                $this->syncTenants($user, $tenantUuids);
             }
 
             return $user->fresh();
@@ -412,5 +426,17 @@ class UserService
         if ($status !== Password::RESET_LINK_SENT) {
             throw new RuntimeException(__($status));
         }
+    }
+
+    /**
+     * Sync tenants for a user.
+     *
+     * @param  User  $user  The user to sync tenants for
+     * @param  array<string>  $tenantIds  The tenant IDs to sync
+     */
+    protected function syncTenants(User $user, array $tenantIds): void
+    {
+        // For tenants, the ID is often the slug/string ID
+        $user->tenants()->sync($tenantIds);
     }
 }

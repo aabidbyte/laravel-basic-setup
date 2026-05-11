@@ -3,7 +3,7 @@
 use App\Constants\Auth\Permissions;
 use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\BasePageComponent;
-use App\Models\Tenant\MailSettings;
+use App\Models\MailSettings;
 use App\Services\Notifications\NotificationBuilder;
 use Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport;
 

@@ -41,6 +41,7 @@ class PermissionMatrix
                 PermissionAction::ACTIVATE,
                 PermissionAction::EXPORT,
                 PermissionAction::GENERATE_ACTIVATION,
+                PermissionAction::IMPERSONATE,
             ],
             PermissionEntity::ROLES => [
                 PermissionAction::VIEW,
@@ -91,6 +92,30 @@ class PermissionMatrix
                 PermissionAction::CREATE,
                 PermissionAction::EDIT,
                 PermissionAction::DELETE,
+            ],
+            PermissionEntity::TENANTS => [
+                PermissionAction::VIEW,
+                PermissionAction::CREATE,
+                PermissionAction::EDIT,
+                PermissionAction::DELETE,
+                PermissionAction::RESTORE,
+                PermissionAction::FORCE_DELETE,
+            ],
+            PermissionEntity::PLANS => [
+                PermissionAction::VIEW,
+                PermissionAction::CREATE,
+                PermissionAction::EDIT,
+                PermissionAction::DELETE,
+                PermissionAction::RESTORE,
+                PermissionAction::FORCE_DELETE,
+            ],
+            PermissionEntity::SUBSCRIPTIONS => [
+                PermissionAction::VIEW,
+                PermissionAction::CREATE,
+                PermissionAction::EDIT,
+                PermissionAction::DELETE,
+                PermissionAction::RESTORE,
+                PermissionAction::FORCE_DELETE,
             ],
         ];
     }

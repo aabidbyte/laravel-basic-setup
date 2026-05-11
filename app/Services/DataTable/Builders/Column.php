@@ -285,6 +285,68 @@ class Column
     }
 
     /**
+     * Set the column to render as a badge
+     *
+     * @param  Closure|string  $color  Badge color or closure receiving ($row, $columnValue, Column $column)
+     * @param  string  $size  Badge size
+     * @return $this
+     */
+    public function badge(Closure|string $color = 'neutral', string $size = 'sm'): self
+    {
+        return $this->type(DataTableUi::UI_BADGE, [
+            'color' => $color,
+            'size' => $size,
+        ]);
+    }
+
+    /**
+     * Set the column to render as an avatar
+     *
+     * @param  string  $size  Avatar size
+     * @param  string  $shape  Avatar shape (circle, square)
+     * @return $this
+     */
+    public function avatar(string $size = 'sm', string $shape = 'circle'): self
+    {
+        return $this->type(DataTableUi::UI_AVATAR, [
+            'size' => $size,
+            'shape' => $shape,
+        ]);
+    }
+
+    /**
+     * Set the column to render as a link
+     *
+     * @param  Closure|string  $href  Link href or closure receiving ($row, $columnValue, Column $column)
+     * @param  string  $target  Link target
+     * @return $this
+     */
+    public function link(Closure|string $href, string $target = '_self'): self
+    {
+        return $this->type(DataTableUi::UI_LINK, [
+            'href' => $href,
+            'target' => $target,
+        ]);
+    }
+
+    /**
+     * Set the column to render as a button
+     *
+     * @param  Closure|string  $wireClick  Wire click action or closure
+     * @param  string  $variant  Button variant
+     * @param  string  $color  Button color
+     * @return $this
+     */
+    public function button(Closure|string $wireClick, string $variant = 'ghost', string $color = 'primary'): self
+    {
+        return $this->type(DataTableUi::UI_BUTTON, [
+            'wire:click' => $wireClick,
+            'variant' => $variant,
+            'color' => $color,
+        ]);
+    }
+
+    /**
      * Get the column label
      */
     public function getLabel(): string
@@ -413,23 +475,43 @@ class Column
     }
 
     /**
-     * Resolve content to HTML when content callback and component type are set
+     * Resolve content to HTML when component type is set
      *
      * @param  mixed  $row  Row model instance
      * @return string Resolved HTML
      */
     public function resolve(mixed $row): string
     {
-        if ($this->contentCallback === null || $this->componentType === null) {
+        if ($this->componentType === null) {
             return '';
         }
 
-        $content = ($this->contentCallback)($row, $this);
+        $field = $this->getField();
+        $columnValue = $this->hasRelationship() ? data_get($row, $field) : ($row->{$field} ?? '');
 
-        // Resolve dynamic attributes if they are Closures
-        $attributes = array_map(function ($value) use ($row) {
+        // 1. Get Content
+        $content = '';
+        if ($this->contentCallback !== null) {
+            $content = ($this->contentCallback)($row, $this);
+        } else {
+            // Default content is the formatted value
+            $content = $columnValue;
+
+            if ($this->labelCallback !== null) {
+                $content = ($this->labelCallback)($row, $this);
+            }
+
+            if ($this->format !== null) {
+                $content = ($this->format)($content, $row, $this);
+            }
+        }
+
+        // 2. Resolve dynamic attributes if they are Closures
+        $attributes = array_map(function ($value) use ($row, $columnValue) {
             if ($value instanceof Closure) {
-                return $value($row, $this);
+                // Pass (row, columnValue, column) to closures in attributes
+                // This allows both row-based and value-based logic
+                return $value($row, $columnValue, $this);
             }
 
             return $value;

@@ -112,7 +112,7 @@ class FortifyServiceProvider extends ServiceProvider
                 ]);
             }
 
-            setTeamSessionForUser($user);
+            setTenantSessionForUser($user);
 
             return $user;
         });

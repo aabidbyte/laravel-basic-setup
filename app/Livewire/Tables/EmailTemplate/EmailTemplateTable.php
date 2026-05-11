@@ -18,6 +18,7 @@ use App\Services\DataTable\Builders\Filter;
 use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
 
 class EmailTemplateTable extends Datatable
 {
@@ -41,6 +42,11 @@ class EmailTemplateTable extends Datatable
 
     public function baseQuery(): Builder
     {
+        // Safety check: if we are on central and the table doesn't exist, return an empty query
+        if (! tenant() && ! Schema::hasTable('email_templates')) {
+            return EmailTemplate::query()->whereRaw('1 = 0');
+        }
+
         return EmailTemplate::query()
             ->with(['layout', 'translations'])
             ->when($this->kindMode !== null, fn ($q) => $q->where('email_templates.is_layout', $this->kindMode->isLayout()))
@@ -128,15 +134,20 @@ class EmailTemplateTable extends Datatable
      */
     protected function getFilterDefinitions(): array
     {
+        $layouts = [];
+
+        // Safety check for layouts options
+        if (tenant() || Schema::hasTable('email_templates')) {
+            $layouts = EmailTemplate::layouts()
+                ->pluck('name', 'id')
+                ->toArray();
+        }
+
         return [
             Filter::make('layout_id', __('table.email_templates.filters.layout'))
                 ->placeholder(__('table.email_templates.filters.all_layouts'))
                 ->type('select')
-                ->options(
-                    EmailTemplate::layouts()
-                        ->pluck('name', 'id')
-                        ->toArray(),
-                )
+                ->options($layouts)
                 ->fieldMapping('email_templates.layout_id')
                 ->show(fn () => $this->kindMode === EmailTemplateKind::CONTENT),
 

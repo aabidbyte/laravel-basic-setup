@@ -4,100 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Livewire\DataTable;
 
-use App\Livewire\DataTable\Datatable;
 use App\Models\User;
-use App\Services\DataTable\Builders\Action;
-use App\Services\DataTable\Builders\BulkAction;
-use App\Services\DataTable\Builders\Column;
-use App\Services\DataTable\Builders\Filter;
-use Illuminate\Database\Eloquent\Builder;
 use Livewire\Livewire;
-
-/**
- * Test datatable with all features (filters, bulk actions, row actions).
- */
-class FullDatatableForConditionalTest extends Datatable
-{
-    public function baseQuery(): Builder
-    {
-        return User::query();
-    }
-
-    public function columns(): array
-    {
-        return [
-            Column::make('Name', 'name')->searchable(),
-            Column::make('Email', 'email'),
-        ];
-    }
-
-    protected function getFilterDefinitions(): array
-    {
-        return [
-            Filter::make('is_active', 'Status')
-                ->type('select')
-                ->options(['1' => 'Active', '0' => 'Inactive']),
-        ];
-    }
-
-    protected function rowActions(): array
-    {
-        return [
-            Action::make('view', 'View')->icon('eye'),
-        ];
-    }
-
-    protected function bulkActions(): array
-    {
-        return [
-            BulkAction::make('delete', 'Delete'),
-        ];
-    }
-}
-
-/**
- * Test datatable with no features (no filters, no bulk actions, no row actions).
- */
-class MinimalDatatableForConditionalTest extends Datatable
-{
-    public function baseQuery(): Builder
-    {
-        return User::query();
-    }
-
-    public function columns(): array
-    {
-        return [
-            Column::make('Name', 'name'),
-            Column::make('Email', 'email'),
-        ];
-    }
-}
-
-/**
- * Test datatable with only row actions (no filters, no bulk actions).
- */
-class RowActionsOnlyDatatableForConditionalTest extends Datatable
-{
-    public function baseQuery(): Builder
-    {
-        return User::query();
-    }
-
-    public function columns(): array
-    {
-        return [
-            Column::make('Name', 'name'),
-        ];
-    }
-
-    protected function rowActions(): array
-    {
-        return [
-            Action::make('edit', 'Edit')->icon('pencil'),
-        ];
-    }
-}
+use Tests\Fixtures\DataTables\FullDatatableForConditionalTest;
+use Tests\Fixtures\DataTables\MinimalDatatableForConditionalTest;
+use Tests\Fixtures\DataTables\RowActionsOnlyDatatableForConditionalTest;
 
 beforeEach(function () {
     $this->user = User::factory()->create();

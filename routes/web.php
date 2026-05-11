@@ -2,6 +2,10 @@
 
 use Illuminate\Support\Facades\Route;
 
+Route::get('/', function () {
+    return redirect()->route('login');
+})->name('home');
+
 // Public routes (no auth required)
 require __DIR__ . '/web/public/preferences.php';
 require __DIR__ . '/web/public/activation.php';
@@ -14,6 +18,7 @@ if (app()->environment('local', 'development')) {
 
 // Authenticated routes
 Route::middleware(['auth'])->group(function () {
+    require __DIR__ . '/web/auth/tenancy.php';
     require __DIR__ . '/web/auth/dashboard.php';
     require __DIR__ . '/web/auth/notifications.php';
     require __DIR__ . '/web/auth/users.php';

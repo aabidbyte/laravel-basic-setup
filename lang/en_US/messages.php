@@ -50,4 +50,9 @@ return [
             'failure_content' => "Failed to set up :type database ':db': :error",
         ],
     ],
+
+    // Context
+    'context' => [
+        'impersonating' => 'You are currently logged in as :name.',
+    ],
 ];

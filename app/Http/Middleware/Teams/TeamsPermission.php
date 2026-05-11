@@ -8,10 +8,10 @@ use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Middleware to set the active team context for the request.
+ * Middleware to set the active tenant context for the request.
  *
- * This middleware ensures the team_id is available in the session
- * for team-based access control throughout the request lifecycle.
+ * This middleware ensures the tenant_id is available in the session
+ * for tenant-based access control throughout the request lifecycle.
  */
 class TeamsPermission
 {
@@ -25,11 +25,11 @@ class TeamsPermission
         if (Auth::check()) {
             $user = Auth::user();
 
-            // If no team_id in session, set from user's first team
-            if (! session()->has('team_id')) {
-                $firstTeam = $user->teams()->orderBy('teams.id')->first();
-                if ($firstTeam) {
-                    session(['team_id' => $firstTeam->id]);
+            // If no tenant_id in session, set from user's first tenant
+            if (! session()->has('tenant_id')) {
+                $firstTenant = $user->tenants()->orderBy('tenants.id')->first();
+                if ($firstTenant) {
+                    session(['tenant_id' => $firstTenant->id]);
                 }
             }
         }

@@ -4,7 +4,6 @@ namespace App\Models\Concerns;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
-use RuntimeException;
 
 /**
  * Trait for models that require automatic UUID generation.

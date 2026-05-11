@@ -6,6 +6,7 @@ namespace App\Services\Mail;
 
 use App\Models\MailSettings;
 use App\Models\Team;
+use App\Models\Tenant;
 use App\Models\User;
 use App\Services\EmailTemplate\EmailRenderer;
 use App\Services\EmailTemplate\RenderedEmail;
@@ -134,11 +135,37 @@ class MailBuilder
             $locale = $this->to->frontend_preferences['locale'];
         }
 
-        $this->renderedEmail = $this->renderer->renderByName($templateName, $entities, $context, $locale);
+        // Handle tenancy-aware template resolution
+        $tenant = $this->resolveTenant();
+
+        if ($tenant && (! function_exists('tenant') || ! tenant())) {
+            $tenant->run(function () use ($templateName, $entities, $context, $locale) {
+                $this->renderedEmail = $this->renderer->renderByName($templateName, $entities, $context, $locale);
+            });
+        } else {
+            $this->renderedEmail = $this->renderer->renderByName($templateName, $entities, $context, $locale);
+        }
 
         $this->subject($this->renderedEmail->subject);
 
         return $this;
+    }
+
+    /**
+     * Resolve the tenant from current context (user or team).
+     */
+    protected function resolveTenant(): ?Tenant
+    {
+        if ($this->credentialTeam && $this->credentialTeam->tenant) {
+            return $this->credentialTeam->tenant;
+        }
+
+        if ($this->credentialUser) {
+            // Get the first tenant the user belongs to
+            return $this->credentialUser->tenants()->first();
+        }
+
+        return null;
     }
 
     /**

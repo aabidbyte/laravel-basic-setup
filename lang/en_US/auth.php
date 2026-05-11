@@ -20,6 +20,8 @@ return [
     'inactive_subtitle' => 'Your account has been deactivated. Please contact support for assistance.',
     'password' => 'The provided password is incorrect.',
     'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
+    'two_factor_error' => '2FA Error',
+    'two_factor_session_expired' => 'Your two-factor session has expired or the security key is invalid. Please login again.',
     'password_strength' => [
         'title' => 'Strength',
         'weak' => 'Weak',

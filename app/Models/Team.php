@@ -12,6 +12,13 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Team extends BaseModel
 {
+    /**
+     * The connection name for the model.
+     *
+     * @var string|null
+     */
+    protected $connection = 'central';
+
     use HasFactory;
 
     /**

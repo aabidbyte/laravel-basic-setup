@@ -35,11 +35,11 @@ class SyncUserPreferencesOnLogin
         // Sync user preferences from database to session
         $this->preferences->syncUserPreferences($user);
 
-        // Set the user's first team ID in session (TeamsPermission middleware expects this)
-        if ($user->teams()->exists()) {
-            $firstTeam = $user->teams()->first();
-            if ($firstTeam) {
-                session(['team_id' => $firstTeam->id]);
+        // Set the user's first tenant ID in session (TeamsPermission middleware expects this)
+        if ($user->tenants()->exists()) {
+            $firstTenant = $user->tenants()->first();
+            if ($firstTenant) {
+                session(['tenant_id' => $firstTenant->id]);
             }
         }
 

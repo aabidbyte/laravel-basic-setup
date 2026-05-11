@@ -7,7 +7,7 @@ use App\Enums\EmailTemplate\EmailTemplateKind;
 use App\Enums\EmailTemplate\EmailTemplateStatus;
 use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\BasePageComponent;
-use App\Models\Tenant\EmailTemplate\EmailTemplate;
+use App\Models\EmailTemplate\EmailTemplate;
 use App\Services\EmailTemplate\EmailTemplateService;
 use App\Services\Notifications\NotificationBuilder;
 

@@ -3,7 +3,7 @@
 use App\Constants\Auth\Permissions;
 use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\BasePageComponent;
-use App\Models\Tenant\User;
+use App\Models\User;
 use App\Services\Notifications\NotificationBuilder;
 use App\Services\Users\UserService;
 
@@ -469,7 +469,7 @@ new class extends BasePageComponent {
                 <div class="flex flex-wrap gap-2">
                     @foreach ($user->roles as $role)
                         <x-ui.badge color="primary"
-                                    size="md">{{ $role->display_name }}</x-ui.badge>
+                                    size="md">{{ $role->display_name ?? $role->name }}</x-ui.badge>
                     @endforeach
                 </div>
             </div>

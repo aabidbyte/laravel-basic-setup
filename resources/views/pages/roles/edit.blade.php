@@ -4,8 +4,8 @@ use App\Constants\Auth\Permissions;
 use App\Constants\Auth\Roles;
 use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\BasePageComponent;
-use App\Models\Tenant\Permission;
-use App\Models\Tenant\Role;
+use App\Models\Permission;
+use App\Models\Role;
 use App\Services\Notifications\NotificationBuilder;
 use Livewire\Attributes\Locked;
 

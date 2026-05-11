@@ -4,8 +4,16 @@ declare(strict_types=1);
 
 use App\Models\User;
 use App\Services\Users\ActivationService;
+use Database\Seeders\TenantSeeders\Production\EmailTemplateSeeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+
+beforeEach(function () {
+    asTenant();
+    $this->seed(EmailTemplateSeeder::class);
+    Mail::fake();
+});
 
 describe('ActivationService', function () {
     describe('createActivationToken', function () {
@@ -19,7 +27,7 @@ describe('ActivationService', function () {
             expect(\strlen($token))->toBe(64);
 
             // Verify token is stored in database
-            $record = DB::table('password_reset_tokens')
+            $record = DB::connection('central')->table('password_reset_tokens')
                 ->where('identifier', 'test@example.com')
                 ->first();
 
@@ -39,7 +47,7 @@ describe('ActivationService', function () {
             expect($token)->toBeString();
 
             // Verify token uses username as identifier
-            $record = DB::table('password_reset_tokens')
+            $record = DB::connection('central')->table('password_reset_tokens')
                 ->where('identifier', 'testuser')
                 ->first();
 
@@ -54,7 +62,7 @@ describe('ActivationService', function () {
             $token2 = $service->createActivationToken($user);
 
             // Only one token should exist
-            $count = DB::table('password_reset_tokens')
+            $count = DB::connection('central')->table('password_reset_tokens')
                 ->where('identifier', 'test@example.com')
                 ->count();
 
@@ -99,7 +107,7 @@ describe('ActivationService', function () {
             $token = $service->createActivationToken($user);
 
             // Manually expire the token
-            DB::table('password_reset_tokens')
+            DB::connection('central')->table('password_reset_tokens')
                 ->where('identifier', 'test@example.com')
                 ->update(['created_at' => now()->subDays(8)]);
 
@@ -136,7 +144,7 @@ describe('ActivationService', function () {
             $token = $service->createActivationToken($user);
 
             // Manually expire the token
-            DB::table('password_reset_tokens')
+            DB::connection('central')->table('password_reset_tokens')
                 ->where('identifier', 'test@example.com')
                 ->update(['created_at' => now()->subDays(8)]);
 
@@ -174,7 +182,7 @@ describe('ActivationService', function () {
             expect($activated->email_verified_at)->not()->toBeNull();
 
             // Token should be deleted
-            $tokenExists = DB::table('password_reset_tokens')
+            $tokenExists = DB::connection('central')->table('password_reset_tokens')
                 ->where('identifier', 'test@example.com')
                 ->exists();
 

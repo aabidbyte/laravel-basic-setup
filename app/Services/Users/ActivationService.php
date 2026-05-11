@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Users;
 
 // use App\Mail\WelcomeMail;
+use App\Models\Team;
 use App\Models\User;
 use App\Notifications\UserActivatedNotification;
 use App\Services\Mail\MailBuilder;
@@ -61,12 +62,12 @@ class ActivationService
         $identifier = $user->email ?? $user->username ?? (string) $user->id;
 
         // Delete any existing tokens for this user
-        DB::table('password_reset_tokens')
+        DB::connection('central')->table('password_reset_tokens')
             ->where('identifier', $identifier)
             ->delete();
 
         // Store the hashed token
-        DB::table('password_reset_tokens')->insert([
+        DB::connection('central')->table('password_reset_tokens')->insert([
             'identifier' => $identifier,
             'uuid' => (string) Str::uuid(),
             'token' => Hash::make($plainToken),
@@ -85,7 +86,7 @@ class ActivationService
      */
     public function validateToken(string $token, string $identifier): bool
     {
-        $record = DB::table('password_reset_tokens')
+        $record = DB::connection('central')->table('password_reset_tokens')
             ->where('identifier', $identifier)
             ->first();
 
@@ -118,7 +119,7 @@ class ActivationService
         // Get all non-expired tokens
         $cutoff = now()->subDays(self::TOKEN_EXPIRATION_DAYS);
 
-        $records = DB::table('password_reset_tokens')
+        $records = DB::connection('central')->table('password_reset_tokens')
             ->where('created_at', '>=', $cutoff)
             ->get();
 
@@ -155,7 +156,7 @@ class ActivationService
 
             // Delete the used token
             $identifier = $user->email ?? $user->username ?? (string) $user->id;
-            DB::table('password_reset_tokens')
+            DB::connection('central')->table('password_reset_tokens')
                 ->where('identifier', $identifier)
                 ->delete();
 
@@ -212,7 +213,12 @@ class ActivationService
         }
 
         // 2. Notify team admins (with deduplication)
-        $teams = $user->teams()->with('users')->get();
+        // We query the pivot table directly to avoid cross-database joins with central users table
+        $teamIds = DB::connection('central')->table('team_user')
+            ->where('user_id', $user->id)
+            ->pluck('team_id');
+
+        $teams = Team::whereIn('id', $teamIds)->with('users')->get();
 
         foreach ($teams as $team) {
             foreach ($team->users as $teamMember) {

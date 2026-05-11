@@ -13,19 +13,21 @@ use App\Providers\MacroServiceProvider;
 use App\Providers\ModelServiceProvider;
 use App\Providers\SecurityServiceProvider;
 use App\Providers\TelescopeServiceProvider;
+use App\Providers\TenancyServiceProvider;
 
 return [
-    AppServiceProvider::class,
-    DatabaseServiceProvider::class,
     AccessServiceProvider::class,
+    AppServiceProvider::class,
     BladeServiceProvider::class,
+    DatabaseServiceProvider::class,
     FortifyServiceProvider::class,
     FrontendPreferencesServiceProvider::class,
+    HorizonServiceProvider::class,
     I18nServiceProvider::class,
     LogViewerServiceProvider::class,
     MacroServiceProvider::class,
     ModelServiceProvider::class,
     SecurityServiceProvider::class,
     TelescopeServiceProvider::class,
-    HorizonServiceProvider::class,
+    TenancyServiceProvider::class,
 ];

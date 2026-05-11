@@ -23,12 +23,14 @@
                aria-label="close sidebar"
                class="drawer-overlay"></label>
         <aside class="bg-base-200 flex h-full w-64 flex-col overflow-y-auto">
-            <div class="p-4">
+            <div class="flex flex-col gap-4 p-4">
                 <a href="{{ route('dashboard') }}"
                    class="flex items-center gap-2"
                    wire:navigate>
                     <x-app-logo></x-app-logo>
                 </a>
+
+                <livewire:tenancy.workspace-switcher />
             </div>
             <x-layouts.app.sidebar-menus></x-layouts.app.sidebar-menus>
         </aside>

@@ -31,6 +31,7 @@ use Exception;
  * @method static string ACTIVATE_USERS()
  * @method static string EXPORT_USERS()
  * @method static string GENERATE_ACTIVATION_USERS()
+ * @method static string IMPERSONATE_USERS()
  * @method static string RESTORE_USERS()
  * @method static string FORCE_DELETE_USERS()
  * @method static string VIEW_ROLES()
@@ -67,6 +68,12 @@ use Exception;
  * @method static string CREATE_EMAIL_LAYOUTS()
  * @method static string EDIT_EMAIL_LAYOUTS()
  * @method static string DELETE_EMAIL_LAYOUTS()
+ * @method static string VIEW_TENANTS()
+ * @method static string CREATE_TENANTS()
+ * @method static string EDIT_TENANTS()
+ * @method static string DELETE_TENANTS()
+ * @method static string RESTORE_TENANTS()
+ * @method static string FORCE_DELETE_TENANTS()
  */
 class Permissions
 {

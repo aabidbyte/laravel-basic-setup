@@ -5,6 +5,7 @@ namespace App\Livewire\Bases;
 use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\View;
+use Livewire\Attributes\Locked;
 
 /**
  * Base component for full-page Livewire components.
@@ -22,6 +23,7 @@ abstract class BasePageComponent extends LivewireBaseComponent
      * Indicates if component is in create mode (true) or edit mode (false).
      * Used by unified create/edit pages.
      */
+    #[Locked]
     public bool $isCreateMode = true;
 
     public function rendering($view, $data = []): void

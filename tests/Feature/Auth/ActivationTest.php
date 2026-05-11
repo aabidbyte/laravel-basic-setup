@@ -2,10 +2,11 @@
 
 use App\Models\User;
 use App\Services\Users\ActivationService;
-use Database\Seeders\CommonSeeders\EmailTemplateSeeder;
+use Database\Seeders\TenantSeeders\Production\EmailTemplateSeeder;
 use Illuminate\Support\Facades\Hash;
 
 beforeEach(function () {
+    asTenant();
     $this->seed(EmailTemplateSeeder::class);
     $this->activationService = app(ActivationService::class);
 });
@@ -54,7 +55,7 @@ test('can activate account with valid token and password', function () {
     expect(Hash::check('Password123!', $user->fresh()->password))->toBeTrue();
     $this->assertDatabaseMissing('password_reset_tokens', [
         'identifier' => $user->email,
-    ]);
+    ], 'central');
 });
 
 test('cannot activate with invalid token', function () {

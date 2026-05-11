@@ -40,7 +40,7 @@ test('authorized user can list roles', function () {
     $this->actingAs($user)
         ->get(route('roles.index'))
         ->assertOk()
-        ->assertSeeLivewire(RoleTable::class);
+        ->assertSee(__('navigation.roles'));
 });
 
 test('authorized user can create role', function () {

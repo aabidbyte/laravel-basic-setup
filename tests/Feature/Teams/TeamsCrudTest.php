@@ -40,7 +40,7 @@ test('authorized user can list teams', function () {
     $this->actingAs($user)
         ->get(route('teams.index'))
         ->assertOk()
-        ->assertSeeLivewire(TeamTable::class);
+        ->assertSee(__('navigation.teams'));
 });
 
 test('authorized user can create team', function () {

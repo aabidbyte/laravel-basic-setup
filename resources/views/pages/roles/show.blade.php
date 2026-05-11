@@ -4,8 +4,8 @@ use App\Constants\Auth\Permissions;
 use App\Constants\Auth\Roles;
 use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\BasePageComponent;
-use App\Models\Tenant\Permission;
-use App\Models\Tenant\Role;
+use App\Models\Permission;
+use App\Models\Role;
 use Illuminate\Database\Eloquent\Collection;
 
 new class extends BasePageComponent {
@@ -79,7 +79,7 @@ new class extends BasePageComponent {
 
                             <div>
                                 <dt class="text-base-content/60 text-sm font-medium">{{ __('roles.display_name') }}</dt>
-                                <dd class="text-base-content">{{ $role->display_name ?? '-' }}</dd>
+                                <dd class="text-base-content">{{ $role->display_name ?? $role->name }}</dd>
                             </div>
                             <div class="col-span-2">
                                 <dt class="text-base-content/60 text-sm font-medium">{{ __('roles.description') }}</dt>

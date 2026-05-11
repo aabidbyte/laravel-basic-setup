@@ -23,3 +23,4 @@ yarn-error.log
 /.zed
 .cursor/debug.log
 .php-cs-fixer.cache
+/storage/tenant*

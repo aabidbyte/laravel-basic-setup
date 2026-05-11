@@ -17,15 +17,15 @@ function getIdentifierFromRequest(Request $request): ?string
 }
 
 /**
- * Set team ID in session for team-based access control.
+ * Set tenant ID in session for tenant-based access control.
  *
- * This helper centralizes team session setting logic used after successful authentication.
- * It sets the first team as the active team for the session.
+ * This helper centralizes tenant session setting logic used after successful authentication.
+ * It sets the first tenant as the active tenant for the session.
  */
-function setTeamSessionForUser(User $user): void
+function setTenantSessionForUser(User $user): void
 {
-    $firstTeam = $user->teams()->orderBy('teams.id')->first();
-    if ($firstTeam) {
-        session(['team_id' => $firstTeam->id]);
+    $firstTenant = $user->tenants()->orderBy('tenants.id')->first();
+    if ($firstTenant) {
+        session(['tenant_id' => $firstTenant->id]);
     }
 }

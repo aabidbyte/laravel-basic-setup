@@ -5,9 +5,12 @@ use App\Enums\EmailTemplate\EmailTemplateType;
 use App\Models\EmailTemplate\EmailTemplate;
 use App\Models\User;
 use App\Notifications\Auth\ResetPasswordNotification;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
+
+beforeEach(function () {
+    asTenant();
+});
 
 test('reset password link can be requested', function () {
     Notification::fake();

@@ -57,6 +57,8 @@ class MyCspPreset implements Preset
             ->add(Directive::IMG, Keyword::SELF)
             ->add(Directive::IMG, Scheme::DATA)
             ->add(Directive::IMG, 'https://unpkg.com') // GrapeJS Images
+            ->add(Directive::IMG, 'https://www.gravatar.com') // Gravatar Avatars
+            ->add(Directive::IMG, 'https://secure.gravatar.com') // Secure Gravatar Avatars
 
             // Media sources
             ->add(Directive::MEDIA, Keyword::SELF)

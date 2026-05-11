@@ -103,7 +103,8 @@ new class extends BasePageComponent {
                     <x-ui.label :text="__('settings.preferences.theme_label')"></x-ui.label>
                     <div class="flex gap-4">
                         @foreach ($this->themes as $value => $label)
-                            <x-ui.label class="flex cursor-pointer items-center gap-2"
+                            <x-ui.label wire:key="theme-{{ $value }}"
+                                        class="flex cursor-pointer items-center gap-2"
                                         variant="plain">
                                 <input type="radio"
                                        wire:model="theme"

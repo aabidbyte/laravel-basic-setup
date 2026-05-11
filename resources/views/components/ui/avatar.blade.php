@@ -1,7 +1,8 @@
 {{--
     Avatar Component Props:
-    - imageSrc: Image URL
-    - initials: User initials to show if image missing
+    - user: User model (recommended - extracts imageSrc and initials)
+    - imageSrc: Image URL (legacy/override)
+    - initials: User initials (legacy/override)
     - size: 'xs', 'sm', 'md', 'lg', 'xl' (default: 'md')
     - shape: 'circle', 'square' (default: 'circle')
     - class: Additional classes
@@ -9,6 +10,7 @@
     - alt: Alternative text for image
 --}}
 @props([
+    'user' => null,
     'imageSrc' => null,
     'initials' => null,
     'size' => 'md',
@@ -19,10 +21,16 @@
 ])
 
 @php
+    // Use user model if provided
+    if ($user) {
+        $imageSrc ??= $user->avatar_url ?? null;
+        $initials ??= method_exists($user, 'initials') ? $user->initials() : null;
+    }
+
     // Size classes
     $sizeClasses = [
-        'xs' => 'w-6 h-6 text-xs',
-        'sm' => 'w-8 h-8 text-sm',
+        'xs' => 'w-6 h-6 text-[10px]',
+        'sm' => 'w-8 h-8 text-xs',
         'md' => 'w-10 h-10 text-base',
         'lg' => 'w-16 h-16 text-xl',
         'xl' => 'w-24 h-24 text-2xl',

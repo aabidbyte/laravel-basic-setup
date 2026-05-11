@@ -13,6 +13,8 @@ use App\Support\Users\UserData;
 use Illuminate\Support\Facades\Mail;
 
 beforeEach(function () {
+    asTenant();
+
     // Create required permissions and roles
     $createPerm = Permission::firstOrCreate(['name' => Permissions::CREATE_USERS()]);
     $editPerm = Permission::firstOrCreate(['name' => Permissions::EDIT_USERS()]);

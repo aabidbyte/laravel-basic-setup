@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\Tenancy\UniversalMiddleware;
 use App\Services\ErrorHandling\ErrorHandler;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -17,6 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: require __DIR__ . '/web-middlewares.php');
+        $middleware->alias([
+            'universal' => UniversalMiddleware::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Custom error handler with toast notifications and database logging
