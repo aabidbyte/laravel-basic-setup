@@ -5,17 +5,30 @@
         "gemini",
         "copilot"
     ],
+    "cloud": true,
     "guidelines": true,
-    "herd_mcp": false,
     "mcp": true,
+    "nightwatch": false,
     "packages": [
-        "laravel/fortify"
+        "spatie/guidelines-skills",
+        "spatie/laravel-translatable"
     ],
     "sail": false,
     "skills": [
+        "fortify-development",
+        "laravel-best-practices",
+        "configuring-horizon",
         "livewire-development",
+        "volt-development",
         "pest-testing",
         "tailwindcss-development",
-        "developing-with-fortify"
+        "translatable-development",
+        "spatie-javascript",
+        "spatie-laravel-php",
+        "spatie-security",
+        "spatie-version-control",
+        "deploying-laravel-cloud",
+        "laravel-security",
+        "laravel-security-audit"
     ]
 }

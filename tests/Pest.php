@@ -17,6 +17,9 @@ use Tests\Concerns\InteractsWithTenancy;
 use Tests\TestCase;
 
 pest()->extend(TestCase::class)
+    ->in('Unit');
+
+pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
     ->use(InteractsWithTenancy::class)
     ->afterEach(function () {
@@ -24,11 +27,11 @@ pest()->extend(TestCase::class)
             $this->tenant->delete();
             unset($this->tenant);
         }
-        if (function_exists('tenancy')) {
+        if (\function_exists('tenancy')) {
             tenancy()->end();
         }
     })
-    ->in('Feature', 'Unit');
+    ->in('Feature');
 
 /*
 |--------------------------------------------------------------------------

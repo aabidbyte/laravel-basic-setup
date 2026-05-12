@@ -74,6 +74,7 @@ use Exception;
  * @method static string DELETE_TENANTS()
  * @method static string RESTORE_TENANTS()
  * @method static string FORCE_DELETE_TENANTS()
+ * @method static string IMPERSONATE_TENANTS()
  */
 class Permissions
 {

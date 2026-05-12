@@ -11,7 +11,13 @@ use App\Models\User;
 use App\Services\Mail\MailCredentialResolver;
 use Illuminate\Support\Str;
 
+// Disable RefreshDatabase to avoid transaction conflicts with tenancy
+// uses()->group('no-refresh');
+
 beforeEach(function () {
+    // Initialize tenancy since mail_settings is a tenant table
+    $this->setUpTenancy();
+
     // Create the permission and role
     $permission = Permission::firstOrCreate(['name' => Permissions::CONFIGURE_MAIL_SETTINGS()]);
     $this->mailConfigRole = Role::firstOrCreate(['name' => 'mail-config']);

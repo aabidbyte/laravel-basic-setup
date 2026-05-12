@@ -39,10 +39,19 @@ class WorkspaceTable extends Datatable
             return Tenant::query()->whereRaw('1 = 0');
         }
 
-        // Return a Builder instance instead of the relation
-        return Tenant::query()
-            ->whereIn('id', $user->tenants->pluck('id'))
-            ->select(['tenants.id', 'tenants.name', 'tenants.plan', 'tenants.id as uuid']);
+        $query = Tenant::query();
+
+        // If user is not a super admin, only show tenants they belong to
+        if (! $user->hasRole(\App\Constants\Auth\Roles::SUPER_ADMIN)) {
+            $query->whereIn('id', $user->tenants->pluck('id'));
+        }
+
+        // Hide the current tenant if we are in a tenant context
+        if (tenant()) {
+            $query->where('id', '!=', tenant('id'));
+        }
+
+        return $query->select(['tenants.id', 'tenants.name', 'tenants.plan', 'tenants.id as uuid']);
     }
 
     /**
@@ -68,16 +77,26 @@ class WorkspaceTable extends Datatable
     }
 
     /**
+     * Define the filters for the table.
+     */
+    protected function getFilterDefinitions(): array
+    {
+        return [
+            \App\Services\DataTable\Builders\Filter::make('plan', __('tenancy.plan'))
+                ->options([
+                    'free' => __('tenancy.plans.free'),
+                    'pro' => __('tenancy.plans.pro'),
+                    'enterprise' => __('tenancy.plans.enterprise'),
+                ]),
+        ];
+    }
+
+    /**
      * Define the row actions.
      */
     protected function rowActions(): array
     {
-        return [
-            Action::make('switch', __('tenancy.switch_workspace'))
-                ->icon('arrows-right-left')
-                ->color('primary')
-                ->execute(fn ($tenant) => $this->switchTo($tenant->id)),
-        ];
+        return [];
     }
 
     /**
@@ -100,9 +119,19 @@ class WorkspaceTable extends Datatable
             return;
         }
 
+        // Protection: Don't switch to the current tenant
+        if (tenant('id') === $tenantId) {
+            $this->dispatch('notify', [
+                'type' => 'info',
+                'message' => __('tenancy.already_in_workspace'),
+            ]);
+
+            return;
+        }
+
         $tenant = Tenant::find($tenantId);
 
-        if (! $tenant || ! $user->tenants->contains('id', $tenantId)) {
+        if (! $tenant || (! $user->hasRole(\App\Constants\Auth\Roles::SUPER_ADMIN) && ! $user->tenants->contains('id', $tenantId))) {
             $this->dispatch('notify', [
                 'type' => 'error',
                 'message' => __('tenancy.access_denied'),

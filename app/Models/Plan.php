@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\Plan\PlanTier;
+use Spatie\Translatable\HasTranslations;
 use App\Models\Base\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,6 +13,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Plan extends BaseModel
 {
     use HasFactory;
+    use HasTranslations;
+
+    /**
+     * The attributes that are translatable.
+     *
+     * @var array<int, string>
+     */
+    public array $translatable = ['name'];
 
     /**
      * The connection name for the model.
@@ -19,6 +28,7 @@ class Plan extends BaseModel
      * @var string|null
      */
     protected $connection = 'central';
+
     /**
      * The attributes that are mass assignable.
      *

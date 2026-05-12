@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services\Tenancy;
 
-use App\Enums\Tenancy\TenantPlan;
 use App\Models\Tenant;
 use Illuminate\Support\Facades\DB;
 
@@ -22,7 +21,7 @@ class TenantService
             $tenant = Tenant::create([
                 'id' => $data['id'],
                 'name' => $data['name'],
-                'plan' => $data['plan'] ?? TenantPlan::FREE->value,
+                'plan' => $data['plan'] ?? null,
                 'should_seed' => $data['should_seed'] ?? true,
             ]);
 
@@ -66,5 +65,15 @@ class TenantService
     public function deleteTenant(Tenant $tenant): ?bool
     {
         return $tenant->delete();
+    }
+
+    /**
+     * Generate an impersonation URL for a tenant.
+     */
+    public function impersonateTenant(Tenant $tenant, string $userId, string $redirectUrl = '/dashboard'): string
+    {
+        $token = \Stancl\Tenancy\Features\UserImpersonation::createToken($tenant, $userId, $redirectUrl);
+
+        return (request()->secure() ? 'https://' : 'http://') . $tenant->domains()->first()->domain . '/impersonate/' . $token;
     }
 }

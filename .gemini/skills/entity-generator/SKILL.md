@@ -104,6 +104,15 @@ php artisan make:seeder {Entity}Seeder
 - Seeder populates a sensible initial data set (e.g., default plans, system roles).
 - Register the seeder in `DatabaseSeeder`.
 
+### 1.5 RBAC & Permissions
+1. Add entity constant to `App\Constants\Auth\PermissionEntity`.
+2. Ensure `App\Services\Auth\PermissionMatrix` supports `VIEW`, `CREATE`, `EDIT`, `DELETE`, `RESTORE`, and `FORCE_DELETE`.
+3. Add `@method static string ...` docblocks to `App\Constants\Auth\Permissions`.
+
+### 1.6 Trash Registry
+Register the entity in `App\Services\Trash\TrashRegistry` to enable the global trash UI.
+
+
 ---
 
 ## Phase 2 — UI & Navigation (Frontend)
@@ -122,12 +131,12 @@ class {Entity}Table extends Datatable
 - Extend `App\Livewire\DataTable\Datatable`.
 - No `@if` directives inside component tags — use `:show` or conditional methods.
 
-### 2.2 Unified Edit SFC (Volt)
+### 2.2 Unified Edit SFC (Livewire 4 sfc)
 
 ```php
 // resources/views/pages/{entities}/edit.blade.php
 <?php
-use function Livewire\Volt\{state, rules, mount};
+use function Livewire\{state, rules, mount};
 
 // Extend BasePageComponent
 // Implement mount($id = null), save(), and rules()
@@ -140,11 +149,30 @@ use function Livewire\Volt\{state, rules, mount};
 </div>
 ```
 
-**Unified Create/Edit Pattern rules:**
-- `mount` receives optional `$id`; resolves existing model or `new {Entity}()`.
-- `save` handles both insert and update in one method.
-- `rules` returns a single array covering all fields.
-- Colocate any JS in the SFC; no separate script files (CSP compliance).
+### 2.1 The Unified Edit Page (Livewire 4 SFC)
+**Path**: `resources/views/pages/{entities}/edit.blade.php`
+
+Follow these strict rules from `docs/AGENTS/unified-create-edit-pattern.md`:
+1. **Optional Parameter**: `mount(?{Entity} $entity = null)` - always use model name (singular).
+2. **Locked Mode**: `#[Locked] public bool $isCreateMode = true;`
+3. **SRP mount()**: Use `initializeUnifiedModel` helper from `BasePageComponent`.
+4. **Computed Properties**: ALL UI logic (titles, buttons, actions, URLs) MUST be in `#[Computed]` methods.
+5. **No Blade Logic**: Templates should be clean; no `@if` for mode switching—use `$this->pageTitle`, `$this->submitAction`, etc.
+6. **UUID Only**: When communicating with the backend (e.g., in sublists or redirects), always use `$model->uuid`.
+
+### 2.2 Sublist DataTables
+If the entity has children (e.g., Plans have Subscriptions, Tenants have Users), **NEVER** use simple `@foreach` lists.
+1. Create a specialized DataTable in `app/Livewire/Tables/`.
+2. Embed it in the parent `show.blade.php` or `edit.blade.php`.
+3. Use `lazy` loading for sublist tables.
+
+### 2.3 The Main DataTable
+**Path**: `app/Livewire/Tables/{Entity}Table.php`
+1. **Trash Support**: Add a "View Trash" button in `topActions()` linking to `route('trash.index', ['entityType' => '{entities}'])`.
+2. **Row Actions**: 
+   - `edit` links to `route('{entities}.edit', $model->uuid)`.
+   - `delete` performs soft-delete.
+3. **Bulk Actions**: Include `activate`, `deactivate`, and `delete`.
 
 ### 2.3 List Page
 
@@ -222,9 +250,15 @@ Run through this before declaring done:
 
 - [ ] **UUIDs** — Model extends `BaseModel`; migration uses `uuid` primary key.
 - [ ] **No `@if` in component tags** — use `:show` or wrapper conditions.
-- [ ] **CSP** — All JS colocated in the Volt SFC; no external script files.
+- [ ] **CSP** — All JS colocated in the livewire 4 SFC; no external script files.
 - [ ] **Translations** — Every visible string goes through `__()`.
 - [ ] **Tenancy** — Migration and queries use the correct DB connection (`central` vs `tenant`).
 - [ ] **RBAC** — Sidebar item gated behind the correct `Permissions::` constant.
 - [ ] **Tests pass** — `php artisan test --parallel` green.
 - [ ] **Code style** — Pint reports no dirty files.
+- [ ] Model extends `BaseModel` + Migration has `softDeletes()`.
+- [ ] Entity registered in `TrashRegistry`.
+- [ ] Edit page uses `initializeUnifiedModel` and `#[Computed]` properties.
+- [ ] No `@if` in component opening tags.
+- [ ] Related entities use DataTables, not loops.
+- [ ] Navigation and tests use `uuid` exclusively.

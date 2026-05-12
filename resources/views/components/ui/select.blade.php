@@ -110,25 +110,25 @@
 
     {{-- Options list --}}
     <div class="flex w-full flex-col gap-1" x-show="!isSearching || !searchMethod">
-        <template x-for="[val, label] in filteredOptions" :key="val">
+        <template x-for="option in filteredOptions" :key="option[0]">
             <x-ui.button type="button"
-                         @click="choose(val)"
-                         x-bind:data-selected="isSelected(val) ? 'true' : null"
+                         @click="choose(option[0])"
+                         x-bind:data-selected="isSelected(option[0]) ? 'true' : null"
                          variant="ghost"
                          x-bind:size="$store.ui.isMobile ? 'md' : 'sm'"
                          class="w-full justify-between text-left font-normal"
-                         x-bind:class="getOptionClasses(val)">
+                         x-bind:class="getOptionClasses(option[0])">
                 {{-- Safe highlighting without x-html --}}
                 <span class="truncate">
                     <template x-if="!searchQuery">
-                        <span x-text="label"></span>
+                        <span x-text="option[1]"></span>
                     </template>
                     <template x-if="searchQuery">
-                        <span x-data="highlightedText($data, label)"></span>
+                        <span x-data="highlightedText($data, option[1])"></span>
                     </template>
                 </span>
                 <x-ui.icon name="check"
-                           x-show="isSelected(val)"
+                           x-show="isSelected(option[0])"
                            class="ml-auto"
                            size="sm" />
             </x-ui.button>

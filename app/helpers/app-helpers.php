@@ -52,7 +52,7 @@ function isLocal(): bool
  */
 function isTesting(): bool
 {
-    return strtolower(appEnv()) === 'testing';
+    return strtolower(appEnv()) === 'testing' || (function_exists('app') && app()->runningUnitTests());
 }
 
 /**

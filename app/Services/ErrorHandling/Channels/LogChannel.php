@@ -29,6 +29,7 @@ class LogChannel implements ChannelInterface
             \sprintf('[%s] %s: %s', $context['reference_id'], class_basename($e), $e->getMessage()),
             [
                 'reference_id' => $context['reference_id'],
+                'tenant_id' => $context['tenant_id'] ?? null,
                 'exception_class' => $context['exception_class'],
                 'file' => $context['file'] ?? null,
                 'line' => $context['line'] ?? null,

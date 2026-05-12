@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Livewire\Tables;
 
+use App\Constants\Auth\PolicyAbilities;
 use App\Livewire\DataTable\Datatable;
 use App\Models\Plan;
 use App\Services\DataTable\Builders\Action;
 use App\Services\DataTable\Builders\Column;
+use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Route;
 
 class PlanTable extends Datatable
 {
@@ -21,6 +24,14 @@ class PlanTable extends Datatable
      * Whether to show the search bar.
      */
     public bool $showSearch = true;
+
+    /**
+     * Mount the component and authorize access.
+     */
+    public function mount(): void
+    {
+        $this->authorize(PolicyAbilities::VIEW_ANY, Plan::class);
+    }
 
     /**
      * Get the base query.
@@ -61,37 +72,64 @@ class PlanTable extends Datatable
     }
 
     /**
+     * Define the top actions.
+     */
+    protected function topActions(): array
+    {
+        return [
+            Action::make('view_trash', __('actions.view_trash'))
+                ->icon('trash')
+                ->variant('ghost')
+                ->route(route('trash.index', ['entityType' => 'plans']))
+                ->show(auth()->user()?->can(PolicyAbilities::RESTORE, Plan::class) ?? false),
+        ];
+    }
+
+    /**
      * Define the row actions.
      */
     protected function rowActions(): array
     {
         return [
+            Action::make('show', __('actions.view'))
+                ->icon('eye')
+                ->variant('ghost')
+                ->route(fn (Plan $plan) => route('plans.show', $plan->uuid))
+                ->can(PolicyAbilities::VIEW),
+
             Action::make('edit', __('actions.edit'))
                 ->icon('pencil')
-                ->color('ghost')
-                ->execute(fn ($plan) => $this->redirect(route('plans.edit', $plan->id), navigate: true)),
+                ->variant('ghost')
+                ->route(fn (Plan $plan) => route('plans.edit', $plan->uuid))
+                ->can(PolicyAbilities::UPDATE),
 
             Action::make('delete', __('actions.delete'))
                 ->icon('trash')
+                ->variant('ghost')
                 ->color('error')
                 ->confirm(__('plans.delete_confirm'))
-                ->execute(fn ($plan) => $this->deletePlan($plan->id)),
+                ->execute(function (Plan $plan) {
+                    $plan->delete();
+                    NotificationBuilder::make()
+                        ->title('plans.deleted_successfully', ['name' => $plan->label()])
+                        ->success()
+                        ->send();
+                })
+                ->can(PolicyAbilities::DELETE),
         ];
     }
 
     /**
-     * Delete a plan.
+     * Handle row click.
      */
-    public function deletePlan(string $id): void
+    public function rowClick(string $uuid): ?Action
     {
-        $plan = Plan::find($id);
-        
-        if ($plan) {
-            $plan->delete();
-            $this->dispatch('notify', [
-                'type' => 'success',
-                'message' => __('plans.deleted_successfully'),
-            ]);
+        if (Route::has('plans.show')) {
+            return Action::make()
+                ->route('plans.show', $uuid)
+                ->can(PolicyAbilities::VIEW);
         }
+
+        return null;
     }
 }

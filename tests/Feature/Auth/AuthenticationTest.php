@@ -1,10 +1,12 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 use Laravel\Fortify\Features;
 
 beforeEach(function () {
     asTenant();
+    Mail::fake();
 });
 
 test('users can authenticate using the login screen', function () {

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
+use Stancl\Tenancy\Features\UserImpersonation;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 
@@ -30,7 +31,7 @@ Route::middleware([
 
     // User Impersonation
     Route::get('/impersonate/{token}', function ($token) {
-        return tenancy()->impersonate($token, 10, '/dashboard');
+        return UserImpersonation::makeResponse($token);
     })->name('impersonate');
 
     // Development-only routes

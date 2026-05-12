@@ -17,6 +17,9 @@ Route::middleware(['auth'])->group(function () {
     Route::livewire('/tenants/create', 'pages::tenants.edit')
         ->name('tenants.create');
 
+    Route::livewire('/tenants/{tenant}', 'pages::tenants.show')
+        ->name('tenants.show');
+
     Route::livewire('/tenants/settings/{tenant?}', 'pages::tenants.edit')
         ->name('tenants.settings.edit');
 

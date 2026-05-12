@@ -19,6 +19,8 @@ abstract class BasePageComponent extends LivewireBaseComponent
 
     public ?string $pageSubtitle = null;
 
+    public ?Model $model = null;
+
     /**
      * Indicates if component is in create mode (true) or edit mode (false).
      * Used by unified create/edit pages.

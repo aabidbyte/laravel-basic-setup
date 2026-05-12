@@ -9,7 +9,7 @@ return [
     'update_subscription' => 'Mettre à jour l\'abonnement',
     'no_active_subscription' => 'Aucun abonnement actif trouvé pour ce locataire.',
     'subscribed_successfully' => 'Locataire abonné avec succès.',
-    
+
     'plan' => 'Plan',
     'status' => 'Statut',
     'starts_at' => 'Commence le',
@@ -17,4 +17,11 @@ return [
     'expires_at' => 'Expire le',
     'trial_ends_at' => 'Fin de l\'essai le',
     'no_expiry' => 'Pas d\'expiration',
+    'status_labels' => [
+        'active' => 'Actif',
+        'canceled' => 'Annulé',
+        'expired' => 'Expiré',
+        'trial' => 'Essai',
+        'pending' => 'En attente',
+    ],
 ];

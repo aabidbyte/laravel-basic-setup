@@ -19,4 +19,5 @@ return [
     'details' => 'Détails',
     'chars' => 'caractères',
     'select' => 'Sélectionner...',
+    'created_at' => 'Créé le',
 ];

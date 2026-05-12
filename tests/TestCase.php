@@ -22,7 +22,7 @@ abstract class TestCase extends BaseTestCase
      */
     protected array $connectionsToTransact = ['mysql', 'central'];
 
-    protected $seed = true;
+    protected $seed = false;
 
     public function createApplication()
     {

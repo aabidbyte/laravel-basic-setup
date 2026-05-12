@@ -21,5 +21,11 @@ class DatabaseServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Model::preventLazyLoading(! isProduction());
+
+        // In testing, ensure central connection uses the same database as the default mysql connection
+        if (app()->environment('testing')) {
+            $defaultDatabase = config('database.connections.mysql.database');
+            config(['database.connections.central.database' => $defaultDatabase]);
+        }
     }
 }

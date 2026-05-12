@@ -3,6 +3,7 @@
 namespace Database\Seeders\CentralSeeders\Development;
 
 use App\Constants\Auth\Roles;
+use App\Models\Plan;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
@@ -61,7 +62,14 @@ class CentralUserSeeder extends Seeder
 
         try {
             if (! $tenant1) {
-                $tenant1 = Tenant::create(['id' => 'org1', 'name' => 'Organization 1']);
+                // Find Lifetime plan by its English name
+                $lifetimePlan = Plan::where('name->en_US', 'Lifetime')->first();
+
+                $tenant1 = Tenant::create([
+                    'id' => 'org1',
+                    'name' => 'Organization 1',
+                    'plan' => $lifetimePlan?->uuid ?? null,
+                ]);
             }
             if ($tenant1->domains()->count() === 0) {
                 $tenant1->domains()->create(['domain' => 'org1.laravel-basic-setup.test']);

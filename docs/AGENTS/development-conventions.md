@@ -789,6 +789,11 @@ public function getSubmitButtonTextProperty(): string
 -   **Test Command**: `php artisan test --filter=testName` or `php artisan test --parallel`
 -   **Coverage**: Every change must be tested
 -   **Factories**: Use model factories in tests
+-   **Testing Performance**:
+    -   **Avoid `RefreshDatabase` in Unit Tests**: Unit tests must be isolated from the database. Only use `RefreshDatabase` or `InteractsWithTenancy` in `Feature` tests.
+    -   **Disable Global Seeding**: Seeding is expensive. Set `protected $seed = false;` in `TestCase` and manually seed only what is needed in specific tests via `$this->seed()`.
+    -   **Pest Configuration**: Use granular `pest()->extend()->in()` calls in `tests/Pest.php` to apply traits only where they are needed (e.g., `in('Feature')`).
+    -   **Parallel Testing**: Run tests with `--parallel` for faster execution, but ensure your environment supports non-interactive TTY output.
 
 ### Frontend Development
 

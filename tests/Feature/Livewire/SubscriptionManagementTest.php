@@ -1,13 +1,12 @@
 <?php
 
-use App\Models\Plan;
-use App\Models\Tenant;
-use App\Models\User;
-use App\Models\Subscription;
 use App\Constants\Auth\Permissions;
 use App\Enums\Subscription\SubscriptionStatus;
+use App\Models\Plan;
+use App\Models\Subscription;
+use App\Models\Tenant;
+use App\Models\User;
 use Livewire\Volt\Volt;
-use Tests\TestCase;
 
 beforeEach(function () {
     $this->admin = User::factory()->create();
@@ -15,10 +14,10 @@ beforeEach(function () {
     $this->admin->assignPermission(Permissions::VIEW_PLANS());
     $this->admin->assignPermission(Permissions::VIEW_SUBSCRIPTIONS());
     $this->admin->assignPermission(Permissions::CREATE_SUBSCRIPTIONS());
-    
+
     $this->tenant = Tenant::factory()->create();
     $this->plan = Plan::factory()->create(['is_active' => true]);
-    
+
     $this->actingAs($this->admin);
 });
 

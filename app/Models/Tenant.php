@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\Subscription\SubscriptionStatus;
-use App\Enums\Tenancy\TenantPlan;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -36,6 +36,13 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     use HasFactory;
 
     /**
+     * The connection name for the model.
+     *
+     * @var string|null
+     */
+    protected $connection = 'central';
+
+    /**
      * Get the custom columns for the tenant model.
      *
      * These columns are stored directly in the tenants table instead of the JSON data column.
@@ -59,6 +66,22 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     {
         return $this->belongsToMany(User::class, 'tenant_user')
             ->withTimestamps();
+    }
+
+    /**
+     * Get the plan associated with the tenant.
+     */
+    public function planModel(): BelongsTo
+    {
+        return $this->belongsTo(Plan::class, 'plan', 'uuid');
+    }
+
+    /**
+     * Get a human-readable label for this model.
+     */
+    public function label(): string
+    {
+        return $this->name ?? $this->id;
     }
 
     /**
@@ -93,7 +116,6 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     {
         return [
             'should_seed' => 'boolean',
-            'plan' => TenantPlan::class,
         ];
     }
 }

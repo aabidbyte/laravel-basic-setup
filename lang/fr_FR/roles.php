@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'name' => 'Nom',
+    'role' => 'Rôle',
     'display_name' => 'Nom affiché',
     'description' => 'Description',
     'permissions' => 'Permissions',

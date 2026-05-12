@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Database\Seeders\CentralSeeders\Development\CentralUserSeeder;
+use Database\Seeders\CentralSeeders\Development\SubscriptionSeeder;
 use Database\Seeders\CentralSeeders\Production\RoleAndPermissionSeeder;
 use Database\Seeders\TenantSeeders\Production\EmailTemplateSeeder;
 use Illuminate\Database\Seeder;
@@ -33,6 +34,7 @@ class DatabaseSeeder extends Seeder
         // These run everywhere (local, testing, production)
         $this->call([
             RoleAndPermissionSeeder::class,
+            PlanSeeder::class,
         ]);
 
         // --- B. DEVELOPMENT CENTRAL SEEDERS ---
@@ -40,6 +42,7 @@ class DatabaseSeeder extends Seeder
         if (! App::environment('production')) {
             $this->call([
                 CentralUserSeeder::class,
+                SubscriptionSeeder::class,
             ]);
         }
     }

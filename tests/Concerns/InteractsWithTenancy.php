@@ -4,6 +4,7 @@ namespace Tests\Concerns;
 
 use App\Models\Tenant;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 
 trait InteractsWithTenancy
 {
@@ -23,7 +24,7 @@ trait InteractsWithTenancy
 
         if (! $this->tenant) {
             $this->tenant = Tenant::factory()->create([
-                'id' => 'test-' . \Illuminate\Support\Str::random(12),
+                'id' => 'test-' . Str::random(12),
             ]);
             $this->tenant->domains()->create([
                 'domain' => $this->tenant->id . '.test',

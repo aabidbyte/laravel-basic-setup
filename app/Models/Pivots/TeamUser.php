@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * Pivot model for the team_user relationship.
  *
  * Represents team memberships for users.
- * This pivot table has additional columns (id, uuid, timestamps).
+ * This pivot table has additional columns (id, uuid, role, timestamps).
  */
 class TeamUser extends BasePivotModel
 {

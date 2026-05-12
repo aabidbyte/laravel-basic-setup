@@ -7,6 +7,7 @@ namespace App\Services\Trash;
 use App\Constants\Auth\PermissionEntity;
 use App\Constants\Auth\Permissions;
 use App\Models\ErrorLog;
+use App\Models\Plan;
 use App\Models\Role;
 use App\Models\Team;
 use App\Models\User;
@@ -101,6 +102,21 @@ class TrashRegistry
                 'columns' => [
                     'type' => __('table.error_logs.type'),
                     'message' => __('table.error_logs.message'),
+                ],
+            ],
+            'plans' => [
+                'model' => Plan::class,
+                'entity' => PermissionEntity::PLANS,
+                'labelSingular' => __('plans.singular'),
+                'labelPlural' => __('plans.plural'),
+                'icon' => 'ticket',
+                'showRoute' => 'trash.show',
+                'viewPermission' => Permissions::VIEW_PLANS(),
+                'restorePermission' => Permissions::RESTORE_PLANS(),
+                'forceDeletePermission' => Permissions::FORCE_DELETE_PLANS(),
+                'columns' => [
+                    'name' => __('plans.name'),
+                    'tier' => __('plans.tier'),
                 ],
             ],
         ];

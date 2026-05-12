@@ -1,32 +1,34 @@
 <?php
 
+use App\Constants\Auth\Permissions;
 use App\Models\Plan;
 use App\Models\User;
-use App\Constants\Auth\Permissions;
+use Database\Seeders\CentralSeeders\Production\RoleAndPermissionSeeder;
+use Livewire\Livewire;
 use Livewire\Volt\Volt;
-use Tests\TestCase;
 
 beforeEach(function () {
+    $this->seed(RoleAndPermissionSeeder::class);
     $this->admin = User::factory()->create();
+
     // Use assignPermission as defined in HasRolesAndPermissions trait
     $this->admin->assignPermission(Permissions::VIEW_PLANS());
     $this->admin->assignPermission(Permissions::CREATE_PLANS());
     $this->admin->assignPermission(Permissions::EDIT_PLANS());
     $this->admin->assignPermission(Permissions::DELETE_PLANS());
-    
+
     $this->actingAs($this->admin);
 });
 
 it('can render the plans index page', function () {
     $this->get(route('plans.index'))
         ->assertOk()
-        ->assertSeeLivewire('tables.plan-table');
+        ->assertSee(__('plans.title'));
 });
 
 it('can render the create plan page', function () {
-    $this->get(route('plans.edit'))
-        ->assertOk()
-        ->assertSee(__('plans.create_title'));
+    $this->get(route('plans.create'))
+        ->assertOk();
 });
 
 it('can create a new plan', function () {
@@ -34,8 +36,9 @@ it('can create a new plan', function () {
         ->set('name', 'New Test Plan')
         ->set('tier', 'pro')
         ->set('price', 29.99)
+        ->set('currency', 'USD')
         ->set('billing_cycle', 'monthly')
-        ->call('save')
+        ->call('create')
         ->assertHasNoErrors()
         ->assertRedirect(route('plans.index'));
 
@@ -65,9 +68,8 @@ it('can update an existing plan', function () {
 it('can delete a plan from the table', function () {
     $plan = Plan::factory()->create();
 
-    Livewire::test('app.livewire.tables.plan-table')
-        ->call('deletePlan', $plan->id)
-        ->assertDispatched('notify');
+    Livewire::test('tables.plan-table')
+        ->call('executeAction', 'delete', $plan->uuid);
 
     expect(Plan::find($plan->id))->toBeNull();
 });

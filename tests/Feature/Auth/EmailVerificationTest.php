@@ -3,10 +3,12 @@
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 
 beforeEach(function () {
     asTenant();
+    Mail::fake();
 });
 
 test('email can be verified', function () {

@@ -100,6 +100,7 @@ class PermissionMatrix
                 PermissionAction::DELETE,
                 PermissionAction::RESTORE,
                 PermissionAction::FORCE_DELETE,
+                PermissionAction::IMPERSONATE,
             ],
             PermissionEntity::PLANS => [
                 PermissionAction::VIEW,

@@ -7,10 +7,8 @@ use App\Livewire\Bases\BasePageComponent;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Tenancy\TenantService;
-use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Locked;
 
 new class extends BasePageComponent {
     /**
@@ -23,7 +21,7 @@ new class extends BasePageComponent {
      */
     public string $name = '';
     public string $tenant_id = '';
-    public string $plan = 'free';
+    public ?string $plan = null;
     public bool $should_seed = true;
     public array $selectedUsers = [];
 
@@ -34,6 +32,8 @@ new class extends BasePageComponent {
     {
         $this->authorizeAccess($tenant);
         $this->initializeUnifiedModel($tenant, fn ($t) => $this->loadExistingTenant($t), fn () => $this->prepareNewTenant());
+
+        $this->modelTypeLabel = __('tenancy.tenant');
         $this->updatePageHeader();
     }
 
@@ -42,7 +42,7 @@ new class extends BasePageComponent {
      */
     protected function authorizeAccess(?Tenant $tenant): void
     {
-        $permission = $tenant ? Permissions::EDIT_TENANTS() : Permissions::CREATE_TENANTS();
+        $permission = $tenant && $tenant->exists ? Permissions::EDIT_TENANTS() : Permissions::CREATE_TENANTS();
         $this->authorize($permission);
     }
 
@@ -52,9 +52,9 @@ new class extends BasePageComponent {
     protected function loadExistingTenant(Tenant $tenant): void
     {
         $this->model = $tenant;
-        $this->name = $tenant->name;
-        $this->tenant_id = $tenant->id;
-        $this->plan = $tenant->plan ?? 'free';
+        $this->name = (string) ($tenant->name ?? '');
+        $this->tenant_id = (string) ($tenant->id ?? '');
+        $this->plan = $tenant->getAttribute('plan');
         $this->selectedUsers = $tenant->users->pluck('uuid')->toArray();
     }
 
@@ -71,37 +71,39 @@ new class extends BasePageComponent {
     }
 
     /**
+     * Get the URL to redirect back to.
+     */
+    #[Computed]
+    public function cancelUrl(): string
+    {
+        if ($this->isCreateMode || ! ($this->model?->id)) {
+            return route('tenants.index');
+        }
+
+        return route('tenants.show', $this->model->id);
+    }
+
+    /**
      * Update the page title and subtitle.
      */
     protected function updatePageHeader(): void
     {
         if ($this->isCreateMode) {
-            $this->pageTitle = 'tenancy.create_tenant';
-            $this->pageSubtitle = 'tenancy.create_tenant_description';
+            $this->pageTitle = __('pages.common.create.title', ['type' => __('tenancy.tenant')]);
+            $this->pageSubtitle = __('pages.common.create.description', ['type' => __('tenancy.tenant')]);
         } else {
-            $this->pageTitle = 'tenancy.edit_tenant';
-            $this->pageSubtitle = 'tenancy.edit_tenant_description';
+            $this->pageTitle = __('pages.common.edit.title', ['type' => __('tenancy.tenant'), 'name' => $this->name]);
+            $this->pageSubtitle = __('pages.common.edit.description', ['type' => __('tenancy.tenant')]);
         }
     }
 
-    /**
-     * Get variables for translation strings.
-     */
-    protected function getTranslationParams(): array
-    {
-        return [
-            'name' => $this->name,
-            'type' => __($this->modelTypeLabel),
-        ];
-    }
-
-    /**
-     * Override getPageSubtitle to provide dynamic parameters.
-     */
     public function getPageSubtitle(): ?string
     {
-        $subtitle = parent::getPageSubtitle();
-        return $subtitle ? __($subtitle, $this->getTranslationParams()) : null;
+        if ($this->isCreateMode) {
+            return __('tenancy.create_tenant_description');
+        }
+
+        return __('tenancy.edit_tenant_description', ['name' => $this->model?->name]);
     }
 
     /**
@@ -118,21 +120,20 @@ new class extends BasePageComponent {
             'should_seed' => $this->should_seed,
         ];
 
-        // Map UUIDs back to IDs for the service layer if necessary, 
-        // but it's better if service handles UUIDs.
-        // For now, we'll convert UUIDs to IDs to maintain service compatibility.
         $userIds = User::whereIn('uuid', $this->selectedUsers)->pluck('id')->toArray();
 
         if ($this->isCreateMode) {
             $this->model = $tenantService->createTenant($data, $userIds);
-            $messageKey = 'pages.common.create.success';
+            $messageKey = 'tenancy.tenant_created';
+            $redirectUrl = route('tenants.show', $this->model->id);
         } else {
-            $tenantService->updateTenant($this->model, $data, $userIds);
-            $messageKey = 'pages.common.edit.success';
+            $this->model = $tenantService->updateTenant($this->model, $data, $userIds);
+            $messageKey = 'tenancy.tenant_updated';
+            $redirectUrl = route('tenants.show', $this->model->id);
         }
 
         $this->sendSuccessNotification($this->model, $messageKey);
-        $this->redirect($this->cancelUrl, navigate: true);
+        $this->redirect($redirectUrl);
     }
 
     /**
@@ -142,7 +143,7 @@ new class extends BasePageComponent {
     {
         $rules = [
             'name' => ['required', 'string', 'max:255'],
-            'plan' => ['required', 'string', 'in:free,pro,enterprise'],
+            'plan' => ['required', 'string', 'exists:central.plans,uuid'],
             'selectedUsers' => ['array'],
             'selectedUsers.*' => ['exists:users,uuid'],
         ];
@@ -170,45 +171,49 @@ new class extends BasePageComponent {
     #[Computed]
     public function planOptions(): array
     {
-        return collect(\App\Enums\Tenancy\TenantPlan::cases())
-            ->mapWithKeys(fn ($plan) => [$plan->value => $plan->label()])
-            ->toArray();
-    }
-
-    /**
-     * Get the URL to redirect back to.
-     */
-    #[Computed]
-    public function cancelUrl(): string
-    {
-        return route('tenants.index');
+        return App\Models\Plan::where('is_active', true)->get()->pluck('name', 'uuid')->toArray();
     }
 }; ?>
 
-<x-layouts.page backHref="{{ $this->cancelUrl }}">
-    <div class="grid grid-cols-1 gap-8 lg:grid-cols-3"
-         x-data="tenantEdit({
-             name: $wire.$entangle('name'),
-             tenantId: $wire.$entangle('tenant_id'),
-             isCreateMode: @js($isCreateMode)
-         })">
+<x-layouts.page :backHref="$this->cancelUrl"
+                backLabel="{{ __('actions.cancel') }}">
+    <x-slot:bottomActions>
+        <x-ui.button type="submit"
+                     form="tenant-form"
+                     color="primary">
+            <x-ui.loading wire:loading
+                          wire:target="{{ $this->submitAction }}"
+                          size="sm"></x-ui.loading>
+            {{ $this->submitButtonText }}
+        </x-ui.button>
+    </x-slot:bottomActions>
 
-        {{-- Left: Main Form --}}
-        <div class="lg:col-span-2">
-            <x-ui.card>
-                <x-ui.form wire:submit="{{ $this->submitAction }}">
-                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                        {{-- Tenant Name --}}
-                        <div class="md:col-span-2">
-                            <x-ui.input label="{{ __('tenancy.tenant_name') }}"
-                                        wire:model="name"
-                                        x-model="name"
-                                        required
-                                        placeholder="My Awesome Company" />
-                        </div>
+    <section class="mx-auto w-full max-w-4xl"
+             x-data="tenantEdit({
+                 name: $wire.$entangle('name'),
+                 tenantId: $wire.$entangle('tenant_id'),
+                 isCreateMode: @js($isCreateMode)
+             })">
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <x-ui.form wire:submit="{{ $this->submitAction }}"
+                           id="tenant-form"
+                           class="space-y-8">
+                    {{-- Basic Information --}}
+                    <div class="space-y-6">
+                        <x-ui.title level="3"
+                                    class="text-base-content/70">{{ __('tenancy.basic_info') }}</x-ui.title>
 
-                        {{-- Tenant ID (Slug) --}}
-                        <div>
+                        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                            <div class="md:col-span-2">
+                                <x-ui.input label="{{ __('tenancy.tenant_name') }}"
+                                            wire:model="name"
+                                            x-model="name"
+                                            required
+                                            autofocus
+                                            placeholder="My Awesome Company" />
+                            </div>
+
                             <x-ui.input label="{{ __('tenancy.tenant_id') }}"
                                         wire:model="tenant_id"
                                         x-model="tenantId"
@@ -223,81 +228,85 @@ new class extends BasePageComponent {
                                                class="text-base-content/40" />
                                 </x-slot:prepend>
                             </x-ui.input>
-                        </div>
 
-                        {{-- Plan --}}
-                        <div>
                             <x-ui.select label="{{ __('tenancy.plan') }}"
                                          wire:model="plan"
                                          :options="$this->planOptions"
                                          required />
                         </div>
-
-                        @if ($isCreateMode)
-                            {{-- Seeding Toggle --}}
-                            <div class="md:col-span-2">
-                                <x-ui.card class="bg-base-200/50">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex flex-col">
-                                            <span class="font-semibold">{{ __('tenancy.seed_default_data') }}</span>
-                                            <span class="text-base-content/60 text-xs">{{ __('tenancy.seed_default_data_description') }}</span>
-                                        </div>
-                                        <x-ui.toggle wire:model="should_seed"
-                                                     color="primary" />
-                                    </div>
-                                </x-ui.card>
-                            </div>
-                        @endif
                     </div>
 
-                    <x-slot:actions>
-                        <x-ui.button variant="ghost"
-                                     href="{{ $this->cancelUrl }}"
-                                     wire:navigate>
-                            {{ __('actions.cancel') }}
-                        </x-ui.button>
-                        <x-ui.button type="submit"
-                                     variant="primary"
-                                     wire:loading.attr="disabled"
-                                     class="data-loading:opacity-50 data-loading:pointer-events-none">
-                            <x-ui.loading wire:loading
-                                          size="sm"
-                                          :centered="false" />
-                            {{ $this->submitButtonText }}
-                        </x-ui.button>
-                    </x-slot:actions>
-                </x-ui.form>
-            </x-ui.card>
-        </div>
+                    @if ($isCreateMode)
+                        <div class="divider"></div>
+                        <div class="space-y-4">
+                            <x-ui.title level="3"
+                                        class="text-base-content/70">{{ __('tenancy.initial_configuration') }}</x-ui.title>
 
-        {{-- Right: User Assignments --}}
-        <div class="space-y-6">
-            <x-ui.card title="{{ __('tenancy.assigned_users') }}"
-                       description="{{ __('tenancy.assigned_users_description') }}">
-                <div class="space-y-4">
-                    <div class="max-h-[400px] space-y-2 overflow-y-auto pr-2">
-                        @foreach ($this->availableUsers as $user)
-                            <label wire:key="user-{{ $user->uuid }}"
-                                   class="hover:bg-base-200 has-[:checked]:border-primary/20 has-[:checked]:bg-primary/5 flex cursor-pointer items-center gap-3 rounded-lg border border-transparent p-2 transition-colors">
-                                <x-ui.checkbox wire:model="selectedUsers"
-                                               value="{{ $user->uuid }}"
-                                               color="primary"
-                                               size="sm" />
-                                <div class="flex items-center gap-2">
-                                    <x-ui.avatar :user="$user"
-                                                 size="xs" />
+                            <x-ui.card class="bg-base-200/50">
+                                <div class="flex items-center justify-between">
                                     <div class="flex flex-col">
-                                        <span class="text-sm font-medium">{{ $user->name }}</span>
-                                        <span class="text-base-content/50 text-[10px]">{{ $user->email }}</span>
+                                        <span class="font-semibold">{{ __('tenancy.seed_default_data') }}</span>
+                                        <span class="text-base-content/60 text-xs">{{ __('tenancy.seed_default_data_description') }}</span>
                                     </div>
+                                    <x-ui.toggle wire:model="should_seed"
+                                                 color="primary" />
                                 </div>
-                            </label>
-                        @endforeach
+                            </x-ui.card>
+                        </div>
+                    @endif
+
+                    {{-- Assigned Users --}}
+                    <div class="divider"></div>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <x-ui.title level="3"
+                                        class="text-base-content/70">{{ __('tenancy.assigned_users') }}</x-ui.title>
+                        </div>
+
+                        <p class="text-base-content/60 text-sm">{{ __('tenancy.assigned_users_description') }}</p>
+
+                        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                            @forelse ($this->availableUsers as $user)
+                                <label wire:key="user-{{ $user->uuid }}"
+                                       class="hover:bg-base-200 has-[:checked]:border-primary/30 has-[:checked]:bg-primary/5 group flex cursor-pointer items-center gap-4 rounded-xl border border-transparent p-3 transition-all duration-200">
+                                    <div class="relative flex items-center justify-center">
+                                        <x-ui.checkbox wire:model="selectedUsers"
+                                                       value="{{ $user->uuid }}"
+                                                       color="primary"
+                                                       class="checkbox-sm" />
+                                    </div>
+
+                                    <div class="flex flex-1 items-center gap-3 overflow-hidden">
+                                        <x-ui.avatar :user="$user"
+                                                     size="sm"
+                                                     class="ring-base-content/10 ring-1 ring-offset-2 ring-offset-base-100" />
+                                        <div class="flex min-w-0 flex-col">
+                                            <span class="truncate text-sm font-bold transition-colors group-hover:text-primary">{{ $user->name }}</span>
+                                            <span class="text-base-content/50 truncate text-[11px]">{{ $user->email }}</span>
+                                        </div>
+                                    </div>
+
+                                    @if (in_array($user->uuid, $selectedUsers))
+                                        <x-ui.icon name="check-circle"
+                                                   size="sm"
+                                                   class="text-primary"
+                                                   variant="solid" />
+                                    @endif
+                                </label>
+                            @empty
+                                <div class="col-span-full py-8 text-center">
+                                    <x-ui.icon name="users"
+                                               size="lg"
+                                               class="text-base-content/20 mx-auto mb-2" />
+                                    <p class="text-base-content/50 text-sm italic">{{ __('common.no_records_found') }}</p>
+                                </div>
+                            @endforelse
+                        </div>
                     </div>
-                </div>
-            </x-ui.card>
+                </x-ui.form>
+            </div>
         </div>
-    </div>
+    </section>
 </x-layouts.page>
 
 @assets

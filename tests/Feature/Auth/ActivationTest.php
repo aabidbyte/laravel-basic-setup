@@ -4,10 +4,12 @@ use App\Models\User;
 use App\Services\Users\ActivationService;
 use Database\Seeders\TenantSeeders\Production\EmailTemplateSeeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 
 beforeEach(function () {
     asTenant();
     $this->seed(EmailTemplateSeeder::class);
+    Mail::fake();
     $this->activationService = app(ActivationService::class);
 });
 

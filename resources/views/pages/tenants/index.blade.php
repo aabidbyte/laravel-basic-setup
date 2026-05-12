@@ -4,14 +4,14 @@
 
 <x-layouts.app>
     <x-layouts.page>
-        <x-slot:actions>
+        <x-slot:topActions>
             <x-ui.button variant="primary"
                          icon="plus"
-                         href="{{ route('tenants.settings.edit') }}"
+                         href="{{ route('tenants.create') }}"
                          wire:navigate>
                 {{ __('tenancy.create_tenant') }}
             </x-ui.button>
-        </x-slot:actions>
+        </x-slot:topActions>
 
         <div class="flex flex-col gap-6">
             <livewire:tables.tenant-table />

@@ -41,11 +41,15 @@ class ImpersonateUserTable extends Datatable
             ->select('users.*');
 
         // If we are in a tenant context, only show users belonging to this tenant
-        if (tenant()) {
+        // UNLESS the user is a super admin who might want to find users from other tenants
+        if (tenant() && ! Auth::user()->hasRole(\App\Constants\Auth\Roles::SUPER_ADMIN)) {
             $query->whereHas('tenants', function ($q) {
                 $q->where('tenants.id', tenant('id'));
             });
         }
+
+        // Don't show self in the datatable
+        $query->where('id', '!=', Auth::id());
 
         return $query;
     }
@@ -81,13 +85,18 @@ class ImpersonateUserTable extends Datatable
     {
         $filters = [];
 
-        // Only show tenant filter if we are in central context
-        if (! tenant()) {
+        // Only show tenant filter if we are in central context OR if we are a super admin
+        if (! tenant() || Auth::user()->hasRole(\App\Constants\Auth\Roles::SUPER_ADMIN)) {
             $filters[] = Filter::make('tenant_id', __('tenancy.workspace'))
                 ->type('select')
                 ->options(Tenant::pluck('name', 'id')->toArray())
                 ->execute(fn ($q, $value) => $q->whereHas('tenants', fn ($inner) => $inner->where('tenants.id', $value)));
         }
+
+        $filters[] = Filter::make('role', __('roles.role'))
+            ->type('select')
+            ->options(\App\Models\Role::pluck('name', 'id')->toArray())
+            ->execute(fn ($q, $value) => $q->whereHas('roles', fn ($inner) => $inner->where('roles.id', $value)));
 
         return $filters;
     }

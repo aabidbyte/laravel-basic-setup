@@ -64,6 +64,7 @@ trait HasDatatableLivewireRendering
         $value = '';
         if ($column->getComponentType() !== null) {
             $value = $column->resolve($row);
+
             // If it's a component, we return here as resolve handles formatting and views if needed
             return $value;
         } elseif ($column->getLabelCallback() !== null) {
@@ -71,7 +72,7 @@ trait HasDatatableLivewireRendering
         } else {
             $field = $column->getField();
             if ($field) {
-                $value = $column->hasRelationship() ? data_get($row, $field) : ($row->{$field} ?? '');
+                $value = $column->hasRelationship() ? data_get($row, $field) : ($row->{$field} ?? null);
             }
         }
 

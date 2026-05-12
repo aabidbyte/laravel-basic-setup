@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Jobs\Tenancy\SeedDatabaseIfRequested;
+use App\Listeners\Tenancy\ClearLogTenantContext;
+use App\Listeners\Tenancy\LogTenantContext;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
@@ -71,11 +73,13 @@ class TenancyServiceProvider extends ServiceProvider
             Events\InitializingTenancy::class => [],
             Events\TenancyInitialized::class => [
                 Listeners\BootstrapTenancy::class,
+                LogTenantContext::class,
             ],
 
             Events\EndingTenancy::class => [],
             Events\TenancyEnded::class => [
                 Listeners\RevertToCentralContext::class,
+                ClearLogTenantContext::class,
             ],
 
             Events\BootstrappingTenancy::class => [],

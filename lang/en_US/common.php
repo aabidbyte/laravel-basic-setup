@@ -19,4 +19,5 @@ return [
         'placeholder' => 'Type name here...',
     ],
     'select' => 'Select...',
+    'created_at' => 'Created At',
 ];

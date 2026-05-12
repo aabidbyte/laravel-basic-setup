@@ -12,13 +12,6 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Team extends BaseModel
 {
-    /**
-     * The connection name for the model.
-     *
-     * @var string|null
-     */
-    protected $connection = 'central';
-
     use HasFactory;
 
     /**
@@ -38,6 +31,7 @@ class Team extends BaseModel
     {
         return $this->belongsToMany(User::class, 'team_user')
             ->using(TeamUser::class)
+            ->withPivot('role')
             ->withTimestamps();
     }
 

@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'name' => 'Name',
+    'role' => 'Role',
     'display_name' => 'Display Name',
     'display_name_hint' => 'The internal system name will be auto-generated from this field.',
     'description' => 'Description',

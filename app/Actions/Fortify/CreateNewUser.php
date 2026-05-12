@@ -80,16 +80,7 @@ class CreateNewUser implements CreatesNewUsers
             'name' => $user->name . "'s Team",
         ]);
 
-        // We use DB::connection('tenant') to ensure we hit the right pivot table
-        // if the User model relationship is still pointing to central
-        DB::connection('tenant')
-            ->table('team_user')
-            ->insert([
-                'uuid' => (string) Str::uuid(),
-                'user_id' => $user->id,
-                'team_id' => $team->id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+        // Use the current connection (will be tenant context if called within tenant->run)
+        $team->users()->attach($user->id, ['role' => 'admin']);
     }
 }

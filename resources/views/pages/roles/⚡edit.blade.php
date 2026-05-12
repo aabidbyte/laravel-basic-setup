@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Constants\Auth\Permissions;
 use App\Constants\Auth\Roles;
 use App\Enums\Ui\PlaceholderType;
@@ -7,10 +9,17 @@ use App\Livewire\Bases\BasePageComponent;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Services\Notifications\NotificationBuilder;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 
 new class extends BasePageComponent {
-    public ?string $pageSubtitle = null;
+    /**
+     * Optional label for the model type used in common translations.
+     */
+    public ?string $modelTypeLabel = 'types.role';
 
     protected PlaceholderType $placeholderType = PlaceholderType::FORM;
 
@@ -19,7 +28,9 @@ new class extends BasePageComponent {
     #[Locked]
     public ?string $roleUuid = null;
 
-    // Form fields
+    /**
+     * Form fields
+     */
     public string $name = '';
 
     public ?string $display_name = null;
@@ -30,36 +41,41 @@ new class extends BasePageComponent {
     public array $selectedPermissions = [];
 
     /**
-     * Mount the component and authorize access.
+     * Initialize the component.
      */
     public function mount(?Role $role = null): void
     {
         $this->authorizeAccess($role);
         $this->checkSuperAdminProtection($role);
-        $this->initializeUnifiedModel($role, $this->loadExistingRole(...), $this->prepareNewRole(...));
-
-        $this->modelTypeLabel = __('types.role');
-
+        $this->initializeUnifiedModel($role, fn ($r) => $this->loadExistingRole($r), fn () => $this->prepareNewRole());
         $this->updatePageHeader();
     }
 
+    /**
+     * Authorize access to the component.
+     */
     protected function authorizeAccess(?Role $role): void
     {
         $permission = $role ? Permissions::EDIT_ROLES() : Permissions::CREATE_ROLES();
-
         $this->authorize($permission);
     }
 
+    /**
+     * Protect super_admin role from unauthorized modification.
+     */
     protected function checkSuperAdminProtection(?Role $role): void
     {
-        // Only super_admin can edit the super_admin role
-        if ($role && $role->name === Roles::SUPER_ADMIN && !auth()->user()?->hasRole(Roles::SUPER_ADMIN)) {
+        if ($role && $role->name === Roles::SUPER_ADMIN && !Auth::user()?->hasRole(Roles::SUPER_ADMIN)) {
             abort(403);
         }
     }
 
+    /**
+     * Load existing role data into form fields.
+     */
     protected function loadExistingRole(Role $role): void
     {
+        $this->model = $role;
         $this->roleUuid = $role->uuid;
         $this->name = $role->name;
         $this->display_name = $role->display_name;
@@ -67,30 +83,64 @@ new class extends BasePageComponent {
         $this->selectedPermissions = $role->permissions->pluck('uuid')->toArray();
     }
 
+    /**
+     * Prepare a new role model with defaults.
+     */
     protected function prepareNewRole(): void
     {
-        // Nothing special needed for new roles
+        $this->model = new Role();
     }
 
+    /**
+     * Update the page title and subtitle.
+     */
     protected function updatePageHeader(): void
     {
         if ($this->isCreateMode) {
-            $this->pageTitle = __('pages.common.create.title', ['type' => __('types.role')]);
-            $this->pageSubtitle = __('pages.common.create.description', ['type' => __('types.role')]);
+            $this->pageTitle = 'pages.common.create.title';
+            $this->pageSubtitle = 'pages.common.create.description';
         } else {
-            $this->pageTitle = __('pages.common.edit.title', ['type' => __('types.role'), 'name' => $this->name]);
-            $this->pageSubtitle = __('pages.common.edit.description', ['type' => __('types.role')]);
+            $this->pageTitle = 'pages.common.edit.title';
+            $this->pageSubtitle = 'pages.common.edit.description';
         }
     }
 
     /**
-     * Get the role being edited.
+     * Override getPageTitle to provide type parameter.
      */
-    public function getPermissionsProperty()
+    public function getPageTitle(): string
+    {
+        $title = parent::getPageTitle();
+        $params = ['type' => __($this->modelTypeLabel)];
+
+        if (!$this->isCreateMode && $this->display_name) {
+            $params['name'] = $this->display_name;
+        }
+
+        return __($title, $params);
+    }
+
+    /**
+     * Override getPageSubtitle to provide type parameter.
+     */
+    public function getPageSubtitle(): ?string
+    {
+        $subtitle = parent::getPageSubtitle();
+        return $subtitle ? __($subtitle, ['type' => __($this->modelTypeLabel)]) : null;
+    }
+
+    /**
+     * Get available permissions for selection.
+     */
+    #[Computed]
+    public function permissions(): Collection
     {
         return Permission::orderBy('name')->get();
     }
 
+    /**
+     * Define validation rules.
+     */
     protected function rules(): array
     {
         return [
@@ -108,12 +158,10 @@ new class extends BasePageComponent {
     {
         $slug = Str::slug($displayName, '_');
 
-        // If editing and generated slug matches current name, keep it
         if ($currentName && $slug === $currentName) {
             return $currentName;
         }
 
-        // Ensure uniqueness
         $originalSlug = $slug;
         $counter = 1;
 
@@ -125,11 +173,13 @@ new class extends BasePageComponent {
         return $slug;
     }
 
+    /**
+     * Handle model creation.
+     */
     public function create(): void
     {
         $this->validate();
 
-        // Auto-generate name from display_name
         $generatedName = $this->generateUniqueName($this->display_name);
 
         $role = Role::create([
@@ -143,35 +193,38 @@ new class extends BasePageComponent {
         $this->redirect(route('roles.index'), navigate: true);
     }
 
+    /**
+     * Handle model update.
+     */
     public function save(): void
     {
         $this->validate();
 
-        $role = $this->getRole();
-
-        if (!$role) {
+        if (!$this->model) {
             NotificationBuilder::make()
-                ->title('pages.common.not_found', ['type' => __('types.role')])
+                ->title('pages.common.not_found', ['type' => __($this->modelTypeLabel)])
                 ->error()
                 ->send();
 
             return;
         }
 
-        // Update name if display_name changed (keep it in sync)
-        $newName = $this->generateUniqueName($this->display_name, $role->name);
+        $newName = $this->generateUniqueName($this->display_name, $this->model->name);
 
-        $role->update([
+        $this->model->update([
             'name' => $newName,
             'display_name' => $this->display_name,
             'description' => $this->description,
         ]);
 
-        $this->syncPermissions($role);
-        $this->sendSuccessNotification($role, 'pages.common.edit.success');
-        $this->redirect(route('roles.show', $role->uuid), navigate: true);
+        $this->syncPermissions($this->model);
+        $this->sendSuccessNotification($this->model, 'pages.common.edit.success');
+        $this->redirect(route('roles.show', $this->model->uuid), navigate: true);
     }
 
+    /**
+     * Sync permissions for the role.
+     */
     protected function syncPermissions(Role $role): void
     {
         if (!empty($this->selectedPermissions)) {
@@ -182,81 +235,80 @@ new class extends BasePageComponent {
         }
     }
 
-    protected function getRole(): ?Role
+    /**
+     * Get the URL to redirect back to.
+     */
+    #[Computed]
+    public function cancelUrl(): string
     {
-        return Role::where('uuid', $this->roleUuid)->first();
+        return $this->getCancelUrl('roles.index', 'roles.show', $this->model);
     }
 
-    public function getCancelUrlProperty(): string
-    {
-        return $this->isCreateMode ? route('roles.index') : route('roles.show', $this->roleUuid);
-    }
-
-    public function getIsSuperAdminProperty(): bool
+    /**
+     * Determine if current role is Super Admin.
+     */
+    #[Computed]
+    public function isSuperAdmin(): bool
     {
         return $this->name === Roles::SUPER_ADMIN;
     }
 }; ?>
 
-<x-layouts.page :backHref="$this->cancelUrl"
-                backLabel="{{ __('actions.cancel') }}">
+<x-layouts.page :backHref="$this->cancelUrl">
     <x-slot:bottomActions>
         <x-ui.button type="submit"
                      form="role-form"
-                     color="primary">
+                     variant="primary">
             <x-ui.loading wire:loading
                           wire:target="{{ $this->submitAction }}"
-                          size="sm"></x-ui.loading>
+                          size="sm" />
             {{ $this->submitButtonText }}
         </x-ui.button>
     </x-slot:bottomActions>
 
-    <section class="mx-auto w-full max-w-4xl">
-        <div class="card bg-base-100 shadow-xl">
-            <div class="card-body">
-                <x-ui.form wire:submit="{{ $this->submitAction }}"
-                           id="role-form"
-                           class="space-y-6">
-                    {{-- Basic Information --}}
-                    <div class="space-y-4">
-                        <x-ui.title level="3"
-                                    class="text-base-content/70">{{ __('roles.edit.basic_info') }}</x-ui.title>
+    <div class="mx-auto w-full max-w-4xl">
+        <x-ui.card>
+            <x-ui.form wire:submit="{{ $this->submitAction }}"
+                       id="role-form">
+                {{-- Basic Information --}}
+                <div class="space-y-6">
+                    <x-ui.title level="3"
+                                class="text-base-content/70">{{ __('roles.edit.basic_info') }}</x-ui.title>
 
-                        <x-ui.input type="text"
-                                    wire:model="display_name"
-                                    name="display_name"
-                                    :label="__('roles.display_name')"
-                                    :hint="__('roles.display_name_hint')"
-                                    required
-                                    autofocus></x-ui.input>
+                    <x-ui.input type="text"
+                                wire:model="display_name"
+                                name="display_name"
+                                :label="__('roles.display_name')"
+                                :hint="__('roles.display_name_hint')"
+                                required
+                                autofocus />
 
-                        <x-ui.input type="textarea"
-                                    wire:model="description"
-                                    name="description"
-                                    :label="__('roles.description')"
-                                    rows="3"></x-ui.input>
-                    </div>
+                    <x-ui.input type="textarea"
+                                wire:model="description"
+                                name="description"
+                                :label="__('roles.description')"
+                                rows="3" />
+                </div>
 
-                    {{-- Permissions --}}
-                    <div class="divider"></div>
-                    <div class="space-y-4">
-                        <x-ui.title level="3"
-                                    class="text-base-content/70">{{ __('roles.permissions') }}</x-ui.title>
+                {{-- Permissions --}}
+                <div class="divider"></div>
+                <div class="space-y-6">
+                    <x-ui.title level="3"
+                                class="text-base-content/70">{{ __('roles.permissions') }}</x-ui.title>
 
-                        @if (!$this->isSuperAdmin)
-                            <x-ui.permission-matrix :permissions="$this->permissions"
-                                                    :selectedPermissions="$selectedPermissions"
-                                                    wireModel="selectedPermissions"></x-ui.permission-matrix>
-                        @else
-                            <div class="alert alert-info">
-                                <x-ui.icon name="shield-check"
-                                           class="h-6 w-6"></x-ui.icon>
-                                <span>{{ __('roles.super_admin_all_permissions') }}</span>
-                            </div>
-                        @endif
-                    </div>
-                </x-ui.form>
-            </div>
-        </div>
-    </section>
+                    @if (!$this->isSuperAdmin)
+                        <x-ui.permission-matrix :permissions="$this->permissions"
+                                                :selectedPermissions="$selectedPermissions"
+                                                wireModel="selectedPermissions" />
+                    @else
+                        <div class="alert alert-info">
+                            <x-ui.icon name="shield-check"
+                                       class="h-6 w-6" />
+                            <span>{{ __('roles.super_admin_all_permissions') }}</span>
+                        </div>
+                    @endif
+                </div>
+            </x-ui.form>
+        </x-ui.card>
+    </div>
 </x-layouts.page>

@@ -19,6 +19,7 @@ class Subscription extends BaseModel
      * @var string|null
      */
     protected $connection = 'central';
+
     /**
      * The attributes that are mass assignable.
      *
@@ -45,6 +46,7 @@ class Subscription extends BaseModel
             'extras' => 'array',
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
+            'trial_ends_at' => 'datetime',
         ];
     }
 
@@ -64,7 +66,6 @@ class Subscription extends BaseModel
         return $this->belongsTo(Plan::class);
     }
 
-
     /**
      * Get a human-readable label for this model.
      */
@@ -78,8 +79,8 @@ class Subscription extends BaseModel
      */
     public function isActive(): bool
     {
-        return $this->status === SubscriptionStatus::ACTIVE 
-            && $this->starts_at->isPast() 
+        return $this->status === SubscriptionStatus::ACTIVE
+            && $this->starts_at->isPast()
             && ($this->ends_at === null || $this->ends_at->isFuture());
     }
 }

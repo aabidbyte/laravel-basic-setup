@@ -263,6 +263,7 @@ class ErrorHandler
             'method' => $request->method(),
             'user_id' => Auth::id(),
             'user_uuid' => Auth::user()?->uuid,
+            'tenant_id' => tenant('id'),
             'ip' => $request->ip(),
             'user_agent' => $request->userAgent(),
             'request_data' => $this->sanitizeRequestData($request),

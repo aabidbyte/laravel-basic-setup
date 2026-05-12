@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Constants\Auth\Permissions;
 use App\Constants\Auth\Roles;
 use App\Enums\Ui\PlaceholderType;
@@ -7,14 +9,18 @@ use App\Livewire\Bases\BasePageComponent;
 use App\Models\Permission;
 use App\Models\Role;
 use Illuminate\Database\Eloquent\Collection;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 
 new class extends BasePageComponent {
-    public ?string $pageSubtitle = null;
+    /**
+     * Optional label for the model type used in common translations.
+     */
+    public ?string $modelTypeLabel = 'types.role';
 
     protected PlaceholderType $placeholderType = PlaceholderType::CARD;
 
-    public string $roleUuid = '';
-
+    #[Locked]
     public ?Role $role = null;
 
     /**
@@ -25,27 +31,49 @@ new class extends BasePageComponent {
         $this->authorize(Permissions::VIEW_ROLES());
 
         // Only super_admin can view the super_admin role
-        if ($role->name === Roles::SUPER_ADMIN && !auth()->user()?->hasRole(Roles::SUPER_ADMIN)) {
+        if ($role->name === Roles::SUPER_ADMIN && !Auth::user()?->hasRole(Roles::SUPER_ADMIN)) {
             abort(403);
         }
 
-        $this->roleUuid = $role->uuid;
         $this->role = $role->load(['permissions']);
-
-        $this->pageSubtitle = __('pages.common.show.description', ['type' => __('types.role')]);
+        $this->updatePageHeader();
     }
 
+    /**
+     * Update the page title and subtitle.
+     */
+    protected function updatePageHeader(): void
+    {
+        $this->pageTitle = 'pages.common.show.title';
+        $this->pageSubtitle = 'pages.common.show.subtitle';
+    }
+
+    /**
+     * Override getPageTitle to provide dynamic parameters.
+     */
     public function getPageTitle(): string
     {
-        return $this->role?->label() ?? __('types.role');
+        $title = parent::getPageTitle();
+        return __($title, [
+            'name' => $this->role->display_name ?? $this->role->name,
+            'type' => __($this->modelTypeLabel),
+        ]);
+    }
+
+    /**
+     * Override getPageSubtitle to provide type parameter.
+     */
+    public function getPageSubtitle(): ?string
+    {
+        $subtitle = parent::getPageSubtitle();
+        return $subtitle ? __($subtitle, ['type' => __($this->modelTypeLabel)]) : null;
     }
 
     /**
      * Get available permissions.
-     *
-     * @return Collection
      */
-    public function getPermissionsProperty()
+    #[Computed]
+    public function permissions(): Collection
     {
         return Permission::orderBy('name')->get();
     }
@@ -54,71 +82,63 @@ new class extends BasePageComponent {
 <x-layouts.page backHref="{{ route('roles.index') }}">
     <x-slot:topActions>
         @can(Permissions::EDIT_ROLES())
-            <x-ui.button href="{{ route('roles.edit', $roleUuid) }}"
+            <x-ui.button href="{{ route('roles.edit', $role->uuid) }}"
                          wire:navigate
-                         variant="ghost"
+                         variant="primary"
+                         size="sm"
                          class="gap-2">
                 <x-ui.icon name="pencil"
-                           size="sm"></x-ui.icon>
+                           size="sm" />
                 {{ __('actions.edit') }}
             </x-ui.button>
         @endcan
     </x-slot:topActions>
 
-    <section class="mx-auto w-full max-w-6xl space-y-6">
+    <div class="max-col-6xl mx-auto w-full space-y-8">
         {{-- Role Details Card --}}
-        <div class="card bg-base-100 shadow-xl">
-            <div class="card-body">
-                <div class="grid grid-cols-1 gap-6">
-                    {{-- Basic Info --}}
-                    <div class="space-y-4">
-                        <x-ui.title level="3"
-                                    class="text-base-content/70">{{ __('roles.show.basic_info') }}</x-ui.title>
-
-                        <dl class="grid grid-cols-1 md:grid-cols-2">
-
-                            <div>
-                                <dt class="text-base-content/60 text-sm font-medium">{{ __('roles.display_name') }}</dt>
-                                <dd class="text-base-content">{{ $role->display_name ?? '-' }}</dd>
-                            </div>
-                            <div class="col-span-2">
-                                <dt class="text-base-content/60 text-sm font-medium">{{ __('roles.description') }}</dt>
-                                <dd class="text-base-content">{{ $role->description ?? '-' }}</dd>
-                            </div>
-                        </dl>
-                    </div>
-
-                    {{-- Permissions --}}
-                    <div class="space-y-4">
-                        <x-ui.title level="3"
-                                    class="text-base-content/70">{{ __('roles.permissions') }}
-                            ({{ $role->permissions->count() }})</x-ui.title>
-
-                        @if ($role->name === Roles::SUPER_ADMIN)
-                            <div class="alert alert-info">
-                                <x-ui.icon name="shield-check"
-                                           class="h-6 w-6"></x-ui.icon>
-                                <span>{{ __('roles.super_admin_all_permissions') }}</span>
-                            </div>
-                        @else
-                            <x-ui.permission-matrix :permissions="$this->permissions"
-                                                    :selectedPermissions="$role->permissions->pluck('uuid')->toArray()"
-                                                    :readonly="true"></x-ui.permission-matrix>
-                        @endif
-                    </div>
+        <x-ui.card title="{{ __('roles.show.basic_info') }}">
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div>
+                    <span class="text-base-content/60 text-sm">{{ __('roles.display_name') }}</span>
+                    <p class="font-medium">{{ $role->display_name ?? '-' }}</p>
+                </div>
+                <div>
+                    <span class="text-base-content/60 text-sm">{{ __('roles.name') }}</span>
+                    <p class="font-mono text-sm">{{ $role->name }}</p>
+                </div>
+                <div class="md:col-span-2">
+                    <span class="text-base-content/60 text-sm">{{ __('roles.description') }}</span>
+                    <p class="text-base-content">{{ $role->description ?? '-' }}</p>
                 </div>
             </div>
-        </div>
+        </x-ui.card>
+
+        {{-- Permissions --}}
+        <x-ui.card>
+            <x-slot:title>
+                <div class="flex items-center justify-between">
+                    <span>{{ __('roles.permissions') }}</span>
+                    <x-ui.badge variant="info">{{ $role->permissions->count() }}</x-ui.badge>
+                </div>
+            </x-slot:title>
+
+            @if ($role->name === Roles::SUPER_ADMIN)
+                <div class="alert alert-info">
+                    <x-ui.icon name="shield-check"
+                               class="h-6 w-6" />
+                    <span>{{ __('roles.super_admin_all_permissions') }}</span>
+                </div>
+            @else
+                <x-ui.permission-matrix :permissions="$this->permissions"
+                                        :selectedPermissions="$role->permissions->pluck('uuid')->toArray()"
+                                        readonly />
+            @endif
+        </x-ui.card>
 
         {{-- Users with this Role --}}
-        <div class="card bg-base-100 shadow-xl">
-            <div class="card-body">
-                <x-ui.title level="3"
-                            class="mb-4">{{ __('roles.users_with_role') }}</x-ui.title>
-
-                <livewire:tables.role-user-table :role-uuid="$roleUuid"
-                                                 lazy></livewire:tables.role-user-table>
-            </div>
-        </div>
-    </section>
+        <x-ui.card title="{{ __('roles.users_with_role') }}">
+            <livewire:tables.role-user-table :role-uuid="$role->uuid"
+                                             lazy />
+        </x-ui.card>
+    </div>
 </x-layouts.page>

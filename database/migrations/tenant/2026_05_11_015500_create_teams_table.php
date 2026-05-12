@@ -25,10 +25,12 @@ return new class extends Migration {
         Schema::create('team_user', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->unsignedBigInteger('user_id'); // No foreign key to central 'users' table
             $table->foreignId('team_id')->constrained('teams')->cascadeOnDelete();
+            $table->string('role')->nullable()->default('member');
             $table->timestampsTz();
 
+            $table->index('user_id');
             $table->unique(['user_id', 'team_id']);
         });
     }

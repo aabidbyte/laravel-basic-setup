@@ -16,7 +16,9 @@ class WorkspaceSwitcher extends LivewireBaseComponent
      * Data for workspace selection prompt.
      */
     public array $workspaces = [];
+
     public ?string $selectedUserUuid = null;
+
     public bool $showSelectionModal = false;
 
     protected $listeners = [
@@ -40,13 +42,12 @@ class WorkspaceSwitcher extends LivewireBaseComponent
     {
         $this->showSelectionModal = false;
 
-        $table = new \App\Livewire\Tables\ImpersonateUserTable();
-        $user = \App\Models\User::where('uuid', $this->selectedUserUuid)->firstOrFail();
-        $tenant = \App\Models\Tenant::find($tenantId);
+        $table = new ImpersonateUserTable();
+        $user = User::where('uuid', $this->selectedUserUuid)->firstOrFail();
+        $tenant = Tenant::find($tenantId);
 
         $table->performImpersonation($user, $tenant);
     }
-
 
     /**
      * Get the current active workspace.

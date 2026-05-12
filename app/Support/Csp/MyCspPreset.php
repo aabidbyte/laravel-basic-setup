@@ -99,6 +99,8 @@ class MyCspPreset implements Preset
 
         // Vite dev server (local only)
         if (isLocal()) {
+            $policy->add(Directive::SCRIPT, Keyword::UNSAFE_EVAL);
+
             $viteHost = config('vite.dev_server.host');
             $vitePort = config('vite.dev_server.port');
 

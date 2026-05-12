@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::connection('central')->create('plans', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
-            $table->string('name');
+            $table->json('name'); // Translatable name
             $table->string('tier'); // PlanTier
             $table->decimal('price', 15, 2);
             $table->string('currency')->default('USD');

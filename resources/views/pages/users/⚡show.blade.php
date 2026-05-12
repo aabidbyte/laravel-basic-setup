@@ -1,21 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Constants\Auth\Permissions;
 use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\BasePageComponent;
 use App\Models\User;
 use App\Services\Notifications\NotificationBuilder;
 use App\Services\Users\UserService;
+use Livewire\Attributes\Locked;
 
 new class extends BasePageComponent {
-    public ?string $pageTitle = null;
-
-    public ?string $pageSubtitle = null;
+    /**
+     * Optional label for the model type used in common translations.
+     */
+    public ?string $modelTypeLabel = 'types.user';
 
     protected PlaceholderType $placeholderType = PlaceholderType::CARD;
 
     protected int $placeholderRows = 4;
 
+    #[Locked]
     public ?User $user = null;
 
     public ?string $activationLink = null;
@@ -30,22 +35,46 @@ new class extends BasePageComponent {
         $this->authorize(Permissions::VIEW_USERS());
 
         $this->user = $user;
-        $this->pageSubtitle = __('pages.common.show.subtitle', ['type' => __('types.user')]);
+        $this->updatePageHeader();
     }
 
+    /**
+     * Update the page title and subtitle.
+     */
+    protected function updatePageHeader(): void
+    {
+        $this->pageTitle = 'pages.common.show.title';
+        $this->pageSubtitle = 'pages.common.show.subtitle';
+    }
+
+    /**
+     * Override getPageTitle to provide dynamic parameters.
+     */
     public function getPageTitle(): string
     {
-        return __('pages.common.show.title', ['name' => $this->user->name, 'type' => __('types.user')]);
+        $title = parent::getPageTitle();
+        return __($title, [
+            'name' => $this->user->name,
+            'type' => __($this->modelTypeLabel),
+        ]);
+    }
+
+    /**
+     * Override getPageSubtitle to provide type parameter.
+     */
+    public function getPageSubtitle(): ?string
+    {
+        $subtitle = parent::getPageSubtitle();
+        return $subtitle ? __($subtitle, ['type' => __($this->modelTypeLabel)]) : null;
     }
 
     /**
      * Generate activation link for the user.
      */
-    public function generateActivationLink(): void
+    public function generateActivationLink(UserService $userService): void
     {
         $this->authorize(Permissions::GENERATE_ACTIVATION_USERS());
 
-        $userService = app(UserService::class);
         $this->activationLink = $userService->generateActivationLink($this->user);
         $this->showActivationModal = true;
 
@@ -55,11 +84,10 @@ new class extends BasePageComponent {
     /**
      * Send password reset email to the user.
      */
-    public function sendPasswordResetEmail(): void
+    public function sendPasswordResetEmail(UserService $userService): void
     {
         $this->authorize(Permissions::EDIT_USERS());
 
-        $userService = app(UserService::class);
         $userService->sendPasswordResetEmail($this->user);
 
         NotificationBuilder::make()->title('users.show.password_reset_sent')->success()->send();
@@ -68,11 +96,10 @@ new class extends BasePageComponent {
     /**
      * Send activation email to the user.
      */
-    public function sendActivationEmail(): void
+    public function sendActivationEmail(UserService $userService): void
     {
         $this->authorize(Permissions::EDIT_USERS());
 
-        $userService = app(UserService::class);
         $userService->sendActivationEmail($this->user);
 
         NotificationBuilder::make()->title('users.show.activation_email_sent')->success()->send();
@@ -81,11 +108,10 @@ new class extends BasePageComponent {
     /**
      * Cancel pending email change.
      */
-    public function cancelPendingEmailChange(): void
+    public function cancelPendingEmailChange(UserService $userService): void
     {
         $this->authorize(Permissions::EDIT_USERS());
 
-        $userService = app(UserService::class);
         $userService->cancelPendingEmailChange($this->user);
         $this->user = $this->user->fresh();
 
@@ -127,7 +153,7 @@ new class extends BasePageComponent {
     }
 
     /**
-     * Copy activation link to clipboard (dispatches event to Alpine).
+     * Close activation modal and clear link.
      */
     public function closeActivationModal(): void
     {
@@ -160,11 +186,11 @@ new class extends BasePageComponent {
         @if ($user)
             @can(Permissions::EDIT_USERS())
                 <x-ui.button href="{{ route('users.edit', $user->uuid) }}"
-                             color="primary"
+                             variant="primary"
                              size="sm"
                              wire:navigate>
                     <x-ui.icon name="pencil"
-                               size="sm"></x-ui.icon>
+                               size="sm" />
                     {{ __('actions.edit') }}
                 </x-ui.button>
             @endcan
@@ -175,10 +201,10 @@ new class extends BasePageComponent {
                     {{-- No email: generate activation link --}}
                     @can(Permissions::GENERATE_ACTIVATION_USERS())
                         <x-ui.button wire:click="generateActivationLink"
-                                     color="secondary"
+                                     variant="secondary"
                                      size="sm">
                             <x-ui.icon name="link"
-                                       size="sm"></x-ui.icon>
+                                       size="sm" />
                             {{ __('users.show.generate_link') }}
                         </x-ui.button>
                     @endcan
@@ -190,10 +216,10 @@ new class extends BasePageComponent {
                                      message: '{{ __('users.show.confirm_send_activation') }}',
                                      confirmEvent: 'confirm-send-activation-email'
                                  })"
-                                     color="secondary"
+                                     variant="secondary"
                                      size="sm">
                             <x-ui.icon name="envelope"
-                                       size="sm"></x-ui.icon>
+                                       size="sm" />
                             {{ __('users.show.send_activation_email') }}
                         </x-ui.button>
                     @endcan
@@ -205,10 +231,10 @@ new class extends BasePageComponent {
                                  message: '{{ __('users.show.confirm_activate') }}',
                                  confirmEvent: 'confirm-activate-user'
                              })"
-                                 color="success"
+                                 variant="success"
                                  size="sm">
                         <x-ui.icon name="check"
-                                   size="sm"></x-ui.icon>
+                                   size="sm" />
                         {{ __('actions.activate') }}
                     </x-ui.button>
                 @endcan
@@ -221,10 +247,10 @@ new class extends BasePageComponent {
                                      message: '{{ __('users.show.confirm_send_reset') }}',
                                      confirmEvent: 'confirm-send-password-reset'
                                  })"
-                                     color="info"
+                                     variant="info"
                                      size="sm">
                             <x-ui.icon name="key"
-                                       size="sm"></x-ui.icon>
+                                       size="sm" />
                             {{ __('users.show.send_password_reset') }}
                         </x-ui.button>
                     @endcan
@@ -236,10 +262,10 @@ new class extends BasePageComponent {
                                      message: '{{ __('users.show.confirm_send_activation') }}',
                                      confirmEvent: 'confirm-send-activation-email'
                                  })"
-                                     color="secondary"
+                                     variant="secondary"
                                      size="sm">
                             <x-ui.icon name="envelope"
-                                       size="sm"></x-ui.icon>
+                                       size="sm" />
                             {{ __('users.show.send_activation_email') }}
                         </x-ui.button>
                     @endcan
@@ -247,10 +273,10 @@ new class extends BasePageComponent {
                     {{-- No email: generate activation link --}}
                     @can(Permissions::GENERATE_ACTIVATION_USERS())
                         <x-ui.button wire:click="generateActivationLink"
-                                     color="secondary"
+                                     variant="secondary"
                                      size="sm">
                             <x-ui.icon name="link"
-                                       size="sm"></x-ui.icon>
+                                       size="sm" />
                             {{ __('users.show.generate_link') }}
                         </x-ui.button>
                     @endcan
@@ -263,10 +289,10 @@ new class extends BasePageComponent {
                                  confirmColor: 'warning',
                                  confirmEvent: 'confirm-deactivate-user'
                              })"
-                                 color="warning"
+                                 variant="warning"
                                  size="sm">
                         <x-ui.icon name="x-mark"
-                                   size="sm"></x-ui.icon>
+                                   size="sm" />
                         {{ __('actions.deactivate') }}
                     </x-ui.button>
                 @endcan
@@ -279,38 +305,41 @@ new class extends BasePageComponent {
                                  confirmColor: 'error',
                                  confirmEvent: 'confirm-delete-user'
                              })"
-                             color="error"
+                             variant="error"
                              size="sm">
                     <x-ui.icon name="trash"
-                               size="sm"></x-ui.icon>
+                               size="sm" />
                     {{ __('actions.delete') }}
                 </x-ui.button>
             @endcan
         @endif
     </x-slot:topActions>
 
-    <section class="mx-auto w-full max-w-4xl"
-             @confirm-send-activation-email.window="$wire.sendActivationEmail()"
-             @confirm-activate-user.window="$wire.activateUser()"
-             @confirm-send-password-reset.window="$wire.sendPasswordResetEmail()"
-             @confirm-deactivate-user.window="$wire.deactivateUser()"
-             @confirm-delete-user.window="$wire.deleteUser()"
-             @confirm-cancel-pending-email.window="$wire.cancelPendingEmailChange()">
-        <div class="mb-6">
-            <x-ui.badge :color="$user->is_active ? 'success' : 'error'"
-                        size="lg">
-                {{ $user->is_active ? __('users.active') : __('users.inactive') }}
-            </x-ui.badge>
+    <div class="mx-auto w-full max-w-4xl space-y-8"
+         @confirm-send-activation-email.window="$wire.sendActivationEmail()"
+         @confirm-activate-user.window="$wire.activateUser()"
+         @confirm-send-password-reset.window="$wire.sendPasswordResetEmail()"
+         @confirm-deactivate-user.window="$wire.deactivateUser()"
+         @confirm-delete-user.window="$wire.deleteUser()"
+         @confirm-cancel-pending-email.window="$wire.cancelPendingEmailChange()">
+
+        <div class="flex items-center gap-4">
+            <x-ui.avatar :user="$user"
+                         size="lg" />
+            <div class="flex flex-col gap-1">
+                <h2 class="text-2xl font-bold">{{ $user->name }}</h2>
+                <x-ui.badge :color="$user->is_active ? 'success' : 'error'"
+                            size="md">
+                    {{ $user->is_active ? __('users.active') : __('users.inactive') }}
+                </x-ui.badge>
+            </div>
         </div>
 
         {{-- User details --}}
         <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
             {{-- Personal Information --}}
-            <div class="space-y-4">
-                <x-ui.title level="3"
-                            class="text-base-content/70 border-b pb-2">{{ __('users.personal_info') }}</x-ui.title>
-
-                <div class="space-y-3">
+            <x-ui.card title="{{ __('users.personal_info') }}">
+                <div class="space-y-4">
                     <div>
                         <span class="text-base-content/60 text-sm">{{ __('users.name') }}</span>
                         <p class="font-medium">{{ $user->name }}</p>
@@ -322,7 +351,7 @@ new class extends BasePageComponent {
                         @if ($user->hasPendingEmailChange())
                             <div class="alert alert-warning mt-2 p-2">
                                 <x-ui.icon name="clock"
-                                           size="sm"></x-ui.icon>
+                                           size="sm" />
                                 <span
                                       class="text-sm">{{ __('users.show.pending_email', ['email' => $user->pending_email]) }}</span>
                                 @can(Permissions::EDIT_USERS())
@@ -331,7 +360,7 @@ new class extends BasePageComponent {
                                                              message: '{{ __('users.show.confirm_cancel_pending') }}',
                                                              confirmEvent: 'confirm-cancel-pending-email'
                                                          })"
-                                                 color="ghost"
+                                                 variant="ghost"
                                                  size="xs">
                                         {{ __('actions.cancel') }}
                                     </x-ui.button>
@@ -345,14 +374,11 @@ new class extends BasePageComponent {
                         <p class="font-medium">{{ $user->username ?? '—' }}</p>
                     </div>
                 </div>
-            </div>
+            </x-ui.card>
 
             {{-- Account Information --}}
-            <div class="space-y-4">
-                <x-ui.title level="3"
-                            class="text-base-content/70 border-b pb-2">{{ __('users.account_info') }}</x-ui.title>
-
-                <div class="space-y-3">
+            <x-ui.card title="{{ __('users.account_info') }}">
+                <div class="space-y-4">
                     <div>
                         <span class="text-base-content/60 text-sm">{{ __('users.uuid') }}</span>
                         <p class="font-mono text-sm">{{ $user->uuid }}</p>
@@ -363,16 +389,7 @@ new class extends BasePageComponent {
                         <p class="font-medium">
                             {{ $user->created_at->diffForHumans() }}
                             <span
-                                  class="text-base-content/60 text-sm">({{ $user->created_at->format('Y-m-d H:i') }})</span>
-                        </p>
-                    </div>
-
-                    <div>
-                        <span class="text-base-content/60 text-sm">{{ __('users.updated_at') }}</span>
-                        <p class="font-medium">
-                            {{ $user->updated_at->diffForHumans() }}
-                            <span
-                                  class="text-base-content/60 text-sm">({{ $user->updated_at->format('Y-m-d H:i') }})</span>
+                                  class="text-base-content/60 text-xs">({{ $user->created_at->format('Y-m-d H:i') }})</span>
                         </p>
                     </div>
 
@@ -382,7 +399,7 @@ new class extends BasePageComponent {
                             @if ($user->email_verified_at)
                                 {{ $user->email_verified_at->diffForHumans() }}
                                 <span
-                                      class="text-base-content/60 text-sm">({{ $user->email_verified_at->format('Y-m-d H:i') }})</span>
+                                      class="text-base-content/60 text-xs">({{ $user->email_verified_at->format('Y-m-d H:i') }})</span>
                             @else
                                 <span class="text-error italic">{{ __('users.not_verified') }}</span>
                             @endif
@@ -395,58 +412,65 @@ new class extends BasePageComponent {
                             <p class="font-medium">
                                 {{ $user->last_login_at->diffForHumans() }}
                                 <span
-                                      class="text-base-content/60 text-sm">({{ $user->last_login_at->format('Y-m-d H:i') }})</span>
-                            </p>
-                        </div>
-                    @endif
-
-                    @if ($user->createdBy)
-                        <div>
-                            <span class="text-base-content/60 text-sm">{{ __('users.created_by') }}</span>
-                            <p class="font-medium">{{ $user->createdBy->name }}</p>
-                        </div>
-                    @endif
-
-                    @if ($user->createdUsers()->exists())
-                        <div>
-                            <span class="text-base-content/60 text-sm">{{ __('users.created_users_count') }}</span>
-                            <p class="font-medium">{{ $user->createdUsers()->count() }}
+                                      class="text-base-content/60 text-xs">({{ $user->last_login_at->format('Y-m-d H:i') }})</span>
                             </p>
                         </div>
                     @endif
                 </div>
-            </div>
+            </x-ui.card>
         </div>
 
-        {{-- Notification Preferences --}}
-        <div class="mt-8 space-y-4">
-            <x-ui.title level="3"
-                        class="text-base-content/70 border-b pb-2">{{ __('users.notification_preferences') }}</x-ui.title>
+        {{-- Roles, Teams & Permissions --}}
+        <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
+            {{-- Roles --}}
+            <x-ui.card title="{{ __('users.roles') }}"
+                       class="h-full">
+                @if ($user->roles->count() > 0)
+                    <div class="flex flex-wrap gap-2">
+                        @foreach ($user->roles as $role)
+                            <x-ui.badge variant="primary"
+                                        size="md">{{ $role->display_name }}</x-ui.badge>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="text-base-content/60 italic">{{ __('common.none') }}</p>
+                @endif
+            </x-ui.card>
 
-            @if (!empty($user->notification_preferences))
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    @foreach ($user->notification_preferences as $channel => $enabled)
-                        <div class="bg-base-200 flex items-center justify-between rounded-lg p-3">
-                            <span class="font-medium">{{ Str::headline($channel) }}</span>
-                            <x-ui.badge :color="$enabled ? 'success' : null"
-                                        :variant="$enabled ? null : 'ghost'"
-                                        size="sm">
-                                {{ $enabled ? __('users.active') : __('users.inactive') }}
-                            </x-ui.badge>
-                        </div>
-                    @endforeach
-                </div>
-            @else
-                <p class="text-base-content/60 italic">{{ __('users.not_set') }}</p>
-            @endif
+            {{-- Teams --}}
+            <x-ui.card title="{{ __('users.teams') }}"
+                       class="h-full">
+                @if ($user->teams->count() > 0)
+                    <div class="flex flex-wrap gap-2">
+                        @foreach ($user->teams as $team)
+                            <x-ui.badge variant="secondary"
+                                        size="md">{{ $team->name }}</x-ui.badge>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="text-base-content/60 italic">{{ __('common.none') }}</p>
+                @endif
+            </x-ui.card>
+
+            {{-- Direct Permissions --}}
+            <x-ui.card title="{{ __('users.direct_permissions') }}"
+                       class="h-full">
+                @if ($user->permissions->count() > 0)
+                    <div class="flex flex-wrap gap-2">
+                        @foreach ($user->permissions as $permission)
+                            <x-ui.badge variant="info"
+                                        size="md">{{ $permission->display_name ?? $permission->name }}</x-ui.badge>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="text-base-content/60 italic">{{ __('common.none') }}</p>
+                @endif
+            </x-ui.card>
         </div>
 
         {{-- Preferences --}}
-        <div class="mt-8 space-y-4">
-            <x-ui.title level="3"
-                        class="text-base-content/70 border-b pb-2">{{ __('users.preferences') }}</x-ui.title>
-
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <x-ui.card title="{{ __('users.preferences') }}">
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
                 <div>
                     <span class="text-base-content/60 text-sm">{{ __('users.timezone') }}</span>
                     <p class="font-medium">{{ $user->timezone ?? __('users.not_set') }}
@@ -457,53 +481,8 @@ new class extends BasePageComponent {
                     <span class="text-base-content/60 text-sm">{{ __('users.locale') }}</span>
                     <p class="font-medium">{{ $user->locale ?? __('users.not_set') }}</p>
                 </div>
-
             </div>
-        </div>
-
-        {{-- Roles --}}
-        @if ($user->roles->count() > 0)
-            <div class="mt-8 space-y-4">
-                <x-ui.title level="3"
-                            class="text-base-content/70 border-b pb-2">{{ __('users.roles') }}</x-ui.title>
-                <div class="flex flex-wrap gap-2">
-                    @foreach ($user->roles as $role)
-                        <x-ui.badge color="primary"
-                                    size="md">{{ $role->display_name }}</x-ui.badge>
-                    @endforeach
-                </div>
-            </div>
-        @endif
-
-        {{-- Teams --}}
-        @if ($user->teams->count() > 0)
-            <div class="mt-8 space-y-4">
-                <x-ui.title level="3"
-                            class="text-base-content/70 border-b pb-2">{{ __('users.teams') }}</x-ui.title>
-                <div class="flex flex-wrap gap-2">
-                    @foreach ($user->teams as $team)
-                        <x-ui.badge color="secondary"
-                                    size="md">{{ $team->name }}</x-ui.badge>
-                    @endforeach
-                </div>
-            </div>
-        @endif
-
-        {{-- Direct Permissions --}}
-        @if ($user->permissions->count() > 0)
-            <div class="mt-8 space-y-4">
-                <x-ui.title level="3"
-                            class="text-base-content/70 border-b pb-2">{{ __('users.direct_permissions') }}</x-ui.title>
-                <p class="text-base-content/60 text-sm">
-                    {{ __('users.direct_permissions_description') }}</p>
-                <div class="flex flex-wrap gap-2">
-                    @foreach ($user->permissions as $permission)
-                        <x-ui.badge color="info"
-                                    size="md">{{ $permission->display_name ?? $permission->name }}</x-ui.badge>
-                    @endforeach
-                </div>
-            </div>
-        @endif
+        </x-ui.card>
 
         {{-- Activation Link Modal --}}
         @if ($showActivationModal && $activationLink)
@@ -518,16 +497,16 @@ new class extends BasePageComponent {
                         <x-ui.input type="text"
                                     value="{{ $activationLink }}"
                                     readonly
-                                    class="font-mono text-sm"></x-ui.input>
+                                    class="font-mono text-sm" />
                         <x-ui.copy-button :text="$activationLink"
                                           size="sm"
-                                          color="primary"
-                                          showText></x-ui.copy-button>
+                                          variant="primary"
+                                          show-text />
                     </div>
 
                     <div class="alert alert-warning">
                         <x-ui.icon name="exclamation-triangle"
-                                   size="sm"></x-ui.icon>
+                                   size="sm" />
                         <span>{{ __('users.show.activation_link_warning', ['days' => 7]) }}</span>
                     </div>
                 </div>
@@ -538,5 +517,5 @@ new class extends BasePageComponent {
                 </x-slot:actions>
             </x-ui.base-modal>
         @endif
-    </section>
+    </div>
 </x-layouts.page>

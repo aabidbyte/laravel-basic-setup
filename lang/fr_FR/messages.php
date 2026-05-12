@@ -45,5 +45,4 @@ return [
     'context' => [
         'impersonating' => 'Vous êtes actuellement connecté en tant que :name.',
     ],
-    ];
-
+];

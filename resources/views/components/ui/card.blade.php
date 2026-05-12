@@ -34,7 +34,7 @@
         {{ $slot }}
 
         @if (isset($footer))
-            <div class="card-actions mt-6 justify-end border-t border-base-content/10 pt-4">
+            <div class="card-actions border-base-content/10 mt-6 justify-end border-t pt-4">
                 {{ $footer }}
             </div>
         @endif

@@ -3,6 +3,11 @@
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+
+beforeEach(function () {
+    Mail::fake();
+});
 
 test('new users can register', function () {
     // Run on central domain

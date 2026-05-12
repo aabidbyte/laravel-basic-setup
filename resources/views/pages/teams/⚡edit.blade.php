@@ -1,24 +1,33 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Constants\Auth\Permissions;
 use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\BasePageComponent;
 use App\Models\Team;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\Computed;
 
 new class extends BasePageComponent {
-    public ?string $pageSubtitle = null;
+    /**
+     * Optional label for the model type used in common translations.
+     */
+    public ?string $modelTypeLabel = 'types.team';
 
     protected PlaceholderType $placeholderType = PlaceholderType::FORM;
 
     protected int $placeholderRows = 2;
 
-    public ?Team $model = null;
-
-    // Form fields
+    /**
+     * Form fields
+     */
     public string $name = '';
     public ?string $description = null;
 
+    /**
+     * Initialize the component.
+     */
     public function mount(?Team $team = null): void
     {
         $this->authorizeAccess($team);
@@ -26,13 +35,18 @@ new class extends BasePageComponent {
         $this->updatePageHeader();
     }
 
+    /**
+     * Authorize access to the component.
+     */
     protected function authorizeAccess(?Team $team): void
     {
         $permission = $team ? Permissions::EDIT_TEAMS() : Permissions::CREATE_TEAMS();
-
         $this->authorize($permission);
     }
 
+    /**
+     * Load existing team data into form fields.
+     */
     protected function loadExistingTeam(Team $team): void
     {
         $this->model = $team;
@@ -40,22 +54,55 @@ new class extends BasePageComponent {
         $this->description = $team->description;
     }
 
+    /**
+     * Prepare a new team model with defaults.
+     */
     protected function prepareNewTeam(): void
     {
         $this->model = new Team();
     }
 
+    /**
+     * Update the page title and subtitle.
+     */
     protected function updatePageHeader(): void
     {
         if ($this->isCreateMode) {
-            $this->pageTitle = __('pages.common.create.title', ['type' => __('types.team')]);
-            $this->pageSubtitle = __('pages.common.create.description', ['type' => __('types.team')]);
+            $this->pageTitle = 'pages.common.create.title';
+            $this->pageSubtitle = 'pages.common.create.description';
         } else {
-            $this->pageTitle = __('pages.common.edit.title', ['type' => __('types.team'), 'name' => $this->name]);
-            $this->pageSubtitle = __('pages.common.edit.description', ['type' => __('types.team')]);
+            $this->pageTitle = 'pages.common.edit.title';
+            $this->pageSubtitle = 'pages.common.edit.description';
         }
     }
 
+    /**
+     * Override getPageTitle to provide type parameter.
+     */
+    public function getPageTitle(): string
+    {
+        $title = parent::getPageTitle();
+        $params = ['type' => __($this->modelTypeLabel)];
+
+        if (!$this->isCreateMode && $this->name) {
+            $params['name'] = $this->name;
+        }
+
+        return __($title, $params);
+    }
+
+    /**
+     * Override getPageSubtitle to provide type parameter.
+     */
+    public function getPageSubtitle(): ?string
+    {
+        $subtitle = parent::getPageSubtitle();
+        return $subtitle ? __($subtitle, ['type' => __($this->modelTypeLabel)]) : null;
+    }
+
+    /**
+     * Define validation rules.
+     */
     protected function rules(): array
     {
         $rules = [
@@ -71,6 +118,9 @@ new class extends BasePageComponent {
         return $rules;
     }
 
+    /**
+     * Handle model creation.
+     */
     public function create(): void
     {
         $this->validate();
@@ -84,6 +134,9 @@ new class extends BasePageComponent {
         $this->redirect(route('teams.index'), navigate: true);
     }
 
+    /**
+     * Handle model update.
+     */
     public function save(): void
     {
         $this->validate();
@@ -97,51 +150,51 @@ new class extends BasePageComponent {
         $this->redirect(route('teams.show', $this->model->uuid), navigate: true);
     }
 
-    public function getCancelUrlProperty(): string
+    /**
+     * Get the URL to redirect back to.
+     */
+    #[Computed]
+    public function cancelUrl(): string
     {
-        return $this->isCreateMode ? route('teams.index') : route('teams.show', $this->model->uuid);
+        return $this->getCancelUrl('teams.index', 'teams.show', $this->model);
     }
 }; ?>
 
-<x-layouts.page :backHref="$this->cancelUrl"
-                backLabel="{{ __('actions.cancel') }}">
+<x-layouts.page :backHref="$this->cancelUrl">
     <x-slot:bottomActions>
         <x-ui.button type="submit"
                      form="team-form"
-                     color="primary">
+                     variant="primary">
             <x-ui.loading wire:loading
                           wire:target="{{ $this->submitAction }}"
-                          size="sm"></x-ui.loading>
+                          size="sm" />
             {{ $this->submitButtonText }}
         </x-ui.button>
     </x-slot:bottomActions>
 
-    <section class="mx-auto max-w-4xl">
-        <div class="card bg-base-100 shadow-xl">
-            <div class="card-body">
-                <x-ui.form wire:submit="{{ $this->submitAction }}"
-                           id="team-form"
-                           class="space-y-6">
-                    {{-- Basic Information --}}
-                    <div class="space-y-4">
-                        <x-ui.title level="3"
-                                    class="text-base-content/70">{{ __('teams.edit.basic_info') }}</x-ui.title>
+    <div class="mx-auto w-full max-w-4xl">
+        <x-ui.card>
+            <x-ui.form wire:submit="{{ $this->submitAction }}"
+                       id="team-form">
+                {{-- Basic Information --}}
+                <div class="space-y-6">
+                    <x-ui.title level="3"
+                                class="text-base-content/70">{{ __('teams.edit.basic_info') }}</x-ui.title>
 
-                        <x-ui.input type="text"
-                                    wire:model="name"
-                                    name="name"
-                                    :label="__('teams.name')"
-                                    required
-                                    autofocus></x-ui.input>
+                    <x-ui.input type="text"
+                                wire:model="name"
+                                name="name"
+                                :label="__('teams.name')"
+                                required
+                                autofocus />
 
-                        <x-ui.input type="textarea"
-                                    wire:model="description"
-                                    name="description"
-                                    :label="__('teams.description')"
-                                    rows="3"></x-ui.input>
-                    </div>
-                </x-ui.form>
-            </div>
-        </div>
-    </section>
+                    <x-ui.input type="textarea"
+                                wire:model="description"
+                                name="description"
+                                :label="__('teams.description')"
+                                rows="3" />
+                </div>
+            </x-ui.form>
+        </x-ui.card>
+    </div>
 </x-layouts.page>
