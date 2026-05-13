@@ -79,7 +79,7 @@ new class extends BasePageComponent {
                              max-width="7xl">
                 <x-slot:title>{{ __('email_templates.preview.title') }}</x-slot:title>
 
-                <livewire:emailTemplates.preview :template-uuid="$template->uuid"
+                <livewire:emailTemplates.⚡preview :template-uuid="$template->uuid"
                                                  lazy />
 
                 <x-slot:actions>

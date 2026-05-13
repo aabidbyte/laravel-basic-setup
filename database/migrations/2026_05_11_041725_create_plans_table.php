@@ -10,6 +10,10 @@ return new class extends Migration {
      */
     public function up(): void
     {
+        if (Schema::connection('central')->hasTable('plans')) {
+            return;
+        }
+
         Schema::connection('central')->create('plans', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();

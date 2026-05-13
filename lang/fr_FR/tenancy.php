@@ -1,12 +1,13 @@
 <?php
 
 return [
-    'switch_workspace' => 'Changer d\'espace de travail',
-    'search_workspaces' => 'Rechercher des espaces...',
-    'your_workspaces' => 'Vos espaces de travail',
-    'create_new_workspace' => 'Créer un nouvel espace',
-    'no_workspaces_found' => 'Aucun espace trouvé correspondant à votre recherche.',
-    'unknown_workspace' => 'Espace inconnu',
+    'switch_tenant' => 'Changer de locataire',
+    'search_tenants' => 'Rechercher des locataires...',
+    'your_tenants' => 'Vos locataires',
+    'switch_tenant_description' => 'Sélectionnez une organisation pour y accéder.',
+    'create_new_tenant' => 'Créer un nouveau locataire',
+    'no_tenants_found' => 'Aucun locataire trouvé correspondant à votre recherche.',
+    'unknown_tenant' => 'Locataire inconnu',
     'free_plan' => 'Plan Gratuit',
     'access_denied' => 'Vous n\'avez pas accès à cette organisation.',
     'domain_not_found' => 'Domaine de l\'organisation introuvable.',
@@ -17,10 +18,10 @@ return [
     // Impersonation
     'impersonate_user' => 'Impersonner un utilisateur',
     'impersonate_user_description' => 'Sélectionnez un utilisateur pour vous connecter en son nom. Vous serez redirigé vers sa session.',
-    'select_target_workspace' => 'Sélectionner l\'espace de travail cible',
-    'select_target_workspace_description' => 'Cet utilisateur appartient à plusieurs espaces de travail. Veuillez choisir celui dans lequel vous souhaitez l\'impersonner.',
-    'workspaces' => 'Espaces de travail',
-    'workspace' => 'Espace de travail',
+    'select_target_tenant' => 'Sélectionner le locataire cible',
+    'select_target_tenant_description' => 'Cet utilisateur appartient à plusieurs locataires. Veuillez choisir celui dans lequel vous souhaitez l\'impersonner.',
+    'tenants' => 'Locataires',
+    'tenant' => 'Locataire',
     'permission_denied' => 'Vous n\'avez pas la permission d\'impersonner des utilisateurs.',
     'cannot_impersonate_self' => 'Vous ne pouvez pas vous impersonner vous-même.',
 
@@ -50,7 +51,6 @@ return [
     ],
 
     // Actions & Feedback
-    'workspace_created' => 'Espace de travail créé avec succès.',
     'tenant_created' => 'Locataire créé avec succès.',
     'tenant_updated' => 'Locataire mis à jour avec succès.',
     'tenant_deleted' => 'Locataire supprimé avec succès.',
@@ -65,5 +65,10 @@ return [
     'detach_user_confirm' => 'Êtes-vous sûr de vouloir retirer cet utilisateur de ce locataire ?',
     'user_detached_successfully' => 'Utilisateur retiré du locataire avec succès.',
     'no_plan' => 'Aucun plan',
-    'already_in_workspace' => 'Vous êtes déjà dans cet espace de travail.',
+    'already_in_tenant' => 'Vous êtes déjà dans ce locataire.',
+    'impersonating_user' => 'Impersonnalisation de :user',
+    'in_tenant' => 'dans :tenant',
+    'with_roles' => 'avec les rôles : :roles',
+    'stop_impersonating' => 'Arrêter l\'impersonnalisation',
+    'system_override_mode' => 'Mode d\'écrasement du système',
 ];

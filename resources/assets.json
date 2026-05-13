@@ -8,7 +8,7 @@
             "resources/js/app.js",
             "resources/js/notification-center.js",
             "resources/js/alpine/data/validation-error-scroller.js",
-            "resources/js/alpine/data/workspace-switcher.js"
+            "resources/js/alpine/data/tenant-switcher.js"
         ],
         "app": [],
         "auth": []

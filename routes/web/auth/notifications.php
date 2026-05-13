@@ -8,5 +8,5 @@ use Illuminate\Support\Facades\Route;
  * Routes for the user notification center.
  * Requires authentication.
  */
-Route::livewire('/notifications', 'pages::notifications.index')
+Route::livewire('/notifications', 'pages::notifications.⚡index')
     ->name('notifications.index');

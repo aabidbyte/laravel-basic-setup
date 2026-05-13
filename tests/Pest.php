@@ -23,13 +23,17 @@ pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
     ->use(InteractsWithTenancy::class)
     ->afterEach(function () {
-        if (isset($this->tenant) && $this->tenant instanceof Tenant) {
-            $this->tenant->delete();
-            unset($this->tenant);
-        }
         if (\function_exists('tenancy')) {
             tenancy()->end();
         }
+
+        Tenant::query()
+            ->get()
+            ->each(fn (Tenant $tenant) => $tenant->delete());
+
+        unset($this->tenant);
+
+        $this->dropTestingTenantDatabases();
     })
     ->in('Feature');
 

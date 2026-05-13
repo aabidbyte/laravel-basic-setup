@@ -5,48 +5,24 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Models\Base\BaseModel;
-use Carbon\Carbon;
+use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
- * Mail settings model for polymorphic mail configuration.
- *
- * Supports User, Team, and App-level mail settings with hierarchical resolution.
- * The credential resolver checks settings in this order:
- * 1. User settings (if user has CONFIGURE_MAIL_SETTINGS permission)
- * 2. Team settings
- * 3. App settings (settable_type = 'app')
- * 4. Environment variables (.env)
- *
- * @property int $id
- * @property string $uuid
- * @property string $settable_type
- * @property int|null $settable_id
- * @property string $provider
- * @property string|null $host
- * @property int|null $port
- * @property string|null $username
- * @property string|null $password
- * @property string|null $encryption
- * @property string|null $from_address
- * @property string|null $from_name
- * @property bool $is_active
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
- * @property Carbon|null $deleted_at
+ * MailSettings model for custom SMTP configurations.
  */
 class MailSettings extends BaseModel
 {
     /**
      * The attributes that are mass assignable.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $fillable = [
-        'settable_type',
         'settable_id',
+        'settable_type',
         'provider',
         'host',
         'port',
@@ -56,83 +32,58 @@ class MailSettings extends BaseModel
         'from_address',
         'from_name',
         'is_active',
+        'last_used_at',
     ];
 
     /**
-     * The table associated with the model.
+     * The attributes that should be hidden for arrays.
      *
-     * @var string
+     * @var array<int, string>
      */
-    protected $table = 'mail_settings';
+    protected $hidden = [
+        'password',
+    ];
 
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
+     * Get the owning settable model (User, Team, or Tenant/App).
      */
-    protected function casts(): array
-    {
-        return [
-            'port' => 'integer',
-            'password' => 'encrypted',
-            'is_active' => 'boolean',
-        ];
-    }
-
-    /**
-     * Get the parent owner model (User, Team, or null for App).
-     *
-     * @return MorphTo<Model, self>
-     */
-    public function owner(): MorphTo
+    public function settable_entity(): MorphTo
     {
         return $this->morphTo('settable');
     }
 
     /**
      * Scope a query to only include active settings.
-     *
-     * @param  Builder<self>  $query
-     * @return Builder<self>
      */
-    public function scopeActive(Builder $query): Builder
+    public function scopeActive(Builder $query): void
     {
-        return $query->where('is_active', true);
+        $query->where('is_active', true);
     }
 
     /**
-     * Scope a query to only include settings for a specific user.
-     *
-     * @param  Builder<self>  $query
-     * @return Builder<self>
+     * Scope a query to settings for a specific user.
      */
-    public function scopeForUser(Builder $query, User $user): Builder
+    public function scopeForUser(Builder $query, User $user): void
     {
-        return $query->where('settable_type', User::class)
+        $query->where('settable_type', User::class)
             ->where('settable_id', $user->id);
     }
 
     /**
-     * Scope a query to only include settings for a specific team.
-     *
-     * @param  Builder<self>  $query
-     * @return Builder<self>
+     * Scope a query to settings for a specific team.
      */
-    public function scopeForTeam(Builder $query, Team $team): Builder
+    public function scopeForTeam(Builder $query, Team $team): void
     {
-        return $query->where('settable_type', Team::class)
+        $query->where('settable_type', Team::class)
             ->where('settable_id', $team->id);
     }
 
     /**
-     * Scope a query to only include app-level settings.
-     *
-     * @param  Builder<self>  $query
-     * @return Builder<self>
+     * Scope a query to app-level settings.
      */
-    public function scopeForApp(Builder $query): Builder
+    public function scopeForApp(Builder $query): void
     {
-        return $query->where('settable_type', 'app')
+        $query->where('settable_type', 'app')
             ->whereNull('settable_id');
     }
 
@@ -141,10 +92,14 @@ class MailSettings extends BaseModel
      */
     public static function getForUser(User $user): ?self
     {
-        return static::query()
-            ->forUser($user)
-            ->active()
-            ->first();
+        try {
+            return static::query()
+                ->forUser($user)
+                ->active()
+                ->first();
+        } catch (Exception $e) {
+            return null;
+        }
     }
 
     /**
@@ -152,10 +107,14 @@ class MailSettings extends BaseModel
      */
     public static function getForTeam(Team $team): ?self
     {
-        return static::query()
-            ->forTeam($team)
-            ->active()
-            ->first();
+        try {
+            return static::query()
+                ->forTeam($team)
+                ->active()
+                ->first();
+        } catch (Exception $e) {
+            return null;
+        }
     }
 
     /**
@@ -163,40 +122,44 @@ class MailSettings extends BaseModel
      */
     public static function getForApp(): ?self
     {
-        return static::query()
-            ->forApp()
-            ->active()
-            ->first();
+        try {
+            return static::query()
+                ->forApp()
+                ->active()
+                ->first();
+        } catch (Exception $e) {
+            return null;
+        }
     }
 
     /**
      * Check if settings have valid SMTP configuration.
      */
-    public function hasValidSmtpConfig(): bool
+    public function isValid(): bool
     {
-        return ! empty($this->host)
-            && ! empty($this->port)
-            && ! empty($this->from_address);
+        return ! empty($this->host) && ! empty($this->username) && ! empty($this->password);
     }
 
     /**
-     * Convert settings to mailer config array.
-     *
-     * @return array<string, mixed>
+     * Update the last used timestamp.
      */
-    public function toMailerConfig(): array
+    public function markAsUsed(): void
+    {
+        $this->update(['last_used_at' => now()]);
+    }
+
+    /**
+     * Get the casts for the model.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
     {
         return [
-            'transport' => $this->provider,
-            'host' => $this->host,
-            'port' => $this->port,
-            'username' => $this->username,
-            'password' => $this->password,
-            'encryption' => $this->encryption,
-            'from' => [
-                'address' => $this->from_address,
-                'name' => $this->from_name,
-            ],
+            'is_active' => 'boolean',
+            'last_used_at' => 'datetime',
+            'port' => 'integer',
+            'password' => 'encrypted',
         ];
     }
 

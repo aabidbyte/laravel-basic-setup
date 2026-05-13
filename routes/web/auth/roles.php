@@ -15,10 +15,10 @@ Route::view('/roles', 'pages.roles.index')
     ->middleware('can:' . Permissions::VIEW_ROLES())
     ->name('roles.index');
 
-Route::livewire('/roles/edit/{role?}', 'pages::roles.edit')
+Route::livewire('/roles/edit/{role?}', 'pages::roles.⚡edit')
     ->name('roles.edit');
 
 // Role show
-Route::livewire('/roles/{role}', 'pages::roles.show')
+Route::livewire('/roles/{role}', 'pages::roles.⚡show')
     ->middleware('can:' . Permissions::VIEW_ROLES())
     ->name('roles.show');

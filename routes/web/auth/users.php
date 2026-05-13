@@ -16,10 +16,10 @@ Route::view('/users', 'pages.users.index')
     ->name('users.index');
 
 // Unified Edit (Create + Edit)
-Route::livewire('/users/edit/{user?}', 'pages::users.edit')
+Route::livewire('/users/edit/{user?}', 'pages::users.⚡edit')
     ->name('users.edit');
 
 // User show
-Route::livewire('/users/{user}', 'pages::users.show')
+Route::livewire('/users/{user}', 'pages::users.⚡show')
     ->middleware('can:' . Permissions::VIEW_USERS())
     ->name('users.show');

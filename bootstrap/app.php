@@ -16,26 +16,27 @@ return Application::configure(basePath: dirname(__DIR__))
         channels: __DIR__ . '/../routes/channels.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->web(append: require __DIR__ . '/web-middlewares.php');
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->validateCsrfTokens(except: ['*']);
+
         $middleware->alias([
             'universal' => UniversalMiddleware::class,
         ]);
-    })
-    ->withExceptions(function (Exceptions $exceptions): void {
-        // Custom error handler with toast notifications and database logging
-        $exceptions->renderable(function (Throwable $e, Request $request) {
-            // Skip if error handling system is disabled
-            if (! config('error-handling.enabled', false)) {
-                return null; // Let Laravel handle it
-            }
 
+        $middleware->web(append: require __DIR__ . '/web-middlewares.php');
+
+        $middleware->web(append: [
+            UniversalMiddleware::class,
+        ]);
+    })
+    ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->render(function (Throwable $e, Request $request) {
             $handler = app(ErrorHandler::class);
 
-            // Skip validation exceptions - let Laravel handle them normally
-            // but our handler will still send a toast notification
+            // Handle validation exceptions specifically to maintain original behavior
             if ($e instanceof ValidationException) {
-                $handler->report($e, $request);
+                // If the error handler returns null, we let Laravel handle it
+                $handler->handle($e, $request);
 
                 return null; // Let Laravel handle the response
             }

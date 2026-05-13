@@ -9,5 +9,5 @@ use Illuminate\Support\Facades\Route;
  */
 Route::prefix('admin/errors')->name('admin.errors.')->group(function () {
     Route::view('/', 'pages.error-logs.index')->name('index');
-    Route::livewire('/{errorLog}', 'pages::error-logs.show')->name('show');
+    Route::livewire('/{errorLog}', 'pages::error-logs.⚡show')->name('show');
 });

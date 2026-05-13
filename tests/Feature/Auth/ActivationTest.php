@@ -3,6 +3,7 @@
 use App\Models\User;
 use App\Services\Users\ActivationService;
 use Database\Seeders\TenantSeeders\Production\EmailTemplateSeeder;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 
@@ -11,6 +12,10 @@ beforeEach(function () {
     $this->seed(EmailTemplateSeeder::class);
     Mail::fake();
     $this->activationService = app(ActivationService::class);
+});
+
+beforeEach(function () {
+    $this->withoutMiddleware(VerifyCsrfToken::class);
 });
 
 test('can view activation page with valid token', function () {

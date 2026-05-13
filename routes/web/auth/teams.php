@@ -16,10 +16,10 @@ Route::view('/teams', 'pages.teams.index')
     ->name('teams.index');
 
 // Unified Edit (Create + Edit)
-Route::livewire('/teams/edit/{team?}', 'pages::teams.edit')
+Route::livewire('/teams/edit/{team?}', 'pages::teams.⚡edit')
     ->name('teams.edit');
 
 // Team show
-Route::livewire('/teams/{team}', 'pages::teams.show')
+Route::livewire('/teams/{team}', 'pages::teams.⚡show')
     ->middleware('can:' . Permissions::VIEW_TEAMS())
     ->name('teams.show');

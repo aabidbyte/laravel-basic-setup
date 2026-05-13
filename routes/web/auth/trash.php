@@ -32,7 +32,7 @@ Route::prefix('trash')
             ->where('entityType', $entityPattern);
 
         // Trash show - uses Livewire SFC
-        Route::livewire('/{entityType}/{uuid}', 'pages::trash.show')
+        Route::livewire('/{entityType}/{uuid}', 'pages::trash.⚡show')
             ->where('entityType', $entityPattern)
             ->name('show');
     });

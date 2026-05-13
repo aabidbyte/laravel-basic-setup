@@ -213,32 +213,41 @@ class ActivationService
         }
 
         // 2. Notify team admins (with deduplication)
-        // We query the pivot table directly to avoid cross-database joins with central users table
-        $teamIds = DB::connection('central')->table('team_user')
-            ->where('user_id', $user->id)
-            ->pluck('team_id');
+        // Since teams are tenant-scoped, we find the teams the user belongs to across their tenants
+        $tenants = $user->tenants;
 
-        $teams = Team::whereIn('id', $teamIds)->with('users')->get();
+        foreach ($tenants as $tenant) {
+            $tenant->run(function () use ($user, $notifiedUserIds) {
+                $teamIds = DB::table('team_user')
+                    ->where('user_id', $user->id)
+                    ->pluck('team_id');
 
-        foreach ($teams as $team) {
-            foreach ($team->users as $teamMember) {
-                // Skip the activated user themselves
-                if ($teamMember->id === $user->id) {
-                    continue;
+                if ($teamIds->isEmpty()) {
+                    return;
                 }
 
-                // Skip if already notified
-                if ($notifiedUserIds->contains($teamMember->id)) {
-                    continue;
-                }
+                $teams = Team::whereIn('id', $teamIds)->with('users')->get();
 
-                // Check if team member is an admin (has admin permissions)
-                // You can customize this logic based on your admin detection
-                if ($this->isTeamAdmin($teamMember, $team)) {
-                    $this->sendActivationNotification($teamMember, $user);
-                    $notifiedUserIds->push($teamMember->id);
+                foreach ($teams as $team) {
+                    foreach ($team->users as $teamMember) {
+                        // Skip the activated user themselves
+                        if ($teamMember->id === $user->id) {
+                            continue;
+                        }
+
+                        // Skip if already notified
+                        if ($notifiedUserIds->contains($teamMember->id)) {
+                            continue;
+                        }
+
+                        // Check if team member is an admin (has admin permissions)
+                        if ($this->isTeamAdmin($teamMember, $team)) {
+                            $this->sendActivationNotification($teamMember, $user);
+                            $notifiedUserIds->push($teamMember->id);
+                        }
+                    }
                 }
-            }
+            });
         }
     }
 

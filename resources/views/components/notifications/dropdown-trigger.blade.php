@@ -41,8 +41,8 @@
         </x-slot:trigger>
 
         {{-- Lazy-loaded content component --}}
-        <livewire:notifications.dropdown-content lazy
-                                                 wire:key="notifications-dropdown-content"></livewire:notifications.dropdown-content>
+        <livewire:notifications.⚡dropdown-content lazy
+                                                 wire:key="notifications-dropdown-content"></livewire:notifications.⚡dropdown-content>
         <x-slot:actions>
             <x-ui.button href="{{ route('notifications.index') }}"
                          wire:navigate

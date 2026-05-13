@@ -96,37 +96,48 @@ class ErrorHandler
     }
 
     /**
+     * Track recursion depth to prevent infinite loops.
+     */
+    protected static int $recursionDepth = 0;
+
+    /**
+     * Max recursion depth.
+     */
+    protected const MAX_RECURSION_DEPTH = 3;
+
+    /**
      * Handle an exception and return an appropriate response.
-     *
-     * Main entry point for error handling. Generates a reference ID,
-     * reports to channels, and returns a user-appropriate response.
-     *
-     * @param  Throwable  $e  The exception to handle
-     * @param  Request|null  $request  The current request (optional)
-     * @return SymfonyResponse|null The HTTP response, or null if already handled
      */
     public function handle(Throwable $e, ?Request $request = null): ?SymfonyResponse
     {
-        // Create a unique key for this exception to prevent duplicate handling
-        // when we re-throw in development mode
-        $exceptionKey = spl_object_id($e);
+        if (self::$recursionDepth >= self::MAX_RECURSION_DEPTH) {
+            // Log to standard error and return early
+            \error_log('ErrorHandler recursion limit reached. Exception: ' . $e->getMessage());
 
-        if (isset(self::$handledExceptions[$exceptionKey])) {
-            // Already handled, return null to let Laravel handle natively
             return null;
         }
 
-        // Mark as handled before processing
-        self::$handledExceptions[$exceptionKey] = true;
+        self::$recursionDepth++;
 
-        $request ??= request();
-        $this->referenceId = $this->generateReferenceId();
+        try {
+            // Create a unique key for this exception to prevent duplicate handling
+            $exceptionKey = spl_object_id($e);
 
-        // Report to configured channels
-        $this->report($e, $request);
+            if (isset(self::$handledExceptions[$exceptionKey])) {
+                return null;
+            }
 
-        // Return appropriate response
-        return $this->render($e, $request);
+            self::$handledExceptions[$exceptionKey] = true;
+
+            $request ??= request();
+            $this->referenceId = $this->generateReferenceId();
+
+            $this->report($e, $request);
+
+            return $this->render($e, $request);
+        } finally {
+            self::$recursionDepth--;
+        }
     }
 
     /**

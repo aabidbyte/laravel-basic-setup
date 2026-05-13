@@ -88,7 +88,8 @@ class MailCredentialResolver
             // Fix: User is central, Team is tenant.
             // If tenancy is initialized, we query the current tenant's team_user table.
             if (\function_exists('tenancy') && tenancy()->initialized) {
-                $teamId = DB::connection('central')->table('team_user')
+                // Use default connection which is already switched to tenant
+                $teamId = DB::table('team_user')
                     ->where('user_id', $user->id)
                     ->value('team_id');
 
@@ -106,7 +107,8 @@ class MailCredentialResolver
             /** @var User|null $authUser */
             $authUser = Auth::user();
             if ($authUser && \function_exists('tenancy') && tenancy()->initialized) {
-                $teamId = DB::connection('central')->table('team_user')
+                // Use default connection which is already switched to tenant
+                $teamId = DB::table('team_user')
                     ->where('user_id', $authUser->id)
                     ->value('team_id');
 

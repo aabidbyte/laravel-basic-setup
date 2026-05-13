@@ -8,10 +8,10 @@ use Laravel\Fortify\Features;
 Route::redirect('settings', 'settings/account')->name('settings.index');
 
 // New consolidated settings pages
-Route::livewire('settings/account', 'pages::settings.account')
+Route::livewire('settings/account', 'pages::settings.⚡account')
     ->name('settings.account');
 
-Route::livewire('settings/security', 'pages::settings.security')
+Route::livewire('settings/security', 'pages::settings.⚡security')
     ->middleware(
         when(
             Features::canManageTwoFactorAuthentication()
@@ -22,12 +22,12 @@ Route::livewire('settings/security', 'pages::settings.security')
     )
     ->name('settings.security');
 
-Route::livewire('settings/preferences', 'pages::settings.preferences')
+Route::livewire('settings/preferences', 'pages::settings.⚡preferences')
     ->name('settings.preferences');
 
-Route::livewire('settings/notifications', 'pages::settings.notifications')
+Route::livewire('settings/notifications', 'pages::settings.⚡notifications')
     ->name('settings.notifications');
 
-Route::livewire('settings/mail', 'pages::settings.mail')
+Route::livewire('settings/mail', 'pages::settings.⚡mail')
     ->middleware('can:' . Permissions::CONFIGURE_MAIL_SETTINGS())
     ->name('settings.mail');

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Livewire\Tables;
 
 use App\Constants\Auth\Permissions;
+use App\Constants\Auth\Roles;
 use App\Livewire\DataTable\Datatable;
+use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\DataTable\Builders\Action;
@@ -42,7 +44,7 @@ class ImpersonateUserTable extends Datatable
 
         // If we are in a tenant context, only show users belonging to this tenant
         // UNLESS the user is a super admin who might want to find users from other tenants
-        if (tenant() && ! Auth::user()->hasRole(\App\Constants\Auth\Roles::SUPER_ADMIN)) {
+        if (tenant() && ! Auth::user()->hasRole(Roles::SUPER_ADMIN)) {
             $query->whereHas('tenants', function ($q) {
                 $q->where('tenants.id', tenant('id'));
             });
@@ -50,6 +52,11 @@ class ImpersonateUserTable extends Datatable
 
         // Don't show self in the datatable
         $query->where('id', '!=', Auth::id());
+
+        // Don't allow impersonating other Super Admins
+        $query->whereDoesntHave('roles', function ($q) {
+            $q->where('name', Roles::SUPER_ADMIN);
+        });
 
         return $query;
     }
@@ -70,7 +77,7 @@ class ImpersonateUserTable extends Datatable
                 ->searchable()
                 ->sortable(),
 
-            Column::make(__('tenancy.workspaces'), 'tenants_count')
+            Column::make(__('tenancy.tenants'), 'tenants_count')
                 ->content(function (User $user) {
                     return $user->tenants->pluck('name')->toArray();
                 })
@@ -86,8 +93,8 @@ class ImpersonateUserTable extends Datatable
         $filters = [];
 
         // Only show tenant filter if we are in central context OR if we are a super admin
-        if (! tenant() || Auth::user()->hasRole(\App\Constants\Auth\Roles::SUPER_ADMIN)) {
-            $filters[] = Filter::make('tenant_id', __('tenancy.workspace'))
+        if (! tenant() || Auth::user()->hasRole(Roles::SUPER_ADMIN)) {
+            $filters[] = Filter::make('tenant_id', __('tenancy.tenant'))
                 ->type('select')
                 ->options(Tenant::pluck('name', 'id')->toArray())
                 ->execute(fn ($q, $value) => $q->whereHas('tenants', fn ($inner) => $inner->where('tenants.id', $value)));
@@ -95,7 +102,7 @@ class ImpersonateUserTable extends Datatable
 
         $filters[] = Filter::make('role', __('roles.role'))
             ->type('select')
-            ->options(\App\Models\Role::pluck('name', 'id')->toArray())
+            ->options(Role::where('name', '!=', Roles::SUPER_ADMIN)->pluck('name', 'id')->toArray())
             ->execute(fn ($q, $value) => $q->whereHas('roles', fn ($inner) => $inner->where('roles.id', $value)));
 
         return $filters;
@@ -148,10 +155,10 @@ class ImpersonateUserTable extends Datatable
             // Impersonate into their only tenant
             $this->performImpersonation($user, $tenants->first());
         } else {
-            // Option A: Prompt for workspace
-            $this->dispatch('prompt-workspace-selection', [
+            // Option A: Prompt for tenant
+            $this->dispatch('prompt-tenant-selection', [
                 'user_uuid' => $user->uuid,
-                'workspaces' => $tenants->map(fn ($t) => ['id' => $t->id, 'name' => $t->name])->toArray(),
+                'tenants' => $tenants->map(fn ($t) => ['id' => $t->id, 'name' => $t->name])->toArray(),
             ]);
         }
     }

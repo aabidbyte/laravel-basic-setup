@@ -1,12 +1,17 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Mail;
 use Laravel\Fortify\Features;
 
 beforeEach(function () {
     asTenant();
     Mail::fake();
+});
+
+beforeEach(function () {
+    $this->withoutMiddleware(VerifyCsrfToken::class);
 });
 
 test('users can authenticate using the login screen', function () {
@@ -19,7 +24,7 @@ test('users can authenticate using the login screen', function () {
 
     $response
         ->assertSessionHasNoErrors()
-        ->assertRedirect(route('dashboard', absolute: false));
+        ->assertRedirect('/');
 
     $this->assertAuthenticated();
 });
@@ -63,7 +68,7 @@ test('users can logout', function () {
 
     $response = $this->actingAs($user)->post(route('logout'));
 
-    $response->assertRedirect(route('dashboard'));
+    $response->assertRedirect('/');
 
     $this->assertGuest();
 });

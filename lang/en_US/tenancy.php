@@ -1,12 +1,13 @@
 <?php
 
 return [
-    'switch_workspace' => 'Switch Workspace',
-    'search_workspaces' => 'Search workspaces...',
-    'your_workspaces' => 'Your Workspaces',
-    'create_new_workspace' => 'Create New Workspace',
-    'no_workspaces_found' => 'No workspaces found matching your search.',
-    'unknown_workspace' => 'Unknown Workspace',
+    'switch_tenant' => 'Switch Tenant',
+    'search_tenants' => 'Search tenants...',
+    'your_tenants' => 'Your Tenants',
+    'switch_tenant_description' => 'Select an organization to switch into.',
+    'create_new_tenant' => 'Create New Tenant',
+    'no_tenants_found' => 'No tenants found matching your search.',
+    'unknown_tenant' => 'Unknown Tenant',
     'free_plan' => 'Free Plan',
     'access_denied' => 'You do not have access to this organization.',
     'domain_not_found' => 'Organization domain not found.',
@@ -17,10 +18,10 @@ return [
     // Impersonation
     'impersonate_user' => 'Impersonate User',
     'impersonate_user_description' => 'Select a user to sign in as. You will be redirected to their session.',
-    'select_target_workspace' => 'Select Target Workspace',
-    'select_target_workspace_description' => 'This user belongs to multiple workspaces. Please choose which one you want to impersonate them in.',
-    'workspaces' => 'Workspaces',
-    'workspace' => 'Workspace',
+    'select_target_tenant' => 'Select Target Tenant',
+    'select_target_tenant_description' => 'This user belongs to multiple tenants. Please choose which one you want to impersonate them in.',
+    'tenants' => 'Tenants',
+    'tenant' => 'Tenant',
     'permission_denied' => 'You do not have permission to impersonate users.',
     'cannot_impersonate_self' => 'You cannot impersonate yourself.',
 
@@ -50,7 +51,6 @@ return [
     ],
 
     // Actions & Feedback
-    'workspace_created' => 'Workspace created successfully.',
     'tenant_created' => 'Tenant created successfully.',
     'tenant_updated' => 'Tenant updated successfully.',
     'tenant_deleted' => 'Tenant deleted successfully.',
@@ -65,5 +65,10 @@ return [
     'detach_user_confirm' => 'Are you sure you want to remove this user from this tenant?',
     'user_detached_successfully' => 'User removed from tenant successfully.',
     'no_plan' => 'No Plan',
-    'already_in_workspace' => 'You are already in this workspace.',
+    'already_in_tenant' => 'You are already in this tenant.',
+    'impersonating_user' => 'Impersonating :user',
+    'in_tenant' => 'in :tenant',
+    'with_roles' => 'with roles: :roles',
+    'stop_impersonating' => 'Stop Impersonating',
+    'system_override_mode' => 'System Override Mode',
 ];

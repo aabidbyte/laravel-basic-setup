@@ -324,8 +324,8 @@ new class extends BasePageComponent {
                                         {{ __('settings.two_factor.enabled_description') }}
                                     </p>
 
-                                    <livewire:settings.two-factor.recovery-codes
-                                                                                 :$requiresConfirmation></livewire:settings.two-factor.recovery-codes>
+                                    <livewire:settings.two-factor.⚡recovery-codes
+                                                                                 :$requiresConfirmation></livewire:settings.two-factor.⚡recovery-codes>
 
                                     <div class="card-actions mt-4">
                                         <x-ui.button type="button"
@@ -364,7 +364,7 @@ new class extends BasePageComponent {
                     <div x-data="twoFactorSetupTrigger()"
                          x-show="showModal"
                          style="display: none;">
-                        <livewire:settings.two-factor.setup-modal :modal-config="$this->modalConfig"
+                        <livewire:settings.two-factor.⚡setup-modal :modal-config="$this->modalConfig"
                                                                   :qr-code-svg="$qrCodeSvg"
                                                                   :manual-setup-key="$manualSetupKey"
                                                                   lazy />

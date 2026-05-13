@@ -4,41 +4,57 @@ declare(strict_types=1);
 
 namespace App\Livewire\Tables;
 
-use App\Constants\Auth\PolicyAbilities;
+use App\Constants\Auth\Roles;
 use App\Livewire\DataTable\Datatable;
 use App\Models\Tenant;
 use App\Services\DataTable\Builders\Action;
 use App\Services\DataTable\Builders\Column;
-use App\Services\Notifications\NotificationBuilder;
-use App\Services\Tenancy\TenantService;
+use App\Services\DataTable\Builders\Filter;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class TenantTable extends Datatable
 {
     /**
      * The table title.
      */
-    public ?string $title = null;
+    public ?string $title = 'tenancy.your_tenants';
 
     /**
-     * Mount the component and authorize access.
+     * Whether to show the search bar.
      */
-    public function mount(): void
-    {
-        $this->authorize(PolicyAbilities::VIEW_ANY, Tenant::class);
-        $this->title = __('tenancy.tenants_management');
-    }
+    public bool $showSearch = true;
+
+    /**
+     * Whether to show the header.
+     */
+    public bool $showHeader = false;
 
     /**
      * Get the base query.
      */
     public function baseQuery(): Builder
     {
-        // We alias id to uuid because the Datatable system expects a uuid column
-        return Tenant::query()
-            ->with(['users', 'currentSubscription.plan', 'planModel'])
-            ->withCount('users')
-            ->select(['tenants.*', 'tenants.id as uuid']);
+        $user = Auth::user();
+
+        if (! $user) {
+            return Tenant::query()->whereRaw('1 = 0');
+        }
+
+        $query = Tenant::query();
+
+        // If user is not a super admin, only show tenants they belong to
+        if (! $user->hasRole(Roles::SUPER_ADMIN)) {
+            $query->whereIn('id', $user->tenants->pluck('id'));
+        }
+
+        // Hide the current tenant if we are in a tenant context
+        if (tenant()) {
+            $query->where('id', '!=', tenant('id'));
+        }
+
+        return $query->select(['tenants.id', 'tenants.name', 'tenants.plan', 'tenants.id as uuid']);
     }
 
     /**
@@ -47,71 +63,58 @@ class TenantTable extends Datatable
     public function columns(): array
     {
         return [
-            Column::make(__('tenancy.tenant_id'), 'id')
-                ->searchable()
-                ->sortable()
-                ->class('font-mono text-xs'),
-
             Column::make(__('tenancy.tenant_name'), 'name')
                 ->searchable()
                 ->sortable()
                 ->format(fn ($value) => "<strong>{$value}</strong>")
                 ->html(),
 
-            Column::make('plan', __('tenancy.plan'))
-                ->format(fn ($value, $row) => $row->planModel?->name ?? __('tenancy.no_plan'))
-                ->sortable()
+            Column::make(__('tenancy.tenant_id'), 'id')
                 ->searchable()
-                ->badge(fn ($tenant) => $tenant->planModel ? $tenant->planModel->tier->color() : ($tenant->currentSubscription ? $tenant->currentSubscription->planModel->tier->color() : 'badge-ghost')),
-
-            Column::make(__('tenancy.users_count'), 'users_count')
                 ->sortable()
-                ->format(fn ($value) => (int) ($value ?? 0))
-                ->class('text-center'),
+                ->class('text-xs text-base-content/50'),
 
-            Column::make(__('common.created_at'), 'created_at')
-                ->sortable()
-                ->format(fn ($value) => formatDateTime($value)),
+            Column::make(__('tenancy.plan'), 'plan')
+                ->format(fn ($value) => $value ?? __('tenancy.free_plan')),
         ];
     }
 
     /**
-     * Define the row actions.
+     * Define the filters for the table.
+     */
+    protected function getFilterDefinitions(): array
+    {
+        return [
+            Filter::make('plan', __('tenancy.plan'))
+                ->options([
+                    'free' => __('tenancy.plans.free'),
+                    'pro' => __('tenancy.plans.pro'),
+                    'enterprise' => __('tenancy.plans.enterprise'),
+                ]),
+        ];
+    }
+
+    /**
+     * Find a model by its UUID.
+     *
+     * Overridden to allow finding the current tenant even if it's hidden from the table view,
+     * so that the protection logic in switchTo can fire a notification.
+     */
+    protected function findModelByUuid(string $uuid): ?Model
+    {
+        if (tenant('id') === $uuid) {
+            return Tenant::find($uuid);
+        }
+
+        return parent::findModelByUuid($uuid);
+    }
+
+    /**
+     * Define the row click action.
      */
     protected function rowActions(): array
     {
-        return [
-            Action::make('view', __('actions.view'))
-                ->icon('eye')
-                ->color('ghost')
-                ->route(fn ($tenant) => route('tenants.show', $tenant->id))
-                ->can(PolicyAbilities::VIEW),
-
-            Action::make('edit', __('actions.edit'))
-                ->icon('pencil')
-                ->color('primary')
-                ->route(fn ($tenant) => route('tenants.settings.edit', $tenant->id))
-                ->can(PolicyAbilities::UPDATE),
-
-            Action::make('subscriptions', __('subscriptions.title'))
-                ->icon('credit-card')
-                ->color('ghost')
-                ->route(fn ($tenant) => route('tenants.subscriptions', $tenant->id))
-                ->can(PolicyAbilities::VIEW),
-
-            Action::make('delete', __('actions.delete'))
-                ->icon('trash')
-                ->color('error')
-                ->confirm(__('tenancy.confirm_delete_tenant'))
-                ->execute(function (Tenant $tenant) {
-                    app(TenantService::class)->deleteTenant($tenant);
-                    NotificationBuilder::make()
-                        ->title('tenancy.tenant_deleted')
-                        ->success()
-                        ->send();
-                })
-                ->can(PolicyAbilities::DELETE),
-        ];
+        return [];
     }
 
     /**
@@ -119,8 +122,55 @@ class TenantTable extends Datatable
      */
     public function rowClick(string $uuid): ?Action
     {
-        return Action::make('view')
-            ->route('tenants.show', $uuid)
-            ->can(PolicyAbilities::VIEW);
+        return Action::make('switch')
+            ->execute(fn ($tenant) => $this->switchTo($tenant->id));
+    }
+
+    /**
+     * Switch to a different tenant.
+     */
+    protected function switchTo(string $tenantId): void
+    {
+        $user = Auth::user();
+
+        if (! $user) {
+            return;
+        }
+
+        // Protection: Don't switch to the current tenant
+        if (tenant('id') === $tenantId) {
+            $this->dispatch('notify', [
+                'type' => 'info',
+                'message' => __('tenancy.already_in_tenant'),
+            ]);
+
+            return;
+        }
+
+        $tenant = Tenant::find($tenantId);
+
+        if (! $tenant || (! $user->hasRole(Roles::SUPER_ADMIN) && ! $user->tenants->contains('id', $tenantId))) {
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => __('tenancy.access_denied'),
+            ]);
+
+            return;
+        }
+
+        $domain = $tenant->domains()->first();
+
+        if (! $domain) {
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => __('tenancy.domain_not_found'),
+            ]);
+
+            return;
+        }
+
+        // Redirect to the tenant domain
+        $url = (request()->secure() ? 'https://' : 'http://') . $domain->domain . '/dashboard';
+        $this->redirect($url);
     }
 }

@@ -31,15 +31,15 @@ Route::prefix('email-templates')->name('emailTemplates.')->group(function () {
     });
 
     // Unified Settings (Create + Edit)
-    Route::livewire('/settings/{template?}', 'pages::emailTemplates.edit-settings')
+    Route::livewire('/settings/{template?}', 'pages::emailTemplates.⚡edit-settings')
         ->name('settings.edit');
 
     // Unified Builder (Create + Edit)
-    Route::livewire('/builder/{template?}', 'pages::emailTemplates.edit-builder')
+    Route::livewire('/builder/{template?}', 'pages::emailTemplates.⚡edit-builder')
         ->name('builder.edit');
 
     // Show Template
-    Route::livewire('/{template}', 'pages::emailTemplates.show')
+    Route::livewire('/{template}', 'pages::emailTemplates.⚡show')
         ->middleware('can:' . Permissions::VIEW_EMAIL_TEMPLATES())
         ->name('show');
 });

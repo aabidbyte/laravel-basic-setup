@@ -68,7 +68,7 @@ return [
          * Tenant database names are created like this:
          * prefix + tenant_id + suffix.
          */
-        'prefix' => Str::slug(env('APP_NAME', 'laravel'), '_') . '_tenant_',
+        'prefix' => env('TENANCY_DATABASE_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_') . '_tenant_'),
         'suffix' => '',
 
         /**

@@ -30,7 +30,7 @@
                     <x-app-logo></x-app-logo>
                 </a>
 
-                <livewire:tenancy.workspace-switcher />
+                <livewire:tenancy.tenant-switcher />
             </div>
             <x-layouts.app.sidebar-menus></x-layouts.app.sidebar-menus>
         </aside>
