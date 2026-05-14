@@ -9,6 +9,13 @@
         },
         "daisyui-github": {
             "url": "https://gitmcp.io/saadeghi/daisyui"
+        },
+        "firecrawl": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "firecrawl-mcp"
+            ]
         }
     }
 }

@@ -1,75 +1,17 @@
-@assets
-    <script>
-        (() => {
-            const init = () => {
-                window.Alpine.data('confirmModalData', (defaultConfig = {}) => ({
-                    isOpen: false,
-                    title: defaultConfig.title || 'Confirm Action',
-                    message: defaultConfig.message || 'Are you sure?',
-                    confirmLabel: defaultConfig.confirmLabel || 'Confirm',
-                    cancelLabel: defaultConfig.cancelLabel || 'Cancel',
-                    confirmEvent: null,
-                    confirmData: null,
-                    confirmAction: null,
-
-                    handleConfirmModal(event) {
-                        if (!event.detail) return;
-                        const cfg = event.detail;
-                        if (cfg.title) this.title = cfg.title;
-                        if (cfg.message || cfg.content) this.message = cfg.message || cfg.content;
-                        if (cfg.confirmLabel || cfg.confirmText) this.confirmLabel = cfg.confirmLabel ||
-                            cfg.confirmText;
-                        if (cfg.cancelLabel || cfg.cancelText) this.cancelLabel = cfg.cancelLabel || cfg
-                            .cancelText;
-                        this.confirmEvent = cfg.confirmEvent || null;
-                        this.confirmData = cfg.confirmData || null;
-                        this.confirmAction = cfg.confirmAction || null;
-                        if (this.confirmAction) window._confirmModalAction = this.confirmAction;
-                        this.isOpen = true;
-                    },
-
-                    executeConfirm() {
-                        if (this.confirmEvent) {
-                            window.dispatchEvent(new CustomEvent(this.confirmEvent, {
-                                detail: this.confirmData,
-                                bubbles: true
-                            }));
-                        }
-                        let action = this.confirmAction || window._confirmModalAction;
-                        if (action && typeof action === 'function') action();
-                        this.closeModal();
-                    },
-
-                    closeModal() {
-                        this.isOpen = false;
-                        this.confirmAction = null;
-                        this.confirmEvent = null;
-                        window._confirmModalAction = null;
-                    }
-                }));
-            };
-            if (window.Alpine) {
-                init();
-            } else {
-                document.addEventListener('alpine:init', init);
-            }
-        })();
-    </script>
-@endassets
-
 {{-- Confirm Modal Component --}}
 @php
     $modalStateId = $openState ?? 'confirmModalIsOpen_' . str_replace('-', '_', $id);
+    $confirmModalConfig = \json_encode([
+        'modalId' => $id,
+        'title' => __('modals.confirm.title'),
+        'message' => __('modals.confirm.message'),
+        'confirmLabel' => __('actions.confirm'),
+        'cancelLabel' => __('actions.cancel'),
+    ], JSON_HEX_APOS);
 @endphp
 
-<div x-show="isOpen"
-     x-data="confirmModalData({
-         modalId: '{{ $id }}',
-         title: @js(__('modals.confirm.title')),
-         message: @js(__('modals.confirm.message')),
-         confirmLabel: @js(__('actions.confirm')),
-         cancelLabel: @js(__('actions.cancel'))
-     })"
+<div x-data="confirmModalData('{{ $confirmModalConfig }}')"
+     x-show="isOpen"
      @confirm-modal.window="handleConfirmModal($event)"
      @confirm-modal-execute.window="executeConfirm()"
      @confirm-modal-cancel.window="closeModal()"
@@ -110,3 +52,60 @@
         @endif
     </x-ui.base-modal>
 </div>
+@assets
+    <script @cspNonce>
+        (function() {
+            const register = function() {
+                Alpine.data('confirmModalData', function(config) {
+                    const parsedConfig = JSON.parse(config);
+                    return {
+                        isOpen: false,
+                        modalId: parsedConfig.modalId,
+                        title: parsedConfig.title,
+                        message: parsedConfig.message,
+                        confirmLabel: parsedConfig.confirmLabel,
+                        cancelLabel: parsedConfig.cancelLabel,
+                        callback: null,
+                        payload: null,
+
+                        handleConfirmModal(event) {
+                            const data = event.detail;
+                            if (data.modalId && data.modalId !== this.modalId) return;
+
+                            this.title = data.title || parsedConfig.title;
+                            this.message = data.message || parsedConfig.message;
+                            this.confirmLabel = data.confirmLabel || parsedConfig.confirmLabel;
+                            this.cancelLabel = data.cancelLabel || parsedConfig.cancelLabel;
+                            this.callback = data.callback;
+                            this.payload = data.payload || null;
+                            this.isOpen = true;
+                        },
+
+                        executeConfirm() {
+                            if (this.callback) {
+                                if (typeof this.callback === 'string') {
+                                    window.dispatchEvent(new CustomEvent(this.callback, {
+                                        detail: this.payload
+                                    }));
+                                } else if (typeof this.callback === 'function') {
+                                    this.callback(this.payload);
+                                }
+                            }
+                            this.closeModal();
+                        },
+
+                        closeModal() {
+                            this.isOpen = false;
+                        }
+                    };
+                });
+            };
+
+            if (window.Alpine) {
+                register();
+            } else {
+                document.addEventListener('alpine:init', register);
+            }
+        })();
+    </script>
+@endassets

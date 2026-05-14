@@ -5,14 +5,12 @@ use App\Enums\EmailTemplate\EmailTemplateType;
 use App\Models\EmailTemplate\EmailTemplate;
 use App\Models\Team;
 use App\Models\User;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 beforeEach(function () {
     Mail::fake();
-    $this->withoutMiddleware(VerifyCsrfToken::class);
 
     // Manually ensure mandatory template exists in central DB
     $layout = EmailTemplate::updateOrCreate(
@@ -112,8 +110,8 @@ test('creates team and attaches user on registration', function () {
     $team = $teams->first();
     expect($team)->toBeInstanceOf(Team::class);
 
-    // Check membership using default connection (now switched to tenant)
-    $userInTeam = DB::table('team_user')
+    // Team memberships are stored in the central database.
+    $userInTeam = DB::connection('central')->table('team_user')
         ->where('user_id', $user->id)
         ->where('team_id', $team->id)
         ->exists();

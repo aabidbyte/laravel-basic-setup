@@ -42,7 +42,10 @@ it('can create a new plan', function () {
         ->assertHasNoErrors()
         ->assertRedirect(route('plans.index'));
 
-    expect(Plan::where('name', 'New Test Plan')->exists())->toBeTrue();
+    $createdPlan = Plan::query()->latest('id')->first();
+
+    expect($createdPlan)->not->toBeNull();
+    expect($createdPlan?->name)->toBe('New Test Plan');
 });
 
 it('can render the edit plan page', function () {

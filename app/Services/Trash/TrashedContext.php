@@ -15,7 +15,7 @@ namespace App\Services\Trash;
  * Usage:
  * - Middleware calls TrashedContext::enable() on trash routes
  * - Show pages check TrashedContext::isActive() to decide whether to include trashed
- * - Context is automatically reset for each request (static, not session)
+ * - Context is reset after each trash request by `EnableTrashedContext` (`try` / `finally`).
  */
 class TrashedContext
 {

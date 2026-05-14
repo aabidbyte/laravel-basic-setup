@@ -104,14 +104,14 @@ class EmailChannel implements ChannelInterface
         $environment = app()->environment();
 
         // Extract values to avoid null coalescing in HEREDOC
-        $referenceId = $context['reference_id'];
-        $exceptionClass = $context['exception_class'];
+        $referenceId = $this->escapeHtml((string) $context['reference_id']);
+        $exceptionClass = $this->escapeHtml((string) $context['exception_class']);
         $message = $this->escapeHtml($context['message']);
-        $url = $context['url'] ?? 'N/A';
-        $userUuid = $context['user_uuid'] ?? 'Guest';
-        $ip = $context['ip'] ?? 'Unknown';
-        $file = $context['file'] ?? 'Unknown';
-        $line = $context['line'] ?? 0;
+        $url = $this->escapeHtml((string) ($context['url'] ?? 'N/A'));
+        $userUuid = $this->escapeHtml((string) ($context['user_uuid'] ?? 'Guest'));
+        $ip = $this->escapeHtml((string) ($context['ip'] ?? 'Unknown'));
+        $file = $this->escapeHtml((string) ($context['file'] ?? 'Unknown'));
+        $line = $this->escapeHtml((string) ($context['line'] ?? 0));
         $stackTrace = $this->escapeHtml($this->truncateStackTrace($context['stack_trace'] ?? ''));
 
         return <<<HTML

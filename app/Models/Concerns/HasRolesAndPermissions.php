@@ -65,7 +65,7 @@ trait HasRolesAndPermissions
     {
         $userRoleNames = $this->roles->pluck('name')->toArray();
 
-        return \count(array_intersect($roles, $userRoleNames)) === \count($roles);
+        return \count(\array_intersect($roles, $userRoleNames)) === \count($roles);
     }
 
     /**

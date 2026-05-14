@@ -35,7 +35,10 @@ Route::prefix('email-templates')->name('emailTemplates.')->group(function () {
         ->name('settings.edit');
 
     // Unified Builder (Create + Edit)
-    Route::livewire('/builder/{template?}', 'pages::emailTemplates.⚡edit-builder')
+    Route::livewire('/builder', 'pages::emailTemplates.⚡edit-builder')
+        ->name('builder.create');
+
+    Route::livewire('/builder/{template}', 'pages::emailTemplates.⚡edit-builder')
         ->name('builder.edit');
 
     // Show Template

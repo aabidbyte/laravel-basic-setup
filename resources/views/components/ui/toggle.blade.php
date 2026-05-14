@@ -48,12 +48,15 @@
 
         <input type="checkbox"
                id="{{ $id }}"
-               @if ($name) name="{{ $name }}" @endif
-               @if ($value !== null) value="{{ $value }}" @endif
-               @if ($checked) checked @endif
-               @if ($disabled) disabled @endif
-               {{ $attributes->class($classes)->except(['color', 'x-bind:color', ':color']) }}
-               @if ($boundColor) x-bind:class='{{ alpineColorClasses($boundColor, 'toggle-') }}' @endif />
+               {{ $attributes->class($classes)
+                             ->merge([
+                                 'name' => $name,
+                                 'value' => $value,
+                                 'checked' => $checked ?: null,
+                                 'disabled' => $disabled ?: null
+                             ])
+                             ->except(['color', 'x-bind:color', ':color']) }}
+               @if ($boundColor) x-bind:class="{{ alpineColorClasses($boundColor, 'toggle-') }}" @endif />
 
         @if ($label && $labelPosition === 'right')
             <span class="label-text {{ $disabled ? 'text-base-content/50' : '' }}">{{ $label }}</span>

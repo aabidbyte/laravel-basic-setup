@@ -42,13 +42,17 @@ return new class extends Migration {
             $table->json('notification_preferences')->nullable(); // Email, browser, and per-type notification settings
             $table->rememberToken();
 
-            $table->foreignId('created_by_user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->unsignedBigInteger('created_by_user_id')->nullable();
 
             $table->index('username');
             $table->index('is_active');
             $table->index('created_by_user_id');
             $table->timestampsTz();
             $table->softDeletesTz();
+        });
+
+        Schema::table('users', function (Blueprint $table) {
+            $table->foreign('created_by_user_id')->references('id')->on('users')->nullOnDelete();
         });
 
         // Password reset tokens (Central)

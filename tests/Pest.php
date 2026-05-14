@@ -12,15 +12,49 @@
 */
 
 use App\Models\Tenant;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\InteractsWithTenancy;
+use Tests\MiddlewareTestCase;
 use Tests\TestCase;
+use Tests\UiTestCase;
 
-pest()->extend(TestCase::class)
+pest()->extend(PHPUnit\Framework\TestCase::class)
     ->in('Unit');
 
+pest()->extend(MiddlewareTestCase::class)
+    ->use(InteractsWithTenancy::class)
+    ->afterEach(function () {
+        if (\function_exists('tenancy')) {
+            tenancy()->end();
+        }
+
+        Tenant::query()
+            ->get()
+            ->each(fn (Tenant $tenant) => $tenant->delete());
+
+        unset($this->tenant);
+
+        $this->dropTestingTenantDatabases();
+    })
+    ->in('Middleware');
+
+pest()->extend(UiTestCase::class)
+    ->use(InteractsWithTenancy::class)
+    ->afterEach(function () {
+        if (\function_exists('tenancy')) {
+            tenancy()->end();
+        }
+
+        Tenant::query()
+            ->get()
+            ->each(fn (Tenant $tenant) => $tenant->delete());
+
+        unset($this->tenant);
+
+        $this->dropTestingTenantDatabases();
+    })
+    ->in('UI');
+
 pest()->extend(TestCase::class)
-    ->use(RefreshDatabase::class)
     ->use(InteractsWithTenancy::class)
     ->afterEach(function () {
         if (\function_exists('tenancy')) {

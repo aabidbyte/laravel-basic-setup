@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Constants\Auth\Roles;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Throwable;
 
 class AccessServiceProvider extends ServiceProvider
 {
@@ -27,14 +28,22 @@ class AccessServiceProvider extends ServiceProvider
         // Use Gate::before to intercept all gate checks
         // This handles both Super Admin bypass and regular permission checks
         Gate::before(function ($user, $ability) {
-            // Super Admin gets all permissions
-            if ($user->hasRole(Roles::SUPER_ADMIN)) {
-                return true;
-            }
+            try {
+                // Super Admin gets all permissions
+                // Use isSuperAdmin() if available, otherwise check Roles constant
+                if (method_exists($user, 'isSuperAdmin') ? $user->isSuperAdmin() : $user->hasRole(Roles::SUPER_ADMIN)) {
+                    return true;
+                }
 
-            // Check if user has the permission through their roles
-            if ($user->hasPermissionTo($ability)) {
-                return true;
+                // Check if user has the permission through their roles or directly
+                if ($user->hasPermissionTo($ability)) {
+                    return true;
+                }
+            } catch (Throwable $e) {
+                // Fail-closed on database or other errors during permission check
+                report($e);
+
+                return false;
             }
 
             // Return null to let other gates/policies handle it

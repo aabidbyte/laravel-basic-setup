@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Tenancy;
 
+use App\Constants\Auth\Roles;
 use App\Http\Controllers\Controller;
 use App\Models\Tenant;
 use Illuminate\Http\RedirectResponse;
@@ -17,9 +20,11 @@ class TenantSwitchController extends Controller
     {
         $user = Auth::user();
 
-        // Security: Ensure user is associated with this tenant
-        // Unless they are a Platform Super Admin (if you have that role)
-        if (! $user->tenants->contains($tenant)) {
+        if ($user === null) {
+            abort(403, 'You do not have access to this organization.');
+        }
+
+        if (! $user->hasRole(Roles::SUPER_ADMIN) && ! $user->tenants->contains($tenant)) {
             abort(403, 'You do not have access to this organization.');
         }
 
@@ -35,7 +40,7 @@ class TenantSwitchController extends Controller
         $port = $request->getPort();
         $host = $domain->domain;
 
-        if ($port && ! in_array($port, [80, 443], true)) {
+        if ($port && ! \in_array($port, [80, 443], true)) {
             $host .= ':' . $port;
         }
 

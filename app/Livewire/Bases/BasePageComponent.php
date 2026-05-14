@@ -4,6 +4,7 @@ namespace App\Livewire\Bases;
 
 use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
 use Livewire\Attributes\Locked;
 
@@ -32,6 +33,16 @@ abstract class BasePageComponent extends LivewireBaseComponent
     {
         $this->sharePageTitle();
         $this->sharePageSubtitle();
+    }
+
+    public function updated($name, $value): void
+    {
+        if (app()->isLocal()) {
+            Log::debug("[Livewire State] Updated {$name} to:", [
+                'value' => $value,
+                'component' => static::class,
+            ]);
+        }
     }
 
     public function updatedPageTitle(): void

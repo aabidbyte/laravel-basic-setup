@@ -211,9 +211,9 @@ new class extends BasePageComponent {
                 @else
                     {{-- Has email: send activation email --}}
                     @can(Permissions::EDIT_USERS())
-                        <x-ui.button @click="$dispatch('confirm-modal', {
-                                     title: '{{ __('users.show.send_activation_email') }}',
-                                     message: '{{ __('users.show.confirm_send_activation') }}',
+                        <x-ui.button @click="confirmModal({
+                                     title: @js(__('users.show.send_activation_email')),
+                                     message: @js(__('users.show.confirm_send_activation')),
                                      confirmEvent: 'confirm-send-activation-email'
                                  })"
                                      variant="secondary"
@@ -226,9 +226,9 @@ new class extends BasePageComponent {
                 @endif
 
                 @can(Permissions::EDIT_USERS())
-                    <x-ui.button @click="$dispatch('confirm-modal', {
-                                 title: '{{ __('actions.activate') }}',
-                                 message: '{{ __('users.show.confirm_activate') }}',
+                    <x-ui.button @click="confirmModal({
+                                 title: @js(__('actions.activate')),
+                                 message: @js(__('users.show.confirm_activate')),
                                  confirmEvent: 'confirm-activate-user'
                              })"
                                  variant="success"
@@ -242,9 +242,9 @@ new class extends BasePageComponent {
                 {{-- Active user: password reset and deactivate options --}}
                 @if ($user->hasVerifiedEmail())
                     @can(Permissions::EDIT_USERS())
-                        <x-ui.button @click="$dispatch('confirm-modal', {
-                                     title: '{{ __('users.show.send_password_reset') }}',
-                                     message: '{{ __('users.show.confirm_send_reset') }}',
+                        <x-ui.button @click="confirmModal({
+                                     title: @js(__('users.show.send_password_reset')),
+                                     message: @js(__('users.show.confirm_send_reset')),
                                      confirmEvent: 'confirm-send-password-reset'
                                  })"
                                      variant="info"
@@ -257,9 +257,9 @@ new class extends BasePageComponent {
                 @elseif ($user->email)
                     {{-- Has email but not verified --}}
                     @can(Permissions::EDIT_USERS())
-                        <x-ui.button @click="$dispatch('confirm-modal', {
-                                     title: '{{ __('users.show.send_activation_email') }}',
-                                     message: '{{ __('users.show.confirm_send_activation') }}',
+                        <x-ui.button @click="confirmModal({
+                                     title: @js(__('users.show.send_activation_email')),
+                                     message: @js(__('users.show.confirm_send_activation')),
                                      confirmEvent: 'confirm-send-activation-email'
                                  })"
                                      variant="secondary"
@@ -283,9 +283,9 @@ new class extends BasePageComponent {
                 @endif
 
                 @can(Permissions::EDIT_USERS())
-                    <x-ui.button @click="$dispatch('confirm-modal', {
-                                 title: '{{ __('actions.deactivate') }}',
-                                 message: '{{ __('users.show.confirm_deactivate') }}',
+                    <x-ui.button @click="confirmModal({
+                                 title: @js(__('actions.deactivate')),
+                                 message: @js(__('users.show.confirm_deactivate')),
                                  confirmColor: 'warning',
                                  confirmEvent: 'confirm-deactivate-user'
                              })"
@@ -299,9 +299,9 @@ new class extends BasePageComponent {
             @endif
 
             @can(Permissions::DELETE_USERS())
-                <x-ui.button @click="$dispatch('confirm-modal', {
-                                 title: '{{ __('actions.delete') }}',
-                                 message: '{{ __('actions.confirm_delete') }}',
+                <x-ui.button @click="confirmModal({
+                                 title: @js(__('actions.delete')),
+                                 message: @js(__('actions.confirm_delete')),
                                  confirmColor: 'error',
                                  confirmEvent: 'confirm-delete-user'
                              })"
@@ -355,9 +355,9 @@ new class extends BasePageComponent {
                                 <span
                                       class="text-sm">{{ __('users.show.pending_email', ['email' => $user->pending_email]) }}</span>
                                 @can(Permissions::EDIT_USERS())
-                                    <x-ui.button @click="$dispatch('confirm-modal', {
-                                                             title: '{{ __('actions.cancel') }}',
-                                                             message: '{{ __('users.show.confirm_cancel_pending') }}',
+                                    <x-ui.button @click="confirmModal({
+                                                             title: @js(__('actions.cancel')),
+                                                             message: @js(__('users.show.confirm_cancel_pending')),
                                                              confirmEvent: 'confirm-cancel-pending-email'
                                                          })"
                                                  variant="ghost"

@@ -1,13 +1,18 @@
 <tr wire:key="row-{{ $row->uuid }}"
-    @if ($this->rowsAreClickable()) x-data="tableRow('{{ $row->uuid }}')"
-        @click="handleClick($event)"
-        @if ($this->rowClickOpensModal()) @click="$dispatch('this-modal-loading')" @endif
-    @endif
-    wire:bind:class="selected.includes('{{ $row->uuid }}') ? '!bg-secondary' : ''"
+    @php
+        $isClickable = $this->rowsAreClickable();
+        $clickOpensModal = $this->rowClickOpensModal();
+    @endphp
     @class([
-        'cursor-pointer' => $this->rowsAreClickable(),
+        'cursor-pointer' => $isClickable,
         'transition-colors hover:bg-accent',
-    ])>
+    ])
+    @if ($isClickable)
+        data-row-uuid="{{ $row->uuid }}"
+        x-data="tableRow()"
+        @click="handleClick($event) || ({{ $clickOpensModal ? 'true' : 'false' }} && $dispatch('this-modal-loading'))"
+    @endif
+    wire:bind:class="selected.includes('{{ $row->uuid }}') ? '!bg-secondary' : ''">
     {{-- Selection Checkbox - only render if bulk actions are defined --}}
     @if ($this->hasBulkActions())
         <td wire:key="row-{{ $row->uuid }}-checkbox"
@@ -28,15 +33,15 @@
                 'whitespace-nowrap' => $column['nowrap'],
                 'truncate' => (bool) $column['width'],
             ])>
+            @php
+                $cellValue = (string) $this->renderColumn($column, $row);
+            @endphp
             @if ($column['searchable'] && $this->search)
                 {{-- Client-side highlighting for all searchable columns --}}
-                @php
-                    $cellValue = $this->renderColumn($column, $row);
-                @endphp
-                <span x-data="highlightedCell('{{ addslashes($cellValue) }}', '{{ addslashes($this->search) }}')"></span>
+                <span x-data="datatableHighlightedCell('{{ addslashes($cellValue) }}', '{{ addslashes($this->search) }}')"></span>
             @else
                 {{-- No highlighting for non-searchable columns --}}
-                {!! $this->renderColumn($column, $row) !!}
+                {!! $cellValue !!}
             @endif
         </td>
     @endforeach

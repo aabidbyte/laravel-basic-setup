@@ -16,6 +16,10 @@ use Illuminate\Validation\ValidationException;
  * Tests for the ErrorHandler service.
  */
 describe('ErrorHandler', function () {
+    beforeEach(function () {
+        config(['error-handling.enabled' => true]);
+    });
+
     test('generates reference ID in correct format', function () {
         $handler = new ErrorHandler();
         $referenceId = $handler->generateReferenceId();
@@ -132,9 +136,46 @@ describe('ErrorHandler', function () {
 
         expect($context)->toHaveKey('email')
             ->and($context)->toHaveKey('name')
-            ->and($context)->not->toHaveKey('password')
-            ->and($context)->not->toHaveKey('password_confirmation')
-            ->and($context)->not->toHaveKey('token');
+            ->and($context['password'] ?? null)->toBe('[REDACTED]')
+            ->and($context['password_confirmation'] ?? null)->toBe('[REDACTED]')
+            ->and($context['token'] ?? null)->toBe('[REDACTED]');
+    });
+
+    test('recursively redacts nested sensitive keys', function () {
+        config(['error-handling.channels.database.enabled' => true]);
+
+        $exception = new Exception('Test error');
+        $request = Request::create('/test-url', 'POST', [
+            'user' => [
+                'name' => 'Jane',
+                'access_token' => 'secret-token',
+            ],
+        ]);
+
+        $handler = new ErrorHandler();
+        $refIdProp = new ReflectionProperty($handler, 'referenceId');
+        $refIdProp->setAccessible(true);
+        $refIdProp->setValue($handler, $handler->generateReferenceId());
+
+        $handler->report($exception, $request);
+
+        $log = ErrorLog::first();
+        $context = $log->context;
+        expect($context['user']['name'])->toBe('Jane')
+            ->and($context['user']['access_token'])->toBe('[REDACTED]');
+    });
+
+    test('does not persist errors when error handling is disabled', function () {
+        config(['error-handling.enabled' => false]);
+        config(['error-handling.channels.database.enabled' => true]);
+
+        $exception = new Exception('Test error message');
+        $request = Request::create('/test-url', 'GET');
+
+        $handler = new ErrorHandler();
+        $handler->report($exception, $request);
+
+        expect(ErrorLog::count())->toBe(0);
     });
 
     test('returns JSON response for AJAX requests', function () {

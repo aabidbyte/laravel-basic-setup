@@ -22,7 +22,7 @@ abstract class TestCase extends BaseTestCase
      *
      * @var array<int, string>
      */
-    protected array $connectionsToTransact = ['central'];
+    protected array $connectionsToTransact = ['mysql', 'central'];
 
     protected $seed = true;
 
@@ -52,26 +52,20 @@ abstract class TestCase extends BaseTestCase
             return;
         }
 
-        $this->configureCentralTestingDatabase();
-        $this->configureTenantTestingDatabasePrefix();
+        $database = $this->activeDatabaseName();
+
+        config([
+            'database.connections.central.database' => $database,
+            'tenancy.database.prefix' => $this->tenantTestingDatabasePrefix($database),
+        ]);
 
         DB::purge('central');
     }
 
-    private function configureCentralTestingDatabase(): void
-    {
-        config(['database.connections.central.database' => $this->activeDatabaseName()]);
-    }
-
-    private function configureTenantTestingDatabasePrefix(): void
-    {
-        config(['tenancy.database.prefix' => $this->tenantTestingDatabasePrefix()]);
-    }
-
-    private function tenantTestingDatabasePrefix(): string
+    private function tenantTestingDatabasePrefix(string $database): string
     {
         $prefixBase = env('TENANCY_TEST_DATABASE_PREFIX', 'testing');
-        $databaseName = Str::slug($this->activeDatabaseName(), '_');
+        $databaseName = Str::slug($database, '_');
 
         return "{$prefixBase}_{$databaseName}_tenant_";
     }
@@ -93,18 +87,36 @@ abstract class TestCase extends BaseTestCase
             return;
         }
 
-        $prefix = config('tenancy.database.prefix');
+        $patterns = $this->tenantDatabaseCleanupPatterns();
 
         DB::connection('mysql')
             ->table('information_schema.SCHEMATA')
-            ->where('SCHEMA_NAME', 'like', "{$prefix}%")
+            ->where(function ($query) use ($patterns): void {
+                foreach ($patterns as $pattern) {
+                    $query->orWhere('SCHEMA_NAME', 'like', $pattern);
+                }
+            })
             ->pluck('SCHEMA_NAME')
             ->each(fn (string $database) => $this->dropTestingTenantDatabase($database));
     }
 
+    /**
+     * @return array<int, string>
+     */
+    private function tenantDatabaseCleanupPatterns(): array
+    {
+        return \array_values(\array_unique([
+            config('tenancy.database.prefix') . '%',
+            'aabidbytesass\\_tenant\\_%',
+        ]));
+    }
+
     private function dropTestingTenantDatabase(string $database): void
     {
-        if (! Str::startsWith($database, config('tenancy.database.prefix'))) {
+        $matchesTestingPattern = \collect($this->tenantDatabaseCleanupPatterns())
+            ->contains(fn (string $pattern): bool => Str::is(\str_replace(['\\_', '%'], ['_', '*'], $pattern), $database));
+
+        if (! $matchesTestingPattern) {
             return;
         }
 
@@ -118,8 +130,6 @@ abstract class TestCase extends BaseTestCase
         if (\function_exists('tenancy')) {
             tenancy()->end();
         }
-
-        $this->dropTestingTenantDatabases();
 
         parent::tearDown();
     }

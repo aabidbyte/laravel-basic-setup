@@ -14,7 +14,7 @@ export function createNotificationsStore() {
         config: {
             userUuid: null,
             teamUuids: [],
-            sessionId: null,
+            broadcastClientId: null,
         },
         initialized: false,
 
@@ -33,11 +33,23 @@ export function createNotificationsStore() {
                 return;
             }
 
+            // Cleanup old subscriptions if identity or team membership changes
+            const identityChanged =
+                this.config.userUuid !== (config?.userUuid || null) ||
+                this.config.broadcastClientId !==
+                    (config?.broadcastClientId || null) ||
+                JSON.stringify(this.config.teamUuids) !==
+                    JSON.stringify(config?.teamUuids || []);
+
+            if (identityChanged && this.initialized) {
+                this._cleanup();
+            }
+
             this.config.userUuid = config?.userUuid || null;
             this.config.teamUuids = Array.isArray(config?.teamUuids)
-                ? config?.teamUuids
+                ? [...config?.teamUuids].sort()
                 : [];
-            this.config.sessionId = config?.sessionId || null;
+            this.config.broadcastClientId = config?.broadcastClientId || null;
             this.initialized = true;
 
             this._ensureEchoListeners();
@@ -123,8 +135,8 @@ export function createNotificationsStore() {
             if (!this.config.userUuid) {
                 // Only subscribe to session channel for non-authenticated users
                 // Session channel is PUBLIC (session ID acts as security mechanism)
-                if (this.config.sessionId) {
-                    const sessionChannel = `public-notifications.session.${this.config.sessionId}`;
+                if (this.config.broadcastClientId) {
+                    const sessionChannel = `public-notifications.session.${this.config.broadcastClientId}`;
                     this._subscribeToPublicChannel(sessionChannel, {
                         toast: handleToast,
                     });
@@ -165,9 +177,9 @@ export function createNotificationsStore() {
 
             // Subscribe to session channel (for notifications after logout)
             // Session channel is PUBLIC (session ID acts as security mechanism)
-            if (this.config.sessionId) {
+            if (this.config.broadcastClientId) {
                 this._subscribeToPublicChannel(
-                    `public-notifications.session.${this.config.sessionId}`,
+                    `public-notifications.session.${this.config.broadcastClientId}`,
                     {
                         toast: handleToast,
                     },
@@ -281,9 +293,22 @@ export function createNotificationsStore() {
                 }
             });
 
+            // Leave channels explicitly
+            this._subscribedChannels.forEach((channelName) => {
+                try {
+                    if (window.Echo && typeof window.Echo.leave === 'function') {
+                        window.Echo.leave(channelName);
+                    }
+                } catch (error) {
+                    console.error(
+                        `[Notifications Store] Error leaving channel ${channelName}:`,
+                        error,
+                    );
+                }
+            });
+
             this._listeners = [];
             this._subscribedChannels.clear();
-            this._subscribers.clear();
         },
     };
 }

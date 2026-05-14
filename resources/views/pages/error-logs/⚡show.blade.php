@@ -142,9 +142,9 @@ new class extends BasePageComponent {
                             @endif
 
                             @can(Permissions::DELETE_ERROR_LOGS())
-                                <x-ui.button @click="$dispatch('confirm-modal', {
-                                             title: '{{ __('actions.delete') }}',
-                                             message: '{{ __('errors.management.confirm_delete') }}',
+                                <x-ui.button @click="confirmModal({
+                                             title: @js(__('actions.delete')),
+                                             message: @js(__('errors.management.confirm_delete')),
                                              confirmColor: 'error',
                                              confirmEvent: 'confirm-delete-error-log'
                                          })"
@@ -239,11 +239,10 @@ new class extends BasePageComponent {
                 </div>
             </div>
 
-            {{-- Context (Collapsible) --}}
-            <div x-data="{ open: false }"
+            <div x-data="disclosurePanel()"
                  class="card bg-base-100 shadow-xl">
                 <div class="card-body">
-                    <x-ui.button @click="open = !open"
+                    <x-ui.button @click="toggle()"
                                  variant="ghost"
                                  class="flex w-full items-center justify-between px-0 text-left font-bold hover:bg-transparent">
                         <x-ui.title level="3"
@@ -251,10 +250,10 @@ new class extends BasePageComponent {
                         <x-ui.icon name="chevron-down"
                                    size="sm"
                                    class="transition-transform duration-200"
-                                   ::class="open ? 'rotate-180' : ''"></x-ui.icon>
+                                   :x-bind:class="isOpen ? 'rotate-180' : ''"></x-ui.icon>
                     </x-ui.button>
 
-                    <div x-show="open"
+                    <div x-show="isOpen"
                          x-collapse
                          class="mt-4">
                         @if ($errorLog->context)
@@ -266,11 +265,10 @@ new class extends BasePageComponent {
                 </div>
             </div>
 
-            {{-- Stack Trace (Collapsible) --}}
-            <div x-data="{ open: false }"
+            <div x-data="disclosurePanel()"
                  class="card bg-base-100 shadow-xl">
                 <div class="card-body">
-                    <x-ui.button @click="open = !open"
+                    <x-ui.button @click="toggle()"
                                  variant="ghost"
                                  class="flex w-full items-center justify-between px-0 text-left font-bold hover:bg-transparent">
                         <x-ui.title level="3"
@@ -278,10 +276,10 @@ new class extends BasePageComponent {
                         <x-ui.icon name="chevron-down"
                                    size="sm"
                                    class="transition-transform duration-200"
-                                   ::class="open ? 'rotate-180' : ''"></x-ui.icon>
+                                   :x-bind:class="isOpen ? 'rotate-180' : ''"></x-ui.icon>
                     </x-ui.button>
 
-                    <div x-show="open"
+                    <div x-show="isOpen"
                          x-collapse
                          class="mt-4">
                         @if ($errorLog->stack_trace)

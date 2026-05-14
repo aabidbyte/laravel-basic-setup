@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 use App\Enums\Toast\ToastType;
 use App\Events\Notifications\ToastBroadcasted;
+use App\Models\Notification;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\Notifications\NotificationBuilder;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 
@@ -157,13 +157,13 @@ test('persists notification to all team members when user is in multiple teams',
         ->send();
 
     // User1 should receive notification (member of team1)
-    expect(DB::table('notifications')
+    expect(Notification::query()
         ->where('notifiable_type', User::class)
         ->where('notifiable_id', $user1->id)
         ->count())->toBe(1);
 
     // User2 should receive notification (member of team1)
-    expect(DB::table('notifications')
+    expect(Notification::query()
         ->where('notifiable_type', User::class)
         ->where('notifiable_id', $user2->id)
         ->count())->toBe(1);
@@ -176,13 +176,13 @@ test('persists notification to all team members when user is in multiple teams',
         ->send();
 
     // User1 should now have 2 notifications (one from each team)
-    expect(DB::table('notifications')
+    expect(Notification::query()
         ->where('notifiable_type', User::class)
         ->where('notifiable_id', $user1->id)
         ->count())->toBe(2);
 
     // User2 should still have only 1 notification (only member of team1)
-    expect(DB::table('notifications')
+    expect(Notification::query()
         ->where('notifiable_type', User::class)
         ->where('notifiable_id', $user2->id)
         ->count())->toBe(1);

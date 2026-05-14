@@ -1,9 +1,9 @@
 <div class="drawer lg:drawer-open"
-     x-data="{ drawerOpen: false }">
+     x-data="sidebarDrawer()">
     <input id="sidebar-drawer"
            type="checkbox"
            class="drawer-toggle"
-           x-model="drawerOpen" />
+           x-model="isOpen" />
     <div class="drawer-content flex flex-col">
         <div class="navbar bg-base-200">
             <label for="sidebar-drawer"
@@ -36,3 +36,23 @@
         </aside>
     </div>
 </div>
+
+@assets
+    <script @cspNonce>
+        (function() {
+            const register = () => {
+                if (window.Alpine.data('sidebarDrawer')) return;
+
+                window.Alpine.data('sidebarDrawer', () => ({
+                    isOpen: false,
+                }));
+            };
+
+            if (window.Alpine) {
+                register();
+            } else {
+                document.addEventListener('alpine:init', register);
+            }
+        })();
+    </script>
+@endassets

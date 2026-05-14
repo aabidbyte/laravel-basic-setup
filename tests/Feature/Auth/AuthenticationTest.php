@@ -1,17 +1,12 @@
 <?php
 
 use App\Models\User;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Mail;
 use Laravel\Fortify\Features;
 
 beforeEach(function () {
     asTenant();
     Mail::fake();
-});
-
-beforeEach(function () {
-    $this->withoutMiddleware(VerifyCsrfToken::class);
 });
 
 test('users can authenticate using the login screen', function () {

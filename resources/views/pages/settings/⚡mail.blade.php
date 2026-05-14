@@ -95,8 +95,12 @@ new class extends BasePageComponent {
             'provider' => ['required', 'string', 'in:smtp,ses,postmark,resend'],
             'host' => ['required_if:provider,smtp', 'nullable', 'string', 'max:255'],
             'port' => ['required_if:provider,smtp', 'nullable', 'integer', 'min:1', 'max:65535'],
-            'username' => ['nullable', 'string', 'max:255'],
-            'password' => ['nullable', 'string', 'max:255'],
+            'username' => ['required_if:provider,smtp', 'nullable', 'string', 'max:255'],
+            'password' => [
+                $this->hasExistingSettings ? 'nullable' : 'required_if:provider,smtp',
+                'string',
+                'max:255'
+            ],
             'encryption' => ['nullable', 'string', 'in:tls,ssl,'],
             'fromAddress' => ['required', 'email', 'max:255'],
             'fromName' => ['required', 'string', 'max:255'],
@@ -294,9 +298,9 @@ new class extends BasePageComponent {
 
                     @if ($hasExistingSettings)
                         <x-ui.button type="button"
-                                     @click="$dispatch('confirm-modal', {
-                                     title: '{{ __('actions.delete') }}',
-                                     message: '{{ __('settings.mail.delete_confirm') }}',
+                                     @click="confirmModal({
+                                     title: @js(__('actions.delete')),
+                                     message: @js(__('settings.mail.delete_confirm')),
                                      confirmColor: 'error',
                                      confirmEvent: 'confirm-delete-mail-settings'
                                  })"

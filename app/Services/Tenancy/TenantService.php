@@ -6,6 +6,7 @@ namespace App\Services\Tenancy;
 
 use App\Models\Tenant;
 use Illuminate\Support\Facades\DB;
+use Stancl\Tenancy\Features\UserImpersonation;
 
 class TenantService
 {
@@ -64,7 +65,11 @@ class TenantService
      */
     public function deleteTenant(Tenant $tenant): ?bool
     {
-        return $tenant->delete();
+        return DB::transaction(function () use ($tenant) {
+            // stancl/tenancy handles domain deletion via model events,
+            // but we wrap in a transaction to ensure database consistency.
+            return $tenant->delete();
+        });
     }
 
     /**
@@ -72,8 +77,8 @@ class TenantService
      */
     public function impersonateTenant(Tenant $tenant, string $userId, string $redirectUrl = '/dashboard'): string
     {
-        $token = \Stancl\Tenancy\Features\UserImpersonation::createToken($tenant, $userId, $redirectUrl);
+        $token = UserImpersonation::createToken($tenant, $userId, $redirectUrl);
 
-        return (request()->secure() ? 'https://' : 'http://') . $tenant->domains()->first()->domain . '/impersonate/' . $token;
+        return request()->getScheme() . '://' . $tenant->domains()->first()->domain . '/impersonate/' . $token;
     }
 }

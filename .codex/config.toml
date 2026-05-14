@@ -1,4 +1,8 @@
 [mcp_servers.laravel-boost]
 command = "php"
-args = ["artisan", "boost:mcp"]
+args = [ "artisan", "boost:mcp" ]
 cwd = "/Users/hop/Packages/laravel-basic-setup"
+
+[mcp_servers.firecrawl]
+command = "npx"
+args = [ "-y", "firecrawl-mcp" ]

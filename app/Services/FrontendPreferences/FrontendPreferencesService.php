@@ -14,6 +14,7 @@ use DateTimeZone;
 use Illuminate\Http\Request;
 use Illuminate\Session\Store as SessionStore;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class FrontendPreferencesService
 {
@@ -110,14 +111,16 @@ class FrontendPreferencesService
     {
         $user = Auth::user();
 
-        // If authenticated, update DB first, then session
-        if ($user instanceof User) {
-            $userStore = new UserJsonPreferencesStore($user);
-            $userStore->set($key, $value);
-        }
+        DB::transaction(function () use ($user, $key, $value) {
+            // If authenticated, update DB first
+            if ($user instanceof User) {
+                $userStore = new UserJsonPreferencesStore($user);
+                $userStore->set($key, $value);
+            }
 
-        // Always update session (single source of truth)
-        $this->getSessionStore()->set($key, $value);
+            // Update session last (single source of truth for current request)
+            $this->getSessionStore()->set($key, $value);
+        });
     }
 
     /**
@@ -131,14 +134,16 @@ class FrontendPreferencesService
     {
         $user = Auth::user();
 
-        // If authenticated, update DB first, then session
-        if ($user instanceof User) {
-            $userStore = new UserJsonPreferencesStore($user);
-            $userStore->setMany($preferences);
-        }
+        DB::transaction(function () use ($user, $preferences) {
+            // If authenticated, update DB first
+            if ($user instanceof User) {
+                $userStore = new UserJsonPreferencesStore($user);
+                $userStore->setMany($preferences);
+            }
 
-        // Always update session (single source of truth)
-        $this->getSessionStore()->setMany($preferences);
+            // Always update session (single source of truth)
+            $this->getSessionStore()->setMany($preferences);
+        });
     }
 
     /**
@@ -213,7 +218,12 @@ class FrontendPreferencesService
     {
         $locale = $this->get(FrontendPreferences::KEY_LOCALE, FrontendPreferences::DEFAULT_LOCALE, $request);
 
-        return $this->i18nService->getValidLocale($locale);
+        // Validate locale against available locales
+        if ($this->i18nService->isLocaleSupported($locale)) {
+            return $locale;
+        }
+
+        return FrontendPreferences::DEFAULT_LOCALE;
     }
 
     /**
@@ -221,8 +231,9 @@ class FrontendPreferencesService
      */
     public function setLocale(string $locale): void
     {
-        $validLocale = $this->i18nService->getValidLocale($locale);
-        $this->set(FrontendPreferences::KEY_LOCALE, $validLocale);
+        if ($this->i18nService->isLocaleSupported($locale)) {
+            $this->set(FrontendPreferences::KEY_LOCALE, $locale);
+        }
     }
 
     /**

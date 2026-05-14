@@ -46,7 +46,7 @@
 
         {{-- Load More Trigger --}}
         @if ($this->rows->count() > $this->visibleRows)
-            <div x-data="infiniteScroll"
+            <div x-data="infiniteScroll()"
                  wire:key="datatable-load-more-{{ $this->datatableId }}"
                  class="flex h-8 items-center justify-center p-4">
                 <x-ui.loading wire:loading
@@ -60,7 +60,7 @@
 
 </div>
 @assets
-    <script>
+    <script @cspNonce>
         (function() {
             const register = () => {
                 Alpine.data('dataTable', (id = null) => ({
@@ -79,6 +79,18 @@
                             ._scrollListener);
                         window.addEventListener(`datatable:clean-url:${this.id}`, this
                             ._cleanUrlListener);
+
+                        window.addEventListener('datatable:execute-action', (event) => {
+                            const {
+                                actionKey,
+                                uuid,
+                                isBulk
+                            } = event.detail;
+                            const wire = this.$wire || this.$el.closest(
+                                '[wire\\:id]')?.__livewire;
+                            if (isBulk) wire.executeBulkAction(actionKey);
+                            else wire.executeAction(actionKey, uuid);
+                        });
                     },
 
                     destroy() {
@@ -137,11 +149,11 @@
                             detail: {
                                 title: title || 'Confirm Action',
                                 message: message,
-                                confirmAction: () => {
-                                    const wire = this.$wire || this.$el.closest(
-                                        '[wire\\:id]')?.__livewire;
-                                    if (isBulk) wire.executeBulkAction(actionKey);
-                                    else wire.executeAction(actionKey, uuid);
+                                confirmEvent: 'datatable:execute-action',
+                                confirmData: {
+                                    actionKey,
+                                    uuid,
+                                    isBulk
                                 }
                             }
                         }));
@@ -219,10 +231,16 @@
     </script>
 @endassets
 @assets
-    <script>
+    <script @cspNonce>
         (function() {
             const register = () => {
-                Alpine.data('tableRow', (uuid) => ({
+                Alpine.data('tableRow', () => ({
+                    uuid: '',
+
+                    init() {
+                        this.uuid = this.$el.dataset.rowUuid || '';
+                    },
+
                     handleClick(event) {
                         // Ignore clicks on sticky action cells or interactive elements
                         if (event.target.closest('.sticky-action-cell') ||
@@ -231,22 +249,20 @@
                             return;
                         }
 
-                        this.$wire.handleRowClick(uuid);
-                    }
+                        this.$wire.handleRowClick(this.uuid);
+                    },
                 }));
 
-                // Register highlightedCell component for datatable highlighting
+                // Register datatableHighlightedCell component for datatable highlighting
                 // Datatable search is server-side so no reactivity needed
-                window.Alpine.data('highlightedCell', function(content, query) {
-                    return {
-                        init() {
-                            this.$nextTick(function() {
-                                this.$el.innerHTML = this.$store.search.highlightHTML(content,
-                                    query);
-                            }.bind(this));
-                        }
-                    };
-                });
+                window.Alpine.data('datatableHighlightedCell', (content, query) => ({
+                    init() {
+                        this.$nextTick(() => {
+                            this.$el.innerHTML = this.$store.search.highlightHTML(content,
+                                query);
+                        });
+                    }
+                }));
             };
 
             if (window.Alpine) {

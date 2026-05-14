@@ -15,6 +15,7 @@ use App\Services\DataTable\Builders\Action;
 use App\Services\DataTable\Builders\BulkAction;
 use App\Services\DataTable\Builders\Column;
 use App\Services\DataTable\Builders\Filter;
+use App\Services\EmailTemplate\EmailTemplateService;
 use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Route;
@@ -210,7 +211,14 @@ class EmailTemplateTable extends Datatable
             ->variant('ghost')
             ->color('success')
             ->confirm(__('actions.confirm_publish'))
-            ->execute(fn (EmailTemplate $template) => $template->update(['status' => EmailTemplateStatus::PUBLISHED]))
+            ->execute(function (EmailTemplate $template) {
+                resolve(EmailTemplateService::class)->publish($template);
+
+                NotificationBuilder::make()
+                    ->title('email_templates.actions.published_success')
+                    ->success()
+                    ->send();
+            })
             ->can(Permissions::EDIT_EMAIL_TEMPLATES(), false) // Using EDIT permission as PUBLISH might be overkill or same
             ->show(fn (EmailTemplate $template) => ! $template->is_system && ! $template->is_default && $template->status === EmailTemplateStatus::DRAFT);
 
@@ -277,7 +285,22 @@ class EmailTemplateTable extends Datatable
             BulkAction::make('publish', __('email_templates.actions.publish'))
                 ->icon('check')
                 ->variant('ghost')
-                ->execute(fn ($templates) => $templates->each->update(['status' => EmailTemplateStatus::PUBLISHED]))
+                ->execute(function ($templates) {
+                    $service = resolve(EmailTemplateService::class);
+
+                    foreach ($templates as $template) {
+                        if ($template->is_system || $template->is_default) {
+                            continue;
+                        }
+
+                        $service->publish($template);
+                    }
+
+                    NotificationBuilder::make()
+                        ->title('email_templates.actions.published_success')
+                        ->success()
+                        ->send();
+                })
                 ->can(Permissions::PUBLISH_EMAIL_TEMPLATES()),
 
             BulkAction::make('archive', __('email_templates.actions.archive'))

@@ -44,10 +44,18 @@ function initializeEcho() {
     } catch (error) {
         console.error('[Echo] Failed to initialize:', error);
         // Create a mock Echo object to prevent errors in dependent code
+        const noopChannel = {
+            listen: () => noopChannel,
+            stopListening: () => noopChannel,
+            notification: () => noopChannel,
+            listenForWhisper: () => noopChannel,
+        };
+
         window.Echo = {
-            private: () => ({
-                listen: () => ({ listen: () => ({}) }),
-            }),
+            private: () => noopChannel,
+            channel: () => noopChannel,
+            join: () => noopChannel,
+            leave: () => ({}),
         };
     }
 }

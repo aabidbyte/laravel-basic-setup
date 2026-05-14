@@ -13,6 +13,8 @@ use App\Models\User;
 use App\Services\DataTable\Builders\Action;
 use App\Services\DataTable\Builders\Column;
 use App\Services\DataTable\Builders\Filter;
+use App\Services\Tenancy\UserImpersonationService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
@@ -38,20 +40,26 @@ class ImpersonateUserTable extends Datatable
      */
     public function baseQuery(): Builder
     {
+        $admin = Auth::user();
+
         $query = User::query()
             ->with(['tenants'])
             ->select('users.*');
 
+        if (! $admin instanceof User) {
+            return $query->whereRaw('1 = 0');
+        }
+
         // If we are in a tenant context, only show users belonging to this tenant
         // UNLESS the user is a super admin who might want to find users from other tenants
-        if (tenant() && ! Auth::user()->hasRole(Roles::SUPER_ADMIN)) {
+        if (tenant() && ! $admin->hasRole(Roles::SUPER_ADMIN)) {
             $query->whereHas('tenants', function ($q) {
                 $q->where('tenants.id', tenant('id'));
             });
         }
 
         // Don't show self in the datatable
-        $query->where('id', '!=', Auth::id());
+        $query->where('id', '!=', $admin->id);
 
         // Don't allow impersonating other Super Admins
         $query->whereDoesntHave('roles', function ($q) {
@@ -91,9 +99,10 @@ class ImpersonateUserTable extends Datatable
     protected function getFilterDefinitions(): array
     {
         $filters = [];
+        $admin = Auth::user();
 
         // Only show tenant filter if we are in central context OR if we are a super admin
-        if (! tenant() || Auth::user()->hasRole(Roles::SUPER_ADMIN)) {
+        if (! tenant() || ($admin instanceof User && $admin->hasRole(Roles::SUPER_ADMIN))) {
             $filters[] = Filter::make('tenant_id', __('tenancy.tenant'))
                 ->type('select')
                 ->options(Tenant::pluck('name', 'id')->toArray())
@@ -114,7 +123,7 @@ class ImpersonateUserTable extends Datatable
     public function rowClick(string $uuid): ?Action
     {
         return Action::make('impersonate')
-            ->execute(fn ($user) => $this->initiateImpersonation($user->uuid));
+            ->execute(fn () => $this->initiateImpersonation($uuid));
     }
 
     /**
@@ -166,29 +175,27 @@ class ImpersonateUserTable extends Datatable
     /**
      * Perform the actual impersonation and redirect.
      */
-    public function performImpersonation(User $user, ?Tenant $targetTenant = null): void
+    protected function performImpersonation(User $user, ?Tenant $targetTenant = null): void
     {
-        if ($targetTenant) {
-            // Impersonate into tenant
-            $token = tenancy()->impersonate($targetTenant, $user->id, '/dashboard', 'web');
-
-            $domain = $targetTenant->domains()->first();
-            if (! $domain) {
-                $this->dispatch('notify', ['type' => 'error', 'message' => __('tenancy.domain_not_found')]);
-
-                return;
-            }
-
-            $protocol = request()->secure() ? 'https://' : 'http://';
-            $url = "{$protocol}{$domain->domain}/impersonate/{$token->token}";
-
-            $this->redirect($url);
-        } else {
-            // Impersonate centrally
-            $adminId = Auth::id();
-            Auth::login($user);
-            session()->put('impersonator_id', $adminId);
-            $this->redirect('/dashboard');
+        $actor = Auth::user();
+        if (! $actor instanceof User) {
+            return;
         }
+
+        try {
+            $result = app(UserImpersonationService::class)->execute($actor, $user, $targetTenant);
+        } catch (AuthorizationException) {
+            $this->dispatch('notify', ['type' => 'error', 'message' => __('tenancy.permission_denied')]);
+
+            return;
+        }
+
+        if ($result['type'] === 'tenant') {
+            $this->redirect($result['url']);
+
+            return;
+        }
+
+        $this->redirect('/dashboard');
     }
 }

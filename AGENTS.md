@@ -11,6 +11,15 @@ The full documentation is now organized into sections for easier navigation and 
 
 See [CSP Safety Guide](docs/AGENTS/csp-safety.md) and [Important Patterns](docs/AGENTS/important-patterns.md#csp-safe-alpinejs-development-critical) for full CSP documentation.
 
+### Mandatory CSP Nonces (CRITICAL)
+**All inline `<script>` and `<style>` tags MUST include the `@cspNonce` directive.** This includes scripts colocated within `@assets` blocks.
+
+```html
+<script @cspNonce>
+    // Your code
+</script>
+```
+
 ### Colocated Scripts (MANDATORY)
 **Component-specific JavaScript logic MUST be colocated with the Blade component using the `@assets` directive.** Do not create new global JS files for single components.
 

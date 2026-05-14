@@ -23,8 +23,6 @@ new class extends BasePageComponent {
     #[Locked]
     public bool $isLayout = false;
 
-    public ?EmailTemplate $model = null;
-
     // Common fields
     public string $name = '';
 
@@ -197,13 +195,16 @@ new class extends BasePageComponent {
 
     public function getAvailableLayoutsProperty(): array
     {
-        $query = EmailTemplate::query()->where('is_layout', true)->orderBy('name');
+        $query = EmailTemplate::query()
+            ->where('is_layout', true)
+            ->where(function ($q) {
+                $q->where('status', EmailTemplateStatus::PUBLISHED);
 
-        if (!$this->isCreateMode && $this->layout_id) {
-            $query->where(function ($q) {
-                $q->where('is_default', false)->orWhere('id', $this->layout_id);
-            });
-        }
+                if ($this->layout_id) {
+                    $q->orWhere('id', $this->layout_id);
+                }
+            })
+            ->orderBy('name');
 
         return ['' => __('common.select')] + $query->get()->mapWithKeys(fn ($l) => [$l->id => $l->name])->toArray();
     }

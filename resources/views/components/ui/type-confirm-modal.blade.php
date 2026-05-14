@@ -60,7 +60,7 @@
 </x-ui.base-modal>
 
 @assets
-    <script>
+    <script @cspNonce>
         (function() {
             const register = () => {
                 Alpine.data('typeConfirmModal', (config = {}) => ({

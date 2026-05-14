@@ -107,7 +107,7 @@ new #[Lazy] class extends Component {
 }; ?>
 
 <div class="space-y-4"
-     x-data="{ device: 'desktop' }">
+     x-data="previewDeviceSwitcher()">
     {{-- Template Info & Controls --}}
     <div class="space-y-2">
         <div class="flex flex-wrap items-center justify-between gap-4">
@@ -139,8 +139,8 @@ new #[Lazy] class extends Component {
                         <x-ui.button type="button"
                                      size="sm"
                                      class="join-item"
-                                     ::class="{ 'btn-active': device === 'desktop' }"
-                                     @click="device = 'desktop'"
+                                     ::btn-active="is('desktop')"
+                                     @click="setDevice('desktop')"
                                      variant="ghost">
                             <x-ui.icon name="computer-desktop"
                                        size="sm" />
@@ -148,8 +148,8 @@ new #[Lazy] class extends Component {
                         <x-ui.button type="button"
                                      size="sm"
                                      class="join-item"
-                                     ::class="{ 'btn-active': device === 'tablet' }"
-                                     @click="device = 'tablet'"
+                                     ::btn-active="is('tablet')"
+                                     @click="setDevice('tablet')"
                                      variant="ghost">
                             <x-ui.icon name="device-tablet"
                                        size="sm" />
@@ -157,8 +157,8 @@ new #[Lazy] class extends Component {
                         <x-ui.button type="button"
                                      size="sm"
                                      class="join-item"
-                                     ::class="{ 'btn-active': device === 'mobile' }"
-                                     @click="device = 'mobile'"
+                                     ::btn-active="is('mobile')"
+                                     @click="setDevice('mobile')"
                                      variant="ghost">
                             <x-ui.icon name="device-phone-mobile"
                                        size="sm" />
@@ -211,10 +211,10 @@ new #[Lazy] class extends Component {
     {{-- HTML Preview --}}
     @if ($previewHtml)
         <div class="bg-base-200 flex justify-center overflow-auto rounded-lg border p-4">
-            <div :class="{
-                'w-full': device === 'desktop',
-                'w-[768px]': device === 'tablet',
-                'w-[375px]': device === 'mobile'
+            <div :x-bind:class="{
+                'w-full': is('desktop'),
+                'w-[768px]': is('tablet'),
+                'w-[375px]': is('mobile')
             }"
                  class="border bg-white shadow-sm transition-all duration-300">
                 {{-- Secure iframe: no allow-same-origin = complete isolation --}}

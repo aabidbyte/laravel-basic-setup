@@ -411,9 +411,9 @@ new class extends BasePageComponent {
 
                                             @if (!$session['is_current'])
                                                 <x-ui.button type="button"
-                                                             @click="$dispatch('confirm-modal', {
-                                                             title: '{{ __('actions.revoke') }}',
-                                                             message: '{{ __('settings.security.revoke_confirm') }}',
+                                                             @click="confirmModal({
+                                                             title: @js(__('actions.revoke')),
+                                                             message: @js(__('settings.security.revoke_confirm')),
                                                              confirmColor: 'error',
                                                              confirmEvent: 'confirm-revoke-session',
                                                              confirmData: { id: '{{ $session['id'] }}' }
@@ -437,9 +437,9 @@ new class extends BasePageComponent {
 
                             @if ($this->sessions->count() > 1)
                                 <x-ui.button type="button"
-                                             @click="$dispatch('confirm-modal', {
-                                             title: '{{ __('settings.security.revoke_all_button') }}',
-                                             message: '{{ __('settings.security.revoke_all_confirm') }}',
+                                             @click="confirmModal({
+                                             title: @js(__('settings.security.revoke_all_button')),
+                                             message: @js(__('settings.security.revoke_all_confirm')),
                                              confirmColor: 'error',
                                              confirmEvent: 'confirm-revoke-all-sessions'
                                          })"
@@ -463,7 +463,7 @@ new class extends BasePageComponent {
 </x-layouts.page>
 
 @assets
-    <script>
+    <script @cspNonce>
         (function() {
             const register = () => {
                 Alpine.data('twoFactorSetupTrigger', () => ({

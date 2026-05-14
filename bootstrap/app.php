@@ -17,8 +17,6 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->validateCsrfTokens(except: ['*']);
-
         $middleware->alias([
             'universal' => UniversalMiddleware::class,
         ]);
@@ -31,17 +29,22 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(function (Throwable $e, Request $request) {
-            $handler = app(ErrorHandler::class);
-
-            // Handle validation exceptions specifically to maintain original behavior
-            if ($e instanceof ValidationException) {
-                // If the error handler returns null, we let Laravel handle it
-                $handler->handle($e, $request);
-
-                return null; // Let Laravel handle the response
+            if (! config('error-handling.enabled', false)) {
+                return null;
             }
 
-            // Handle all other exceptions through our custom handler
+            $handler = app(ErrorHandler::class);
+
+            if ($e instanceof ValidationException) {
+                $handler->report($e, $request);
+
+                return null;
+            }
+
+            if ($handler->shouldUseDefaultHttpRendering($e, $request)) {
+                return null;
+            }
+
             return $handler->handle($e, $request);
         });
     })->create();

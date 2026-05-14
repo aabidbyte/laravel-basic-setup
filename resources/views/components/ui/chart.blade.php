@@ -25,7 +25,7 @@
 </div>
 
 @assets
-    <script>
+    <script @cspNonce>
         (function() {
             const register = () => {
                 Alpine.data('chartUi', () => ({

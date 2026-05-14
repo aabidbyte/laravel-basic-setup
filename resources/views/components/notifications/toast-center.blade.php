@@ -1,4 +1,4 @@
-    <div x-data="toastCenter"
+    <div x-data="toastCenter()"
          x-init="init()"
          aria-live="assertive"
          class="pointer-events-none fixed z-[99999] flex max-w-sm flex-col gap-2 p-6"
@@ -91,12 +91,10 @@
                     <x-ui.button @click.stop="dismiss()"
                                  type="button"
                                  variant="ghost"
-                                 ::color="toast.type"
                                  size="sm"
                                  circle
                                  aria-label="{{ __('notifications.dismiss') }}">
                         <x-ui.icon name="x-mark"
-                                   ::color="toast.type"
                                    size="sm"></x-ui.icon>
                     </x-ui.button>
                 </div>

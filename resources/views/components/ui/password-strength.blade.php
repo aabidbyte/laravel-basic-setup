@@ -15,7 +15,7 @@
               x-text="label"></span>
     </div>
 
-    {{-- 
+    {{--
         Status Message Logic:
         We display 'Weak' for scores 0-2 or any password < 8 chars.
         'Good' requires score 3 AND length >= 8.
@@ -78,7 +78,7 @@
 </div>
 
 @assets
-    <script>
+    <script @cspNonce>
         (function() {
             const register = () => {
                 Alpine.data('passwordStrength', (targetId, translations = {}) => ({
@@ -141,7 +141,7 @@
                         this.password = val;
                         /**
                          * Calculate password strength score.
-                         * 
+                         *
                          * Requirements:
                          * 1. Length >= 8 chars
                          * 2. Mixed case (both upper and lower)

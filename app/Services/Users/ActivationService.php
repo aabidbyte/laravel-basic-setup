@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Users;
 
-// use App\Mail\WelcomeMail;
+use App\Enums\Users\ActivationTokenLifetime;
 use App\Models\Team;
 use App\Models\User;
 use App\Notifications\UserActivatedNotification;
@@ -15,6 +15,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 
 /**
  * Service for user activation operations.
@@ -27,11 +28,6 @@ use Illuminate\Support\Str;
  */
 class ActivationService
 {
-    /**
-     * Token expiration in days.
-     */
-    protected const TOKEN_EXPIRATION_DAYS = 7;
-
     /**
      * Generate an activation URL for a user.
      *
@@ -55,22 +51,21 @@ class ActivationService
      */
     public function createActivationToken(User $user): string
     {
-        // Generate a random token
-        $plainToken = Str::random(64);
+        $selector = (string) Str::uuid();
+        $secret = Str::random(64);
+        $plainToken = "{$selector}.{$secret}";
 
-        // Use email or username as identifier
-        $identifier = $user->email ?? $user->username ?? (string) $user->id;
+        $identifier = $this->identifierFor($user);
 
         // Delete any existing tokens for this user
         DB::connection('central')->table('password_reset_tokens')
             ->where('identifier', $identifier)
             ->delete();
 
-        // Store the hashed token
         DB::connection('central')->table('password_reset_tokens')->insert([
             'identifier' => $identifier,
-            'uuid' => (string) Str::uuid(),
-            'token' => Hash::make($plainToken),
+            'uuid' => $selector,
+            'token' => Hash::make($secret),
             'created_at' => now(),
         ]);
 
@@ -86,22 +81,26 @@ class ActivationService
      */
     public function validateToken(string $token, string $identifier): bool
     {
+        $tokenParts = $this->parseActivationToken($token);
+
+        if ($tokenParts === null) {
+            return false;
+        }
+
         $record = DB::connection('central')->table('password_reset_tokens')
             ->where('identifier', $identifier)
+            ->where('uuid', $tokenParts['selector'])
             ->first();
 
         if ($record === null) {
             return false;
         }
 
-        // Check if token matches
-        if (! Hash::check($token, $record->token)) {
+        if (! Hash::check($tokenParts['secret'], $record->token)) {
             return false;
         }
 
-        // Check if token has expired
-        $createdAt = Carbon::parse($record->created_at);
-        if ($createdAt->diffInDays(now()) > self::TOKEN_EXPIRATION_DAYS) {
+        if ($this->tokenHasExpired($record->created_at)) {
             return false;
         }
 
@@ -116,24 +115,29 @@ class ActivationService
      */
     public function findUserByToken(string $token): ?User
     {
-        // Get all non-expired tokens
-        $cutoff = now()->subDays(self::TOKEN_EXPIRATION_DAYS);
+        $tokenParts = $this->parseActivationToken($token);
 
-        $records = DB::connection('central')->table('password_reset_tokens')
-            ->where('created_at', '>=', $cutoff)
-            ->get();
-
-        foreach ($records as $record) {
-            if (Hash::check($token, $record->token)) {
-                // Token matches, find the user
-                return User::query()
-                    ->where('email', $record->identifier)
-                    ->orWhere('username', $record->identifier)
-                    ->first();
-            }
+        if ($tokenParts === null) {
+            return null;
         }
 
-        return null;
+        $record = DB::connection('central')->table('password_reset_tokens')
+            ->where('uuid', $tokenParts['selector'])
+            ->first();
+
+        if ($record === null) {
+            return null;
+        }
+
+        if ($this->tokenHasExpired($record->created_at)) {
+            return null;
+        }
+
+        if (! Hash::check($tokenParts['secret'], $record->token)) {
+            return null;
+        }
+
+        return $this->userForIdentifier($record->identifier);
     }
 
     /**
@@ -146,7 +150,13 @@ class ActivationService
      */
     public function activateWithPassword(User $user, string $password, string $token): User
     {
-        return DB::transaction(function () use ($user, $password) {
+        $identifier = $this->identifierFor($user);
+
+        if (! $this->validateToken($token, $identifier)) {
+            throw new InvalidArgumentException('The activation token is invalid or expired.');
+        }
+
+        return DB::transaction(function () use ($user, $password, $identifier) {
             // Update user password and activate
             $user->update([
                 'password' => Hash::make($password),
@@ -155,7 +165,6 @@ class ActivationService
             ]);
 
             // Delete the used token
-            $identifier = $user->email ?? $user->username ?? (string) $user->id;
             DB::connection('central')->table('password_reset_tokens')
                 ->where('identifier', $identifier)
                 ->delete();
@@ -213,12 +222,12 @@ class ActivationService
         }
 
         // 2. Notify team admins (with deduplication)
-        // Since teams are tenant-scoped, we find the teams the user belongs to across their tenants
+        // Teams and team memberships are central, so keep raw pivot lookups on the central connection.
         $tenants = $user->tenants;
 
         foreach ($tenants as $tenant) {
             $tenant->run(function () use ($user, $notifiedUserIds) {
-                $teamIds = DB::table('team_user')
+                $teamIds = DB::connection('central')->table('team_user')
                     ->where('user_id', $user->id)
                     ->pluck('team_id');
 
@@ -241,7 +250,7 @@ class ActivationService
                         }
 
                         // Check if team member is an admin (has admin permissions)
-                        if ($this->isTeamAdmin($teamMember, $team)) {
+                        if ($this->isTeamAdmin($teamMember)) {
                             $this->sendActivationNotification($teamMember, $user);
                             $notifiedUserIds->push($teamMember->id);
                         }
@@ -276,14 +285,56 @@ class ActivationService
      * Check if a user is an admin of a team.
      *
      * @param  User  $user  The user to check
-     * @param  mixed  $team  The team
      * @return bool True if the user is a team admin
      */
-    protected function isTeamAdmin(User $user, mixed $team): bool
+    protected function isTeamAdmin(User $user): bool
     {
         // Check if user has any admin-like role
         // This can be customized based on your role structure
         return $user->hasAnyRole(['super-admin', 'admin', 'team-admin', 'manager']);
+    }
+
+    protected function identifierFor(User $user): string
+    {
+        return $user->email ?? $user->username ?? (string) $user->id;
+    }
+
+    /**
+     * @return array{selector: string, secret: string}|null
+     */
+    protected function parseActivationToken(string $token): ?array
+    {
+        $parts = \explode('.', $token, 2);
+
+        if (\count($parts) !== 2) {
+            return null;
+        }
+
+        [$selector, $secret] = $parts;
+
+        if (! Str::isUuid($selector) || $secret === '') {
+            return null;
+        }
+
+        return [
+            'selector' => $selector,
+            'secret' => $secret,
+        ];
+    }
+
+    protected function tokenHasExpired(string $createdAt): bool
+    {
+        return Carbon::parse($createdAt)
+            ->lessThan(now()->subDays(ActivationTokenLifetime::Activation->value));
+    }
+
+    protected function userForIdentifier(string $identifier): ?User
+    {
+        return User::query()
+            ->where('email', $identifier)
+            ->orWhere('username', $identifier)
+            ->orWhere('id', $identifier)
+            ->first();
     }
 
     /**
@@ -293,6 +344,6 @@ class ActivationService
      */
     public function getTokenExpirationDays(): int
     {
-        return self::TOKEN_EXPIRATION_DAYS;
+        return ActivationTokenLifetime::Activation->value;
     }
 }

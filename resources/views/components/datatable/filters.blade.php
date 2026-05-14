@@ -50,12 +50,18 @@
                                  type="button"
                                  :@click="$actionClick ?: null"
                                  :wire:click="$wireClick ?: null"
+                                 wire:loading.attr="disabled"
                                  :variant="$action['variant'] ?? 'ghost'"
                                  :color="$action['color'] ?? null"
                                  size="sm"
                                  class="justify-start">
+                        <x-ui.loading wire:loading
+                                      wire:target="executeBulkAction('{{ $action['key'] }}')"
+                                      size="sm" />
                         @if ($action['icon'])
                             <x-ui.icon :name="$action['icon']"
+                                       wire:loading.remove
+                                       wire:target="executeBulkAction('{{ $action['key'] }}')"
                                        size="sm"></x-ui.icon>
                         @endif
                         {{ $action['label'] }}

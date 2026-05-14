@@ -110,6 +110,10 @@ class ErrorHandler
      */
     public function handle(Throwable $e, ?Request $request = null): ?SymfonyResponse
     {
+        if (! config('error-handling.enabled', false)) {
+            return null;
+        }
+
         if (self::$recursionDepth >= self::MAX_RECURSION_DEPTH) {
             // Log to standard error and return early
             \error_log('ErrorHandler recursion limit reached. Exception: ' . $e->getMessage());
@@ -130,6 +134,18 @@ class ErrorHandler
             self::$handledExceptions[$exceptionKey] = true;
 
             $request ??= request();
+
+            if ($e instanceof ValidationException) {
+                // Toasts only for validation, no database logging or full report
+                $this->sendValidationToast($e);
+
+                return null;
+            }
+
+            if ($this->shouldUseDefaultHttpRendering($e, $request)) {
+                return null;
+            }
+
             $this->referenceId = $this->generateReferenceId();
 
             $this->report($e, $request);
@@ -150,6 +166,10 @@ class ErrorHandler
      */
     public function report(Throwable $e, Request $request): void
     {
+        if (! config('error-handling.enabled', false)) {
+            return;
+        }
+
         // Ensure we have a reference ID (needed when calling report() directly)
         if ($this->referenceId === null) {
             $this->referenceId = $this->generateReferenceId();
@@ -166,6 +186,10 @@ class ErrorHandler
         if ($e instanceof AuthenticationException) {
             $this->sendAuthenticationToast();
 
+            return;
+        }
+
+        if ($this->shouldUseDefaultHttpRendering($e, $request)) {
             return;
         }
 
@@ -255,6 +279,24 @@ class ErrorHandler
     }
 
     /**
+     * Let Laravel render standard HTTP pages for common web errors.
+     */
+    public function shouldUseDefaultHttpRendering(Throwable $e, Request $request): bool
+    {
+        if ($request->expectsJson() || $request->ajax()) {
+            return false;
+        }
+
+        return match (true) {
+            $e instanceof AuthorizationException => true,
+            $e instanceof ModelNotFoundException => true,
+            $e instanceof NotFoundHttpException => true,
+            $e instanceof HttpException => \in_array($e->getStatusCode(), [403, 404], true),
+            default => false,
+        };
+    }
+
+    /**
      * Build the error context array.
      *
      * @param  Throwable  $e  The exception
@@ -263,13 +305,25 @@ class ErrorHandler
      */
     protected function buildContext(Throwable $e, Request $request): array
     {
+        $stackTrace = $e->getTraceAsString();
+
+        // Basic masking for stack trace (mask passwords and secrets)
+        $sensitivePatterns = [
+            '/(password|secret|token|key|auth|cvv|ssn)([\'"]\s*=>\s*[\'"])(.*?)([\'"])/i',
+            '/(password|secret|token|key|auth|cvv|ssn)([:=]\s*)(.*?)(?:\s|$)/i',
+        ];
+
+        foreach ($sensitivePatterns as $pattern) {
+            $stackTrace = preg_replace($pattern, '$1$2[REDACTED]$4', $stackTrace);
+        }
+
         return [
             'reference_id' => $this->referenceId,
             'exception_class' => get_class($e),
             'message' => $e->getMessage(),
             'file' => $e->getFile(),
             'line' => $e->getLine(),
-            'stack_trace' => $e->getTraceAsString(),
+            'stack_trace' => $stackTrace,
             'url' => $request->fullUrl(),
             'method' => $request->method(),
             'user_id' => Auth::id(),
@@ -283,32 +337,92 @@ class ErrorHandler
     }
 
     /**
-     * Sanitize request data by removing sensitive fields.
+     * Sanitize request data by removing sensitive fields (recursive).
      *
-     * @param  Request  $request  The current request
      * @return array<string, mixed>|null Sanitized request data
      */
     protected function sanitizeRequestData(Request $request): ?array
     {
-        $sensitiveFields = config('error-handling.sensitive_fields', [
-            'password', 'password_confirmation', 'token', 'secret',
-            'api_key', 'credit_card', 'cvv',
-        ]);
-
-        $data = $request->except($sensitiveFields);
+        $data = $request->all();
 
         if (empty($data)) {
             return null;
         }
 
-        // Truncate long values and redact sensitive patterns
-        return array_map(function ($value) {
-            if (\is_string($value) && \strlen($value) > 500) {
-                return \substr($value, 0, 500) . '...[truncated]';
+        $redacted = $this->redactSensitiveArray($data);
+
+        return $redacted === [] ? null : $redacted;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    protected function redactSensitiveArray(array $data, int $depth = 0): array
+    {
+        if ($depth > 12) {
+            return ['[truncated]' => 'max depth'];
+        }
+
+        $sensitiveExact = array_map('strtolower', config('error-handling.sensitive_fields', [
+            'password', 'password_confirmation', 'token', 'secret',
+            'api_key', 'credit_card', 'cvv',
+        ]));
+
+        $out = [];
+
+        foreach ($data as $key => $value) {
+            $keyLower = \strtolower((string) $key);
+
+            if ($this->isSensitiveRequestKey($keyLower, $sensitiveExact)) {
+                $out[$key] = '[REDACTED]';
+
+                continue;
             }
 
-            return $value;
-        }, $data);
+            if (\is_array($value)) {
+                $out[$key] = $this->redactSensitiveArray($value, $depth + 1);
+
+                continue;
+            }
+
+            if (\is_string($value) && \strlen($value) > 500) {
+                $out[$key] = \substr($value, 0, 500) . '...[truncated]';
+
+                continue;
+            }
+
+            $out[$key] = $value;
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param  array<int, string>  $sensitiveExact
+     */
+    protected function isSensitiveRequestKey(string $keyLower, array $sensitiveExact): bool
+    {
+        foreach ($sensitiveExact as $needle) {
+            if ($keyLower === $needle) {
+                return true;
+            }
+        }
+
+        $patterns = [
+            'password', 'passwd', 'secret', 'token', 'authorization', 'cookie',
+            '_token', 'csrf', 'api_key', 'api_secret', 'client_secret', 'private_key',
+            'credit_card', 'card_number', 'cvv', 'cvc', 'ssn', 'otp', 'two_factor',
+            'access_token', 'refresh_token',
+        ];
+
+        foreach ($patterns as $pattern) {
+            if (\str_contains($keyLower, $pattern)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Services\Notifications\NotificationBuilder;
 use App\Services\Users\ActivationService;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -38,7 +39,7 @@ class AuthController extends Controller
     /**
      * Show the activation form.
      */
-    public function showActivationForm(string $token)
+    public function showActivationForm(string $token): View
     {
         $activationService = app(ActivationService::class);
         $user = $activationService->findUserByToken($token);
@@ -50,7 +51,7 @@ class AuthController extends Controller
     /**
      * Handle the activation request.
      */
-    public function activate(Request $request, string $token)
+    public function activate(Request $request, string $token): RedirectResponse
     {
         $activationService = app(ActivationService::class);
         $user = $activationService->findUserByToken($token);

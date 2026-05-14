@@ -12,11 +12,13 @@ use App\Models\Notification;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\IconPackMapper;
+use App\Support\Notifications\NotificationBroadcastClientId;
 use App\Support\UI\IconOptions;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
@@ -516,8 +518,6 @@ class NotificationBuilder
      * Determine the broadcast channel based on current settings.
      *
      * @return string The broadcast channel name
-     *
-     * @throws RuntimeException If no session ID is available
      */
     protected function determineChannel(): string
     {
@@ -543,12 +543,9 @@ class NotificationBuilder
         // Always get current session ID dynamically
         // This ensures it works even after session invalidation (new session will be created)
         // Uses PUBLIC channel - session ID itself acts as security mechanism (cryptographically random)
-        $currentSessionId = session()->getId();
-        if (! $currentSessionId) {
-            throw new RuntimeException('Cannot determine notification channel: no session ID available.');
-        }
+        $currentClientId = NotificationBroadcastClientId::current();
 
-        return "public-notifications.session.{$currentSessionId}";
+        return "public-notifications.session.{$currentClientId}";
     }
 
     /**
@@ -617,7 +614,10 @@ class NotificationBuilder
      */
     protected function persistTeamForUserTeams(Team $team, array $notificationData): void
     {
-        $userIds = $team->users()->pluck('users.id');
+        $userIds = DB::connection($team->getConnectionName())
+            ->table('team_user')
+            ->where('team_id', $team->getKey())
+            ->pluck('user_id');
 
         if ($userIds->isEmpty()) {
             return;

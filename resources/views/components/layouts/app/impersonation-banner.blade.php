@@ -25,10 +25,14 @@
             </div>
         </div>
 
-        <a href="{{ route('administration.instance.stop-impersonating') }}"
-           class="btn btn-sm text-error rounded-lg border-none bg-white px-6 text-[10px] font-black uppercase tracking-wider shadow-lg hover:bg-white/90">
-            <x-ui.icon name="times" pack="fontawesome" size="xs" class="mr-1" />
-            {{ __('tenancy.stop_impersonating') }}
-        </a>
+        <form method="POST" action="{{ route('administration.instance.stop-impersonating') }}">
+            @csrf
+
+            <button type="submit"
+                    class="btn btn-sm text-error rounded-lg border-none bg-white px-6 text-[10px] font-black uppercase tracking-wider shadow-lg hover:bg-white/90">
+                <x-ui.icon name="times" pack="fontawesome" size="xs" class="mr-1" />
+                {{ __('tenancy.stop_impersonating') }}
+            </button>
+        </form>
     </div>
 @endif

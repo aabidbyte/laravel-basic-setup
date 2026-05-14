@@ -9,14 +9,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Preferences\UpdateLocaleRequest;
 use App\Http\Requests\Preferences\UpdateThemeRequest;
 use App\Services\FrontendPreferences\FrontendPreferencesService;
-use App\Services\I18nService;
 use Illuminate\Http\RedirectResponse;
 
 class PreferencesController extends Controller
 {
     public function __construct(
         private readonly FrontendPreferencesService $preferences,
-        private readonly I18nService $i18nService,
     ) {}
 
     /**

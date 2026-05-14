@@ -19,13 +19,9 @@
         "laravel-boost": {
             "command": "php",
             "args": [
-                "/Users/hop/Packages/laravel-basic-setup/artisan",
+                "artisan",
                 "boost:mcp"
             ]
         }
-        //other mcp servers
     }
 }
-
-// setup mcp server in  ~/.gemini\antigravity\mcp_config.json
-

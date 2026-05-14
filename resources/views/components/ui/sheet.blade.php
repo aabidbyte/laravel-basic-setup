@@ -1,9 +1,9 @@
 {{--
     Sheet (Drawer) Component
-    
+
     A reusable side/bottom panel for secondary content or actions.
     Supports sticky headers/footers, scroll locking, and multiple positions.
-    
+
     Props:
     - position: 'right' (default), 'left', 'top', 'bottom'
     - title: Optional header title
@@ -101,11 +101,7 @@ $transitionLeave = 'transform transition ease-in-out duration-300';
     $wireModel = $attributes->wire('model');
 @endphp
 
-<div x-data="sheet({
-    openValue: @if ($wireModel && $wireModel->value()) $wire.$entangle('{{ $wireModel->value() }}') @else {{ $open ?? 'false' }} @endif,
-    closeOnBackdrop: {{ $closeOnBackdrop ? 'true' : 'false' }},
-    closeOnEscape: {{ $closeOnEscape ? 'true' : 'false' }}
-})"
+<div x-data="sheet(@if ($wireModel && $wireModel->value()) $wire.$entangle('{{ $wireModel->value() }}') @else {{ $open ?? 'false' }} @endif, {{ $closeOnBackdrop ? 'true' : 'false' }}, {{ $closeOnEscape ? 'true' : 'false' }})"
      x-modelable="open"
      @keydown.escape.window="handleEscape"
      {{ $attributes->merge(['class' => 'inline-block']) }}>
@@ -121,7 +117,7 @@ $transitionLeave = 'transform transition ease-in-out duration-300';
     {{-- Teleported Modal --}}
     <template x-teleport="body">
         <div x-show="open"
-             :style="{ zIndex: zIndex }"
+             :style="zIndexStyle"
              class="fixed inset-0 overflow-hidden"
              role="dialog"
              aria-modal="true">
@@ -147,7 +143,7 @@ $transitionLeave = 'transform transition ease-in-out duration-300';
                  x-transition:leave="{{ $transitionLeave }}"
                  x-transition:leave-start="{{ $transClasses['leaveStart'] }}"
                  x-transition:leave-end="{{ $transClasses['leaveEnd'] }}"
-                 :style="{ zIndex: zIndex }"
+                 :style="zIndexStyle"
                  @class([
                      'absolute shadow-2xl bg-base-100 flex flex-col z-10',
                      $mobileClasses,
@@ -193,7 +189,7 @@ $transitionLeave = 'transform transition ease-in-out duration-300';
 </div>
 
 @assets
-    <script>
+    <script @cspNonce>
         (function() {
             // Global z-index manager
             window.uiZIndexStack = window.uiZIndexStack || {
@@ -204,11 +200,15 @@ $transitionLeave = 'transform transition ease-in-out duration-300';
             };
 
             const register = function() {
-                Alpine.data('sheet', function(config) {
+                if (window.Alpine.data('sheet')) return;
+
+                window.Alpine.data('sheet', function(openValue, closeOnBackdrop, closeOnEscape) {
                     return {
-                        open: config.openValue,
-                        config: config,
+                        open: openValue,
+                        closeOnBackdrop: closeOnBackdrop,
+                        closeOnEscape: closeOnEscape,
                         zIndex: 9999,
+                        zIndexStyle: 'z-index: 9999;',
 
                         init: function() {
                             const self = this;
@@ -216,12 +216,14 @@ $transitionLeave = 'transform transition ease-in-out duration-300';
                             // Initialize z-index if open explicitly on load
                             if (this.open) {
                                 this.zIndex = window.uiZIndexStack.next();
+                                this.syncZIndexStyle();
                             }
 
                             this.$watch('open', function(value) {
                                 if (value) {
                                     // Bring to front on open
                                     self.zIndex = window.uiZIndexStack.next();
+                                    self.syncZIndexStyle();
                                     document.body.classList.add('overflow-hidden');
                                 } else {
                                     document.body.classList.remove('overflow-hidden');
@@ -242,16 +244,20 @@ $transitionLeave = 'transform transition ease-in-out duration-300';
                         },
 
                         handleBackdrop: function() {
-                            if (this.config.closeOnBackdrop) {
+                            if (this.closeOnBackdrop) {
                                 this.close();
                             }
                         },
 
                         handleEscape: function() {
-                            if (this.open && this.config.closeOnEscape) {
+                            if (this.open && this.closeOnEscape) {
                                 this.close();
                             }
-                        }
+                        },
+
+                        syncZIndexStyle: function() {
+                            this.zIndexStyle = 'z-index: ' + this.zIndex + ';';
+                        },
                     };
                 });
             };

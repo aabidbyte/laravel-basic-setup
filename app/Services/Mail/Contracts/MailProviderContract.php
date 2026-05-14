@@ -25,6 +25,11 @@ interface MailProviderContract
     public function send(Mailable $mailable, ?MailSettings $settings = null): bool;
 
     /**
+     * Queue a mailable using this provider.
+     */
+    public function queue(Mailable $mailable, ?MailSettings $settings = null, ?string $queue = null): void;
+
+    /**
      * Get the transport name for this provider.
      *
      * @return string The transport name (e.g., 'smtp', 'ses', 'postmark')

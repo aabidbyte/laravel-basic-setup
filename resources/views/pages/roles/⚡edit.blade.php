@@ -147,7 +147,15 @@ new class extends BasePageComponent {
             'display_name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:1000'],
             'selectedPermissions' => ['array'],
-            'selectedPermissions.*' => ['exists:permissions,uuid'],
+            'selectedPermissions.*' => [
+                'exists:permissions,uuid',
+                function ($attribute, $value, $fail) {
+                    $permission = Permission::where('uuid', $value)->first();
+                    if ($permission && !in_array($permission->name, Permissions::all())) {
+                        $fail("The selected permission {$permission->name} is invalid.");
+                    }
+                }
+            ],
         ];
     }
 

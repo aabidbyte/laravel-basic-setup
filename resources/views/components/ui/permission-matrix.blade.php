@@ -114,7 +114,7 @@
 </div>
 
 @assets
-    <style>
+    <style @cspNonce>
         .permission-matrix-container {
             max-height: 70vh;
         }
@@ -141,7 +141,7 @@
 @endassets
 
 @assets
-    <script>
+    <script @cspNonce>
         (function() {
             const register = () => {
                 Alpine.data('permissionMatrix', (readonly = false) => ({

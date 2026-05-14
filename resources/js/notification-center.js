@@ -75,7 +75,7 @@ function initializeNotifications() {
 
     // Create config key to detect changes
     const configKey = `${config?.userUuid || 'null'}-${
-        config?.sessionId || 'null'
+        config?.broadcastClientId || 'null'
     }`;
 
     // Skip if same config is already initialized

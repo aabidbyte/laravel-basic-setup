@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Livewire\Tenancy;
 
 use App\Livewire\Bases\LivewireBaseComponent;
-use App\Livewire\Tables\ImpersonateUserTable;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\Tenancy\UserImpersonationService;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 
 class TenantSwitcher extends LivewireBaseComponent
@@ -42,11 +44,35 @@ class TenantSwitcher extends LivewireBaseComponent
     {
         $this->showSelectionModal = false;
 
-        $table = new ImpersonateUserTable();
         $user = User::where('uuid', $this->selectedUserUuid)->firstOrFail();
         $tenant = Tenant::find($tenantId);
 
-        $table->performImpersonation($user, $tenant);
+        if ($tenant === null || ! $user->tenants->contains('id', $tenantId)) {
+            $this->dispatch('notify', ['type' => 'error', 'message' => __('tenancy.permission_denied')]);
+
+            return;
+        }
+
+        $actor = Auth::user();
+        if (! $actor instanceof User) {
+            return;
+        }
+
+        try {
+            $result = app(UserImpersonationService::class)->execute($actor, $user, $tenant);
+        } catch (AuthorizationException) {
+            $this->dispatch('notify', ['type' => 'error', 'message' => __('tenancy.permission_denied')]);
+
+            return;
+        }
+
+        if ($result['type'] === 'tenant') {
+            $this->redirect($result['url']);
+
+            return;
+        }
+
+        $this->redirect('/dashboard');
     }
 
     /**

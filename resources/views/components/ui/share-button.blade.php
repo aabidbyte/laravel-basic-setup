@@ -34,7 +34,7 @@ $copiedText = __('table.url_copied');
     </x-ui.tooltip>
 </div>
 @assets
-    <script>
+    <script @cspNonce>
         (function() {
             const register = () => {
                 Alpine.data('shareButton', (config) => ({

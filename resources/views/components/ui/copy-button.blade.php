@@ -1,9 +1,9 @@
 {{--
     Copy Button Component
-    
+
     A reusable copy-to-clipboard button that works in both HTTPS and HTTP environments.
     Uses the copyToClipboard Alpine component with fallback mechanism.
-    
+
     Props:
     - text: The text to copy (required)
     - size: Button size (xs, sm, md, lg) - default: sm
@@ -28,7 +28,7 @@
     $copiedText = $copiedText ?? __('actions.copied');
 @endphp
 
-<div x-data="copyToClipboard({ text: @js($text) })"
+<div x-data="copyToClipboard({ text: '{{ addslashes($text) }}' })"
      {{ $attributes->only('class') }}>
     <x-ui.button @click="copy()"
                  size="{{ $size }}"
@@ -49,13 +49,13 @@
                    size="sm"
                    class="text-error"></x-ui.icon>
         @if ($showText)
-            <span x-text="copied ? @js($copiedText) : @js($copyText)"></span>
+            <span x-text="copied ? '{{ addslashes($copiedText) }}' : '{{ addslashes($copyText) }}'"></span>
         @endif
     </x-ui.button>
 </div>
 
 @assets
-    <script>
+    <script @cspNonce>
         (function() {
             const register = () => {
                 Alpine.data('copyToClipboard', (config = {}) => {

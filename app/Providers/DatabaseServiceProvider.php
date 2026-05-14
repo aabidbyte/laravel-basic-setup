@@ -35,7 +35,7 @@ class DatabaseServiceProvider extends ServiceProvider
             return;
         }
 
-        if (config('database.default') !== 'mysql') {
+        if (\config('database.default') !== 'mysql') {
             return;
         }
 
@@ -51,6 +51,10 @@ class DatabaseServiceProvider extends ServiceProvider
         ParallelTesting::setUpTestCase(function (): void {
             $this->configureTestingDatabaseIsolation();
         });
+
+        ParallelTesting::tearDownProcess(function (int $token): void {
+            $this->dropTestingTenantDatabases($this->parallelDatabaseName($token));
+        });
     }
 
     private function configureTestingDatabase(string $database): void
@@ -61,14 +65,14 @@ class DatabaseServiceProvider extends ServiceProvider
 
     private function configureCentralDatabase(string $database): void
     {
-        config(['database.connections.central.database' => $database]);
+        \config(['database.connections.central.database' => $database]);
 
         DB::purge('central');
     }
 
     private function configureTenantDatabasePrefix(string $database): void
     {
-        config(['tenancy.database.prefix' => $this->tenantDatabasePrefix($database)]);
+        \config(['tenancy.database.prefix' => $this->tenantDatabasePrefix($database)]);
     }
 
     private function tenantDatabasePrefix(string $database): string
@@ -81,8 +85,44 @@ class DatabaseServiceProvider extends ServiceProvider
 
     private function activeDatabaseName(): string
     {
-        $defaultConnection = config('database.default');
+        $defaultConnection = \config('database.default');
 
-        return config("database.connections.{$defaultConnection}.database");
+        return \config("database.connections.{$defaultConnection}.database");
+    }
+
+    private function parallelDatabaseName(int $token): string
+    {
+        $database = $this->activeDatabaseName();
+        $parallelSuffix = "_test_{$token}";
+
+        if (Str::endsWith($database, $parallelSuffix)) {
+            return $database;
+        }
+
+        return "{$database}{$parallelSuffix}";
+    }
+
+    private function dropTestingTenantDatabases(string $database): void
+    {
+        if (! app()->environment('testing')) {
+            return;
+        }
+
+        if (\config('database.default') !== 'mysql') {
+            return;
+        }
+
+        $prefix = $this->tenantDatabasePrefix($database);
+        $likePattern = \str_replace(['\\', '_', '%'], ['\\\\', '\\_', '\\%'], $prefix) . '%';
+
+        DB::connection('mysql')
+            ->table('information_schema.SCHEMATA')
+            ->where('SCHEMA_NAME', 'like', $likePattern)
+            ->pluck('SCHEMA_NAME')
+            ->each(function (string $database): void {
+                $escapedDatabase = \str_replace('`', '``', $database);
+
+                DB::connection('mysql')->statement("DROP DATABASE IF EXISTS `{$escapedDatabase}`");
+            });
     }
 }

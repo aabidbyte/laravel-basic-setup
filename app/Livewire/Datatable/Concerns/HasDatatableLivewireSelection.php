@@ -141,6 +141,6 @@ trait HasDatatableLivewireSelection
             return false;
         }
 
-        return \count(array_intersect($currentPageUuids, $this->selected)) === \count($currentPageUuids);
+        return \count(\array_intersect($currentPageUuids, $this->selected)) === \count($currentPageUuids);
     }
 }

@@ -265,15 +265,18 @@ trait HasDatatableLivewireActions
         $action = collect($this->rowActions())->first(fn (Action $a) => $a->getKey() === $actionKey);
         $model = $this->findModelByUuid($uuid);
 
-        if ($action && $model && $action->getExecute()) {
-            ($action->getExecute())($model);
-            $this->refreshTable();
+        if (! $action || ! $model || ! $action->getExecute()) {
+            return;
         }
+
+        if (! $action->shouldRender($model, $this->cachedUser())) {
+            return;
+        }
+
+        ($action->getExecute())($model);
+        $this->refreshTable();
     }
 
-    /**
-     * Execute bulk action
-     */
     /**
      * Execute bulk action
      */
@@ -282,6 +285,10 @@ trait HasDatatableLivewireActions
         $action = collect($this->bulkActions())->first(fn (BulkAction $a) => $a->getKey() === $actionKey);
 
         if ($action && $action->getExecute()) {
+            if (! $action->shouldRender($this->cachedUser())) {
+                return;
+            }
+
             if (empty($this->selected)) {
                 NotificationBuilder::make()
                     ->title('actions.select_at_least_one')

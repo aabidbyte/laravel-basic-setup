@@ -7,6 +7,7 @@ use Stancl\Tenancy\Bootstrappers\CacheTenancyBootstrapper;
 use Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper;
 use Stancl\Tenancy\Bootstrappers\FilesystemTenancyBootstrapper;
 use Stancl\Tenancy\Bootstrappers\QueueTenancyBootstrapper;
+use Stancl\Tenancy\Bootstrappers\RedisTenancyBootstrapper;
 use Stancl\Tenancy\Database\Models\Domain;
 use Stancl\Tenancy\Database\Models\Tenant;
 use Stancl\Tenancy\Features\CrossDomainRedirect;
@@ -32,8 +33,7 @@ return [
      * Only relevant if you're using the domain or subdomain identification middleware.
      */
     'central_domains' => [
-        '127.0.0.1',
-        'localhost',
+        parse_url(env('APP_URL', 'http://localhost'), PHP_URL_HOST),
         'laravel-basic-setup.test',
         'lvh.me',
     ],
@@ -49,7 +49,7 @@ return [
         CacheTenancyBootstrapper::class,
         FilesystemTenancyBootstrapper::class,
         QueueTenancyBootstrapper::class,
-        // Stancl\Tenancy\Bootstrappers\RedisTenancyBootstrapper::class, // Note: phpredis is needed
+        RedisTenancyBootstrapper::class,
     ],
 
     /**
@@ -168,7 +168,7 @@ return [
     'redis' => [
         'prefix_base' => Str::slug(env('APP_NAME', 'laravel'), '_') . '_tenant_', // Each key in Redis will be prepended by this prefix_base, followed by the tenant id.
         'prefixed_connections' => [ // Redis connections whose keys are prefixed, to separate one tenant's keys from another.
-            // 'default',
+            'default',
         ],
     ],
 

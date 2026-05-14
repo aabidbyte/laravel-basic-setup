@@ -115,6 +115,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     protected function casts(): array
     {
         return [
+            'id' => 'string',
             'should_seed' => 'boolean',
         ];
     }

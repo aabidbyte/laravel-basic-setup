@@ -145,7 +145,7 @@
 @endphp
 {{-- blade-formatter-enable --}}
 
-<div class="flex w-full flex-col gap-1"
+<div class="relative flex w-full flex-col gap-1"
      x-data='{!! $alpineData !!}'
      wire:key="select-{{ $selectId }}">
 
@@ -184,25 +184,20 @@
     </template>
 
     {{-- Desktop: Floating Dropdown --}}
-    <template x-if="!$store.ui.isMobile">
-        <template x-teleport="body">
-            <div x-show="selectOpen"
-                 x-anchor.bottom-start.offset.4="$refs.selectTrigger"
-                 @click.outside="close"
-                 x-transition:enter="transition ease-out duration-100"
-                 x-transition:enter-start="opacity-0 scale-95"
-                 x-transition:enter-end="opacity-100 scale-100"
-                 x-transition:leave="transition ease-in duration-75"
-                 x-transition:leave-start="opacity-100 scale-100"
-                 x-transition:leave-end="opacity-0 scale-95"
-                 x-ref="selectContent"
-                 :style="getSelectStyle()"
-                 x-cloak
-                 class="rounded-box bg-base-100 border-base-200 max-h-60 overflow-y-auto border p-2 shadow-xl">
-                {!! Blade::render($renderOptionsList) !!}
-            </div>
-        </template>
-    </template>
+    <div x-show="selectOpen && !$store.ui.isMobile"
+         @click.outside="close"
+         x-transition:enter="transition ease-out duration-100"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         x-transition:leave="transition ease-in duration-75"
+         x-transition:leave-start="opacity-100 scale-100"
+         x-transition:leave-end="opacity-0 scale-95"
+         x-ref="selectContent"
+         :style="selectStyle"
+         x-cloak
+         class="rounded-box bg-base-100 border-base-200 absolute left-0 top-full mt-1 max-h-60 overflow-y-auto border p-2 shadow-xl">
+        {!! Blade::render($renderOptionsList) !!}
+    </div>
 
     {{-- Hidden input for native form submission --}}
     @if ($name)
@@ -216,7 +211,7 @@
 </div>
 
 @assets
-    <script>
+    <script @cspNonce>
         (function() {
             const register = function() {
                 Alpine.data('customSelect', function(value, options, placeholder, config = {}) {
@@ -232,6 +227,7 @@
                         currentLabel: '',
                         selectWidth: 0,
                         selectZIndex: 10000,
+                        selectStyle: 'min-width: 200px; max-width: 240px; z-index: 10000;',
 
                         // Search state
                         searchQuery: '',
@@ -380,16 +376,14 @@
                             if (this.selectOpen) {
                                 this.selectZIndex = window.uiZIndexStack?.next() || 10000;
                                 this.selectWidth = this.$refs.selectTrigger?.offsetWidth || 200;
+                                this.syncSelectStyle();
                                 this.scrollToSelected();
                             }
                         },
 
-                        getSelectStyle: function() {
-                            return {
-                                minWidth: this.selectWidth + 'px',
-                                maxWidth: (this.selectWidth + 40) + 'px',
-                                zIndex: this.selectZIndex
-                            };
+                        syncSelectStyle: function() {
+                            this.selectStyle = 'min-width: ' + this.selectWidth + 'px; max-width: ' +
+                                (this.selectWidth + 40) + 'px; z-index: ' + this.selectZIndex + ';';
                         },
 
                         scrollToSelected: function() {

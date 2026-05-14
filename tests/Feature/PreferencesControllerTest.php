@@ -6,10 +6,6 @@ use App\Constants\Preferences\FrontendPreferences;
 use App\Models\User;
 use App\Services\FrontendPreferences\FrontendPreferencesService;
 
-beforeEach(function () {
-    $this->withoutMiddleware();
-});
-
 test('guest can update theme preference', function () {
     $response = $this->post(route('preferences.theme'), [
         'theme' => 'dark',

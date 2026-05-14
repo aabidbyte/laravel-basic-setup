@@ -14,9 +14,9 @@ class MergeTagPicker extends Component
     public function __construct(
         public array $entityTypes,
         public array $contextVariables,
-        public mixed $target = null,
         protected EntityTypeRegistry $registry, // injected
         protected ColumnTagDiscovery $discovery, // injected
+        public mixed $target = null,
     ) {
         $this->availableTags = $this->buildAvailableTags();
     }

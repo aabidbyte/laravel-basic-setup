@@ -75,15 +75,15 @@
         @endisset
 
         @if ($attributes->get('type') === 'textarea')
-            <textarea {{ $inputAttributes->merge(['class' => 'textarea  w-full ' . ($hasError ? 'textarea-error' : str_replace('input-', 'textarea-', $sizeClass)) . ' ' . str_replace('input-', 'textarea-', $colorClass)]) }}
-                      id="{{ $inputId }}"
-                      @if ($boundColor) x-bind:class='{{ alpineColorClasses($boundColor, 'textarea-') }}' @endif></textarea>
+            <textarea id="{{ $inputId }}"
+                      {{ $inputAttributes->merge(['class' => 'textarea  w-full ' . ($hasError ? 'textarea-error' : str_replace('input-', 'textarea-', $sizeClass)) . ' ' . str_replace('input-', 'textarea-', $colorClass)]) }}
+                      @if ($boundColor) x-bind:class="{{ alpineColorClasses($boundColor, 'textarea-') }}" @endif></textarea>
         @else
-            <input {{ $inputAttributes->merge(['class' => 'input w-full ' . ($hasError ? 'input-error' : $sizeClass) . ' ' . $colorClass . (isset($prepend) ? ' pl-10' : '') . (isset($append) ? ' pr-10' : '')]) }}
+            <input id="{{ $inputId }}"
+                   {{ $inputAttributes->merge(['class' => 'input w-full ' . ($hasError ? 'input-error' : $sizeClass) . ' ' . $colorClass . (isset($prepend) ? ' pl-10' : '') . (isset($append) ? ' pr-10' : '')]) }}
                    type="{{ $attributes->get('type', 'text') }}"
                    @if ($attributes->get('type') === 'password') x-bind:type="showPassword ? 'text' : 'password'" @endif
-                   id="{{ $inputId }}"
-                   @if ($boundColor) x-bind:class='{{ alpineColorClasses($boundColor, 'input-') }}' @endif />
+                   @if ($boundColor) x-bind:class="{{ alpineColorClasses($boundColor, 'input-') }}" @endif />
         @endif
 
         @isset($append)

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Constants\Auth\Roles;
 use App\Models\Base\BaseUserModel;
 use App\Models\Concerns\HasDataTable;
 use App\Models\Concerns\HasRolesAndPermissions;
@@ -355,14 +356,14 @@ class User extends BaseUserModel implements MustVerifyEmail
     public function updateLastLoginAt(): bool
     {
         // Handle MySQL trigger for user ID 1 (system updates like last_login_at should always be allowed)
-        if ($this->id === 1 && DB::getDriverName() === 'mysql' && ! isTesting()) {
+        if ($this->id === 1 && \config('database.default') === 'mysql' && ! isTesting()) {
             DB::statement('SET @laravel_user_id_1_self_edit = 1');
         }
 
         $result = parent::updateLastLoginAt();
 
         // Clear the session variable after update (MySQL only)
-        if ($this->id === 1 && DB::getDriverName() === 'mysql' && ! isTesting()) {
+        if ($this->id === 1 && \config('database.default') === 'mysql' && ! isTesting()) {
             DB::statement('SET @laravel_user_id_1_self_edit = NULL');
         }
 
@@ -388,5 +389,13 @@ class User extends BaseUserModel implements MustVerifyEmail
     public function sendEmailVerificationNotification()
     {
         $this->notify(new VerifyEmail());
+    }
+
+    /**
+     * Check if the user is a Super Admin.
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->hasRole(Roles::SUPER_ADMIN);
     }
 }

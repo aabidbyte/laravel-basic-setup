@@ -71,9 +71,9 @@ new class extends BasePageComponent {
         @endcan
 
         @can(PolicyAbilities::DELETE, $tenant)
-            <x-ui.button @click="$dispatch('confirm-modal', {
-                             title: '{{ __('actions.delete') }}',
-                             message: '{{ __('tenancy.confirm_delete_tenant') }}',
+            <x-ui.button @click="confirmModal({
+                             title: @js(__('actions.delete')),
+                             message: @js(__('tenancy.confirm_delete_tenant')),
                              confirmColor: 'error',
                              confirmEvent: 'confirm-delete-tenant'
                          })"
@@ -87,7 +87,7 @@ new class extends BasePageComponent {
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3"
          @confirm-delete-tenant.window="$wire.deleteTenant()">
-        
+
         {{-- Left: Tenant Details --}}
         <div class="space-y-6 lg:col-span-1">
             <x-ui.card>
@@ -125,13 +125,13 @@ new class extends BasePageComponent {
                 <div class="space-y-4">
                     <h3 class="text-lg font-semibold">{{ __('tenancy.technical_details') }}</h3>
                     <div class="divider my-0"></div>
-                    
+
                     <div class="space-y-3">
                         <div>
                             <span class="text-base-content/60 text-xs uppercase tracking-wider font-bold">{{ __('tenancy.database_name') }}</span>
                             <p class="font-mono text-sm">{{ $tenant->tenancy_db_name ?? '—' }}</p>
                         </div>
-                        
+
                         @if($tenant->domain)
                         <div>
                             <span class="text-base-content/60 text-xs uppercase tracking-wider font-bold">{{ __('tenancy.domain') }}</span>

@@ -1,9 +1,9 @@
 {{--
     Component: Merge Tag Picker
-    
+
     Provides a modal-based search and selection interface for merge tags.
     Integrates with Alpine.js registered component 'mergeTagPicker'.
-    
+
     Props:
     - target: The ID of the input/textarea where tags should be inserted.
     - entityTypes: Array of entity types to discover tags for.
@@ -135,7 +135,7 @@
 </div>
 
 @assets
-    <script>
+    <script @cspNonce>
         (function() {
             const register = () => {
                 Alpine.data('mergeTagPicker', (availableTags, targetRef) => ({

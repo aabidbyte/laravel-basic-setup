@@ -17,7 +17,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Check if we are in a tenant context
-        if (function_exists('tenant') && tenant()) {
+        if (\function_exists('tenant') && tenant()) {
             $this->runTenantSeeders();
         } else {
             $this->runCentralSeeders();

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\Plan\PlanTier;
-use Spatie\Translatable\HasTranslations;
 use App\Models\Base\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Translatable\HasTranslations;
 
 class Plan extends BaseModel
 {
@@ -52,6 +52,7 @@ class Plan extends BaseModel
     protected function casts(): array
     {
         return [
+            'uuid' => 'string',
             'tier' => PlanTier::class,
             'price' => 'decimal:2',
             'features' => 'array',

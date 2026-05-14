@@ -7,6 +7,8 @@ use App\Enums\EmailTemplate\EmailTemplateStatus;
 use App\Enums\Ui\PlaceholderType;
 use App\Livewire\Bases\BasePageComponent;
 use App\Models\EmailTemplate\EmailTemplate;
+use App\Services\EmailTemplate\EmailTemplateService;
+use Illuminate\Validation\ValidationException;
 
 new class extends BasePageComponent {
     public ?string $pageSubtitle = null;
@@ -53,7 +55,16 @@ new class extends BasePageComponent {
             return;
         }
 
-        $this->template->update(['status' => EmailTemplateStatus::PUBLISHED]);
+        try {
+            resolve(EmailTemplateService::class)->publish($this->template);
+        } catch (ValidationException $exception) {
+            $messages = $exception->errors()['publish'] ?? [];
+            $this->addError('publish', \is_array($messages) ? (string) reset($messages) : $exception->getMessage());
+
+            return;
+        }
+
+        $this->template->refresh();
         $this->sendSuccessNotification($this->template, 'email_templates.actions.published_success');
     }
 }; ?>
@@ -62,10 +73,10 @@ new class extends BasePageComponent {
                 backHref="{{ $template?->is_layout ? route('emailTemplates.layouts.index') : route('emailTemplates.contents.index') }}">
     <x-slot:topActions>
         <div class="flex gap-2"
-             x-data="{ showPreview: false }">
+             x-data="simpleToggle()">
             {{-- Preview Button --}}
             <x-ui.button type="button"
-                         @click="showPreview = true"
+                         @click="on()"
                          variant="ghost"
                          class="gap-2">
                 <x-ui.icon name="eye"
@@ -74,7 +85,7 @@ new class extends BasePageComponent {
             </x-ui.button>
 
             {{-- Preview Modal Component --}}
-            <x-ui.base-modal open-state="showPreview"
+            <x-ui.base-modal open-state="show"
                              :use-parent-state="true"
                              max-width="7xl">
                 <x-slot:title>{{ __('email_templates.preview.title') }}</x-slot:title>
@@ -84,7 +95,7 @@ new class extends BasePageComponent {
 
                 <x-slot:actions>
                     <x-ui.button type="button"
-                                 @click="showPreview = false"
+                                 @click="off()"
                                  variant="ghost">
                         {{ __('actions.close') }}
                     </x-ui.button>

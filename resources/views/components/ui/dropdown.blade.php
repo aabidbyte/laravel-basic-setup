@@ -9,7 +9,7 @@
     - title: Optional title (auto-escaped)
     - triggerText: Optional safe text for trigger (auto-escaped, alternative to slot)
     - items: Optional array of safe text items (auto-escaped, alternative to slot)
-    
+
     SECURITY WARNING:
     - If using slots with user data, ALWAYS use {{ }} NOT {!! !!}
     - For DB content, prefer triggerText/items props (auto-secured)
@@ -231,7 +231,7 @@
 </div>
 
 @assets
-    <script>
+    <script @cspNonce>
         (function() {
             const register = function() {
                 Alpine.data('responsiveDropdown', function() {

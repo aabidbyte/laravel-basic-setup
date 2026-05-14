@@ -5,16 +5,11 @@ use App\Enums\EmailTemplate\EmailTemplateType;
 use App\Models\EmailTemplate\EmailTemplate;
 use App\Models\User;
 use App\Notifications\Auth\ResetPasswordNotification;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 
 beforeEach(function () {
     asTenant();
-});
-
-beforeEach(function () {
-    $this->withoutMiddleware(VerifyCsrfToken::class);
 });
 
 test('reset password link can be requested', function () {

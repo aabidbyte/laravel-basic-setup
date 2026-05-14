@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Models\Base\BaseModel;
 use App\Models\Pivots\TeamUser;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
@@ -29,7 +30,16 @@ class Team extends BaseModel
     protected $fillable = [
         'name',
         'description',
+        'created_by_user_id',
     ];
+
+    /**
+     * Get the user who created this team.
+     */
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by_user_id');
+    }
 
     /**
      * Get the users that belong to the team.

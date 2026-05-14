@@ -143,9 +143,9 @@ class FortifyServiceProvider extends ServiceProvider
     private function buildAuthenticationPipeline(Request $request): array
     {
         return array_filter([
-            config('fortify.limiters.login') ? null : EnsureLoginIsNotThrottled::class,
+            \config('fortify.limiters.login') ? null : EnsureLoginIsNotThrottled::class,
             // Skip CanonicalizeUsername when using identifier to preserve case sensitivity for usernames
-            (config('fortify.lowercase_usernames') && ! $request->has('identifier')) ? CanonicalizeUsername::class : null,
+            (\config('fortify.lowercase_usernames') && ! $request->has('identifier')) ? CanonicalizeUsername::class : null,
             Features::enabled(Features::twoFactorAuthentication()) ? RedirectIfTwoFactorAuthenticatable::class : null,
             AttemptToAuthenticate::class,
             PrepareAuthenticatedSession::class,

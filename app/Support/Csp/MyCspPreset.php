@@ -67,27 +67,19 @@ class MyCspPreset implements Preset
             ->add(Directive::OBJECT, Keyword::NONE);
     }
 
-    /**
-     * Configure script and style sources.
-     *
-     * NOTE: We use 'unsafe-inline' instead of nonces because Livewire's wire:navigate
-     * performs SPA-style navigation. Each server response has a NEW nonce, but the
-     * browser's CSP policy still has the OLD nonce from the initial page load.
-     * This is a known limitation of CSP + SPA navigation.
-     */
     protected function configureScriptsAndStyles(Policy $policy): void
     {
-        // Script sources - allow self + inline (for Livewire wire:navigate)
+        // Script sources - use nonces for all scripts
         $policy
             ->add(Directive::SCRIPT, Keyword::SELF)
-            ->add(Directive::SCRIPT, Keyword::UNSAFE_INLINE)
+            ->addNonce(Directive::SCRIPT)
             ->add(Directive::SCRIPT, 'https://unpkg.com') // GrapeJS CDN
             ->add(Directive::SCRIPT, 'https://cdn.jsdelivr.net'); // Chart.js CDN
 
-        // Style sources - allow self + inline (for Livewire wire:navigate)
+        // Style sources - use nonces for all styles
         $policy
             ->add(Directive::STYLE, Keyword::SELF)
-            ->add(Directive::STYLE, Keyword::UNSAFE_INLINE)
+            ->addNonce(Directive::STYLE)
             ->add(Directive::STYLE, 'https://unpkg.com') // GrapeJS CDN
             ->add(Directive::STYLE, 'https://cdnjs.cloudflare.com'); // FontAwesome for GrapeJS
 

@@ -91,16 +91,15 @@ class TenantUserTable extends Datatable
                 ->color('error')
                 ->confirm(__('tenancy.detach_user_confirm'))
                 ->execute(function (User $user) {
-                    $tenant = Tenant::find($this->tenantId);
-                    if ($tenant) {
-                        $tenant->users()->detach($user->id);
-                        NotificationBuilder::make()
-                            ->title('tenancy.user_detached_successfully')
-                            ->success()
-                            ->send();
-                    }
+                    $tenant = Tenant::findOrFail($this->tenantId);
+                    $this->authorize(PolicyAbilities::UPDATE, $tenant);
+                    $tenant->users()->detach($user->id);
+                    NotificationBuilder::make()
+                        ->title('tenancy.user_detached_successfully')
+                        ->success()
+                        ->send();
                 })
-                ->show(fn () => auth()->user()->hasPermissionTo(Permissions::EDIT_TENANTS())),
+                ->show(fn () => auth()->user()?->hasPermissionTo(Permissions::EDIT_TENANTS()) ?? false),
         ];
     }
 }

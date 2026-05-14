@@ -22,9 +22,11 @@ describe('ActivationService', function () {
             $service = new ActivationService();
 
             $token = $service->createActivationToken($user);
+            [$selector, $secret] = \explode('.', $token, 2);
 
             expect($token)->toBeString();
-            expect(\strlen($token))->toBe(64);
+            expect($selector)->not()->toBeEmpty();
+            expect(\strlen($secret))->toBe(64);
 
             // Verify token is stored in database
             $record = DB::connection('central')->table('password_reset_tokens')
@@ -32,7 +34,8 @@ describe('ActivationService', function () {
                 ->first();
 
             expect($record)->not()->toBeNull();
-            expect(Hash::check($token, $record->token))->toBeTrue();
+            expect($record->uuid)->toBe($selector);
+            expect(Hash::check($secret, $record->token))->toBeTrue();
         });
 
         it('creates a token for user without email (uses username)', function () {
@@ -137,6 +140,19 @@ describe('ActivationService', function () {
             expect($found)->toBeNull();
         });
 
+        it('returns null when the selector does not match the token secret', function () {
+            $user = User::factory()->create(['email' => 'test@example.com']);
+            $service = new ActivationService();
+
+            $token = $service->createActivationToken($user);
+            [, $secret] = \explode('.', $token, 2);
+            $invalidToken = '8b69fe9f-07b0-4a95-b638-a699ec7d7f68.' . $secret;
+
+            $found = $service->findUserByToken($invalidToken);
+
+            expect($found)->toBeNull();
+        });
+
         it('returns null for expired token', function () {
             $user = User::factory()->create(['email' => 'test@example.com']);
             $service = new ActivationService();
@@ -187,6 +203,21 @@ describe('ActivationService', function () {
                 ->exists();
 
             expect($tokenExists)->toBeFalse();
+        });
+
+        it('rejects invalid activation token before activating user', function () {
+            $user = User::factory()->create([
+                'email' => 'test@example.com',
+                'is_active' => false,
+            ]);
+            $service = new ActivationService();
+
+            $service->createActivationToken($user);
+
+            expect(fn () => $service->activateWithPassword($user, 'new-password-123', 'invalid-token'))
+                ->toThrow(InvalidArgumentException::class, 'The activation token is invalid or expired.');
+
+            expect($user->fresh()->is_active)->toBeFalse();
         });
     });
 

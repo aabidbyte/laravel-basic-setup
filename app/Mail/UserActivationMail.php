@@ -43,7 +43,7 @@ class UserActivationMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: __('emails.activation.subject', ['app' => config('app.name')]),
+            subject: __('emails.activation.subject', ['app' => \config('app.name')]),
         );
     }
 
@@ -53,7 +53,7 @@ class UserActivationMail extends Mailable implements ShouldQueue
      */
     public function locale($locale = null): static
     {
-        return parent::locale($locale ?? config('app.locale'));
+        return parent::locale($locale ?? \config('app.locale'));
     }
 
     /**
@@ -67,7 +67,7 @@ class UserActivationMail extends Mailable implements ShouldQueue
                 'user' => $this->user,
                 'activationUrl' => $this->activationUrl,
                 'expiresInDays' => $this->expiresInDays,
-                'appName' => config('app.name'),
+                'appName' => \config('app.name'),
             ],
         );
     }

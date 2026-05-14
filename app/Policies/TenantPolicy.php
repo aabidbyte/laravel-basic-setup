@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
 use App\Constants\Auth\Permissions;
+use App\Constants\Auth\Roles;
 use App\Models\Tenant;
 use App\Models\User;
 
@@ -21,7 +24,12 @@ class TenantPolicy
      */
     public function view(User $user, Tenant $tenant): bool
     {
-        return $user->hasPermissionTo(Permissions::VIEW_TENANTS());
+        if ($user->hasRole(Roles::SUPER_ADMIN)) {
+            return true;
+        }
+
+        return $user->hasPermissionTo(Permissions::VIEW_TENANTS())
+            && $user->tenants()->whereKey($tenant->getKey())->exists();
     }
 
     /**
@@ -37,7 +45,12 @@ class TenantPolicy
      */
     public function update(User $user, Tenant $tenant): bool
     {
-        return $user->hasPermissionTo(Permissions::EDIT_TENANTS());
+        if ($user->hasRole(Roles::SUPER_ADMIN)) {
+            return true;
+        }
+
+        return $user->hasPermissionTo(Permissions::EDIT_TENANTS())
+            && $user->tenants()->whereKey($tenant->getKey())->exists();
     }
 
     /**
@@ -45,6 +58,11 @@ class TenantPolicy
      */
     public function delete(User $user, Tenant $tenant): bool
     {
-        return $user->hasPermissionTo(Permissions::DELETE_TENANTS());
+        if ($user->hasRole(Roles::SUPER_ADMIN)) {
+            return true;
+        }
+
+        return $user->hasPermissionTo(Permissions::DELETE_TENANTS())
+            && $user->tenants()->whereKey($tenant->getKey())->exists();
     }
 }

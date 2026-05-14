@@ -63,9 +63,9 @@ class RoleAndPermissionSeeder extends Seeder
 
         // Define admin permissions (everything except telescope/horizon/security settings)
         $adminPermissions = array_filter(Permissions::all(), function ($permission) {
-            return ! str_contains($permission, 'telescope') &&
-                   ! str_contains($permission, 'horizon') &&
-                   ! str_contains($permission, 'error_logs');
+            return ! \str_contains($permission, 'telescope') &&
+                   ! \str_contains($permission, 'horizon') &&
+                   ! \str_contains($permission, 'error_logs');
         });
 
         $role->syncPermissions($adminPermissions);

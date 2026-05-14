@@ -63,6 +63,7 @@
 -   **Leading Import Slashes**: **NO leading import slashes are allowed in PHP or Blade files** - Avoid using leading slashes in `use` statements or inline class references (e.g., use `App\Models\User` instead of `\App\Models\User`). Always prefer importing classes at the top of the file. If a name collision occurs, use the `as` keyword with descriptive context (e.g., `use App\Models\User as AppUser`).
 -   **Use Enums Whenever Possible**: Always prefer PHP **backed Enums** over class constants or raw strings for type-bound properties (status, type, color, etc.). This ensures type safety and enables better IDE support.
 -   **Dedicated UI Helpers**: Use `alpineColorClasses()` (from `app/helpers/ui-helpers.php`) for all dynamic class bindings in UI components. This helper ensures compatibility with the Tailwind 4 scanner without needing a manual safelist.
+-   **Mandatory CSP Nonces (CRITICAL)**: All inline `<script>` and `<style>` tags MUST include the `@cspNonce` directive. This ensures compatibility with the project's strict Content Security Policy. This rule applies to all Blade templates, including scripts colocated within `@assets` blocks.
  
 
  ### Exception Handling

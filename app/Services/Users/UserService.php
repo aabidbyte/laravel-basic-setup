@@ -52,7 +52,7 @@ class UserService
             throw new InvalidArgumentException('Email is required when sending activation email.');
         }
 
-        return DB::transaction(function () use ($userData) {
+        $user = DB::transaction(function () use ($userData) {
             $data = $userData->attributes;
             $sendActivation = $userData->sendActivation;
             $roleUuids = $userData->roleUuids ?? [];
@@ -64,7 +64,7 @@ class UserService
             $creator = Auth::user();
 
             // Prepare user data
-            $userData = [
+            $userDataArray = [
                 'name' => $data['name'],
                 'username' => $data['username'] ?? null,
                 'email' => $data['email'] ?? null,
@@ -75,7 +75,7 @@ class UserService
             ];
 
             // Create the user
-            $user = User::create($userData);
+            $user = User::create($userDataArray);
 
             // Assign roles (if provided) - lookup by UUID
             if (! empty($roleUuids)) {
@@ -100,13 +100,15 @@ class UserService
                 $this->syncTenants($user, $tenantUuids);
             }
 
-            // Send activation email if requested
-            if ($sendActivation) {
-                $this->sendActivationEmail($user);
-            }
-
             return $user;
         });
+
+        // Send activation email if requested (after transaction)
+        if ($userData->sendActivation) {
+            $this->sendActivationEmail($user);
+        }
+
+        return $user;
     }
 
     /**
@@ -136,11 +138,11 @@ class UserService
                 $updateData['name'] = $data['name'];
             }
 
-            if (array_key_exists('username', $data)) {
+            if (\array_key_exists('username', $data)) {
                 $updateData['username'] = $data['username'];
             }
 
-            if (array_key_exists('email', $data)) {
+            if (\array_key_exists('email', $data)) {
                 $newEmail = $data['email'];
                 $currentEmail = $user->email;
 
@@ -438,5 +440,20 @@ class UserService
     {
         // For tenants, the ID is often the slug/string ID
         $user->tenants()->sync($tenantIds);
+    }
+
+    /**
+     * Delete a user.
+     */
+    public function deleteUser(User $user): bool
+    {
+        // Prevent deleting a user that is currently being impersonated
+        if (session()->get('impersonated_user_id') === $user->id) {
+            throw new RuntimeException('Cannot delete a user while they are being impersonated.');
+        }
+
+        return DB::transaction(function () use ($user) {
+            return $user->delete();
+        });
     }
 }

@@ -28,57 +28,53 @@ You can use simple expressions that do not require a full JavaScript engine:
 - Calling a registered component: `x-data="myComponent()"`
 - Calling a method on a registered component: `@click="toggle()"`
 
-## The Self-Registering Pattern
+## The Mandatory Colocated Script Pattern
 
-Each Alpine component should live in `resources/js/alpine/data/` and register itself on `alpine:init`.
+To maintain a clean and modular codebase, we prefer **colocated** JavaScript logic with the Blade component that requires it, using the `@assets` directive. This ensures that scripts are loaded on-demand and deduplicated.
 
-### 1. Create the JS component
+### 1. Implementation Guide
 
-File: `resources/js/alpine/data/my-component.js`
+1.  Place your script at the bottom of your Blade component file.
+2.  Wrap the `<script>` tag in `@assets` ... `@endassets`.
+3.  **MANDATORY**: Add the `@cspNonce` directive to the `<script>` tag.
+4.  Wrap your Alpine component registration in a self-executing function that checks if Alpine is already initialized.
 
-```javascript
-export function myComponent(config = {}) {
-    return {
-        open: false,
-        title: config.title || 'Default',
-        
-        init() {
-            // Complex initialization here
-        },
-        
-        toggle() {
-            this.open = !this.open;
-        }
-    };
-}
-
-// Self-register
-document.addEventListener('alpine:init', () => {
-    window.Alpine.data('myComponent', myComponent);
-});
-```
-
-### 2. Register in `resources/assets.json`
-
-Add the file to the appropriate bundle (shared, app, or auth).
-
-```json
-{
-    "js": {
-        "shared": [
-            "resources/js/alpine/data/my-component.js"
-        ]
-    }
-}
-```
-
-### 3. Use in Blade
+### 2. Example: `my-component.blade.php`
 
 ```blade
 <div x-data="myComponent({ title: 'Dynamic Title' })">
     <button @click="toggle()">Toggle</button>
     <div x-show="open">Content</div>
 </div>
+
+@assets
+    <script @cspNonce>
+        (function() {
+            const register = () => {
+                if (window.Alpine.data('myComponent')) return;
+
+                window.Alpine.data('myComponent', (config = {}) => ({
+                    open: false,
+                    title: config.title || 'Default',
+                    
+                    init() {
+                        // Complex initialization here
+                    },
+                    
+                    toggle() {
+                        this.open = !this.open;
+                    }
+                }));
+            };
+
+            if (window.Alpine) {
+                register();
+            } else {
+                document.addEventListener('alpine:init', register);
+            }
+        })();
+    </script>
+@endassets
 ```
 
 ## Special Tools
@@ -267,4 +263,15 @@ If you see `script-src` or `style-src` violations:
 1. Check that you're not using arrow functions in Blade templates
 2. Verify template literals are not used in Alpine attributes
 3. Ensure all complex logic is in registered Alpine components
+
+### Livewire log: "CSP Parser Error" on ternary `x-data` with quoted IDs
+Alpine’s CSP-safe parser does not reliably parse expressions such as `$condition ? 'myComponent(\'uuid-here\')' : null` when the UUID (or other value) is embedded inside nested quotes; segments of the value are tokenized as identifiers or numbers (`Expected PUNCTUATION ":" but got IDENTIFIER "fa4e314c"`).
+
+**Fix:** Register the component with **no dynamic constructor arguments** in the attribute, pass the value on a **`data-*` attribute**, and read `this.$el.dataset.*` in `init()` (see datatable `tableRow` + `data-row-uuid`).
+
+### "Undefined variable" for Alpine helpers (`sidebarDrawer`, `getOverlayStyle`, …)
+That message comes from Livewire’s CSP-safe evaluator when a name used in `x-data` or `:style` is not defined on the current component:
+
+- **`x-data="sidebarDrawer()"`** requires `Alpine.data('sidebarDrawer', …)` registered from a bundled script (e.g. `resources/js/alpine/data/` + `resources/assets.json` shared entries), not only a Blade partial.
+- **`:style="getOverlayStyle()"`** inside `x-teleport` must resolve on the same Alpine scope as the method; either define `getOverlayStyle` on that component’s object (e.g. `sheet`) or avoid calling a method that exists only on a parent component.
 

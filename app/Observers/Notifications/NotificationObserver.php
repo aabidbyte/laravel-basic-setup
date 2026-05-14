@@ -4,6 +4,7 @@ namespace App\Observers\Notifications;
 
 use App\Events\Notifications\DatabaseNotificationChanged;
 use App\Models\Notification;
+use Illuminate\Support\Facades\DB;
 
 class NotificationObserver
 {
@@ -39,10 +40,16 @@ class NotificationObserver
             return;
         }
 
-        event(new DatabaseNotificationChanged(
+        $event = new DatabaseNotificationChanged(
             userUuid: $userUuid,
             notificationId: (string) $notification->id,
             action: $action,
-        ));
+        );
+
+        if (\method_exists(DB::connection(), 'afterCommit')) {
+            DB::afterCommit(fn () => event($event));
+        } else {
+            event($event);
+        }
     }
 }

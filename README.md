@@ -527,13 +527,13 @@ $role->givePermissionTo('edit posts');
 
 **Teams Permissions:**
 
-Teams permissions are enabled by default, allowing flexible control for multi-tenant scenarios. The middleware `TeamsPermission` automatically sets the team ID from the session.
+Teams permissions are enabled by default, allowing flexible control for multi-tenant scenarios. The `TeamsPermission` middleware sets **`tenant_id`** in the session from the authenticated user’s first tenant when it is missing, and can enforce named permissions when the middleware is given a permission argument.
 
 **Configuration:**
 
 -   Teams enabled: `config/permission.php` → `'teams' => true`
 -   Custom team foreign key: Set `'team_foreign_key' => 'custom_team_id'` in config if needed
--   Middleware: `app/Http/Middleware/TeamsPermission.php` (sets team ID from session)
+-   Middleware: `app/Http/Middleware/Teams/TeamsPermission.php` (tenant session bootstrap and optional permission checks)
 
 **Usage with Teams:**
 

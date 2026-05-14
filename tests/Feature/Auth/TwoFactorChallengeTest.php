@@ -1,15 +1,10 @@
 <?php
 
 use App\Models\User;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Laravel\Fortify\Features;
 
 beforeEach(function () {
     asTenant();
-});
-
-beforeEach(function () {
-    $this->withoutMiddleware(VerifyCsrfToken::class);
 });
 
 test('two factor challenge redirects to login when not authenticated', function () {

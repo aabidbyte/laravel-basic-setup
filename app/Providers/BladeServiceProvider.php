@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Services\FrontendPreferences\FrontendPreferencesService;
 use App\Services\I18nService;
 use App\Services\SideBarMenuService;
+use App\Support\Notifications\NotificationBroadcastClientId;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -30,10 +31,10 @@ class BladeServiceProvider extends ServiceProvider
             'layouts::app',
             'layouts::auth',
         ], function ($view) {
-            $preferences = app(FrontendPreferencesService::class);
+            $preferences = \app(FrontendPreferencesService::class);
             $view->with('currentTheme', $preferences->getTheme());
 
-            $i18n = app(I18nService::class);
+            $i18n = \app(I18nService::class);
             $view->with('htmlLangAttribute', $i18n->getHtmlLangAttribute());
             $view->with('htmlDirAttribute', $i18n->getHtmlDirAttribute());
         });
@@ -42,8 +43,8 @@ class BladeServiceProvider extends ServiceProvider
         View::composer([
             'components.preferences.locale-switcher',
         ], function ($view) {
-            $preferences = app(FrontendPreferencesService::class);
-            $i18n = app(I18nService::class);
+            $preferences = \app(FrontendPreferencesService::class);
+            $i18n = \app(I18nService::class);
 
             $view->with('currentLocale', $i18n->getLocale());
             $view->with('supportedLocales', $i18n->getSupportedLocales());
@@ -53,14 +54,14 @@ class BladeServiceProvider extends ServiceProvider
         View::composer([
             'components.preferences.theme-switcher',
         ], function ($view) {
-            $preferences = app(FrontendPreferencesService::class);
+            $preferences = \app(FrontendPreferencesService::class);
             // Share current values for components
             $view->with('currentTheme', $preferences->getTheme());
         });
 
         // Share SideBarMenuService with sidebar template
         View::composer('components.layouts.app.*', function ($view) {
-            $menuService = app(SideBarMenuService::class);
+            $menuService = \app(SideBarMenuService::class);
 
             $sideBarTopMenus = $menuService->getTopMenus();
             $sideBarBottomMenus = $menuService->getBottomMenus();
@@ -77,8 +78,8 @@ class BladeServiceProvider extends ServiceProvider
 
             $notificationRealtimeConfig = [
                 'userUuid' => $user?->uuid,
-                'tenantUuids' => $user ? $user->tenants()->pluck('tenants.id')->toArray() : [],
-                'sessionId' => session()->getId(),
+                'teamUuids' => $user ? $user->teams()->pluck('teams.uuid')->toArray() : [],
+                'broadcastClientId' => NotificationBroadcastClientId::current(),
                 'pendingNotifications' => $pendingNotifications,
             ];
 
@@ -91,8 +92,8 @@ class BladeServiceProvider extends ServiceProvider
 
             $notificationRealtimeConfig = [
                 'userUuid' => null,
-                'tenantUuids' => [],
-                'sessionId' => session()->getId(),
+                'teamUuids' => [],
+                'broadcastClientId' => NotificationBroadcastClientId::current(),
                 'pendingNotifications' => $pendingNotifications,
             ];
 
@@ -116,7 +117,7 @@ class BladeServiceProvider extends ServiceProvider
             }
 
             // Fallback
-            $view->with('pageTitle', $pageTitle ?? config('app.name'));
+            $view->with('pageTitle', $pageTitle ?? \config('app.name'));
         });
     }
 

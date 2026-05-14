@@ -65,7 +65,7 @@
 </x-ui.input>
 
 @assets
-    <script>
+    <script @cspNonce>
         (function() {
             const register = () => {
                 Alpine.data('passwordVisibility', () => ({

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Constants\Auth\Permissions;
+use App\Constants\Auth\PolicyAbilities;
 use App\Livewire\Bases\BasePageComponent;
 use App\Models\Tenant;
 use App\Models\User;
@@ -42,8 +43,13 @@ new class extends BasePageComponent {
      */
     protected function authorizeAccess(?Tenant $tenant): void
     {
-        $permission = $tenant && $tenant->exists ? Permissions::EDIT_TENANTS() : Permissions::CREATE_TENANTS();
-        $this->authorize($permission);
+        if ($tenant instanceof Tenant && $tenant->exists) {
+            $this->authorize(PolicyAbilities::UPDATE, $tenant);
+
+            return;
+        }
+
+        $this->authorize(PolicyAbilities::CREATE, Tenant::class);
     }
 
     /**
@@ -310,7 +316,7 @@ new class extends BasePageComponent {
 </x-layouts.page>
 
 @assets
-    <script>
+    <script @cspNonce>
         (function() {
             const register = () => {
                 Alpine.data('tenantEdit', (config) => ({

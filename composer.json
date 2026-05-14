@@ -37,6 +37,7 @@
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.16",
+        "barryvdh/laravel-ide-helper": "^3.7",
         "fakerphp/faker": "^1.23",
         "friendsofphp/php-cs-fixer": "^3.94",
         "laravel/boost": "^2.1",
@@ -80,7 +81,7 @@
             "@php artisan migrate --seed",
             "@php artisan tenants:migrate --seed"
         ],
-         "migrate-fresh-seed": [
+        "migrate-fresh-seed": [
             "@php artisan migrate:fresh --seed",
             "@php artisan tenants:migrate-fresh",
             "@php artisan tenants:migrate --seed"
@@ -89,7 +90,7 @@
             "@php artisan migrate:fresh",
             "@php artisan tenants:migrate-fresh"
         ],
-        "pint" : [
+        "pint": [
             "./vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php",
             "./vendor/bin/pint --parallel"
         ],
@@ -113,8 +114,19 @@
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"
         ],
+        "post-install-cmd": [
+            "Illuminate\\Foundation\\ComposerScripts::postInstall",
+            "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
+            "@php artisan ide-helper:generate",
+            "@php artisan ide-helper:meta",
+            "@php artisan ide-helper:models --nowrite"
+        ],
         "post-update-cmd": [
-            "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
+            "Illuminate\\Foundation\\ComposerScripts::postUpdate",
+            "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
+            "@php artisan ide-helper:generate",
+            "@php artisan ide-helper:meta",
+            "@php artisan ide-helper:models --nowrite"
         ],
         "post-root-package-install": [
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""

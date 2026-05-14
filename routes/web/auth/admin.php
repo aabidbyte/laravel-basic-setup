@@ -16,5 +16,5 @@ require __DIR__ . '/admin/error-logs.php';
 require __DIR__ . '/admin/plans.php';
 
 // User Impersonation
-Route::get('/stop-impersonating', [ImpersonationController::class, 'stop'])
+Route::post('/stop-impersonating', [ImpersonationController::class, 'stop'])
     ->name('administration.instance.stop-impersonating');

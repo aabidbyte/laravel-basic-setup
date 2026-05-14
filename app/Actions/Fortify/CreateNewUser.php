@@ -77,7 +77,8 @@ class CreateNewUser implements CreatesNewUsers
     protected function createTeamAndAttachUser(User $user): void
     {
         $team = Team::create([
-            'name' => $user->name . "'s Team",
+            'name' => "{$user->name}'s Team",
+            'created_by_user_id' => $user->id,
         ]);
 
         // Use the current connection (will be tenant context if called within tenant->run)

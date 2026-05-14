@@ -281,7 +281,7 @@ class LocaleManager
             // For other files, check if this is a namespaced key (has dots in the middle, not just at the end)
             $isSimpleKey = $filename === $this->extractedFile
                 || ! \str_contains($keyWithoutNamespace, '.')
-                || (\str_ends_with($keyWithoutNamespace, '.') && substr_count($keyWithoutNamespace, '.') === 1);
+                || (\str_ends_with($keyWithoutNamespace, '.') && \substr_count($keyWithoutNamespace, '.') === 1);
 
             // Try automatic resolution for dynamic keys
             if ($this->dynamicKeyResolver->isDynamicKey($fullKey)) {

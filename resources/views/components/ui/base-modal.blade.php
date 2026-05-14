@@ -4,7 +4,7 @@
     - Theme-aware overlay and colors (DaisyUI base-* / *-content)
     - Always uses teleport to render modal in body
 --}}
-<div x-data="responsiveOverlay('{{ $openState }}', {{ $open || $autoOpen ? 'true' : 'false' }}, {{ $useParentState ? 'true' : 'false' }})"
+<div @if (! $useParentState) x-data="responsiveOverlay('{{ $openState }}', {{ $open || $autoOpen ? 'true' : 'false' }}, false)" @endif
      class="inline-block">
     {{-- Mobile View (< lg): Bottom Sheet --}}
     <template x-if="$store.ui.isMobile">
@@ -31,7 +31,7 @@
         <template x-teleport="body">
             <div x-cloak
                  x-show="{{ $openState }}"
-                 :style="{ zIndex: zIndex }"
+                 @if (! $useParentState) :style="zIndexStyle" @endif
                  {{ $attributes->merge(collect($containerAttributeDefaults)->except('x-data')->toArray())->class([$containerBaseClasses, $class]) }}>
                 <div x-show="{{ $openState }}"
                      {{ $dialogAttributes }}
@@ -94,7 +94,7 @@
 </div>
 
 @assets
-    <script>
+    <script @cspNonce>
         (function() {
             // Global z-index manager (shared definition)
             window.uiZIndexStack = window.uiZIndexStack || {
@@ -105,10 +105,13 @@
             };
 
             const register = function() {
-                Alpine.data('responsiveOverlay', function(openState, initialOpen, useParentState) {
+                if (window.Alpine.data('responsiveOverlay')) return;
+
+                window.Alpine.data('responsiveOverlay', function(openState, initialOpen, useParentState) {
                     const data = {
                         // isMobile: handled by global store $store.ui.isMobile
                         zIndex: 9999,
+                        zIndexStyle: 'z-index: 9999;',
 
                         init: function() {
                             const self = this;
@@ -120,13 +123,19 @@
                             this.$watch(openState, function(value) {
                                 if (value) {
                                     self.zIndex = window.uiZIndexStack.next();
+                                    self.syncZIndexStyle();
                                 }
                             });
 
                             // If initially open
                             if (this[openState] || (initialOpen && !useParentState)) {
                                 this.zIndex = window.uiZIndexStack.next();
+                                this.syncZIndexStyle();
                             }
+                        },
+
+                        syncZIndexStyle: function() {
+                            this.zIndexStyle = 'z-index: ' + this.zIndex + ';';
                         }
                     };
 

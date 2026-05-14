@@ -141,9 +141,9 @@ new class extends BasePageComponent {
                     {{-- Actions --}}
                     <div class="flex flex-wrap gap-2">
                         @can($entityConfig['restorePermission'])
-                            <x-ui.button @click="$dispatch('confirm-modal', {
-                                             title: '{{ __('actions.restore') }}',
-                                             message: '{{ __('actions.confirm_restore') }}',
+                            <x-ui.button @click="confirmModal({
+                                             title: @js(__('actions.restore')),
+                                             message: @js(__('actions.confirm_restore')),
                                              confirmEvent: 'confirm-restore'
                                          })"
                                          color="success"

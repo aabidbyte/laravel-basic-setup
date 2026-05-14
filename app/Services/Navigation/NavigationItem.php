@@ -66,13 +66,13 @@ class NavigationItem implements Arrayable
      */
     public static function toArrayFromMany(NavigationItem ...$items): array
     {
-        $visibleItems = array_filter(
+        $visibleItems = \array_filter(
             $items,
             fn (NavigationItem $item) => $item->isVisible(),
         );
 
         return \array_values(
-            array_map(
+            \array_map(
                 fn (NavigationItem $item) => $item->toArray(),
                 $visibleItems,
             ),
@@ -306,7 +306,7 @@ class NavigationItem implements Arrayable
     public function getItems(): array
     {
         return \array_values(
-            array_filter($this->items, fn (NavigationItem $item) => $item->isVisible()),
+            \array_filter($this->items, fn (NavigationItem $item) => $item->isVisible()),
         );
     }
 
@@ -429,7 +429,7 @@ class NavigationItem implements Arrayable
             'hasUrl' => $url !== null,
         ];
 
-        $data = array_filter($data, function ($value, $key) {
+        $data = \array_filter($data, function ($value, $key) {
             // Always keep 'items' and 'attributes' even if empty
             if ($key === 'items' || $key === 'attributes') {
                 return true;

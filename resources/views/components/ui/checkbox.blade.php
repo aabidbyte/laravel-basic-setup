@@ -37,10 +37,10 @@
     <x-ui.label variant="inline">
         <input type="checkbox"
                id="{{ $id }}"
-               {{ $attributes->merge(['class' => trim("checkbox {$colorClass} {$sizeClass}")])->except(['color', 'x-bind:color', ':color']) }}
-               @if ($boundColor) x-bind:class='{{ alpineColorClasses($boundColor, 'checkbox-') }}' @endif
-               @if ($value !== null) value="{{ $value }}" @endif
-               @if ($checked) checked @endif />
+               {{ $attributes->merge(['class' => trim("checkbox {$colorClass} {$sizeClass}")])
+                             ->merge(['value' => $value, 'checked' => $checked ?: null])
+                             ->except(['color', 'x-bind:color', ':color']) }}
+               @if ($boundColor) x-bind:class="{{ alpineColorClasses($boundColor, 'checkbox-') }}" @endif />
         @if ($label)
             <span class="label-text">{{ $label }}</span>
         @endif

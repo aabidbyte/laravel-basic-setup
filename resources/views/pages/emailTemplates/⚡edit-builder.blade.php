@@ -23,8 +23,6 @@ new class extends BasePageComponent {
 
     public bool $showTextContent = false;
 
-    public ?EmailTemplate $model = null;
-
     // Content Specific
     public array $entity_types = [];
 

@@ -320,8 +320,35 @@ class UpgradeStarter extends Command
      */
     protected function mergeUpstreamChanges(string $branch): bool
     {
-        $result = Process::run("git merge upstream/{$branch} --no-edit");
+        // Enter maintenance mode
+        $this->call('down', [
+            '--secret' => 'starter-upgrade',
+            '--refresh' => 15,
+        ]);
 
-        return $result->successful();
+        try {
+            $result = Process::run("git merge upstream/{$branch} --no-edit");
+
+            if ($result->successful()) {
+                // Run post-merge commands if successful
+                $this->info('Running post-merge tasks...');
+
+                if (file_exists(base_path('composer.json'))) {
+                    $this->info('- Checking dependencies...');
+                    // Note: We don't automatically run composer install for safety,
+                    // but we could check if it changed.
+                }
+
+                $this->call('migrate', ['--force' => true]);
+                $this->call('optimize:clear');
+
+                return true;
+            }
+
+            return false;
+        } finally {
+            // Exit maintenance mode
+            $this->call('up');
+        }
     }
 }

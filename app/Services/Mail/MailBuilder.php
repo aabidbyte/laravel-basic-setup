@@ -15,8 +15,9 @@ use App\Services\Mail\Providers\LaravelMailProvider;
 use Exception;
 use Illuminate\Contracts\Mail\Mailable;
 use Illuminate\Mail\Mailable as BaseMailable;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
+use Throwable;
 
 /**
  * Fluent mail builder for sending emails with hierarchical credential resolution.
@@ -69,7 +70,7 @@ class MailBuilder
         $tenant = $this->resolveTenant();
 
         try {
-            if ($tenant && (! function_exists('tenant') || ! tenant())) {
+            if ($tenant && (! \function_exists('tenant') || ! tenant())) {
                 $tenant->run(function () use ($templateName, $entities, $context, $locale) {
                     $this->renderedEmail = $this->renderer->renderByName($templateName, $entities, $context, $locale);
                 });
@@ -170,14 +171,27 @@ class MailBuilder
     {
         $this->validate();
 
-        $mailable = $this->buildMailable();
+        try {
+            $mailable = $this->buildMailable();
 
-        $settings = null;
-        if ($this->useCustomCredentials) {
-            $settings = $this->resolver->resolve($this->credentialUser, $this->credentialTeam);
+            $settings = null;
+            if ($this->useCustomCredentials) {
+                $settings = $this->resolver->resolve($this->credentialUser, $this->credentialTeam);
+            }
+
+            return $this->provider->send($mailable, $settings);
+        } catch (Throwable $e) {
+            Log::error('Mail delivery failed in MailBuilder:', [
+                'exception' => $e->getMessage(),
+                'to' => $this->to,
+                'subject' => $this->subject,
+                'settings_source' => $this->getSettingsSource(),
+            ]);
+
+            report($e);
+
+            return false;
         }
-
-        return $this->provider->send($mailable, $settings);
     }
 
     public function queue(?string $queue = null): void
@@ -186,11 +200,12 @@ class MailBuilder
 
         $mailable = $this->buildMailable();
 
-        if ($queue !== null) {
-            $mailable->onQueue($queue);
+        $settings = null;
+        if ($this->useCustomCredentials) {
+            $settings = $this->resolver->resolve($this->credentialUser, $this->credentialTeam);
         }
 
-        Mail::to($this->resolveRecipient())->queue($mailable);
+        $this->provider->queue($mailable, $settings, $queue);
     }
 
     protected function validate(): void
@@ -246,22 +261,32 @@ class MailBuilder
 
         $recipient = $this->resolveRecipient();
 
-        return new class($this->viewName, $this->viewData, $this->subject, $recipient) extends BaseMailable {
-            public function __construct(
-                protected string $viewName,
-                protected array $viewData,
-                protected ?string $mailSubject,
-                protected mixed $mailRecipient,
-            ) {}
+        $mailData = [
+            'viewName' => $this->viewName,
+            'viewData' => $this->viewData,
+            'subject' => $this->subject,
+            'recipient' => $recipient,
+        ];
+
+        return new class($mailData) extends BaseMailable {
+            /**
+             * @param  array{
+             *     viewName: string,
+             *     viewData: array<string, mixed>,
+             *     subject: string|null,
+             *     recipient: mixed,
+             * }  $mailData
+             */
+            public function __construct(protected array $mailData) {}
 
             public function build(): static
             {
-                $mailable = $this->view($this->viewName)
-                    ->with($this->viewData)
-                    ->to($this->mailRecipient);
+                $mailable = $this->view($this->mailData['viewName'])
+                    ->with($this->mailData['viewData'])
+                    ->to($this->mailData['recipient']);
 
-                if ($this->mailSubject !== null) {
-                    $mailable->subject($this->mailSubject);
+                if ($this->mailData['subject'] !== null) {
+                    $mailable->subject($this->mailData['subject']);
                 }
 
                 return $mailable;

@@ -246,7 +246,7 @@ class MergeTagEngine
      */
     protected function entityHasAttribute(Model $entity, string $key): bool
     {
-        return array_key_exists($key, $entity->getAttributes())
+        return \array_key_exists($key, $entity->getAttributes())
             || $entity->hasGetMutator($key);
     }
 
@@ -257,9 +257,9 @@ class MergeTagEngine
      */
     public function extractTags(string $content): array
     {
-        preg_match_all(self::EXTRACT_TAG_PATTERN, $content, $matches);
+        \preg_match_all(self::EXTRACT_TAG_PATTERN, $content, $matches);
 
-        return ! empty($matches[1]) ? array_unique($matches[1]) : [];
+        return ! empty($matches[1]) ? \array_unique($matches[1]) : [];
     }
 
     /**

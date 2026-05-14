@@ -22,5 +22,10 @@ yarn-error.log
 /.vscode
 /.zed
 .cursor/debug.log
+__pycache__/
+*.py[cod]
 .php-cs-fixer.cache
 /storage/tenant*
+_ide_helper.php
+_ide_helper_models.php
+.phpstorm.meta.php

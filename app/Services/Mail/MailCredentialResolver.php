@@ -85,20 +85,14 @@ class MailCredentialResolver
     {
         // If no team provided, try to get from user's first team
         if ($team === null && $user !== null) {
-            // Fix: User is central, Team is tenant.
-            // If tenancy is initialized, we query the current tenant's team_user table.
-            if (\function_exists('tenancy') && tenancy()->initialized) {
-                // Use default connection which is already switched to tenant
-                $teamId = DB::table('team_user')
+            if ($this->centralTeamUserTableExists()) {
+                $teamId = DB::connection('central')->table('team_user')
                     ->where('user_id', $user->id)
                     ->value('team_id');
 
-                if ($teamId) {
+                if ($teamId !== null) {
                     $team = Team::find($teamId);
                 }
-            } else {
-                // On central, user has no teams (teams are tenant-only)
-                return null;
             }
         }
 
@@ -106,13 +100,12 @@ class MailCredentialResolver
         if ($team === null) {
             /** @var User|null $authUser */
             $authUser = Auth::user();
-            if ($authUser && \function_exists('tenancy') && tenancy()->initialized) {
-                // Use default connection which is already switched to tenant
-                $teamId = DB::table('team_user')
+            if ($authUser instanceof User && $this->centralTeamUserTableExists()) {
+                $teamId = DB::connection('central')->table('team_user')
                     ->where('user_id', $authUser->id)
                     ->value('team_id');
 
-                if ($teamId) {
+                if ($teamId !== null) {
                     $team = Team::find($teamId);
                 }
             }
@@ -123,6 +116,11 @@ class MailCredentialResolver
         }
 
         return MailSettings::getForTeam($team);
+    }
+
+    protected function centralTeamUserTableExists(): bool
+    {
+        return DB::connection('central')->getSchemaBuilder()->hasTable('team_user');
     }
 
     /**

@@ -66,7 +66,7 @@
 </x-layouts.auth>
 
 @assets
-    <script>
+    <script @cspNonce>
         (function() {
             const register = () => {
                 Alpine.data('twoFactorChallenge', (config = {}) => ({

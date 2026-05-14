@@ -46,7 +46,7 @@
             @cspNonce></script>
     <script src="https://unpkg.com/grapesjs-preset-newsletter"
             @cspNonce></script>
-    <script>
+    <script @cspNonce>
         (function() {
             const register = () => {
                 Alpine.data('grapeEditor', (

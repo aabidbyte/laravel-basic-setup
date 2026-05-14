@@ -128,6 +128,7 @@ new class extends BasePageComponent {
         $team = Team::create([
             'name' => $this->name,
             'description' => $this->description,
+            'created_by_user_id' => Auth::id(),
         ]);
 
         $this->sendSuccessNotification($team, 'pages.common.create.success');

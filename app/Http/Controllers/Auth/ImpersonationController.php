@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ImpersonationController extends Controller
@@ -14,22 +15,32 @@ class ImpersonationController extends Controller
     /**
      * Stop impersonating and return to the original user.
      */
-    public function stop(): RedirectResponse
+    public function stop(Request $request): RedirectResponse
     {
-        if (! session()->has('impersonator_id')) {
+        $session = $request->session();
+
+        if (! $session->has('impersonator_id')) {
             return redirect()->route('dashboard');
         }
 
-        $adminId = session()->pull('impersonator_id');
-        $admin = User::find($adminId);
+        $impersonatorId = (int) $session->pull('impersonator_id');
 
-        if ($admin) {
-            Auth::login($admin);
-        } else {
+        if ($impersonatorId === (int) Auth::id()) {
+            return redirect()->route('dashboard');
+        }
+
+        $admin = User::find($impersonatorId);
+
+        if (! $admin instanceof User) {
             Auth::logout();
+            $session->invalidate();
+            $session->regenerateToken();
 
             return redirect()->route('login');
         }
+
+        Auth::login($admin);
+        $session->regenerate();
 
         return redirect()->route('dashboard');
     }

@@ -31,6 +31,10 @@ class EnableTrashedContext
         // Enable the trashed context
         TrashedContext::enable($entityType);
 
-        return $next($request);
+        try {
+            return $next($request);
+        } finally {
+            TrashedContext::reset();
+        }
     }
 }

@@ -4,11 +4,8 @@ use App\Constants\Auth\Roles;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Livewire\Livewire;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     // Create roles
@@ -72,6 +69,9 @@ it('protects from switching to the current tenant', function () {
         ->test('tables.tenant-table')
         ->call('handleRowClick', $this->tenant1->id)
         ->assertDispatched('notify');
+
+    // Primary assertion: tenant context remains unchanged
+    expect(tenant('id'))->toBe($this->tenant1->id);
 
     tenancy()->end();
 });

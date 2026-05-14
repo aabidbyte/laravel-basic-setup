@@ -2,7 +2,7 @@
     Alpine x-data wrapper provides:
     - modalIsOpen: entangled with Livewire isOpen, accessible to child views
     - isLoading: immediate loading state shown before server response
-    
+
     Child views can use: @click="modalIsOpen = false" to close modal
 --}}
 <div x-show="modalIsOpen"
@@ -36,7 +36,7 @@
 </div>
 
 @assets
-    <script>
+    <script @cspNonce>
         (function() {
             const register = () => {
                 Alpine.data('actionModal', () => ({

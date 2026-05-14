@@ -45,7 +45,7 @@ new class extends LivewireBaseComponent {
 
 <div class="card bg-base-200"
      wire:cloak
-     x-data="{ showRecoveryCodes: false }">
+     x-data="recoveryCodeVisibility()">
     <div class="card-body">
         <div class="mb-2 flex items-center gap-2">
             <svg class="text-base-content/70 h-5 w-5"
@@ -65,8 +65,8 @@ new class extends LivewireBaseComponent {
 
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <x-ui.button type="button"
-                         x-show="!showRecoveryCodes"
-                         @click="showRecoveryCodes = true"
+                         x-show="!isVisible"
+                         @click="on()"
                          color="primary"
                          aria-expanded="false"
                          aria-controls="recovery-codes-section">
@@ -74,8 +74,8 @@ new class extends LivewireBaseComponent {
             </x-ui.button>
 
             <x-ui.button type="button"
-                         x-show="showRecoveryCodes"
-                         @click="showRecoveryCodes = false"
+                         x-show="isVisible"
+                         @click="off()"
                          color="primary"
                          aria-expanded="true"
                          aria-controls="recovery-codes-section">
@@ -84,7 +84,7 @@ new class extends LivewireBaseComponent {
 
             @if (filled($recoveryCodes))
                 <x-ui.button type="button"
-                             x-show="showRecoveryCodes"
+                             x-show="isVisible"
                              wire:click="regenerateRecoveryCodes"
                              variant="outline">
                     {{ __('settings.two_factor.recovery.regenerate_button') }}
@@ -92,11 +92,11 @@ new class extends LivewireBaseComponent {
             @endif
         </div>
 
-        <div x-show="showRecoveryCodes"
+        <div x-show="isVisible"
              x-transition
              id="recovery-codes-section"
              class="mt-4"
-             x-bind:aria-hidden="!showRecoveryCodes">
+             x-bind:aria-hidden="!isVisible">
 
             @if (filled($recoveryCodes))
                 <div class="card bg-base-100">

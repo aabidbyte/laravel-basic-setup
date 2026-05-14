@@ -27,16 +27,56 @@ class LaravelMailProvider implements MailProviderContract
      */
     public function send(Mailable $mailable, ?MailSettings $settings = null): bool
     {
-        if ($settings !== null) {
-            // Configure dynamic mailer
-            $this->configureDynamicMailer($settings);
-            Mail::mailer('dynamic')->send($mailable);
-        } else {
-            // Use default mailer
-            Mail::send($mailable);
+        $previousMailers = Config::get('mail.mailers');
+
+        try {
+            if ($settings !== null) {
+                $this->configureDynamicMailer($settings);
+                if ($settings->from_address) {
+                    $mailable->from(
+                        $settings->from_address,
+                        $settings->from_name ?? (string) config('app.name'),
+                    );
+                }
+                Mail::mailer('dynamic')->send($mailable);
+                $settings->markAsUsed();
+            } else {
+                Mail::send($mailable);
+            }
+
+            return true;
+        } finally {
+            $this->restoreMailersSnapshot($previousMailers);
+        }
+    }
+
+    /**
+     * Queue a mailable using Laravel's mail system.
+     */
+    public function queue(Mailable $mailable, ?MailSettings $settings = null, ?string $queue = null): void
+    {
+        if ($queue !== null) {
+            $mailable->onQueue($queue);
         }
 
-        return true;
+        $previousMailers = Config::get('mail.mailers');
+
+        try {
+            if ($settings !== null) {
+                $this->configureDynamicMailer($settings);
+                if ($settings->from_address) {
+                    $mailable->from(
+                        $settings->from_address,
+                        $settings->from_name ?? (string) config('app.name'),
+                    );
+                }
+                Mail::mailer('dynamic')->queue($mailable);
+            } else {
+                Mail::queue($mailable);
+            }
+        } finally {
+            $this->restoreMailersSnapshot($previousMailers);
+        }
     }
 
     /**
@@ -77,14 +117,14 @@ class LaravelMailProvider implements MailProviderContract
     protected function configureDynamicMailer(MailSettings $settings): void
     {
         $config = $this->buildConfig($settings);
-
-        // Set the dynamic mailer configuration
         Config::set('mail.mailers.dynamic', $config);
+    }
 
-        // Set the from address if specified
-        if ($settings->from_address) {
-            Config::set('mail.from.address', $settings->from_address);
-            Config::set('mail.from.name', $settings->from_name ?? config('app.name'));
-        }
+    /**
+     * @param  array<string, mixed>|null  $previousMailers
+     */
+    protected function restoreMailersSnapshot(?array $previousMailers): void
+    {
+        Config::set('mail.mailers', $previousMailers ?? []);
     }
 }

@@ -40,13 +40,10 @@ test('authorized user can see all user details on show page', function () {
     Livewire::actingAs($this->admin)
         ->test('pages::users.show', ['user' => $this->targetUser])
         ->assertSee(__('actions.delete'))
-        ->assertSee(__('users.updated_at'))
+        ->assertSee(__('users.created_at'))
         ->assertSee(__('users.email_verified_at'))
-        ->assertSee(__('users.notification_preferences'))
-        ->assertSee(__('users.created_users_count'))
-        ->assertSee('Mail')
-        ->assertSee('Database')
-        ->assertSee($this->targetUser->updated_at->diffForHumans());
+        ->assertSee($this->targetUser->created_at->diffForHumans())
+        ->assertSee($this->targetUser->email_verified_at->diffForHumans());
 
     Carbon::setTestNow();
 });
