@@ -26,7 +26,7 @@ Route::prefix('email-templates')->name('emailTemplates.')->group(function () {
     // Layouts routes
     Route::prefix('layouts')->name('layouts.')->group(function () {
         Route::view('/', 'pages.emailTemplates.index')
-            ->middleware('can:' . Permissions::VIEW_EMAIL_TEMPLATES())
+            ->middleware('can:' . Permissions::VIEW_EMAIL_LAYOUTS())
             ->name('index');
     });
 

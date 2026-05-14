@@ -75,6 +75,27 @@ test('show page can publish draft template', function () {
     expect($template->refresh()->status)->toBe(EmailTemplateStatus::PUBLISHED);
 });
 
+test('show page renders preview controls without csp unsafe bindings', function () {
+    $user = ($this->createUserWithPermissions)([
+        Permissions::VIEW_EMAIL_TEMPLATES(),
+    ]);
+    $this->actingAs($user);
+
+    $template = EmailTemplate::create([
+        'name' => 'Preview Template',
+        'status' => EmailTemplateStatus::DRAFT,
+        'is_layout' => false,
+        'type' => EmailTemplateType::TRANSACTIONAL,
+    ]);
+
+    $this->get(route('emailTemplates.show', $template))
+        ->assertOk()
+        ->assertSee('x-data="simpleToggle()"', false)
+        ->assertSee('template-uuid="' . $template->uuid . '"', false)
+        ->assertDontSee(':template-uuid="$template->uuid"', false)
+        ->assertDontSee(':x-bind:class', false);
+});
+
 test('show page can archive template', function () {
     $user = ($this->createUserWithPermissions)([
         Permissions::VIEW_EMAIL_TEMPLATES(),

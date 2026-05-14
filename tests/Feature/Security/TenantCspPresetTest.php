@@ -41,3 +41,15 @@ it('does not add tenant csp sources outside a tenant context', function (): void
 
     expect($policy->getContents())->not->toContain('inactive-tenant.example.test');
 });
+
+it('allows runtime style elements for the email template builder', function (): void {
+    $policy = new Policy();
+    app(MyCspPreset::class)->configure($policy);
+
+    $styleElementDirective = collect(explode(';', $policy->getContents()))
+        ->first(fn (string $directive): bool => str_starts_with($directive, 'style-src-elem'));
+
+    expect($styleElementDirective)
+        ->toContain("'unsafe-inline'")
+        ->toContain('https://unpkg.com');
+});

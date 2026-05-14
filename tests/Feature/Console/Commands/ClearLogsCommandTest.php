@@ -80,3 +80,37 @@ test('clears all main log files including browser.log and pail logs', function (
     expect(File::exists($pailFile1))->toBeFalse();
     expect(File::exists($pailFile2))->toBeFalse();
 });
+
+test('clears tenant nested log files', function () {
+    $logsPath = storage_path('logs');
+    $tenantLogPath = "{$logsPath}/tenant-alpha/info/laravel-2026-05-14.log";
+
+    File::ensureDirectoryExists(\dirname($tenantLogPath));
+    File::put($tenantLogPath, 'tenant info log');
+
+    expect(File::exists($tenantLogPath))->toBeTrue();
+
+    $this->artisan('logs:clear')
+        ->assertSuccessful();
+
+    expect(File::exists($tenantLogPath))->toBeFalse();
+});
+
+test('clears tenant nested log files for a specific level', function () {
+    $logsPath = storage_path('logs');
+    $infoLogPath = "{$logsPath}/tenant-alpha/info/laravel-2026-05-14.log";
+    $errorLogPath = "{$logsPath}/tenant-alpha/error/laravel-2026-05-14.log";
+
+    File::ensureDirectoryExists(\dirname($infoLogPath));
+    File::ensureDirectoryExists(\dirname($errorLogPath));
+    File::put($infoLogPath, 'tenant info log');
+    File::put($errorLogPath, 'tenant error log');
+
+    $this->artisan('logs:clear --level=info')
+        ->assertSuccessful();
+
+    expect(File::exists($infoLogPath))->toBeFalse()
+        ->and(File::exists($errorLogPath))->toBeTrue();
+
+    File::delete($errorLogPath);
+});

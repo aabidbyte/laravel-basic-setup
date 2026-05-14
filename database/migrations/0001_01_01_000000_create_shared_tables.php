@@ -49,9 +49,6 @@ return new class extends Migration {
             $table->index('created_by_user_id');
             $table->timestampsTz();
             $table->softDeletesTz();
-        });
-
-        Schema::table('users', function (Blueprint $table) {
             $table->foreign('created_by_user_id')->references('id')->on('users')->nullOnDelete();
         });
 

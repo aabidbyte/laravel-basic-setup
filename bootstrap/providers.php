@@ -14,7 +14,6 @@ use App\Providers\ModelServiceProvider;
 use App\Providers\SecurityServiceProvider;
 use App\Providers\TelescopeServiceProvider;
 use App\Providers\TenancyServiceProvider;
-use App\Providers\VoltServiceProvider;
 
 return [
     AccessServiceProvider::class,
@@ -31,5 +30,4 @@ return [
     SecurityServiceProvider::class,
     TelescopeServiceProvider::class,
     TenancyServiceProvider::class,
-    VoltServiceProvider::class,
 ];

@@ -33,12 +33,12 @@ class EmailTemplateTable extends Datatable
      */
     public function mount(): void
     {
-        $this->authorize(Permissions::VIEW_EMAIL_TEMPLATES());
-
         // Fallback detection if not passed as a prop
         if ($this->kindMode === null) {
             $this->kindMode = $this->detectKindMode();
         }
+
+        $this->authorize($this->viewPermission());
     }
 
     public function baseQuery(): Builder
@@ -83,6 +83,18 @@ class EmailTemplateTable extends Datatable
         }
 
         return null;
+    }
+
+    /**
+     * Resolve the permission required to view the current table mode.
+     */
+    protected function viewPermission(): string
+    {
+        if ($this->kindMode === EmailTemplateKind::LAYOUT) {
+            return Permissions::VIEW_EMAIL_LAYOUTS();
+        }
+
+        return Permissions::VIEW_EMAIL_TEMPLATES();
     }
 
     /**

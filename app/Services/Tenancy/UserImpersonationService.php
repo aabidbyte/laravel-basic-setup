@@ -10,6 +10,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Central entry point for user impersonation so authorization and tenant checks
@@ -32,6 +33,11 @@ class UserImpersonationService
 
             $domain = $targetTenant->domains()->first();
             if ($domain === null) {
+                Log::warning('User impersonation tenant target has no domain.', [
+                    'target_tenant_id' => $targetTenant->id,
+                    'target_tenant_name' => $targetTenant->name,
+                ]);
+
                 throw new AuthorizationException();
             }
 
@@ -73,23 +79,49 @@ class UserImpersonationService
                 return;
             }
 
+            Log::warning('Self tenant switch denied because actor does not belong to tenant.', [
+                'actor_id' => $actor->id,
+                'target_tenant_id' => $targetTenant->id,
+            ]);
+
             throw new AuthorizationException();
         }
 
         if (! $actor->can(Permissions::IMPERSONATE_USERS())) {
+            Log::warning('Impersonation denied because actor lacks permission.', [
+                'actor_id' => $actor->id,
+                'target_id' => $target->id,
+                'target_tenant_id' => $targetTenant?->id,
+            ]);
+
             throw new AuthorizationException();
         }
 
         if ($actor->id === $target->id && $targetTenant === null) {
+            Log::warning('Central self impersonation denied.', [
+                'actor_id' => $actor->id,
+            ]);
+
             throw new AuthorizationException();
         }
 
         if ($target->hasRole(Roles::SUPER_ADMIN) && $targetTenant === null) {
+            Log::warning('Central super admin target impersonation denied.', [
+                'actor_id' => $actor->id,
+                'target_id' => $target->id,
+            ]);
+
             throw new AuthorizationException();
         }
 
         if ($targetTenant === null) {
             if ($target->tenants()->exists()) {
+                Log::warning('Central impersonation denied because target belongs to tenants.', [
+                    'actor_id' => $actor->id,
+                    'target_id' => $target->id,
+                    'target_tenant_ids' => $target->tenants()->pluck('tenants.id')->all(),
+                ]);
+
                 throw new AuthorizationException();
             }
 
@@ -97,10 +129,22 @@ class UserImpersonationService
         }
 
         if (! $target->tenants()->whereKey($targetTenant->getKey())->exists()) {
+            Log::warning('Tenant impersonation denied because target does not belong to tenant.', [
+                'actor_id' => $actor->id,
+                'target_id' => $target->id,
+                'target_tenant_id' => $targetTenant->id,
+            ]);
+
             throw new AuthorizationException();
         }
 
         if (! $actor->hasRole(Roles::SUPER_ADMIN) && ! $actor->tenants()->whereKey($targetTenant->getKey())->exists()) {
+            Log::warning('Tenant impersonation denied because actor lacks tenant access.', [
+                'actor_id' => $actor->id,
+                'target_id' => $target->id,
+                'target_tenant_id' => $targetTenant->id,
+            ]);
+
             throw new AuthorizationException();
         }
     }

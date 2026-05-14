@@ -294,6 +294,15 @@ export function notificationDropdownContent($wire) {
             );
         },
 
+        delayedMarkAsRead(notificationId, delayMs = 2000) {
+            setTimeout(() => {
+                if (!$wire || this._isDestroyed) {
+                    return;
+                }
+                $wire.markAsRead(notificationId);
+            }, delayMs);
+        },
+
         destroy() {
             this._isDestroyed = true;
             if (this._closeListener) {

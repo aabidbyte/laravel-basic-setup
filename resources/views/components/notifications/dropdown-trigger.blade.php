@@ -9,11 +9,15 @@
     - None (calculates initial unread count from auth user)
 --}}
 @php
+    use App\Models\User;
+    use App\Services\Notifications\UserNotificationQuery;
     use Illuminate\Support\Facades\Auth;
 
     // Calculate initial unread count on server
     $user = Auth::user();
-    $initialUnreadCount = $user ? $user->unreadNotifications()->count() : 0;
+    $initialUnreadCount = $user instanceof User
+        ? app(UserNotificationQuery::class)->unreadCount($user)
+        : 0;
 @endphp
 
 <div x-data="notificationDropdownTrigger(@js($initialUnreadCount))"
@@ -41,8 +45,7 @@
         </x-slot:trigger>
 
         {{-- Lazy-loaded content component --}}
-        <livewire:notifications.⚡dropdown-content lazy
-                                                 wire:key="notifications-dropdown-content"></livewire:notifications.⚡dropdown-content>
+        @livewire('notifications.⚡dropdown-content', ['lazy' => true], key('notifications-dropdown-content'))
         <x-slot:actions>
             <x-ui.button href="{{ route('notifications.index') }}"
                          wire:navigate

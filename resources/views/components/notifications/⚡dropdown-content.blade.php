@@ -1,6 +1,8 @@
 <?php
 
 use App\Livewire\Bases\LivewireBaseComponent;
+use App\Models\User;
+use App\Services\Notifications\UserNotificationQuery;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -24,16 +26,12 @@ new class extends LivewireBaseComponent {
      */
     public function getAllSortedNotificationsProperty(): Collection
     {
-        $user = Auth::user();
-        if (!$user) {
-            return collect();
+        $user = $this->authenticatedUser();
+        if (! $user) {
+            return new Collection;
         }
 
-        return $user
-            ->notifications()
-            ->latest()
-            ->get()
-            ->sortBy([['created_at', 'desc'], ['read_at', 'asc']]);
+        return $this->notificationQuery()->allSorted($user);
     }
 
     /**
@@ -121,8 +119,13 @@ new class extends LivewireBaseComponent {
      */
     public function markAsRead(string $notificationId): void
     {
-        $notification = Auth::user()->notifications()->find($notificationId);
-        if ($notification && !$notification->read_at) {
+        $user = $this->authenticatedUser();
+        if (! $user) {
+            return;
+        }
+
+        $notification = $this->notificationQuery()->find($user, $notificationId);
+        if ($notification && ! $notification->read_at) {
             $notification->markAsRead();
         }
     }
@@ -133,25 +136,23 @@ new class extends LivewireBaseComponent {
      */
     public function markVisibleAsRead(): void
     {
-        $user = Auth::user();
-        if (!$user) {
+        $user = $this->authenticatedUser();
+        if (! $user) {
             return;
         }
 
         // Get the IDs of the visible notifications (based on current limit)
-        $visibleNotificationIds = $user
-            ->notifications()
-            ->latest()
-            ->get()
-            ->sortBy([['read_at', 'asc'], ['created_at', 'desc']])
+        $visibleNotificationIds = $this->notificationQuery()
+            ->allSorted($user)
             ->take($this->limit)
             ->pluck('id')
             ->toArray();
 
         // Mark only unread notifications as read in a single query
-        if (!empty($visibleNotificationIds)) {
-            $user
-                ->unreadNotifications()
+        if ($visibleNotificationIds !== []) {
+            $this->notificationQuery()
+                ->forUser($user)
+                ->unread()
                 ->whereIn('id', $visibleNotificationIds)
                 ->update(['read_at' => now()]);
         }
@@ -162,12 +163,12 @@ new class extends LivewireBaseComponent {
      */
     public function getUnreadCountProperty(): int
     {
-        $user = Auth::user();
-        if (!$user) {
+        $user = $this->authenticatedUser();
+        if (! $user) {
             return 0;
         }
 
-        return $user->unreadNotifications()->count();
+        return $this->notificationQuery()->unreadCount($user);
     }
 
     /**
@@ -176,6 +177,22 @@ new class extends LivewireBaseComponent {
     public function rendered(View $view): void
     {
         $this->dispatch('notification-dropdown:count-updated', count: $this->unreadCount);
+    }
+
+    protected function authenticatedUser(): ?User
+    {
+        $user = Auth::user();
+
+        if (! $user instanceof User) {
+            return null;
+        }
+
+        return $user;
+    }
+
+    protected function notificationQuery(): UserNotificationQuery
+    {
+        return app(UserNotificationQuery::class);
     }
 }; ?>
 
@@ -246,31 +263,3 @@ new class extends LivewireBaseComponent {
         </div>
     @endif
 </div>
-
-@assets
-    <script @cspNonce>
-        (function() {
-            const register = () => {
-                Alpine.data('notificationDropdownContent', ($wire) => ({
-                    init() {
-                        // Optimized: No global listeners needed for basic intersection logic
-                    },
-
-                    delayedMarkAsRead(notificationId, delayMs = 2000) {
-                        setTimeout(() => {
-                            if ($wire) {
-                                $wire.markAsRead(notificationId);
-                            }
-                        }, delayMs);
-                    }
-                }));
-            };
-
-            if (window.Alpine) {
-                register();
-            } else {
-                document.addEventListener('alpine:init', register);
-            }
-        })();
-    </script>
-@endassets

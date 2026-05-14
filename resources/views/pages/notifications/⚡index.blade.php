@@ -3,6 +3,8 @@
 use App\Enums\Ui\PlaceholderType;
 use App\Events\Notifications\DatabaseNotificationChanged;
 use App\Livewire\Bases\BasePageComponent;
+use App\Models\User;
+use App\Services\Notifications\UserNotificationQuery;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -29,22 +31,27 @@ new class extends BasePageComponent {
     #[Computed]
     public function notificationStats(): array
     {
-        $user = Auth::user();
+        $user = $this->authenticatedUser();
+        if (! $user) {
+            return [
+                'totalCount' => 0,
+                'unreadCount' => 0,
+            ];
+        }
 
-        // Get both counts in a single optimized query using the relationship's query builder
-        $stats = $user->notifications()->getQuery()->selectRaw('COUNT(*) as total_count')->selectRaw('SUM(CASE WHEN read_at IS NULL THEN 1 ELSE 0 END) as unread_count')->first();
-
-        return [
-            'totalCount' => (int) ($stats->total_count ?? 0),
-            'unreadCount' => (int) ($stats->unread_count ?? 0),
-        ];
+        return $this->notificationQuery()->stats($user);
     }
 
     #[Computed]
     public function notifications(): Collection
     {
-        return Auth::user()
-            ->notifications()
+        $user = $this->authenticatedUser();
+        if (! $user) {
+            return collect();
+        }
+
+        return $this->notificationQuery()
+            ->forUser($user)
             ->latest()
             ->take($this->visibleCount)
             ->get()
@@ -84,23 +91,40 @@ new class extends BasePageComponent {
 
     public function markAsRead(string $notificationId): void
     {
-        $notification = Auth::user()->notifications()->find($notificationId);
-        if ($notification && !$notification->read_at) {
+        $user = $this->authenticatedUser();
+        if (! $user) {
+            return;
+        }
+
+        $notification = $this->notificationQuery()->find($user, $notificationId);
+        if ($notification && ! $notification->read_at) {
             $notification->markAsRead();
         }
     }
 
     public function markAllAsRead(): void
     {
-        Auth::user()->unreadNotifications->markAsRead();
+        $user = $this->authenticatedUser();
+        if (! $user) {
+            return;
+        }
 
-        $user = Auth::user();
+        $this->notificationQuery()
+            ->forUser($user)
+            ->unread()
+            ->update(['read_at' => now()]);
+
         event(new DatabaseNotificationChanged(userUuid: $user->uuid, notificationId: '*', action: 'bulkUpdated'));
     }
 
     public function delete(string $notificationId): void
     {
-        $notification = Auth::user()->notifications()->find($notificationId);
+        $user = $this->authenticatedUser();
+        if (! $user) {
+            return;
+        }
+
+        $notification = $this->notificationQuery()->find($user, $notificationId);
         if ($notification) {
             $notification->delete();
         }
@@ -108,10 +132,13 @@ new class extends BasePageComponent {
 
     public function clearAll(): void
     {
-        $user = Auth::user();
+        $user = $this->authenticatedUser();
+        if (! $user) {
+            return;
+        }
 
         // Bulk delete doesn't fire model events; delete IDs then broadcast a single refresh event.
-        $user->notifications()->delete();
+        $this->notificationQuery()->forUser($user)->delete();
 
         event(new DatabaseNotificationChanged(userUuid: $user->uuid, notificationId: '*', action: 'bulkDeleted'));
     }
@@ -131,6 +158,22 @@ new class extends BasePageComponent {
             'error' => ['name' => 'x-circle', 'class' => 'h-6 w-6 text-error'],
             default => ['name' => 'bell', 'class' => 'h-6 w-6 text-base-content'],
         };
+    }
+
+    protected function authenticatedUser(): ?User
+    {
+        $user = Auth::user();
+
+        if (! $user instanceof User) {
+            return null;
+        }
+
+        return $user;
+    }
+
+    protected function notificationQuery(): UserNotificationQuery
+    {
+        return app(UserNotificationQuery::class);
     }
 }; ?>
 

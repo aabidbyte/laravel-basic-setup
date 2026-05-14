@@ -11,13 +11,13 @@
 <title>{{ $pageTitle }} - {{ config('app.name') }}</title>
 
 <link rel="icon"
-      href="/favicon.ico"
+      href="{{ global_asset('favicon.ico') }}"
       sizes="any" />
 <link rel="icon"
-      href="/favicon.svg"
+      href="{{ global_asset('favicon.svg') }}"
       type="image/svg+xml" />
 <link rel="apple-touch-icon"
-      href="/apple-touch-icon.png" />
+      href="{{ global_asset('apple-touch-icon.png') }}" />
 @stack('beginHead')
 
 <script type="text/javascript"

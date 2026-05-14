@@ -4,7 +4,6 @@ namespace App\Logging;
 
 use App\Constants\Logging\LogLevels;
 use Monolog\Handler\FilterHandler;
-use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
 use Monolog\Processor\PsrLogMessageProcessor;
 
@@ -21,7 +20,7 @@ class LevelSpecificLogChannelFactory
 
         $logger = new Logger($config['name'] ?? 'custom');
 
-        $rotatingHandler = new RotatingFileHandler($path, $days, $level);
+        $rotatingHandler = new TenantAwareRotatingFileHandler($path, $days, $level);
         $filteredHandler = new FilterHandler(
             $rotatingHandler,
             $level,

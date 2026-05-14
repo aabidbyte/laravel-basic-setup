@@ -106,9 +106,16 @@ class MyCspPreset implements Preset
             $policy->add(Directive::STYLE, Keyword::UNSAFE_INLINE);
         }
 
-        // Allow inline style/script ATTRIBUTES for Alpine.js
-        // (:class="...", @click="...", x-bind:style="...", etc.)
+        // Allow style elements created by rich editors and style/script attributes used by Alpine.js.
+        // `style-src` nonces cause browsers to ignore `unsafe-inline`, so style elements need
+        // an explicit directive when third-party editors inject runtime <style> tags.
         $policy
+            ->add(Directive::STYLE_ELEM, Keyword::SELF)
+            ->add(Directive::STYLE_ELEM, Keyword::UNSAFE_INLINE)
+            ->add(Directive::STYLE_ELEM, 'https://unpkg.com')
+            ->add(Directive::STYLE_ELEM, 'https://cdnjs.cloudflare.com')
+            ->add(Directive::STYLE_ELEM, 'https://fonts.googleapis.com')
+            ->add(Directive::STYLE_ELEM, 'https://fonts.bunny.net')
             ->add(Directive::STYLE_ATTR, Keyword::UNSAFE_INLINE)
             ->add(Directive::SCRIPT_ATTR, Keyword::UNSAFE_INLINE);
 

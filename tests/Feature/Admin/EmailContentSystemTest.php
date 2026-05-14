@@ -15,6 +15,7 @@ beforeEach(function () {
     $this->admin = User::factory()->create();
     $permissions = [
         Permissions::VIEW_EMAIL_TEMPLATES(),
+        Permissions::VIEW_EMAIL_LAYOUTS(),
         Permissions::CREATE_EMAIL_TEMPLATES(),
         Permissions::EDIT_EMAIL_TEMPLATES(),
     ];
@@ -34,6 +35,17 @@ test('admin can view contents index', function () {
 
 test('admin can view layouts index', function () {
     asTenant()->actingAs($this->admin)
+        ->get(route('emailTemplates.layouts.index'))
+        ->assertStatus(200);
+});
+
+test('user with layout permission can view layouts index', function () {
+    $user = User::factory()->create();
+
+    Permission::firstOrCreate(['name' => Permissions::VIEW_EMAIL_LAYOUTS()]);
+    $user->assignPermission(Permissions::VIEW_EMAIL_LAYOUTS());
+
+    asTenant()->actingAs($user)
         ->get(route('emailTemplates.layouts.index'))
         ->assertStatus(200);
 });

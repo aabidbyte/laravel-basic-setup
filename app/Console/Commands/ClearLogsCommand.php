@@ -46,30 +46,11 @@ class ClearLogsCommand extends Command
     private function clearAllLogs(string $logsPath): int
     {
         $clearedCount = 0;
+        $logFiles = $this->logFiles($logsPath);
 
-        // Clear main log files
-        $mainLogs = ['laravel.log', 'browser.log'];
-        foreach ($mainLogs as $logFile) {
-            $logPath = "{$logsPath}/{$logFile}";
-            if (File::exists($logPath)) {
-                File::delete($logPath);
-                $clearedCount++;
-            }
-        }
-
-        // Clear level-specific log folders
-        $levelChannels = LogChannels::levelChannels();
-        $levelChannels[] = LogChannels::DEPRECATIONS;
-
-        foreach ($levelChannels as $channel) {
-            $channelPath = "{$logsPath}/{$channel}";
-            if (File::isDirectory($channelPath)) {
-                $files = File::glob("{$channelPath}/*.log");
-                foreach ($files as $file) {
-                    File::delete($file);
-                    $clearedCount++;
-                }
-            }
+        foreach ($logFiles as $logFile) {
+            File::delete($logFile);
+            $clearedCount++;
         }
 
         // Clear Pail logs
@@ -106,14 +87,14 @@ class ClearLogsCommand extends Command
         }
 
         $clearedCount = 0;
-        $levelPath = "{$logsPath}/{$level}";
+        $logFiles = \array_filter(
+            $this->logFiles($logsPath),
+            fn (string $logFile): bool => \basename(\dirname($logFile)) === $level,
+        );
 
-        if (File::isDirectory($levelPath)) {
-            $files = File::glob("{$levelPath}/*.log");
-            foreach ($files as $file) {
-                File::delete($file);
-                $clearedCount++;
-            }
+        foreach ($logFiles as $logFile) {
+            File::delete($logFile);
+            $clearedCount++;
         }
 
         if ($clearedCount > 0) {
@@ -123,5 +104,23 @@ class ClearLogsCommand extends Command
         }
 
         return Command::SUCCESS;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function logFiles(string $logsPath): array
+    {
+        if (! File::isDirectory($logsPath)) {
+            return [];
+        }
+
+        return \array_values(\array_filter(
+            \array_map(
+                fn ($file): string => $file->getPathname(),
+                File::allFiles($logsPath),
+            ),
+            fn (string $file): bool => \str_ends_with($file, '.log'),
+        ));
     }
 }

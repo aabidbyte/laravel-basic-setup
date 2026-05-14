@@ -211,7 +211,7 @@ new #[Lazy] class extends Component {
     {{-- HTML Preview --}}
     @if ($previewHtml)
         <div class="bg-base-200 flex justify-center overflow-auto rounded-lg border p-4">
-            <div :x-bind:class="deviceClass"
+            <div x-bind:class="deviceClass"
                  class="border bg-white shadow-sm transition-all duration-300">
                 {{-- Secure iframe: no allow-same-origin = complete isolation --}}
                 <iframe srcdoc="{!! e($previewHtml) !!}"

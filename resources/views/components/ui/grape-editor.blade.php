@@ -274,7 +274,7 @@
                         // Add Merge Tag Button to RTE
                         if (this.editor.RichTextEditor) {
                             this.editor.RichTextEditor.add('merge-tag', {
-                                icon: '<svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M18.5 2h-13C3.6 2 2 3.6 2 5.5v13C2 20.4 3.6 22 5.5 22h13c1.9 0 3.5-1.6 3.5-3.5v-13C22 3.6 20.4 2 18.5 2zM5.5 4h13c.8 0 1.5.7 1.5 1.5v13c0 .8-.7 1.5-1.5 1.5h-13c-.8 0-1.5-.7-1.5-1.5v-13c0-.8.7-1.5 1.5-1.5zM8 11h2v2H8zm6 0h2v2h-2z" /></svg>',
+                                icon: '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M18.5 2h-13C3.6 2 2 3.6 2 5.5v13C2 20.4 3.6 22 5.5 22h13c1.9 0 3.5-1.6 3.5-3.5v-13C22 3.6 20.4 2 18.5 2zM5.5 4h13c.8 0 1.5.7 1.5 1.5v13c0 .8-.7 1.5-1.5 1.5h-13c-.8 0-1.5-.7-1.5-1.5v-13c0-.8.7-1.5 1.5-1.5zM8 11h2v2H8zm6 0h2v2h-2z" /></svg>',
                                 attributes: {
                                     title: 'Insert Merge Tag'
                                 },

@@ -249,7 +249,19 @@
                             return;
                         }
 
-                        this.$wire.handleRowClick(this.uuid);
+                        let component = this.$el;
+
+                        while (component && !component.hasAttribute('wire:id')) {
+                            component = component.parentElement;
+                        }
+
+                        const wire = component && window.Livewire ?
+                            window.Livewire.find(component.getAttribute('wire:id')) :
+                            this.$wire;
+
+                        if (wire && typeof wire.handleRowClick === 'function') {
+                            wire.handleRowClick(this.uuid);
+                        }
                     },
                 }));
 

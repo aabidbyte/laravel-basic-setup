@@ -103,7 +103,7 @@ it('shows tenant metadata in the tenant switcher trigger', function () {
     Livewire::actingAs($this->superAdmin)
         ->test('tenancy.tenant-switcher')
         ->assertSee('Tenant 1')
-        ->assertSee('pro')
+        ->assertSee('Pro')
         ->assertSee($this->tenant1->domains()->first()->domain)
         ->assertSee('T'); // Initials
 

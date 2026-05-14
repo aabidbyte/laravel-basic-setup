@@ -106,8 +106,7 @@ new class extends BasePageComponent {
                              max-width="7xl">
                 <x-slot:title>{{ __('email_templates.preview.title') }}</x-slot:title>
 
-                <livewire:emailTemplates.⚡preview :template-uuid="$template->uuid"
-                                                 lazy />
+                @livewire('emailTemplates.⚡preview', ['template-uuid' => $template->uuid, 'lazy' => true])
 
                 <x-slot:actions>
                     <x-ui.button type="button"
@@ -275,3 +274,39 @@ new class extends BasePageComponent {
         @endif
     </section>
 </x-layouts.page>
+
+@assets
+    <script @cspNonce>
+        (function() {
+            const register = function() {
+                if (window.Alpine.data('simpleToggle')) {
+                    return;
+                }
+
+                window.Alpine.data('simpleToggle', function() {
+                    return {
+                        show: false,
+
+                        on: function() {
+                            this.show = true;
+                        },
+
+                        off: function() {
+                            this.show = false;
+                        },
+
+                        toggle: function() {
+                            this.show = !this.show;
+                        },
+                    };
+                });
+            };
+
+            if (window.Alpine) {
+                register();
+            } else {
+                document.addEventListener('alpine:init', register);
+            }
+        })();
+    </script>
+@endassets

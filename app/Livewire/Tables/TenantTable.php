@@ -17,6 +17,7 @@ use App\Services\Tenancy\UserImpersonationService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 
 class TenantTable extends Datatable
@@ -213,6 +214,11 @@ class TenantTable extends Datatable
         $user = Auth::user();
 
         if (! $user instanceof User) {
+            Log::warning('Tenant switch aborted because no authenticated user model was available.', [
+                'target_tenant_id' => $tenantId,
+                'auth_id' => Auth::id(),
+            ]);
+
             return;
         }
 
@@ -229,6 +235,14 @@ class TenantTable extends Datatable
         $tenant = Tenant::find($tenantId);
 
         if (! $tenant || (! $user->hasRole(Roles::SUPER_ADMIN) && ! $user->tenants->contains('id', $tenantId))) {
+            Log::warning('Tenant switch denied by access check.', [
+                'target_tenant_id' => $tenantId,
+                'tenant_found' => $tenant instanceof Tenant,
+                'user_id' => $user->id,
+                'user_is_super_admin' => $user->hasRole(Roles::SUPER_ADMIN),
+                'user_loaded_tenant_ids' => $user->tenants->pluck('id')->all(),
+            ]);
+
             $this->dispatch('notify', [
                 'type' => 'error',
                 'message' => __('tenancy.access_denied'),

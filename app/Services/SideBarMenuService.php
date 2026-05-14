@@ -79,7 +79,7 @@ class SideBarMenuService
                 NavigationItem::make()
                     ->title(__('types.email_templates'))
                     ->icon('envelope')
-                    ->show(tenant() && (Auth::user()?->can(Permissions::VIEW_EMAIL_TEMPLATES()) ?? false))
+                    ->show($this->hasAnyEmailTemplatePermission())
                     ->items(
                         NavigationItem::make()
                             ->title(__('types.email_contents'))
@@ -90,7 +90,7 @@ class SideBarMenuService
                             ->title(__('types.email_layouts'))
                             ->route('emailTemplates.layouts.index')
                             ->activeRoutes('emailTemplates.layouts.*')
-                            ->show(Auth::user()?->can(Permissions::VIEW_EMAIL_TEMPLATES()) ?? false),
+                            ->show(Auth::user()?->can(Permissions::VIEW_EMAIL_LAYOUTS()) ?? false),
                     ),
 
                 // Developer Tools group (collapsible, dev only)
@@ -188,5 +188,19 @@ class SideBarMenuService
             || $user->can(Permissions::VIEW_ROLES())
             || $user->can(Permissions::VIEW_TEAMS())
             || $user->can(Permissions::VIEW_ERROR_LOGS());
+    }
+
+    /**
+     * Check if the current user can access any email-template sidebar entity.
+     */
+    protected function hasAnyEmailTemplatePermission(): bool
+    {
+        $user = Auth::user();
+        if (! $user) {
+            return false;
+        }
+
+        return $user->can(Permissions::VIEW_EMAIL_TEMPLATES())
+            || $user->can(Permissions::VIEW_EMAIL_LAYOUTS());
     }
 }

@@ -7,6 +7,7 @@ use App\Services\I18nService;
 use App\Services\SideBarMenuService;
 use App\Support\Notifications\NotificationBroadcastClientId;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
@@ -18,9 +19,17 @@ class BladeServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $this->registerBladeDirectives();
         $this->initLayoutVariables();
         $this->initPageTitle();
         $this->initPageSubtitle();
+    }
+
+    private function registerBladeDirectives(): void
+    {
+        Blade::directive('cspNonce', function () {
+            return 'nonce="<?php echo cspNonce(); ?>"';
+        });
     }
 
     private function initLayoutVariables()

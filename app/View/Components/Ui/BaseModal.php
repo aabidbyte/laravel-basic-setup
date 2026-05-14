@@ -78,7 +78,7 @@ class BaseModal extends Component
         public string $backgroundClass = 'bg-base-100',
         public string $paddingClass = 'py-2 px-4',
     ) {
-        $this->openState = $this->sanitizeAlpineIdentifier($this->openState, 'modalIsOpen');
+        $this->openState = $this->sanitizeAlpineStatePath($this->openState, 'modalIsOpen');
         $this->placement = $this->sanitizePlacement($this->placement);
         $this->transition = $this->sanitizeTransition($this->transition);
         $this->variant = $this->sanitizeVariant($this->variant);
@@ -358,7 +358,7 @@ class BaseModal extends Component
         return $defaults;
     }
 
-    private function sanitizeAlpineIdentifier(string $value, string $fallback): string
+    private function sanitizeAlpineStatePath(string $value, string $fallback): string
     {
         $value = \trim($value);
 
@@ -366,7 +366,7 @@ class BaseModal extends Component
             return $fallback;
         }
 
-        if (! \preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $value)) {
+        if (! \preg_match('/^(?:[A-Za-z_][A-Za-z0-9_]*|\$store)(?:\.[A-Za-z_][A-Za-z0-9_]*)*$/', $value)) {
             return $fallback;
         }
 
