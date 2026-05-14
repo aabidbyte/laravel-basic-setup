@@ -15,6 +15,8 @@
     'searchMethod' => null,
     'searchDebounce' => 300,
     'searchPlaceholder' => null,
+    'showSwatches' => false,
+    'swatchCssVariablePrefix' => '--color-',
 ])
 
 @php
@@ -65,6 +67,8 @@
         'searchDebounce' => $searchDebounce,
         'searchPlaceholder' => $searchPlaceholder ?? __('table.search_placeholder'),
         'emptyMessage' => __('table.no_results_found'),
+        'showSwatches' => $showSwatches,
+        'swatchCssVariablePrefix' => $swatchCssVariablePrefix,
     ];
     $searchConfigArg = json_encode(json_encode($searchConfig), JSON_HEX_APOS);
 
@@ -119,13 +123,19 @@
                          class="w-full justify-between text-left font-normal"
                          x-bind:class="getOptionClasses(option[0])">
                 {{-- Safe highlighting without x-html --}}
-                <span class="truncate">
-                    <template x-if="!searchQuery">
-                        <span x-text="option[1]"></span>
-                    </template>
-                    <template x-if="searchQuery">
-                        <span x-data="highlightedText($data, option[1])"></span>
-                    </template>
+                <span class="flex min-w-0 items-center gap-2">
+                    <span x-show="searchConfig.showSwatches"
+                          x-cloak
+                          class="border-base-content/10 h-4 w-4 shrink-0 rounded-full border shadow-sm"
+                          x-bind:style="swatchStyle(option[0])"></span>
+                    <span class="truncate">
+                        <template x-if="!searchQuery">
+                            <span x-text="option[1]"></span>
+                        </template>
+                        <template x-if="searchQuery">
+                            <span x-data="highlightedText($data, option[1])"></span>
+                        </template>
+                    </span>
                 </span>
                 <x-ui.icon name="check"
                            x-show="isSelected(option[0])"
@@ -170,8 +180,14 @@
              $hasError ? 'select-error' : '',
          ])
          id="{{ $selectId }}">
-        <span class="truncate"
-              x-text="currentLabel || placeholder"></span>
+        <span class="flex min-w-0 items-center gap-2">
+            <span x-show="searchConfig.showSwatches && value"
+                  x-cloak
+                  class="border-base-content/10 h-4 w-4 shrink-0 rounded-full border shadow-sm"
+                  x-bind:style="swatchStyle(value)"></span>
+            <span class="truncate"
+                  x-text="currentLabel || placeholder"></span>
+        </span>
     </div>
 
     {{-- Mobile: Bottom Sheet --}}
@@ -431,6 +447,11 @@
 
                         isSelected: function(val) {
                             return this.value === val;
+                        },
+
+                        swatchStyle: function(val) {
+                            return 'background-color: var(' + this.searchConfig.swatchCssVariablePrefix +
+                                val + ');';
                         },
 
                         getOptionClasses: function(val) {

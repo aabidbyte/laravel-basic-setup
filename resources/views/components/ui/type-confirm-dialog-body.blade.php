@@ -31,7 +31,7 @@
         <x-ui.input type="text"
                     x-model="confirmText"
                     @keyup.enter="confirm()"
-                    x-bind:class="{ 'input-error': confirmText.length > 0 && !isConfirmValid }"
+                    x-bind:class="confirmInputClass"
                     placeholder="{{ __('common.type_confirm.placeholder') }}"
                     :label="__('common.type_confirm.type_label')"
                     autofocus />
@@ -80,6 +80,10 @@
                      */
                     get isConfirmValid() {
                         return this.confirmText.trim() === this.itemLabel.trim();
+                    },
+
+                    get confirmInputClass() {
+                        return this.confirmText.length > 0 && !this.isConfirmValid ? 'input-error' : '';
                     },
 
                     /**

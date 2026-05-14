@@ -84,7 +84,7 @@
         "migrate-fresh-seed": [
             "@php artisan migrate:fresh --seed",
             "@php artisan tenants:migrate-fresh",
-            "@php artisan tenants:migrate --seed"
+            "@php artisan tenants:seed --force"
         ],
         "migrate-fresh": [
             "@php artisan migrate:fresh",

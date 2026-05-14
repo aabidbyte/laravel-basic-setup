@@ -5,7 +5,7 @@
 <x-layouts.app>
     <x-layouts.page>
         <x-slot:topActions>
-            <x-ui.button variant="primary"
+            <x-ui.button color="primary"
                          icon="plus"
                          href="{{ route('tenants.create') }}"
                          wire:navigate>

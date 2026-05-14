@@ -18,11 +18,11 @@ enum SubscriptionStatus: string
     public function color(): string
     {
         return match ($this) {
-            self::ACTIVE => 'badge-success',
-            self::CANCELED => 'badge-error',
-            self::EXPIRED => 'badge-warning',
-            self::TRIAL => 'badge-info',
-            self::PENDING => 'badge-ghost',
+            self::ACTIVE => 'success',
+            self::CANCELED => 'error',
+            self::EXPIRED => 'warning',
+            self::TRIAL => 'info',
+            self::PENDING => 'ghost',
         };
     }
 

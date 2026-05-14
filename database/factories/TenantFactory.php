@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\Ui\ThemeColorTypes;
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -30,6 +31,7 @@ class TenantFactory extends Factory
             'id' => $id,
             'name' => $this->faker->company(),
             'plan' => $this->faker->randomElement(['free', 'pro', 'enterprise']),
+            'color' => $this->faker->randomElement(ThemeColorTypes::values()),
             'should_seed' => false,
         ];
     }

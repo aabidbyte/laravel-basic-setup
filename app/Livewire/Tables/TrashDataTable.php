@@ -132,7 +132,8 @@ class TrashDataTable extends Datatable
                     'entityType' => $this->entityType,
                     'uuid' => $model->uuid,
                 ]))
-                ->variant('ghost');
+                ->variant('ghost')
+                ->color('info');
         }
 
         // Restore action
@@ -187,6 +188,7 @@ class TrashDataTable extends Datatable
             $actions[] = BulkAction::make('restore', __('actions.restore_selected'))
                 ->icon('arrow-uturn-left')
                 ->variant('ghost')
+                ->color('success')
                 ->execute(function ($models) {
                     $count = $models->count();
                     $models->each->restore();

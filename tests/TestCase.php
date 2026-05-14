@@ -4,18 +4,19 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use App\Models\Tenant;
+use App\Services\Tenancy\TestingTenantDatabaseManager;
 use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Application;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Tests\Concerns\InteractsWithTenancy;
 
 abstract class TestCase extends BaseTestCase
 {
+    use DatabaseMigrations;
     use InteractsWithTenancy;
-    use RefreshDatabase;
 
     /**
      * The connections that should be transacted.
@@ -26,13 +27,22 @@ abstract class TestCase extends BaseTestCase
 
     protected $seed = true;
 
+    public function runDatabaseMigrations(): void
+    {
+        $this->beforeRefreshingDatabase();
+        $this->refreshTestDatabase();
+        $this->afterRefreshingDatabase();
+
+        $this->app[Kernel::class]->setArtisan(null);
+    }
+
     public function createApplication()
     {
         $app = require Application::inferBasePath() . '/bootstrap/app.php';
 
         $app->make(Kernel::class)->bootstrap();
 
-        $this->configureTestingDatabaseIsolation();
+        $app->make(TestingTenantDatabaseManager::class)->configure();
 
         return $app;
     }
@@ -44,85 +54,34 @@ abstract class TestCase extends BaseTestCase
 
     protected function configureTestingDatabaseIsolation(): void
     {
-        if (! app()->environment('testing')) {
-            return;
-        }
-
-        if (config('database.default') !== 'mysql') {
-            return;
-        }
-
-        $database = $this->activeDatabaseName();
-
-        config([
-            'database.connections.central.database' => $database,
-            'tenancy.database.prefix' => $this->tenantTestingDatabasePrefix($database),
-        ]);
-
-        DB::purge('central');
-    }
-
-    private function tenantTestingDatabasePrefix(string $database): string
-    {
-        $prefixBase = env('TENANCY_TEST_DATABASE_PREFIX', 'testing');
-        $databaseName = Str::slug($database, '_');
-
-        return "{$prefixBase}_{$databaseName}_tenant_";
-    }
-
-    private function activeDatabaseName(): string
-    {
-        $defaultConnection = config('database.default');
-
-        return config("database.connections.{$defaultConnection}.database");
+        $this->testing_databases()->configure();
     }
 
     protected function dropTestingTenantDatabases(): void
     {
-        if (! app()->environment('testing')) {
-            return;
-        }
+        $this->testing_databases()->dropForDatabase();
+    }
 
-        if (config('database.default') !== 'mysql') {
-            return;
-        }
+    protected function deleteTestingTenants(): void
+    {
+        Tenant::query()
+            ->get()
+            ->each(function (Tenant $tenant): void {
+                try {
+                    $tenant->delete();
+                } catch (QueryException $exception) {
+                    if ($exception->getCode() !== 'HY000') {
+                        throw $exception;
+                    }
 
-        $patterns = $this->tenantDatabaseCleanupPatterns();
-
-        DB::connection('mysql')
-            ->table('information_schema.SCHEMATA')
-            ->where(function ($query) use ($patterns): void {
-                foreach ($patterns as $pattern) {
-                    $query->orWhere('SCHEMA_NAME', 'like', $pattern);
+                    Tenant::withoutEvents(fn (): ?bool => $tenant->delete());
                 }
-            })
-            ->pluck('SCHEMA_NAME')
-            ->each(fn (string $database) => $this->dropTestingTenantDatabase($database));
+            });
     }
 
-    /**
-     * @return array<int, string>
-     */
-    private function tenantDatabaseCleanupPatterns(): array
+    private function testing_databases(): TestingTenantDatabaseManager
     {
-        return \array_values(\array_unique([
-            config('tenancy.database.prefix') . '%',
-            'aabidbytesass\\_tenant\\_%',
-        ]));
-    }
-
-    private function dropTestingTenantDatabase(string $database): void
-    {
-        $matchesTestingPattern = \collect($this->tenantDatabaseCleanupPatterns())
-            ->contains(fn (string $pattern): bool => Str::is(\str_replace(['\\_', '%'], ['_', '*'], $pattern), $database));
-
-        if (! $matchesTestingPattern) {
-            return;
-        }
-
-        $escapedDatabase = \str_replace('`', '``', $database);
-
-        DB::connection('mysql')->statement("DROP DATABASE IF EXISTS `{$escapedDatabase}`");
+        return $this->app->make(TestingTenantDatabaseManager::class);
     }
 
     protected function tearDown(): void

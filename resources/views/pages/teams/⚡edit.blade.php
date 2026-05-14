@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 use App\Constants\Auth\Permissions;
 use App\Enums\Ui\PlaceholderType;
+use App\Enums\Ui\ThemeColorTypes;
 use App\Livewire\Bases\BasePageComponent;
 use App\Models\Team;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Enum;
 use Livewire\Attributes\Computed;
 
 new class extends BasePageComponent {
@@ -24,6 +27,7 @@ new class extends BasePageComponent {
      */
     public string $name = '';
     public ?string $description = null;
+    public string $color = 'neutral';
 
     /**
      * Initialize the component.
@@ -52,6 +56,7 @@ new class extends BasePageComponent {
         $this->model = $team;
         $this->name = $team->name;
         $this->description = $team->description;
+        $this->color = $team->color ?? 'neutral';
     }
 
     /**
@@ -107,6 +112,7 @@ new class extends BasePageComponent {
     {
         $rules = [
             'description' => ['nullable', 'string', 'max:1000'],
+            'color' => ['required', new Enum(ThemeColorTypes::class)],
         ];
 
         if ($this->isCreateMode) {
@@ -128,6 +134,7 @@ new class extends BasePageComponent {
         $team = Team::create([
             'name' => $this->name,
             'description' => $this->description,
+            'color' => $this->color,
             'created_by_user_id' => Auth::id(),
         ]);
 
@@ -145,6 +152,7 @@ new class extends BasePageComponent {
         $this->model->update([
             'name' => $this->name,
             'description' => $this->description,
+            'color' => $this->color,
         ]);
 
         $this->sendSuccessNotification($this->model, 'pages.common.edit.success');
@@ -159,18 +167,38 @@ new class extends BasePageComponent {
     {
         return $this->getCancelUrl('teams.index', 'teams.show', $this->model);
     }
+
+    /**
+     * Get theme color options for color picker component.
+     */
+    #[Computed]
+    public function colorOptions(): array
+    {
+        return ThemeColorTypes::options();
+    }
 }; ?>
 
 <x-layouts.page :backHref="$this->cancelUrl">
     <x-slot:bottomActions>
-        <x-ui.button type="submit"
-                     form="team-form"
-                     variant="primary">
-            <x-ui.loading wire:loading
-                          wire:target="{{ $this->submitAction }}"
-                          size="sm" />
-            {{ $this->submitButtonText }}
-        </x-ui.button>
+        <div class="flex items-center justify-end gap-3">
+            <x-ui.button :href="$this->cancelUrl"
+                         wire:navigate
+                         variant="ghost"
+                         size="sm">
+                <x-ui.icon name="x-mark"
+                           size="sm" />
+                {{ __('actions.cancel') }}
+            </x-ui.button>
+
+            <x-ui.button type="submit"
+                         form="team-form"
+                         color="primary"
+                         size="sm">
+                <x-ui.icon name="check"
+                           size="sm" />
+                {{ $this->submitButtonText }}
+            </x-ui.button>
+        </div>
     </x-slot:bottomActions>
 
     <div class="mx-auto w-full max-w-4xl">
@@ -194,6 +222,11 @@ new class extends BasePageComponent {
                                 name="description"
                                 :label="__('teams.description')"
                                 rows="3" />
+
+                    <x-ui.color-picker label="{{ __('fields.color') }}"
+                                       wire:model="color"
+                                       :options="$this->colorOptions"
+                                       required />
                 </div>
             </x-ui.form>
         </x-ui.card>

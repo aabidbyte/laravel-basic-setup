@@ -132,8 +132,9 @@ new class extends BasePageComponent {
 
                     <x-slot:actions>
                         <x-ui.button type="submit"
-                                     variant="primary"
+                                     color="primary"
                                      class="w-full"
+                                     icon="check-circle"
                                      wire:loading.attr="disabled">
                             {{ __('subscriptions.update_subscription') }}
                         </x-ui.button>

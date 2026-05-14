@@ -187,6 +187,7 @@ class EmailTemplateTable extends Datatable
         $actions[] = Action::make('preview', __('actions.preview'))
             ->icon('eye')
             ->variant('ghost')
+            ->color('info')
             ->livewireModal('emailTemplates.preview', fn (EmailTemplate $template) => ['templateUuid' => $template->uuid])
             ->can(Permissions::VIEW_EMAIL_TEMPLATES(), false);
 
@@ -195,6 +196,7 @@ class EmailTemplateTable extends Datatable
                 ->icon('document-text')
                 ->route(fn (EmailTemplate $template) => route('emailTemplates.show', $template))
                 ->variant('ghost')
+                ->color('info')
                 ->can(Permissions::VIEW_EMAIL_TEMPLATES(), false);
         }
 
@@ -203,6 +205,7 @@ class EmailTemplateTable extends Datatable
                 ->icon('pencil')
                 ->route(fn (EmailTemplate $template) => route('emailTemplates.settings.edit', $template))
                 ->variant('ghost')
+                ->color('primary')
                 ->can(Permissions::EDIT_EMAIL_TEMPLATES(), false);
         }
 
@@ -225,6 +228,7 @@ class EmailTemplateTable extends Datatable
         $actions[] = Action::make('archive', __('email_templates.actions.archive'))
             ->icon('archive-box')
             ->variant('ghost')
+            ->color('warning')
             ->confirm(__('actions.confirm_archive'))
             ->execute(fn (EmailTemplate $template) => $template->update(['status' => EmailTemplateStatus::ARCHIVED]))
             ->can(Permissions::EDIT_EMAIL_TEMPLATES(), false)
@@ -285,6 +289,7 @@ class EmailTemplateTable extends Datatable
             BulkAction::make('publish', __('email_templates.actions.publish'))
                 ->icon('check')
                 ->variant('ghost')
+                ->color('success')
                 ->execute(function ($templates) {
                     $service = resolve(EmailTemplateService::class);
 
@@ -306,6 +311,7 @@ class EmailTemplateTable extends Datatable
             BulkAction::make('archive', __('email_templates.actions.archive'))
                 ->icon('archive-box')
                 ->variant('ghost')
+                ->color('warning')
                 ->execute(fn ($templates) => $templates->each->update(['status' => EmailTemplateStatus::ARCHIVED]))
                 ->can(Permissions::EDIT_EMAIL_TEMPLATES()),
 

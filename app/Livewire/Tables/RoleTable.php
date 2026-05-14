@@ -62,6 +62,10 @@ class RoleTable extends Datatable
                 ->format(fn ($value) => DataTableUi::renderComponent(DataTableUi::UI_BADGE, (string) $value, ['variant' => 'ghost']))
                 ->html()
                 ->class('text-center'),
+
+            Column::make(__('fields.color'), 'color')
+                ->format(fn ($value) => DataTableUi::renderComponent(DataTableUi::UI_BADGE, __("fields.colors.{$value}"), ['color' => $value, 'size' => 'sm']))
+                ->html(),
         ];
     }
 
@@ -79,6 +83,7 @@ class RoleTable extends Datatable
                 ->icon('eye')
                 ->route(fn (Role $role) => route('roles.show', $role->uuid))
                 ->variant('ghost')
+                ->color('info')
                 ->can(Permissions::VIEW_ROLES(), false);
         }
 
@@ -87,6 +92,7 @@ class RoleTable extends Datatable
                 ->icon('pencil')
                 ->route(fn (Role $role) => route('roles.edit', $role->uuid))
                 ->variant('ghost')
+                ->color('primary')
                 ->can(Permissions::EDIT_ROLES(), false);
         }
 

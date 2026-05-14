@@ -66,9 +66,97 @@ enum {Entity}Status: string
     case ACTIVE   = 'active';
     case INACTIVE = 'inactive';
 }
+
+### 1.3 RBAC Registration (CRITICAL)
+
+All new entities MUST be registered in the RBAC (Role-Based Access Control) system.
+
+1.  Add the entity constant to `App\Constants\Auth\PermissionEntity.php`.
+2.  Add the supported actions for the entity in `App\Services\Auth\PermissionMatrix.php`.
+3.  Add the corresponding `@method static string ...` annotations to `App\Constants\Auth\Permissions.php`.
+4.  Ensure `Trash` is also treated as an entity if the model uses `SoftDeletes`.
+
+This ensures the new entity can be used with `Permissions::ACTION_ENTITY()` calls and appears in the permission matrix UI.
+
+### 1.4 Colorization & Icons Theme (MANDATORY)
+
+All action buttons MUST have an **icon**, a **label**, and follow the standardized **colorization theme**.
+
+#### Architectural Slots (CRITICAL)
+Always respect the project's page layout architecture by placing buttons in their designated slots:
+-   **Create/Index Actions**: Use `<x-slot:topActions>` in the Index view.
+-   **Show Actions**: Use `<x-slot:topActions>` in the Show view.
+-   **Edit/Create Form Actions**: Use `<x-slot:bottomActions>` in the Edit/Create view.
+
+#### Action Synchronization (CRITICAL)
+The actions available in the **Show view** MUST be synchronized with the **row actions** in the DataTable. 
+
+-   **Completeness**: If an action exists in the DataTable (e.g., Edit, Delete, Archive, Publish), it SHOULD also be available in the Show view's `<x-slot:topActions>`.
+-   **Permission Parity**: Action conditions (`@can`) MUST match between the DataTable and the Show view.
+-   **Confirmation**: Destructive or status-changing actions (Delete, Archive, Publish) MUST include a confirmation step in both locations.
+
+#### Domain & Settings Visibility (NEW)
+Entities that have sub-resources (like Tenants with Domains) or complex settings MUST use a tabbed interface in the **Show** view to organize information clearly.
+-   Use DaisyUI `tabs tabs-lifted` for navigation.
+-   Include tabs for `Overview`, `Sub-resources` (e.g., `Domains`, `Users`), and `Settings`.
+
+Example synchronization:
+-   **DataTable**: `Action::make('delete')->can(Permissions::DELETE_USERS())->confirm(...)`
+-   **Show View**: `@can(Permissions::DELETE_USERS()) <x-ui.button ... x-on:click="confirmModal(...)"> ... @endcan`
+
+#### Action Buttons Standard
+Use the `->icon()`, `->label()`, and `->color()` methods in DataTables. In Blade views, use `<x-ui.button>` with the `icon` and `color` attributes (preferred) or an embedded `<x-ui.icon>`.
+
+**ALWAYS use `color="primary"` (or info/success/etc) instead of `variant="primary"`.**
+
+-   **View/Show**: `icon('eye')`, `color('info')`
+-   **Edit/Update**: `icon('pencil')`, `color('primary')`
+-   **Delete**: `icon('trash')`, `color('error')`
+-   **Restore**: `icon('arrow-path')`, `color('success')`
+-   **Publish/Activate**: `icon('check')`, `color('success')`
+-   **Deactivate/Archive**: `icon('archive-box')`, `color('warning')`
+-   **Cancel/Back**: `icon('x-mark')`, `color('secondary')` (or ghost)
+-   **Save/Create**: `icon('check')`, `color('primary')`
+-   **Add New/Create Entity**: `icon('plus')`, `color('primary')` (Standard for `index.blade.php` top actions)
+-   **Switch/Navigate**: `icon('arrow-path')` (or `arrow-right-start-on-rectangle`), `color('success')`
+
+#### Row Actions vs Row Click (CRITICAL)
+Always prefer explicit **Row Actions** for primary operations (Edit, Delete, Switch) rather than relying solely on `rowClick`.
+-   **DataTable `rowClick`**: Should only be used for navigation (e.g., View/Show).
+-   **DataTable `rowActions`**: Should contain all functional actions (Edit, Delete, Switch, Archive).
+-   **Tenant Entities**: For entities representing organizations or switchable contexts (like Tenants), provide a dedicated "Switch" action with `icon('arrow-path')` and `color('success')` in the `rowActions`.
+
+#### Translatable Relations in DataTables (NEW)
+When a column displays a value from a related model (e.g., a Plan's name), and that name is translatable:
+-   **Eager Loading**: Always include the relation in the `baseQuery()`'s `with()` array.
+-   **Column Formatting**: Use `->format(fn ($value, $row) => $row->relation?->name)` to ensure the current locale is respected via Spatie's `HasTranslations` trait on the related model.
+
+Example in a DataTable:
+
+```php
+protected function rowActions(): array
+{
+    return [
+        Action::make('view', __('actions.view'))
+            ->icon('eye')
+            ->color('info')
+            ->route(fn ($model) => route('entities.show', $model->uuid)),
+
+        Action::make('edit', __('actions.edit'))
+            ->icon('pencil')
+            ->color('primary')
+            ->route(fn ($model) => route('entities.edit', $model->uuid)),
+
+        Action::make('delete', __('actions.delete'))
+            ->icon('trash')
+            ->color('error')
+            ->confirm(__('actions.confirm_delete'))
+            ->execute(fn ($model) => $model->delete()),
+    ];
+}
 ```
 
-### 1.3 Translations
+### 1.5 Translations
 
 Create both locale files:
 

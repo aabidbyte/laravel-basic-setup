@@ -147,9 +147,8 @@ new class extends BasePageComponent {
                                              confirmEvent: 'confirm-restore'
                                          })"
                                          color="success"
-                                         size="sm">
-                                <x-ui.icon name="arrow-uturn-left"
-                                           size="sm"></x-ui.icon>
+                                         size="sm"
+                                         icon="arrow-uturn-left">
                                 {{ __('actions.restore') }}
                             </x-ui.button>
                         @endcan
@@ -158,9 +157,8 @@ new class extends BasePageComponent {
                             <x-ui.button wire:click="openForceDeleteModal"
                                          color="error"
                                          variant="outline"
-                                         size="sm">
-                                <x-ui.icon name="trash"
-                                           size="sm"></x-ui.icon>
+                                         size="sm"
+                                         icon="trash">
                                 {{ __('actions.force_delete') }}
                             </x-ui.button>
                         @endcan

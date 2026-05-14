@@ -183,7 +183,8 @@ class SideBarMenuService
             return false;
         }
 
-        return $user->can(Permissions::VIEW_USERS())
+        return $user->can(Permissions::VIEW_TRASH())
+            || $user->can(Permissions::VIEW_USERS())
             || $user->can(Permissions::VIEW_ROLES())
             || $user->can(Permissions::VIEW_TEAMS())
             || $user->can(Permissions::VIEW_ERROR_LOGS());

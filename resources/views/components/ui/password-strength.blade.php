@@ -1,10 +1,14 @@
 @props(['targetId'])
 
-<div x-data="passwordStrength('{{ $targetId }}', {
-    weak: '{{ __('auth.password_strength.weak') }}',
-    good: '{{ __('auth.password_strength.good') }}',
-    strong: '{{ __('auth.password_strength.strong') }}'
-})"
+@php
+    $passwordStrengthTranslations = json_encode([
+        'weak' => __('auth.password_strength.weak'),
+        'good' => __('auth.password_strength.good'),
+        'strong' => __('auth.password_strength.strong'),
+    ], JSON_HEX_APOS);
+@endphp
+
+<div x-data="passwordStrength('{{ $targetId }}', '{{ $passwordStrengthTranslations }}')"
      class="mt-3 space-y-3">
     {{-- Header with Score Label --}}
     <div class="flex items-center justify-between text-xs"
@@ -26,9 +30,7 @@
     <div class="grid h-1.5 w-full grid-cols-4 gap-1.5">
         <template x-for="i in 4">
             <div class="bg-base-200 rounded-full transition-colors duration-1000 ease-in-out"
-                 :class="{
-                     [color]: score >= i
-                 }"></div>
+                 :class="segmentClass(i)"></div>
         </template>
     </div>
 
@@ -36,43 +38,43 @@
     <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
         <x-ui.label class="flex cursor-default items-center gap-2 transition-colors duration-200"
                     variant="plain"
-                    @:class="{ 'text-success font-medium translate-x-1': requirements.length }">
+                    @:class="requirementClass('length')">
             <input type="checkbox"
                    class="checkbox checkbox-xs checkbox-success"
                    disabled
                    :checked="requirements.length" />
             <span class="transition-colors duration-1000 ease-in-out"
-                  :class="{ 'text-success': requirements.length }">{{ __('auth.password_strength.requirements.length') }}</span>
+                  :class="requirementTextClass('length')">{{ __('auth.password_strength.requirements.length') }}</span>
         </x-ui.label>
         <x-ui.label class="flex cursor-default items-center gap-2 transition-colors duration-200"
                     variant="plain"
-                    @:class="{ 'text-success font-medium translate-x-1': requirements.lowercase && requirements.uppercase }">
+                    @:class="mixedCaseRequirementClass">
             <input type="checkbox"
                    class="checkbox checkbox-xs checkbox-success"
                    disabled
                    :checked="requirements.lowercase && requirements.uppercase" />
             <span class="transition-colors duration-1000 ease-in-out"
-                  :class="{ 'text-success': requirements.lowercase && requirements.uppercase }">{{ __('auth.password_strength.requirements.mixed_case') }}</span>
+                  :class="mixedCaseRequirementTextClass">{{ __('auth.password_strength.requirements.mixed_case') }}</span>
         </x-ui.label>
         <x-ui.label class="flex cursor-default items-center gap-2 transition-colors duration-200"
                     variant="plain"
-                    @:class="{ 'text-success font-medium translate-x-1': requirements.number }">
+                    @:class="requirementClass('number')">
             <input type="checkbox"
                    class="checkbox checkbox-xs checkbox-success"
                    disabled
                    :checked="requirements.number" />
             <span class="transition-colors duration-1000 ease-in-out"
-                  :class="{ 'text-success': requirements.number }">{{ __('auth.password_strength.requirements.number') }}</span>
+                  :class="requirementTextClass('number')">{{ __('auth.password_strength.requirements.number') }}</span>
         </x-ui.label>
         <x-ui.label class="flex cursor-default items-center gap-2 transition-colors duration-200"
                     variant="plain"
-                    @:class="{ 'text-success font-medium translate-x-1': requirements.symbol }">
+                    @:class="requirementClass('symbol')">
             <input type="checkbox"
                    class="checkbox checkbox-xs checkbox-success"
                    disabled
                    :checked="requirements.symbol" />
             <span class="transition-colors duration-1000 ease-in-out"
-                  :class="{ 'text-success': requirements.symbol }">{{ __('auth.password_strength.requirements.symbol') }}</span>
+                  :class="requirementTextClass('symbol')">{{ __('auth.password_strength.requirements.symbol') }}</span>
         </x-ui.label>
     </div>
 </div>
@@ -81,9 +83,9 @@
     <script @cspNonce>
         (function() {
             const register = () => {
-                Alpine.data('passwordStrength', (targetId, translations = {}) => ({
+                Alpine.data('passwordStrength', (targetId, translations = '{}') => ({
                     targetId: targetId,
-                    translations: translations,
+                    translations: typeof translations === 'string' ? JSON.parse(translations) : translations,
                     password: '',
                     requirements: {
                         length: false,
@@ -189,6 +191,30 @@
                         if (this.score <= 2) return 'text-error';
                         if (this.score <= 3) return 'text-warning';
                         return 'text-success';
+                    },
+
+                    segmentClass(index) {
+                        return this.score >= index ? this.color : '';
+                    },
+
+                    requirementClass(name) {
+                        return this.requirements[name] ? 'text-success font-medium translate-x-1' : '';
+                    },
+
+                    requirementTextClass(name) {
+                        return this.requirements[name] ? 'text-success' : '';
+                    },
+
+                    get mixedCaseRequirementClass() {
+                        return this.requirements.lowercase && this.requirements.uppercase ?
+                            'text-success font-medium translate-x-1' :
+                            '';
+                    },
+
+                    get mixedCaseRequirementTextClass() {
+                        return this.requirements.lowercase && this.requirements.uppercase ?
+                            'text-success' :
+                            '';
                     },
 
                     destroy() {

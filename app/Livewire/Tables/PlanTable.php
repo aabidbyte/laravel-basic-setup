@@ -67,7 +67,7 @@ class PlanTable extends Datatable
 
             Column::make(__('plans.status'), 'is_active')
                 ->format(fn ($value) => $value ? __('plans.active') : __('plans.inactive'))
-                ->badge(fn ($plan) => $plan->is_active ? 'badge-success' : 'badge-ghost'),
+                ->badge(fn ($plan) => $plan->is_active ? 'success' : 'ghost'),
         ];
     }
 
@@ -94,12 +94,14 @@ class PlanTable extends Datatable
             Action::make('show', __('actions.view'))
                 ->icon('eye')
                 ->variant('ghost')
+                ->color('info')
                 ->route(fn (Plan $plan) => route('plans.show', $plan->uuid))
                 ->can(PolicyAbilities::VIEW),
 
             Action::make('edit', __('actions.edit'))
                 ->icon('pencil')
                 ->variant('ghost')
+                ->color('primary')
                 ->route(fn (Plan $plan) => route('plans.edit', $plan->uuid))
                 ->can(PolicyAbilities::UPDATE),
 

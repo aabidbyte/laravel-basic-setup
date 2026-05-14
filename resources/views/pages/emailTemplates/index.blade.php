@@ -21,9 +21,7 @@
                     <x-ui.button href="{{ route('emailTemplates.settings.edit', ['type' => $kind->value]) }}"
                                  wire:navigate
                                  color="primary"
-                                 class="gap-2">
-                        <x-ui.icon name="plus"
-                                   size="sm"></x-ui.icon>
+                                 icon="plus">
                         {{ __('actions.create_new') }}
                     </x-ui.button>
                 @endcan

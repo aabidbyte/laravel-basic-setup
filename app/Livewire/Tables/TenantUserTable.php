@@ -7,14 +7,17 @@ namespace App\Livewire\Tables;
 use App\Constants\Auth\Permissions;
 use App\Constants\Auth\PolicyAbilities;
 use App\Constants\DataTable\DataTableUi;
+use App\Enums\DataTable\DataTableFilterType;
 use App\Livewire\DataTable\Datatable;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\DataTable\Builders\Action;
 use App\Services\DataTable\Builders\Column;
+use App\Services\DataTable\Builders\Filter;
 use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Route;
 use Livewire\Attributes\Locked;
 
 class TenantUserTable extends Datatable
@@ -74,6 +77,53 @@ class TenantUserTable extends Datatable
     }
 
     /**
+     * Get filter definitions.
+     *
+     * @return array<int, Filter>
+     */
+    protected function getFilterDefinitions(): array
+    {
+        return [
+            Filter::make('role', __('table.users.filters.role'))
+                ->placeholder(__('table.users.filters.all_roles'))
+                ->type(DataTableFilterType::SELECT)
+                ->relationship('roles', 'name')
+                ->options($this->getRoleOptions()),
+
+            Filter::make('is_active', __('table.users.filters.status'))
+                ->placeholder(__('table.users.filters.all_status'))
+                ->type(DataTableFilterType::SELECT)
+                ->options([
+                    '1' => __('table.users.status_active'),
+                    '0' => __('table.users.status_inactive'),
+                ])
+                ->valueMapping(['1' => true, '0' => false]),
+
+            Filter::make('email_verified_at', __('table.users.filters.verified'))
+                ->placeholder(__('table.users.filters.all_status'))
+                ->type(DataTableFilterType::SELECT)
+                ->options([
+                    '1' => __('table.users.verified_yes'),
+                    '0' => __('table.users.verified_no'),
+                ])
+                ->valueMapping(['1' => 'not_null', '0' => 'null']),
+        ];
+    }
+
+    /**
+     * Get role options.
+     *
+     * @return array<string, string>
+     */
+    protected function getRoleOptions(): array
+    {
+        return $this->memoize(
+            'filter:roles',
+            fn () => Role::pluck('name', 'name')->toArray(),
+        );
+    }
+
+    /**
      * Define the row actions.
      */
     protected function rowActions(): array
@@ -101,5 +151,19 @@ class TenantUserTable extends Datatable
                 })
                 ->show(fn () => auth()->user()?->hasPermissionTo(Permissions::EDIT_TENANTS()) ?? false),
         ];
+    }
+
+    /**
+     * Handle row click.
+     */
+    public function rowClick(string $uuid): ?Action
+    {
+        if (Route::has('users.show')) {
+            return Action::make()
+                ->route('users.show', $uuid)
+                ->can(PolicyAbilities::VIEW);
+        }
+
+        return null;
     }
 }

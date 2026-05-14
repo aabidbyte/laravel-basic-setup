@@ -33,6 +33,7 @@ return [
     'no' => 'No',
     'copy' => 'Copy',
     'copied' => 'Copied',
+    'select' => 'Select',
     'detach' => 'Detach',
     'detached_successfully' => ':user detached from :role successfully',
     'confirm_detach_user' => 'Are you sure you want to remove this user?',

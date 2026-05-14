@@ -57,10 +57,12 @@ test('authorized user can create role', function () {
     Livewire::actingAs($user)
         ->test('pages::roles.edit', ['role' => null])
         ->set('display_name', 'New Role')
+        ->set('color', 'info')
         ->call('create')
         ->assertRedirect(route('roles.index'));
 
-    expect(Role::where('name', 'new_role')->exists())->toBeTrue();
+    expect(Role::where('name', 'new_role')->exists())->toBeTrue()
+        ->and(Role::where('name', 'new_role')->first()->color)->toBe('info');
 });
 
 test('authorized user can edit role', function () {
@@ -79,9 +81,11 @@ test('authorized user can edit role', function () {
     Livewire::actingAs($user)
         ->test('pages::roles.edit', ['role' => $targetRole])
         ->set('display_name', 'Updated Role')
+        ->set('color', 'accent')
         ->call('save');
 
-    expect($targetRole->fresh()->display_name)->toBe('Updated Role');
+    expect($targetRole->fresh()->display_name)->toBe('Updated Role')
+        ->and($targetRole->fresh()->color)->toBe('accent');
 });
 
 test('authorized user can delete role', function () {

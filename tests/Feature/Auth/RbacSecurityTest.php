@@ -15,7 +15,7 @@ class RbacSecurityTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        asTenant();
+        $this->setUpTenancy();
     }
 
     public function test_super_admin_can_access_anything()

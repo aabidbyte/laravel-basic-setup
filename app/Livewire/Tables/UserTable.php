@@ -178,6 +178,7 @@ class UserTable extends Datatable
                 ->icon('eye')
                 ->route(fn (User $user) => route('users.show', $user->uuid))
                 ->variant('ghost')
+                ->color('info')
                 ->can(PolicyAbilities::VIEW);
         }
 
@@ -186,6 +187,7 @@ class UserTable extends Datatable
                 ->icon('pencil')
                 ->route(fn (User $user) => route('users.edit', $user->uuid))
                 ->variant('ghost')
+                ->color('primary')
                 ->can(PolicyAbilities::UPDATE);
         }
 
@@ -217,12 +219,14 @@ class UserTable extends Datatable
             BulkAction::make('activate', __('actions.activate_selected'))
                 ->icon('check')
                 ->variant('ghost')
+                ->color('success')
                 ->execute(fn ($users) => $users->each->update(['is_active' => true]))
                 ->can(PolicyAbilities::UPDATE),
 
             BulkAction::make('deactivate', __('actions.deactivate_selected'))
                 ->icon('x-mark')
                 ->variant('ghost')
+                ->color('warning')
                 ->execute(fn ($users) => $users->each->update(['is_active' => false]))
                 ->can(PolicyAbilities::UPDATE),
 

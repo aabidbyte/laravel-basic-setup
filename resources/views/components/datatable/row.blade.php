@@ -6,13 +6,13 @@
     @class([
         'cursor-pointer' => $isClickable,
         'transition-colors hover:bg-accent',
+        '!bg-secondary' => in_array($row->uuid, $this->selected, true),
     ])
     @if ($isClickable)
         data-row-uuid="{{ $row->uuid }}"
         x-data="tableRow()"
         @click="handleClick($event) || ({{ $clickOpensModal ? 'true' : 'false' }} && $dispatch('this-modal-loading'))"
-    @endif
-    wire:bind:class="selected.includes('{{ $row->uuid }}') ? '!bg-secondary' : ''">
+    @endif>
     {{-- Selection Checkbox - only render if bulk actions are defined --}}
     @if ($this->hasBulkActions())
         <td wire:key="row-{{ $row->uuid }}-checkbox"

@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\Ui\ThemeColorTypes;
 use App\Models\Team;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Model;
@@ -27,6 +28,7 @@ class TeamFactory extends Factory
     {
         return [
             'name' => fake()->company(),
+            'color' => fake()->randomElement(ThemeColorTypes::values()),
         ];
     }
 }

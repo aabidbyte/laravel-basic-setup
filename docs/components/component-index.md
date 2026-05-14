@@ -14,6 +14,7 @@
 -   **Dropdown** (`dropdown.blade.php`) - Flexible dropdown component with CSS focus pattern, multiple placements, and menu support
 -   **[Accordion](accordion.md)** (`accordion.blade.php`) - DaisyUI collapse wrapper with support for radio/checkbox groups
 -   **Badge** (`badge.blade.php`) - Flexible badge component with support for all DaisyUI styles, colors, and sizes
+-   **[Tabs](tabs.md)** (`tabs.blade.php`) - DaisyUI tabs wrapper for Livewire tab state
 -   **Icon Placeholder** (`icon-placeholder.blade.php`) - Placeholder for icons
 -   **Placeholder** (`placeholder.blade.php`) - Generic placeholder component
 -   **[Chart](chart.md)** (`chart.blade.php`) - Wrapper for Chart.js charts (Class Component) with CSP support
@@ -37,4 +38,3 @@
 -   **Two-Factor Recovery Codes** (`two-factor/⚡recovery-codes.blade.php`) - 2FA recovery codes display
 
 ---
-

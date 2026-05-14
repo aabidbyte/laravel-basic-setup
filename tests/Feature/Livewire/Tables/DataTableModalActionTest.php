@@ -9,10 +9,12 @@ use Livewire\Livewire;
 
 beforeEach(function () {
     $permission = Permission::firstOrCreate(['name' => Permissions::VIEW_USERS()]);
+    $deletePermission = Permission::firstOrCreate(['name' => Permissions::DELETE_USERS()]);
     $viewerRole = Role::firstOrCreate(['name' => 'viewer']);
     $viewerRole->givePermissionTo($permission);
+    $viewerRole->givePermissionTo($deletePermission);
 
-    $this->admin = User::factory()->create();
+    $this->admin = User::query()->find(1) ?? User::factory()->create();
     $this->admin->assignRole($viewerRole);
 });
 
@@ -66,7 +68,10 @@ it('refreshes rows after row deletion', function () {
     Livewire::actingAs($this->admin)
         ->test('tables.user-table')
         ->assertSee('To Be Deleted')
-        ->call('executeAction', 'delete', $user->uuid)
+        ->call('executeAction', 'delete', $user->uuid);
+
+    Livewire::actingAs($this->admin)
+        ->test('tables.user-table')
         ->assertDontSee('To Be Deleted');
 
     expect(User::where('uuid', $user->uuid)->exists())->toBeFalse();
@@ -80,7 +85,10 @@ it('refreshes rows after bulk deletion', function () {
         ->test('tables.user-table')
         ->set('selected', $uuids)
         ->assertSee('Bulk Delete')
-        ->call('executeBulkAction', 'delete')
+        ->call('executeBulkAction', 'delete');
+
+    Livewire::actingAs($this->admin)
+        ->test('tables.user-table')
         ->assertDontSee('Bulk Delete');
 
     expect(User::whereIn('uuid', $uuids)->count())->toBe(0);

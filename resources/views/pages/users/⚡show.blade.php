@@ -183,145 +183,16 @@ new class extends BasePageComponent {
 
 <x-layouts.page backHref="{{ route('users.index') }}">
     <x-slot:topActions>
-        @if ($user)
-            @can(Permissions::EDIT_USERS())
-                <x-ui.button href="{{ route('users.edit', $user->uuid) }}"
-                             variant="primary"
-                             size="sm"
-                             wire:navigate>
-                    <x-ui.icon name="pencil"
-                               size="sm" />
-                    {{ __('actions.edit') }}
-                </x-ui.button>
-            @endcan
-
-            @if (!$user->is_active)
-                {{-- Inactive user: show activation options --}}
-                @if (!$user->email)
-                    {{-- No email: generate activation link --}}
-                    @can(Permissions::GENERATE_ACTIVATION_USERS())
-                        <x-ui.button wire:click="generateActivationLink"
-                                     variant="secondary"
-                                     size="sm">
-                            <x-ui.icon name="link"
-                                       size="sm" />
-                            {{ __('users.show.generate_link') }}
-                        </x-ui.button>
-                    @endcan
-                @else
-                    {{-- Has email: send activation email --}}
-                    @can(Permissions::EDIT_USERS())
-                        <x-ui.button @click="confirmModal({
-                                     title: @js(__('users.show.send_activation_email')),
-                                     message: @js(__('users.show.confirm_send_activation')),
-                                     confirmEvent: 'confirm-send-activation-email'
-                                 })"
-                                     variant="secondary"
-                                     size="sm">
-                            <x-ui.icon name="envelope"
-                                       size="sm" />
-                            {{ __('users.show.send_activation_email') }}
-                        </x-ui.button>
-                    @endcan
-                @endif
-
-                @can(Permissions::EDIT_USERS())
-                    <x-ui.button @click="confirmModal({
-                                 title: @js(__('actions.activate')),
-                                 message: @js(__('users.show.confirm_activate')),
-                                 confirmEvent: 'confirm-activate-user'
-                             })"
-                                 variant="success"
-                                 size="sm">
-                        <x-ui.icon name="check"
-                                   size="sm" />
-                        {{ __('actions.activate') }}
-                    </x-ui.button>
-                @endcan
-            @else
-                {{-- Active user: password reset and deactivate options --}}
-                @if ($user->hasVerifiedEmail())
-                    @can(Permissions::EDIT_USERS())
-                        <x-ui.button @click="confirmModal({
-                                     title: @js(__('users.show.send_password_reset')),
-                                     message: @js(__('users.show.confirm_send_reset')),
-                                     confirmEvent: 'confirm-send-password-reset'
-                                 })"
-                                     variant="info"
-                                     size="sm">
-                            <x-ui.icon name="key"
-                                       size="sm" />
-                            {{ __('users.show.send_password_reset') }}
-                        </x-ui.button>
-                    @endcan
-                @elseif ($user->email)
-                    {{-- Has email but not verified --}}
-                    @can(Permissions::EDIT_USERS())
-                        <x-ui.button @click="confirmModal({
-                                     title: @js(__('users.show.send_activation_email')),
-                                     message: @js(__('users.show.confirm_send_activation')),
-                                     confirmEvent: 'confirm-send-activation-email'
-                                 })"
-                                     variant="secondary"
-                                     size="sm">
-                            <x-ui.icon name="envelope"
-                                       size="sm" />
-                            {{ __('users.show.send_activation_email') }}
-                        </x-ui.button>
-                    @endcan
-                @else
-                    {{-- No email: generate activation link --}}
-                    @can(Permissions::GENERATE_ACTIVATION_USERS())
-                        <x-ui.button wire:click="generateActivationLink"
-                                     variant="secondary"
-                                     size="sm">
-                            <x-ui.icon name="link"
-                                       size="sm" />
-                            {{ __('users.show.generate_link') }}
-                        </x-ui.button>
-                    @endcan
-                @endif
-
-                @can(Permissions::EDIT_USERS())
-                    <x-ui.button @click="confirmModal({
-                                 title: @js(__('actions.deactivate')),
-                                 message: @js(__('users.show.confirm_deactivate')),
-                                 confirmColor: 'warning',
-                                 confirmEvent: 'confirm-deactivate-user'
-                             })"
-                                 variant="warning"
-                                 size="sm">
-                        <x-ui.icon name="x-mark"
-                                   size="sm" />
-                        {{ __('actions.deactivate') }}
-                    </x-ui.button>
-                @endcan
-            @endif
-
-            @can(Permissions::DELETE_USERS())
-                <x-ui.button @click="confirmModal({
-                                 title: @js(__('actions.delete')),
-                                 message: @js(__('actions.confirm_delete')),
-                                 confirmColor: 'error',
-                                 confirmEvent: 'confirm-delete-user'
-                             })"
-                             variant="error"
-                             size="sm">
-                    <x-ui.icon name="trash"
-                               size="sm" />
-                    {{ __('actions.delete') }}
-                </x-ui.button>
-            @endcan
-        @endif
+        @include('pages.users.partials.show-actions', ['user' => $user])
     </x-slot:topActions>
 
     <div class="mx-auto w-full max-w-4xl space-y-8"
-         @confirm-send-activation-email.window="$wire.sendActivationEmail()"
-         @confirm-activate-user.window="$wire.activateUser()"
-         @confirm-send-password-reset.window="$wire.sendPasswordResetEmail()"
-         @confirm-deactivate-user.window="$wire.deactivateUser()"
-         @confirm-delete-user.window="$wire.deleteUser()"
-         @confirm-cancel-pending-email.window="$wire.cancelPendingEmailChange()">
+         x-on:confirm-send-activation-email.window="$wire.sendActivationEmail()"
+         x-on:confirm-activate-user.window="$wire.activateUser()"
+         x-on:confirm-send-password-reset.window="$wire.sendPasswordResetEmail()"
+         x-on:confirm-deactivate-user.window="$wire.deactivateUser()"
+         x-on:confirm-delete-user.window="$wire.deleteUser()"
+         x-on:confirm-cancel-pending-email.window="$wire.cancelPendingEmailChange()">
 
         <div class="flex items-center gap-4">
             <x-ui.avatar :user="$user"
@@ -354,11 +225,11 @@ new class extends BasePageComponent {
                                            size="sm" />
                                 <span
                                       class="text-sm">{{ __('users.show.pending_email', ['email' => $user->pending_email]) }}</span>
-                                @can(Permissions::EDIT_USERS())
-                                    <x-ui.button @click="confirmModal({
+                                @can(App\Constants\Auth\Permissions::EDIT_USERS())
+                                    <x-ui.button x-on:click="confirmModal({
                                                              title: @js(__('actions.cancel')),
                                                              message: @js(__('users.show.confirm_cancel_pending')),
-                                                             confirmEvent: 'confirm-cancel-pending-email'
+                                                             callback: 'confirm-cancel-pending-email'
                                                          })"
                                                  variant="ghost"
                                                  size="xs">
@@ -488,7 +359,7 @@ new class extends BasePageComponent {
         @if ($showActivationModal && $activationLink)
             <x-ui.base-modal title="{{ __('users.show.activation_link_title') }}"
                              open
-                             @close="$wire.closeActivationModal()">
+                             x-on:close="$wire.closeActivationModal()">
                 <div class="space-y-4">
                     <p class="text-base-content/70">
                         {{ __('users.show.activation_link_description') }}</p>

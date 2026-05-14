@@ -10,15 +10,16 @@
     $shareUrl = $url ?? request()->fullUrl();
     $tooltipText = $tooltipText ?? __('table.share_page');
     // We don't use the copied text in the tooltip anymore, we specific toast or just tooltip change
-$copiedText = __('table.url_copied');
+    $copiedText = __('table.url_copied');
+    $shareButtonConfig = json_encode([
+        'url' => $shareUrl,
+        'initialTooltip' => $tooltipText,
+        'copiedText' => $copiedText,
+        'copyFailedText' => __('table.copy_failed') ?? 'Copy failed',
+    ], JSON_HEX_APOS);
 @endphp
 
-<div x-data="shareButton({
-    url: @js($shareUrl),
-    initialTooltip: @js($tooltipText),
-    copiedText: @js($copiedText),
-    copyFailedText: @js(__('table.copy_failed') ?? 'Copy failed')
-})"
+<div x-data="shareButton('{{ $shareButtonConfig }}')"
      class="relative inline-block">
     <x-ui.tooltip :text="$tooltipText"
                   placement="top">
@@ -37,32 +38,37 @@ $copiedText = __('table.url_copied');
     <script @cspNonce>
         (function() {
             const register = () => {
-                Alpine.data('shareButton', (config) => ({
-                    url: config.url,
-                    tooltipText: config.initialTooltip,
+                Alpine.data('shareButton', (config = '{}') => {
+                    const parsedConfig = typeof config === 'string' ? JSON.parse(config) : config;
 
-                    async copyUrl() {
-                        try {
-                            await navigator.clipboard.writeText(this.url);
+                    return {
+                        config: parsedConfig,
+                        url: parsedConfig.url,
+                        tooltipText: parsedConfig.initialTooltip,
 
-                            const originalText = config.initialTooltip;
-                            this.tooltipText = config.copiedText;
+                        async copyUrl() {
+                            try {
+                                await navigator.clipboard.writeText(this.url);
 
-                            setTimeout(() => {
-                                this.tooltipText = originalText;
-                            }, 2000);
-                        } catch (err) {
-                            console.error('Failed to copy text: ', err);
+                                const originalText = this.config.initialTooltip;
+                                this.tooltipText = this.config.copiedText;
 
-                            const originalText = config.initialTooltip;
-                            this.tooltipText = config.copyFailedText;
+                                setTimeout(() => {
+                                    this.tooltipText = originalText;
+                                }, 2000);
+                            } catch (err) {
+                                console.error('Failed to copy text: ', err);
 
-                            setTimeout(() => {
-                                this.tooltipText = originalText;
-                            }, 2000);
-                        }
-                    }
-                }));
+                                const originalText = this.config.initialTooltip;
+                                this.tooltipText = this.config.copyFailedText;
+
+                                setTimeout(() => {
+                                    this.tooltipText = originalText;
+                                }, 2000);
+                            }
+                        },
+                    };
+                });
             };
 
             if (window.Alpine) {

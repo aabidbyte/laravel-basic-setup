@@ -118,6 +118,18 @@ class PermissionMatrix
                 PermissionAction::RESTORE,
                 PermissionAction::FORCE_DELETE,
             ],
+            PermissionEntity::DOMAINS => [
+                PermissionAction::VIEW,
+                PermissionAction::CREATE,
+                PermissionAction::EDIT,
+                PermissionAction::DELETE,
+            ],
+            PermissionEntity::TRASH => [
+                PermissionAction::VIEW,
+                PermissionAction::DELETE,
+                PermissionAction::RESTORE,
+                PermissionAction::FORCE_DELETE,
+            ],
         ];
     }
 

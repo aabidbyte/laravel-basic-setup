@@ -30,6 +30,21 @@ new class extends BasePageComponent {
     {
         return $this->plan?->name ?? __('types.plan');
     }
+
+    /**
+     * Delete the plan.
+     */
+    public function deletePlan(): void
+    {
+        $this->authorize(Permissions::DELETE_PLANS());
+
+        $name = $this->plan->name;
+        $this->plan->delete();
+
+        $this->sendSuccessNotification(null, 'plans.deleted_successfully', ['name' => $name]);
+
+        $this->redirect(route('plans.index'), navigate: true);
+    }
 }; ?>
 
 <x-layouts.page backHref="{{ route('plans.index') }}">
@@ -37,16 +52,29 @@ new class extends BasePageComponent {
         @can(Permissions::EDIT_PLANS())
             <x-ui.button href="{{ route('plans.edit', $planUuid) }}"
                          wire:navigate
-                         variant="ghost"
-                         class="gap-2">
-                <x-ui.icon name="pencil"
-                           size="sm"></x-ui.icon>
+                         color="primary"
+                         size="sm"
+                         icon="pencil">
                 {{ __('actions.edit') }}
+            </x-ui.button>
+        @endcan
+
+        @can(Permissions::DELETE_PLANS())
+            <x-ui.button x-on:click="confirmModal({
+                         title: @js(__('actions.delete')),
+                         message: @js(__('plans.delete_confirm')),
+                         callback: 'confirm-delete-plan'
+                     })"
+                         color="error"
+                         size="sm"
+                         icon="trash">
+                {{ __('actions.delete') }}
             </x-ui.button>
         @endcan
     </x-slot:topActions>
 
-    <section class="mx-auto w-full max-w-6xl space-y-6">
+    <section class="mx-auto w-full max-w-6xl space-y-6"
+             x-on:confirm-delete-plan.window="$wire.deletePlan()">
         {{-- Plan Details Card --}}
         <div class="card bg-base-100 border-base-200 overflow-hidden border shadow-xl">
             <div class="card-body p-0">
@@ -155,9 +183,9 @@ new class extends BasePageComponent {
                 <div class="mb-4 flex items-center justify-between">
                     <x-ui.title level="3">{{ __('plans.subscriptions_with_plan') }}</x-ui.title>
                     @can(Permissions::CREATE_SUBSCRIPTIONS())
-                        <x-ui.button variant="ghost"
-                                     size="sm"
-                                     class="gap-2">
+                        <x-ui.button variant="primary"
+                                     color="primary"
+                                     size="sm">
                             <x-ui.icon name="plus"
                                        size="xs" />
                             {{ __('plans.add_subscription') }}

@@ -75,6 +75,14 @@ use Exception;
  * @method static string RESTORE_TENANTS()
  * @method static string FORCE_DELETE_TENANTS()
  * @method static string IMPERSONATE_TENANTS()
+ * @method static string VIEW_DOMAINS()
+ * @method static string CREATE_DOMAINS()
+ * @method static string EDIT_DOMAINS()
+ * @method static string DELETE_DOMAINS()
+ * @method static string VIEW_TRASH()
+ * @method static string DELETE_TRASH()
+ * @method static string RESTORE_TRASH()
+ * @method static string FORCE_DELETE_TRASH()
  */
 class Permissions
 {

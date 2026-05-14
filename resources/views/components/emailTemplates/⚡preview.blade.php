@@ -211,11 +211,7 @@ new #[Lazy] class extends Component {
     {{-- HTML Preview --}}
     @if ($previewHtml)
         <div class="bg-base-200 flex justify-center overflow-auto rounded-lg border p-4">
-            <div :x-bind:class="{
-                'w-full': is('desktop'),
-                'w-[768px]': is('tablet'),
-                'w-[375px]': is('mobile')
-            }"
+            <div :x-bind:class="deviceClass"
                  class="border bg-white shadow-sm transition-all duration-300">
                 {{-- Secure iframe: no allow-same-origin = complete isolation --}}
                 <iframe srcdoc="{!! e($previewHtml) !!}"
@@ -237,3 +233,43 @@ new #[Lazy] class extends Component {
         </div>
     @endif
 </div>
+
+@assets
+    <script @cspNonce>
+        (function() {
+            const register = () => {
+                if (window.Alpine.data('previewDeviceSwitcher')) return;
+
+                window.Alpine.data('previewDeviceSwitcher', () => ({
+                    device: 'desktop',
+
+                    setDevice(device) {
+                        this.device = device;
+                    },
+
+                    is(device) {
+                        return this.device === device;
+                    },
+
+                    get deviceClass() {
+                        if (this.is('tablet')) {
+                            return 'w-[768px]';
+                        }
+
+                        if (this.is('mobile')) {
+                            return 'w-[375px]';
+                        }
+
+                        return 'w-full';
+                    },
+                }));
+            };
+
+            if (window.Alpine) {
+                register();
+            } else {
+                document.addEventListener('alpine:init', register);
+            }
+        })();
+    </script>
+@endassets

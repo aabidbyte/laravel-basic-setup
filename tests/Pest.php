@@ -16,8 +16,9 @@ use Tests\Concerns\InteractsWithTenancy;
 use Tests\MiddlewareTestCase;
 use Tests\TestCase;
 use Tests\UiTestCase;
+use Tests\UnitTestCase;
 
-pest()->extend(PHPUnit\Framework\TestCase::class)
+pest()->extend(UnitTestCase::class)
     ->in('Unit');
 
 pest()->extend(MiddlewareTestCase::class)
@@ -27,9 +28,7 @@ pest()->extend(MiddlewareTestCase::class)
             tenancy()->end();
         }
 
-        Tenant::query()
-            ->get()
-            ->each(fn (Tenant $tenant) => $tenant->delete());
+        $this->deleteTestingTenants();
 
         unset($this->tenant);
 
@@ -44,9 +43,7 @@ pest()->extend(UiTestCase::class)
             tenancy()->end();
         }
 
-        Tenant::query()
-            ->get()
-            ->each(fn (Tenant $tenant) => $tenant->delete());
+        $this->deleteTestingTenants();
 
         unset($this->tenant);
 
@@ -61,9 +58,7 @@ pest()->extend(TestCase::class)
             tenancy()->end();
         }
 
-        Tenant::query()
-            ->get()
-            ->each(fn (Tenant $tenant) => $tenant->delete());
+        $this->deleteTestingTenants();
 
         unset($this->tenant);
 

@@ -76,8 +76,8 @@
                             this.message = data.message || parsedConfig.message;
                             this.confirmLabel = data.confirmLabel || parsedConfig.confirmLabel;
                             this.cancelLabel = data.cancelLabel || parsedConfig.cancelLabel;
-                            this.callback = data.callback;
-                            this.payload = data.payload || null;
+                            this.callback = data.callback || data.confirmEvent;
+                            this.payload = data.payload || data.confirmData || null;
                             this.isOpen = true;
                         },
 

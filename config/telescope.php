@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'enabled' => env('TELESCOPE_ENABLED', config('app.debug')),
+    'enabled' => (bool) env('TELESCOPE_ENABLED', config('app.debug')),
 
     /*
     |--------------------------------------------------------------------------

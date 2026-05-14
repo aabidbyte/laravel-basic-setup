@@ -11,6 +11,7 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schedule;
+use Stancl\Tenancy\Bootstrappers\RedisTenancyBootstrapper;
 use Tests\TestCase;
 
 class OperationalConfigurationTest extends TestCase
@@ -18,7 +19,7 @@ class OperationalConfigurationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        asTenant();
+        $this->setUpTenancy();
     }
 
     public function test_scheduler_includes_horizon_snapshot_and_prune_commands()
@@ -27,9 +28,9 @@ class OperationalConfigurationTest extends TestCase
 
         $scheduledCommands = $events->map(fn ($event) => $event->command);
 
-        expect($scheduledCommands)->toContain('\'artisan\' horizon:snapshot');
-        expect($scheduledCommands)->toContain('\'artisan\' notifications:prune-read');
-        expect($scheduledCommands)->toContain('\'artisan\' errors:prune');
+        expect($scheduledCommands->contains(fn (string $command): bool => \str_contains($command, 'horizon:snapshot')))->toBeTrue();
+        expect($scheduledCommands->contains(fn (string $command): bool => \str_contains($command, 'notifications:prune-read')))->toBeTrue();
+        expect($scheduledCommands->contains(fn (string $command): bool => \str_contains($command, 'errors:prune')))->toBeTrue();
     }
 
     public function test_reverb_allowed_origins_is_driven_by_environment()
@@ -41,8 +42,17 @@ class OperationalConfigurationTest extends TestCase
     {
         config(['app.debug' => false]);
         // Re-read config or simulate how it would be evaluated
-        $enabled = env('TELESCOPE_ENABLED', config('app.debug'));
+        $enabled = config('telescope.enabled');
         expect($enabled)->toBeFalse();
+    }
+
+    public function test_redis_tenancy_bootstrapper_is_not_registered_when_redis_client_is_predis(): void
+    {
+        if (config('database.redis.client') !== 'predis') {
+            $this->markTestSkipped('This project runs tests with predis; set REDIS_CLIENT=predis to assert bootstrapper omission.');
+        }
+
+        expect(config('tenancy.bootstrappers'))->not->toContain(RedisTenancyBootstrapper::class);
     }
 
     public function test_activation_email_is_sent_after_user_creation_transaction_commits()
@@ -61,7 +71,7 @@ class OperationalConfigurationTest extends TestCase
 
         $user = $userService->createUser($userData);
 
-        Mail::assertSent(UserActivationMail::class, function ($mail) use ($user) {
+        Mail::assertQueued(UserActivationMail::class, function ($mail) use ($user) {
             return $mail->hasTo($user->email);
         });
     }

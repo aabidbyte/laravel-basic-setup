@@ -175,6 +175,7 @@ class ErrorLogTable extends Datatable
                 ->icon('eye')
                 ->route(fn (ErrorLog $errorLog) => route('admin.errors.show', $errorLog->uuid))
                 ->variant('ghost')
+                ->color('info')
                 ->can(PolicyAbilities::VIEW);
         }
 

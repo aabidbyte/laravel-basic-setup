@@ -11,4 +11,15 @@ return [
     'type' => 'Type',
     'status' => 'Status',
     'locale' => 'Locale',
+    'color' => 'Color',
+    'colors' => [
+        'primary' => 'Primary',
+        'secondary' => 'Secondary',
+        'accent' => 'Accent',
+        'neutral' => 'Neutral',
+        'info' => 'Info',
+        'success' => 'Success',
+        'warning' => 'Warning',
+        'error' => 'Error',
+    ],
 ];

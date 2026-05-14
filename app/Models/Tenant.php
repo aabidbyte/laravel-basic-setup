@@ -25,6 +25,7 @@ use Stancl\Tenancy\Database\Models\Tenant as BaseTenant;
  * @property string $id
  * @property string|null $name
  * @property string|null $plan
+ * @property string|null $color
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property array|null $data
@@ -55,6 +56,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
             'id',
             'name',
             'plan',
+            'color',
             'should_seed',
         ];
     }

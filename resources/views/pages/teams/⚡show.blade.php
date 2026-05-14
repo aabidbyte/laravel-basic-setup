@@ -59,6 +59,21 @@ new class extends BasePageComponent {
         $subtitle = parent::getPageSubtitle();
         return $subtitle ? __($subtitle, ['type' => __($this->modelTypeLabel)]) : null;
     }
+
+    /**
+     * Delete the team.
+     */
+    public function deleteTeam(): void
+    {
+        $this->authorize(Permissions::DELETE_TEAMS());
+
+        $name = $this->team->name;
+        $this->team->delete();
+
+        $this->sendSuccessNotification(null, 'pages.common.messages.deleted', ['name' => $name]);
+
+        $this->redirect(route('teams.index'), navigate: true);
+    }
 }; ?>
 
 <x-layouts.page backHref="{{ route('teams.index') }}">
@@ -66,17 +81,29 @@ new class extends BasePageComponent {
         @can(Permissions::EDIT_TEAMS())
             <x-ui.button href="{{ route('teams.edit', $team->uuid) }}"
                          wire:navigate
-                         variant="primary"
+                         color="primary"
                          size="sm"
-                         class="gap-2">
-                <x-ui.icon name="pencil"
-                           size="sm" />
+                         icon="pencil">
                 {{ __('actions.edit') }}
+            </x-ui.button>
+        @endcan
+
+        @can(Permissions::DELETE_TEAMS())
+            <x-ui.button x-on:click="confirmModal({
+                         title: @js(__('actions.delete')),
+                         message: @js(__('actions.confirm_delete')),
+                         callback: 'confirm-delete-team'
+                     })"
+                         color="error"
+                         size="sm"
+                         icon="trash">
+                {{ __('actions.delete') }}
             </x-ui.button>
         @endcan
     </x-slot:topActions>
 
-    <div class="mx-auto max-w-6xl space-y-8">
+    <div class="mx-auto max-w-6xl space-y-8"
+         x-on:confirm-delete-team.window="$wire.deleteTeam()">
         {{-- Team Details Card --}}
         <x-ui.card title="{{ __('teams.show.basic_info') }}">
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -91,6 +118,13 @@ new class extends BasePageComponent {
                 <div class="md:col-span-2">
                     <span class="text-base-content/60 text-sm">{{ __('teams.description') }}</span>
                     <p class="text-base-content">{{ $team->description ?? '-' }}</p>
+                </div>
+                <div>
+                    <span class="text-base-content/60 text-sm">{{ __('fields.color') }}</span>
+                    <div class="mt-1">
+                        <x-ui.badge :color="$team->color"
+                                    size="sm">{{ __("fields.colors.{$team->color}") }}</x-ui.badge>
+                    </div>
                 </div>
             </div>
         </x-ui.card>

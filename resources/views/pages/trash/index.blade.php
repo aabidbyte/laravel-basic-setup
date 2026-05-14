@@ -20,9 +20,8 @@
                                  wire:navigate
                                  :color="$entityType === $type ? 'primary' : null"
                                  :variant="$entityType === $type ? 'solid' : 'ghost'"
-                                 size="sm">
-                        <x-ui.icon name="{{ $typeConfig['icon'] }}"
-                                   size="sm"></x-ui.icon>
+                                 size="sm"
+                                 :icon="$typeConfig['icon']">
                         {{ $typeConfig['labelPlural'] }}
                     </x-ui.button>
                 @endforeach

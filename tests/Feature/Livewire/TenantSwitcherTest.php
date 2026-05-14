@@ -66,7 +66,7 @@ it('protects from switching to the current tenant', function () {
     tenancy()->initialize($this->tenant1);
 
     Livewire::actingAs($this->superAdmin)
-        ->test('tables.tenant-table')
+        ->test('tables.tenant-table', ['isSwitcher' => true])
         ->call('handleRowClick', $this->tenant1->id)
         ->assertDispatched('notify');
 
@@ -79,7 +79,7 @@ it('protects from switching to the current tenant', function () {
 it('redirects to the correct domain when switching tenant', function () {
     $domain = $this->tenant1->domains()->first()->domain;
     Livewire::actingAs($this->normalUser)
-        ->test('tables.tenant-table')
+        ->test('tables.tenant-table', ['isSwitcher' => true])
         ->call('handleRowClick', $this->tenant1->id)
         ->assertRedirect("http://{$domain}/dashboard");
 });

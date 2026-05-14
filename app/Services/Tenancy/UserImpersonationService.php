@@ -36,7 +36,15 @@ class UserImpersonationService
             }
 
             $protocol = request()->secure() ? 'https://' : 'http://';
-            $url = "{$protocol}{$domain->domain}/impersonate/{$token->token}";
+            $host = $domain->domain;
+
+            // Handle non-standard ports in development
+            $port = request()->getPort();
+            if ($port && ! \in_array($port, [80, 443], true)) {
+                $host .= ':' . $port;
+            }
+
+            $url = "{$protocol}{$host}/impersonate/{$token->token}";
 
             return ['type' => 'tenant', 'url' => $url];
         }
@@ -54,15 +62,29 @@ class UserImpersonationService
      */
     public function assertMayImpersonate(User $actor, User $target, ?Tenant $targetTenant): void
     {
+        // For tenant switching (self-impersonation across domains),
+        // we only require the actor to have access to the target tenant.
+        if ($actor->id === $target->id && $targetTenant !== null) {
+            if ($actor->hasRole(Roles::SUPER_ADMIN)) {
+                return;
+            }
+
+            if ($actor->tenants()->whereKey($targetTenant->getKey())->exists()) {
+                return;
+            }
+
+            throw new AuthorizationException();
+        }
+
         if (! $actor->can(Permissions::IMPERSONATE_USERS())) {
             throw new AuthorizationException();
         }
 
-        if ($actor->id === $target->id) {
+        if ($actor->id === $target->id && $targetTenant === null) {
             throw new AuthorizationException();
         }
 
-        if ($target->hasRole(Roles::SUPER_ADMIN)) {
+        if ($target->hasRole(Roles::SUPER_ADMIN) && $targetTenant === null) {
             throw new AuthorizationException();
         }
 

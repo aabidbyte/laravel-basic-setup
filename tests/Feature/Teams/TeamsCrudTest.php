@@ -58,11 +58,13 @@ test('authorized user can create team', function () {
         ->test('pages::teams.edit', ['team' => null])
         ->set('name', 'New Team')
         ->set('description', 'Team Description')
+        ->set('color', 'success')
         ->call('create')
         ->assertRedirect(route('teams.index'));
 
     expect(Team::where('name', 'New Team')->exists())->toBeTrue()
-        ->and(Team::where('name', 'New Team')->first()->description)->toBe('Team Description');
+        ->and(Team::where('name', 'New Team')->first()->description)->toBe('Team Description')
+        ->and(Team::where('name', 'New Team')->first()->color)->toBe('success');
 });
 
 test('authorized user can edit team', function () {
@@ -81,9 +83,11 @@ test('authorized user can edit team', function () {
     Livewire::actingAs($user)
         ->test('pages::teams.edit', ['team' => $targetTeam])
         ->set('name', 'Updated Team')
+        ->set('color', 'warning')
         ->call('save');
 
-    expect($targetTeam->fresh()->name)->toBe('Updated Team');
+    expect($targetTeam->fresh()->name)->toBe('Updated Team')
+        ->and($targetTeam->fresh()->color)->toBe('warning');
 });
 
 test('authorized user can delete team', function () {

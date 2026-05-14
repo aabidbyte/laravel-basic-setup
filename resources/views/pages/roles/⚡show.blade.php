@@ -77,6 +77,25 @@ new class extends BasePageComponent {
     {
         return Permission::orderBy('name')->get();
     }
+
+    /**
+     * Delete the role.
+     */
+    public function deleteRole(): void
+    {
+        $this->authorize(Permissions::DELETE_ROLES());
+
+        if (\in_array($this->role->name, [Roles::SUPER_ADMIN, Roles::ADMIN], true)) {
+            return;
+        }
+
+        $name = $this->role->display_name ?? $this->role->name;
+        $this->role->delete();
+
+        $this->sendSuccessNotification(null, 'pages.common.messages.deleted', ['name' => $name]);
+
+        $this->redirect(route('roles.index'), navigate: true);
+    }
 }; ?>
 
 <x-layouts.page backHref="{{ route('roles.index') }}">
@@ -84,17 +103,31 @@ new class extends BasePageComponent {
         @can(Permissions::EDIT_ROLES())
             <x-ui.button href="{{ route('roles.edit', $role->uuid) }}"
                          wire:navigate
-                         variant="primary"
+                         color="primary"
                          size="sm"
-                         class="gap-2">
-                <x-ui.icon name="pencil"
-                           size="sm" />
+                         icon="pencil">
                 {{ __('actions.edit') }}
             </x-ui.button>
         @endcan
+
+        @if (!\in_array($role->name, [Roles::SUPER_ADMIN, Roles::ADMIN], true))
+            @can(Permissions::DELETE_ROLES())
+                <x-ui.button x-on:click="confirmModal({
+                             title: @js(__('actions.delete')),
+                             message: @js(__('actions.confirm_delete')),
+                             callback: 'confirm-delete-role'
+                         })"
+                             color="error"
+                             size="sm"
+                             icon="trash">
+                    {{ __('actions.delete') }}
+                </x-ui.button>
+            @endcan
+        @endif
     </x-slot:topActions>
 
-    <div class="max-col-6xl mx-auto w-full space-y-8">
+    <div class="max-col-6xl mx-auto w-full space-y-8"
+         x-on:confirm-delete-role.window="$wire.deleteRole()">
         {{-- Role Details Card --}}
         <x-ui.card title="{{ __('roles.show.basic_info') }}">
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -109,6 +142,13 @@ new class extends BasePageComponent {
                 <div class="md:col-span-2">
                     <span class="text-base-content/60 text-sm">{{ __('roles.description') }}</span>
                     <p class="text-base-content">{{ $role->description ?? '-' }}</p>
+                </div>
+                <div>
+                    <span class="text-base-content/60 text-sm">{{ __('fields.color') }}</span>
+                    <div class="mt-1">
+                        <x-ui.badge :color="$role->color"
+                                    size="sm">{{ __("fields.colors.{$role->color}") }}</x-ui.badge>
+                    </div>
                 </div>
             </div>
         </x-ui.card>

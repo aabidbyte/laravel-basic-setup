@@ -23,6 +23,7 @@ class MyCspPreset implements Preset
     public function configure(Policy $policy): void
     {
         $this->configureBaseDirectives($policy);
+        $this->configureCurrentTenantDomainSources($policy);
         $this->configureScriptsAndStyles($policy);
         $this->configureConnectSources($policy);
         $this->configureHorizonSources($policy);
@@ -67,6 +68,21 @@ class MyCspPreset implements Preset
             ->add(Directive::OBJECT, Keyword::NONE);
     }
 
+    /**
+     * Allow only the currently resolved tenant's verified domains for passive
+     * resources and network calls. Do not add tenant domains to script/style
+     * execution sources.
+     */
+    protected function configureCurrentTenantDomainSources(Policy $policy): void
+    {
+        foreach ($this->currentTenantDomains() as $domain) {
+            $policy
+                ->add(Directive::IMG, $this->httpSourcesForDomain($domain))
+                ->add(Directive::FRAME, $this->httpSourcesForDomain($domain))
+                ->add(Directive::CONNECT, $this->connectSourcesForDomain($domain));
+        }
+    }
+
     protected function configureScriptsAndStyles(Policy $policy): void
     {
         // Script sources - use nonces for all scripts
@@ -81,7 +97,14 @@ class MyCspPreset implements Preset
             ->add(Directive::STYLE, Keyword::SELF)
             ->addNonce(Directive::STYLE)
             ->add(Directive::STYLE, 'https://unpkg.com') // GrapeJS CDN
-            ->add(Directive::STYLE, 'https://cdnjs.cloudflare.com'); // FontAwesome for GrapeJS
+            ->add(Directive::STYLE, 'https://cdnjs.cloudflare.com') // FontAwesome for GrapeJS
+            ->add(Directive::STYLE, 'https://fonts.googleapis.com') // Google Fonts
+            ->add(Directive::STYLE, 'https://fonts.bunny.net'); // Bunny Fonts
+
+        if (isLocal()) {
+            // Livewire/Alpine often use inline styles that might not be captured by nonces in all environments
+            $policy->add(Directive::STYLE, Keyword::UNSAFE_INLINE);
+        }
 
         // Allow inline style/script ATTRIBUTES for Alpine.js
         // (:class="...", @click="...", x-bind:style="...", etc.)
@@ -117,6 +140,17 @@ class MyCspPreset implements Preset
             ->add(Directive::CONNECT, 'https://cdn.jsdelivr.net'); // Chart.js Source Maps
 
         if (isLocal()) {
+            // Allow central domains in local development to avoid blocking Vite/HMR on tenant domains
+            foreach (config('tenancy.central_domains', []) as $domain) {
+                if ($domain) {
+                    $policy
+                        ->add(Directive::CONNECT, "http://{$domain}")
+                        ->add(Directive::CONNECT, "ws://{$domain}")
+                        ->add(Directive::SCRIPT, $domain)
+                        ->add(Directive::STYLE, $domain);
+                }
+            }
+
             // Vite dev server connections (HMR)
             $viteHost = config('vite.dev_server.host');
             $vitePort = config('vite.dev_server.port');
@@ -178,5 +212,78 @@ class MyCspPreset implements Preset
         }
 
         $policy->add(Directive::SCRIPT, Keyword::UNSAFE_EVAL);
+    }
+
+    /**
+     * Get normalized domains for the current tenant only.
+     *
+     * @return array<int, string>
+     */
+    protected function currentTenantDomains(): array
+    {
+        if (! \function_exists('tenant') || ! tenant()) {
+            return [];
+        }
+
+        return tenant()
+            ->domains()
+            ->pluck('domain')
+            ->map(fn (string $domain) => $this->normalizeDomain($domain))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    protected function httpSourcesForDomain(string $domain): array
+    {
+        return \array_values(\array_unique(\array_filter([
+            $this->requestScheme() . "://{$domain}",
+            isLocal() ? "http://{$domain}" : null,
+            isLocal() ? "https://{$domain}" : null,
+        ])));
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    protected function connectSourcesForDomain(string $domain): array
+    {
+        return \array_values(\array_unique(\array_filter([
+            ...$this->httpSourcesForDomain($domain),
+            $this->webSocketScheme() . "://{$domain}",
+            isLocal() ? "ws://{$domain}" : null,
+            isLocal() ? "wss://{$domain}" : null,
+        ])));
+    }
+
+    protected function normalizeDomain(string $domain): ?string
+    {
+        $domain = \trim($domain);
+
+        if ($domain === '') {
+            return null;
+        }
+
+        if (\str_contains($domain, '://')) {
+            $host = \parse_url($domain, PHP_URL_HOST);
+
+            return \is_string($host) && $host !== '' ? $host : null;
+        }
+
+        return \rtrim($domain, '/');
+    }
+
+    protected function requestScheme(): string
+    {
+        return request()->secure() ? 'https' : 'http';
+    }
+
+    protected function webSocketScheme(): string
+    {
+        return request()->secure() ? 'wss' : 'ws';
     }
 }

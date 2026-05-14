@@ -30,6 +30,7 @@ class Team extends BaseModel
     protected $fillable = [
         'name',
         'description',
+        'color',
         'created_by_user_id',
     ];
 

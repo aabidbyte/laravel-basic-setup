@@ -15,7 +15,7 @@
                 @if(tenant())
                     <div class="flex items-center gap-1.5 overflow-hidden">
                         <span class="text-base-content/60 text-[10px] font-medium uppercase tracking-wider">
-                            {{ tenant('plan') ?: __('tenancy.free_plan') }}
+                            {{ tenant()->planModel?->name ?: __('tenancy.free_plan') }}
                         </span>
                         <span class="text-base-content/20 text-[10px]">•</span>
                         <span class="text-base-content/40 text-[10px] truncate">
@@ -41,7 +41,7 @@
                      :description="__('tenancy.switch_tenant_description')"
                      size="lg">
         <div class="flex flex-col gap-4">
-            <livewire:tables.tenant-table />
+            <livewire:tables.tenant-table :is-switcher="true" />
 
             <div class="border-base-content/5 flex justify-end gap-2 border-t pt-4">
                 @can(\App\Constants\Auth\Permissions::IMPERSONATE_USERS())

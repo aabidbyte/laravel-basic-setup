@@ -6,6 +6,7 @@
     "js": {
         "shared": [
             "resources/js/app.js",
+            "resources/js/confirm-modal-helper.js",
             "resources/js/notification-center.js",
             "resources/js/alpine/data/validation-error-scroller.js",
             "resources/js/alpine/data/tenant-switcher.js",

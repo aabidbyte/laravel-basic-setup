@@ -17,7 +17,7 @@ class ModelServiceConsistencyTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        asTenant();
+        $this->setUpTenancy();
     }
 
     public function test_tenant_and_plan_have_uuid_casts()

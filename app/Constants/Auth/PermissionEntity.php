@@ -43,6 +43,10 @@ class PermissionEntity
 
     public const SUBSCRIPTIONS = 'subscriptions';
 
+    public const DOMAINS = 'domains';
+
+    public const TRASH = 'trash';
+
     /**
      * Get all entity constants as an array.
      *
@@ -63,6 +67,8 @@ class PermissionEntity
             self::TENANTS,
             self::PLANS,
             self::SUBSCRIPTIONS,
+            self::DOMAINS,
+            self::TRASH,
         ];
     }
 

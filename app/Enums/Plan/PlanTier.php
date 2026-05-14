@@ -18,11 +18,11 @@ enum PlanTier: string
     public function color(): string
     {
         return match ($this) {
-            self::BASIC => 'badge-neutral',
-            self::PRO => 'badge-primary',
-            self::ENTERPRISE => 'badge-secondary',
-            self::LIFETIME => 'badge-accent',
-            self::ONE_TIME_DEAL => 'badge-info',
+            self::BASIC => 'neutral',
+            self::PRO => 'primary',
+            self::ENTERPRISE => 'secondary',
+            self::LIFETIME => 'accent',
+            self::ONE_TIME_DEAL => 'info',
         };
     }
 

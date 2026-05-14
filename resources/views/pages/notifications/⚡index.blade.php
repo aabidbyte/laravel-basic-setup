@@ -143,13 +143,16 @@ new class extends BasePageComponent {
             <div class="flex justify-end gap-2">
                 @if ($this->unreadCount > 0)
                     <x-ui.button variant="ghost"
+                                 color="primary"
                                  size="sm"
+                                 icon="check-circle"
                                  wire:click="markAllAsRead">
                         {{ __('notifications.mark_all_read') }}
                     </x-ui.button>
                 @endif
                 <x-ui.button color="error"
                              size="sm"
+                             icon="trash"
                              @click="openConfirmClearAll('{{ addslashes(__('notifications.clear_all')) }}', '{{ addslashes(__('modals.confirm.message')) }}')">
                     {{ __('notifications.clear_all') }} ({{ $this->totalCount }})
                 </x-ui.button>
@@ -200,9 +203,8 @@ new class extends BasePageComponent {
                                         <x-ui.button variant="ghost"
                                                      color="error"
                                                      size="sm"
+                                                     icon="trash"
                                                      @click.stop="openConfirmDelete('{{ $notification['id'] }}', '{{ addslashes(__('notifications.delete')) }}', '{{ addslashes(__('modals.confirm.message')) }}')">
-                                            <x-ui.icon name="trash"
-                                                       class="h-4 w-4"></x-ui.icon>
                                         </x-ui.button>
                                     </div>
                                 </div>
@@ -219,7 +221,9 @@ new class extends BasePageComponent {
         <div class="flex justify-center pt-2">
             <x-ui.button wire:click="loadMore"
                          variant="ghost"
-                         size="sm">
+                         color="info"
+                         size="sm"
+                         icon="chevron-down">
                 {{ __('notifications.see_previous') }} ({{ $this->remainingCount }})
             </x-ui.button>
         </div>

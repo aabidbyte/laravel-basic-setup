@@ -189,9 +189,32 @@ new class extends BasePageComponent {
 }; ?>
 
 <x-layouts.page backHref="{{ $this->cancelUrl }}">
+    <x-slot:bottomActions>
+        <div class="flex items-center justify-end gap-3">
+            <x-ui.button :href="$this->cancelUrl"
+                         wire:navigate
+                         variant="ghost"
+                         size="sm">
+                <x-ui.icon name="x-mark"
+                           size="sm" />
+                {{ __('actions.cancel') }}
+            </x-ui.button>
+
+            <x-ui.button type="submit"
+                         form="plan-form"
+                         color="primary"
+                         size="sm">
+                <x-ui.icon name="check"
+                           size="sm" />
+                {{ $this->submitButtonText }}
+            </x-ui.button>
+        </div>
+    </x-slot:bottomActions>
+
     <div class="mx-auto max-w-4xl">
         <x-ui.card>
-            <x-ui.form wire:submit="{{ $this->submitAction }}">
+            <x-ui.form wire:submit="{{ $this->submitAction }}"
+                       id="plan-form">
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div class="md:col-span-2">
                         <x-ui.input label="{{ __('plans.name') }}"
@@ -292,22 +315,6 @@ new class extends BasePageComponent {
                         </div>
                     </div>
                 </div>
-
-                <x-slot:actions>
-                    <x-ui.button variant="ghost"
-                                 href="{{ $this->cancelUrl }}"
-                                 wire:navigate>
-                        {{ __('actions.cancel') }}
-                    </x-ui.button>
-                    <x-ui.button type="submit"
-                                 variant="primary"
-                                 class="min-w-[120px]"
-                                 wire:loading.attr="disabled">
-                        <span wire:loading.remove>{{ $this->submitButtonText }}</span>
-                        <span wire:loading
-                              class="loading loading-spinner loading-xs"></span>
-                    </x-ui.button>
-                </x-slot:actions>
             </x-ui.form>
         </x-ui.card>
     </div>

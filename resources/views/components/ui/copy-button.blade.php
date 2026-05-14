@@ -26,9 +26,13 @@
 @php
     $copyText = $copyText ?? __('actions.copy');
     $copiedText = $copiedText ?? __('actions.copied');
+    $copyButtonConfig = json_encode([
+        'text' => $text,
+        'copiedText' => $copiedText,
+    ], JSON_HEX_APOS);
 @endphp
 
-<div x-data="copyToClipboard({ text: '{{ addslashes($text) }}' })"
+<div x-data="copyToClipboard('{{ $copyButtonConfig }}')"
      {{ $attributes->only('class') }}>
     <x-ui.button @click="copy()"
                  size="{{ $size }}"
@@ -59,12 +63,15 @@
         (function() {
             const register = () => {
                 Alpine.data('copyToClipboard', (config = {}) => {
-                    const text = typeof config === 'string' ? config : config.text || '';
+                    const parsedConfig = typeof config === 'string' && config.startsWith('{') ?
+                        JSON.parse(config) :
+                        config;
+                    const text = typeof parsedConfig === 'string' ? parsedConfig : parsedConfig.text || '';
                     const copiedText =
-                        typeof config === 'object' ? config.copiedText || 'Copied!' : 'Copied!';
+                        typeof parsedConfig === 'object' ? parsedConfig.copiedText || 'Copied!' : 'Copied!';
                     const errorText =
-                        typeof config === 'object' ?
-                        config.errorText || 'Copy failed' :
+                        typeof parsedConfig === 'object' ?
+                        parsedConfig.errorText || 'Copy failed' :
                         'Copy failed';
 
                     return {

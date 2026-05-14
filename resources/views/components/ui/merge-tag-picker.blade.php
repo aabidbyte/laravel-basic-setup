@@ -15,7 +15,12 @@
     'contextVariables' => [],
 ])
 
-<div x-data='mergeTagPicker({!! json_encode($availableTags, JSON_HEX_APOS) !!}, {!! json_encode($target, JSON_HEX_APOS) !!})'
+@php
+    $availableTagsConfig = json_encode($availableTags, JSON_HEX_APOS);
+    $targetConfig = json_encode($target, JSON_HEX_APOS);
+@endphp
+
+<div x-data="mergeTagPicker('{{ $availableTagsConfig }}', '{{ $targetConfig }}')"
      {{ $attributes->merge(['class' => 'inline-block']) }}>
 
     {{-- Trigger Button --}}
@@ -48,15 +53,10 @@
                     <x-ui.button type="button"
                                  variant="outline"
                                  class="flex h-auto flex-col items-center gap-2 py-4"
-                                 x-bind:class="{
-                                     'btn-primary': group.color === 'primary',
-                                     'btn-secondary': group.color === 'secondary',
-                                     'btn-accent': group.color === 'accent',
-                                     'btn-neutral': !['primary', 'secondary', 'accent'].includes(group.color)
-                                 }"
+                                 x-bind:class="groupButtonClass(group)"
                                  @click="selectEntity(key)">
                         <div class="h-2 w-2 rounded-full"
-                             :class="'bg-' + group.color"></div>
+                             :class="groupColorClass(group)"></div>
                         <span class="text-sm font-semibold"
                               x-text="group.label"></span>
                         <span class="text-xs opacity-70"
@@ -155,7 +155,7 @@
                                 availableTags || {};
 
                             this.targetRef =
-                                typeof targetRef === 'string' && targetRef.startsWith('"') ?
+                                typeof targetRef === 'string' ?
                                 JSON.parse(targetRef) :
                                 targetRef;
                         } catch (e) {
@@ -249,6 +249,22 @@
 
                     get isEmpty() {
                         return Object.keys(this.filteredTags).length === 0;
+                    },
+
+                    groupButtonClass(group) {
+                        const color = group && group.color ? group.color : 'neutral';
+
+                        if (['primary', 'secondary', 'accent'].includes(color)) {
+                            return `btn-${color}`;
+                        }
+
+                        return 'btn-neutral';
+                    },
+
+                    groupColorClass(group) {
+                        const color = group && group.color ? group.color : 'neutral';
+
+                        return `bg-${color}`;
                     },
 
                     insertTag(tagKey) {

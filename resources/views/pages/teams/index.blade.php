@@ -14,9 +14,7 @@
                 <x-ui.button href="{{ route('teams.edit') }}"
                              wire:navigate
                              color="primary"
-                             class="gap-2">
-                    <x-ui.icon name="plus"
-                               size="sm"></x-ui.icon>
+                             icon="plus">
                     {{ __('pages.common.create.title', ['type' => __('types.team')]) }}
                 </x-ui.button>
             @endcan

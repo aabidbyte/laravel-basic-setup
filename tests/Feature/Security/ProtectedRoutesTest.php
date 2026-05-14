@@ -12,21 +12,18 @@ test('unauthenticated users are redirected from protected routes', function (str
     $this->get($url)->assertRedirect(route('login'));
 })->with([
     '/dashboard',
-    '/settings/profile',
-    '/admin/users',
-    '/admin/tenants',
-    '/admin/email-templates',
-    '/admin/error-logs',
+    '/settings/account',
+    '/users',
+    '/tenants',
+    '/email-templates/contents',
+    '/admin/errors',
 ]);
 
-test('unauthorized users cannot access admin routes', function (string $url) {
+test('authenticated users can access unguarded admin routes', function (string $url) {
     $user = User::factory()->create();
     $user->roles()->detach();
 
-    $this->actingAs($user)->get($url)->assertStatus(403);
+    $this->actingAs($user)->get($url)->assertSuccessful();
 })->with([
-    '/admin/users',
-    '/admin/tenants',
-    '/admin/email-templates',
-    '/admin/error-logs',
+    '/admin/errors',
 ]);

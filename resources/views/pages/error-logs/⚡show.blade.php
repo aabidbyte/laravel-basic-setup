@@ -133,9 +133,8 @@ new class extends BasePageComponent {
                                 @can(Permissions::RESOLVE_ERROR_LOGS())
                                     <x-ui.button wire:click="openResolveModal"
                                                  color="success"
-                                                 size="sm">
-                                        <x-ui.icon name="check"
-                                                   size="sm"></x-ui.icon>
+                                                 size="sm"
+                                                 icon="check">
                                         {{ __('errors.management.resolve_confirm') }}
                                     </x-ui.button>
                                 @endcan
@@ -150,9 +149,8 @@ new class extends BasePageComponent {
                                          })"
                                              color="error"
                                              variant="ghost"
-                                             size="sm">
-                                    <x-ui.icon name="trash"
-                                               size="sm"></x-ui.icon>
+                                             size="sm"
+                                             icon="trash">
                                     {{ __('actions.delete') }}
                                 </x-ui.button>
                             @endcan

@@ -67,6 +67,22 @@ new class extends BasePageComponent {
         $this->template->refresh();
         $this->sendSuccessNotification($this->template, 'email_templates.actions.published_success');
     }
+
+    public function delete(): void
+    {
+        $this->authorize(Permissions::DELETE_EMAIL_TEMPLATES());
+
+        if ($this->template->is_system || $this->template->is_default) {
+            return;
+        }
+
+        $name = $this->template->name;
+        $this->template->delete();
+
+        $this->sendSuccessNotification(null, 'actions.deleted_successfully', ['name' => $name]);
+
+        $this->redirect($this->template->is_layout ? route('emailTemplates.layouts.index') : route('emailTemplates.contents.index'), navigate: true);
+    }
 }; ?>
 
 <x-layouts.page
@@ -106,9 +122,9 @@ new class extends BasePageComponent {
                 <x-ui.button href="{{ route('emailTemplates.builder.edit', $template) }}"
                              variant="outline"
                              wire:navigate
-                             class="gap-2">
+                             size="sm">
                     <x-ui.icon name="document-text"
-                               size="sm"></x-ui.icon>
+                               size="sm" />
                     {{ __('email_templates.edit.edit_builder') }}
                 </x-ui.button>
             @endcan
@@ -117,9 +133,9 @@ new class extends BasePageComponent {
                 <x-ui.button href="{{ route('emailTemplates.settings.edit', $template) }}"
                              color="primary"
                              wire:navigate
-                             class="gap-2">
+                             size="sm">
                     <x-ui.icon name="cog-6-tooth"
-                               size="sm"></x-ui.icon>
+                               size="sm" />
                     {{ __('email_templates.edit.edit_settings') }}
                 </x-ui.button>
             @endcan
@@ -131,9 +147,9 @@ new class extends BasePageComponent {
                                      wire:click="publish"
                                      wire:confirm="{{ __('actions.confirm_publish') }}"
                                      color="success"
-                                     class="gap-2">
+                                     size="sm">
                             <x-ui.icon name="check-circle"
-                                       size="sm"></x-ui.icon>
+                                       size="sm" />
                             {{ __('email_templates.actions.publish') }}
                         </x-ui.button>
                     @endcan
@@ -145,13 +161,25 @@ new class extends BasePageComponent {
                                      wire:click="archive"
                                      wire:confirm="{{ __('actions.confirm_archive') }}"
                                      variant="ghost"
-                                     class="text-error gap-2">
-                            <x-ui.icon name="archive-box"
-                                       size="sm"></x-ui.icon>
+                                     color="warning"
+                                     size="sm"
+                                     icon="archive-box">
                             {{ __('email_templates.actions.archive') }}
                         </x-ui.button>
                     @endcan
                 @endif
+
+                @can(Permissions::DELETE_EMAIL_TEMPLATES())
+                    <x-ui.button type="button"
+                                 wire:click="delete"
+                                 wire:confirm="{{ __('actions.confirm_delete') }}"
+                                 variant="ghost"
+                                 color="error"
+                                 size="sm"
+                                 icon="trash">
+                        {{ __('actions.delete') }}
+                    </x-ui.button>
+                @endcan
             @endif
         </div>
     </x-slot:topActions>

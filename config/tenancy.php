@@ -21,6 +21,23 @@ use Stancl\Tenancy\TenantDatabaseManagers\PostgreSQLDatabaseManager;
 use Stancl\Tenancy\TenantDatabaseManagers\SQLiteDatabaseManager;
 use Stancl\Tenancy\UUIDGenerator;
 
+/**
+ * stancl/tenancy RedisTenancyBootstrapper uses ext-redis (\Redis::OPT_PREFIX).
+ * It cannot run with predis; omit it when predis is configured or ext-redis is missing.
+ *
+ * @var array<int, class-string>
+ */
+$bootstrappers = [
+    DatabaseTenancyBootstrapper::class,
+    CacheTenancyBootstrapper::class,
+    FilesystemTenancyBootstrapper::class,
+    QueueTenancyBootstrapper::class,
+];
+
+if (\extension_loaded('redis') && \env('REDIS_CLIENT', 'phpredis') === 'phpredis') {
+    $bootstrappers[] = RedisTenancyBootstrapper::class;
+}
+
 return [
     'tenant_model' => App\Models\Tenant::class,
     'id_generator' => UUIDGenerator::class,
@@ -44,13 +61,7 @@ return [
      *
      * To configure their behavior, see the config keys below.
      */
-    'bootstrappers' => [
-        DatabaseTenancyBootstrapper::class,
-        CacheTenancyBootstrapper::class,
-        FilesystemTenancyBootstrapper::class,
-        QueueTenancyBootstrapper::class,
-        RedisTenancyBootstrapper::class,
-    ],
+    'bootstrappers' => $bootstrappers,
 
     /**
      * Database tenancy config. Used by DatabaseTenancyBootstrapper.

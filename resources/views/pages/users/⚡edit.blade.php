@@ -306,14 +306,25 @@ new class extends BasePageComponent {
 
 <x-layouts.page :backHref="$this->cancelUrl">
     <x-slot:bottomActions>
-        <x-ui.button type="submit"
-                     form="user-form"
-                     variant="primary">
-            <x-ui.loading wire:loading
-                          wire:target="{{ $this->submitAction }}"
-                          size="sm" />
-            {{ $this->submitButtonText }}
-        </x-ui.button>
+        <div class="flex items-center justify-end gap-3">
+            <x-ui.button href="{{ route('users.index') }}"
+                         wire:navigate
+                         variant="ghost"
+                         size="sm">
+                <x-ui.icon name="x-mark"
+                           size="sm" />
+                {{ __('actions.cancel') }}
+            </x-ui.button>
+
+            <x-ui.button type="submit"
+                         form="user-form"
+                         color="primary"
+                         size="sm">
+                <x-ui.icon name="check"
+                           size="sm" />
+                {{ $this->submitButtonText }}
+            </x-ui.button>
+        </div>
     </x-slot:bottomActions>
 
     <div class="mx-auto w-full max-w-4xl">

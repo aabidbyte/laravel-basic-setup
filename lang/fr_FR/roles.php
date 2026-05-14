@@ -3,6 +3,7 @@
 return [
     'role' => 'Rôle',
     'display_name' => 'Nom affiché',
+    'display_name_hint' => 'Le nom système interne sera généré automatiquement depuis ce champ.',
     'description' => 'Description',
     'permissions' => 'Permissions',
     'no_permissions' => 'Aucune permission assignée',
@@ -17,5 +18,4 @@ return [
         'basic_info' => 'Informations de base',
     ],
     'super_admin_all_permissions' => 'Le Super Admin dispose de toutes les permissions par défaut.',
-    'display_name_hint' => '',
 ];

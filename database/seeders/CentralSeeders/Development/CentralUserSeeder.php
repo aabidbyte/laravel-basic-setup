@@ -3,14 +3,18 @@
 namespace Database\Seeders\CentralSeeders\Development;
 
 use App\Constants\Auth\Roles;
+use App\Enums\Ui\ThemeColorTypes;
 use App\Models\Plan;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Stancl\Tenancy\Database\DatabaseManager;
 use Stancl\Tenancy\Exceptions\TenantDatabaseAlreadyExistsException;
+use Stancl\Tenancy\Jobs\CreateDatabase;
 
 class CentralUserSeeder extends Seeder
 {
@@ -44,7 +48,7 @@ class CentralUserSeeder extends Seeder
         }
 
         // Create a regular user for testing
-        $user = User::updateOrCreate(
+        User::updateOrCreate(
             ['email' => 'user@example.com'],
             [
                 'name' => 'Test User',
@@ -56,41 +60,97 @@ class CentralUserSeeder extends Seeder
             ],
         );
 
-        // Create Tenants and Domains
-        $tenant1 = Tenant::find('org1');
-        $tenant2 = Tenant::find('org2');
+        $tenants = $this->seedTenants();
+        $this->attachSeededUsersToTenants($tenants);
+    }
 
-        try {
-            if (! $tenant1) {
-                // Find Lifetime plan by its English name
-                $lifetimePlan = Plan::where('name->en_US', 'Lifetime')->first();
+    /**
+     * Create development tenants and their domains.
+     *
+     * @return Collection<int, Tenant>
+     */
+    private function seedTenants(): Collection
+    {
+        $plans = [
+            'org1' => Plan::where('name->en_US', 'Lifetime')->first()?->uuid,
+            'org2' => Plan::where('name->en_US', 'Pro')->first()?->uuid,
+            'org3' => Plan::where('name->en_US', 'Basic')->first()?->uuid,
+        ];
 
-                $tenant1 = Tenant::create([
-                    'id' => 'org1',
-                    'name' => 'Organization 1',
-                    'plan' => $lifetimePlan?->uuid ?? null,
+        $tenantData = [
+            [
+                'id' => 'org1',
+                'name' => 'Central Organization',
+                'plan' => $plans['org1'],
+                'color' => ThemeColorTypes::PRIMARY->value,
+            ],
+            [
+                'id' => 'org2',
+                'name' => 'Organization 2',
+                'plan' => $plans['org2'],
+                'color' => ThemeColorTypes::SECONDARY->value,
+            ],
+            [
+                'id' => 'org3',
+                'name' => 'Organization 3',
+                'plan' => $plans['org3'],
+                'color' => ThemeColorTypes::ACCENT->value,
+            ],
+        ];
+
+        foreach ($tenantData as $tenantAttributes) {
+            $tenant = Tenant::withoutEvents(function () use ($tenantAttributes): Tenant {
+                return Tenant::updateOrCreate(
+                    ['id' => $tenantAttributes['id']],
+                    [
+                        'name' => $tenantAttributes['name'],
+                        'plan' => $tenantAttributes['plan'],
+                        'color' => $tenantAttributes['color'],
+                    ],
+                );
+            });
+
+            try {
+                (new CreateDatabase($tenant))->handle(app(DatabaseManager::class));
+            } catch (TenantDatabaseAlreadyExistsException) {
+                // Database was already created (e.g. re-seed, or events ran in another code path).
+            }
+
+            if ($tenant->domains()->count() === 0) {
+                $tenant->domains()->create([
+                    'domain' => "{$tenantAttributes['id']}.laravel-basic-setup.test",
                 ]);
             }
-            if ($tenant1->domains()->count() === 0) {
-                $tenant1->domains()->create(['domain' => 'org1.laravel-basic-setup.test']);
-            }
-
-            if (! $tenant2) {
-                $tenant2 = Tenant::create(['id' => 'org2', 'name' => 'Organization 2']);
-            }
-            if ($tenant2->domains()->count() === 0) {
-                $tenant2->domains()->create(['domain' => 'org2.laravel-basic-setup.test']);
-            }
-        } catch (TenantDatabaseAlreadyExistsException $e) {
-            // Already exists, ignore
-            $tenant1 = Tenant::find('org1');
-            $tenant2 = Tenant::find('org2');
         }
 
-        // Associate users with tenants
-        if ($tenant1 && $tenant2) {
-            $admin->tenants()->syncWithoutDetaching([$tenant1->id, $tenant2->id]);
-            $user->tenants()->syncWithoutDetaching([$tenant1->id]);
+        return Tenant::whereIn('id', ['org1', 'org2', 'org3'])
+            ->orderByRaw("FIELD(id, 'org1', 'org2', 'org3')")
+            ->get();
+    }
+
+    /**
+     * Attach seeded users to random tenants, keeping user ID 1 on the central tenant.
+     *
+     * @param  Collection<int, Tenant>  $tenants
+     */
+    private function attachSeededUsersToTenants(Collection $tenants): void
+    {
+        $firstTenant = $tenants->first();
+
+        if (! $firstTenant instanceof Tenant) {
+            return;
         }
+
+        $superAdmin = User::find(1);
+        $superAdmin?->tenants()->syncWithoutDetaching([$firstTenant->id]);
+
+        User::where('id', '!=', 1)->get()->each(function (User $user) use ($tenants): void {
+            $tenantIds = $tenants
+                ->random(\random_int(1, $tenants->count()))
+                ->pluck('id')
+                ->all();
+
+            $user->tenants()->syncWithoutDetaching($tenantIds);
+        });
     }
 }

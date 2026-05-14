@@ -4,6 +4,7 @@ namespace Database\Seeders\CentralSeeders\Production;
 
 use App\Constants\Auth\Permissions;
 use App\Constants\Auth\Roles;
+use App\Enums\Ui\ThemeColorTypes;
 use App\Models\Permission;
 use App\Models\Role;
 use Illuminate\Database\Seeder;
@@ -44,9 +45,9 @@ class RoleAndPermissionSeeder extends Seeder
      */
     private function createSuperAdminRole(array $allPermissions): void
     {
-        $role = Role::firstOrCreate(
+        $role = Role::updateOrCreate(
             ['name' => Roles::SUPER_ADMIN],
-            ['display_name' => Str::headline(Roles::SUPER_ADMIN)],
+            ['display_name' => Str::headline(Roles::SUPER_ADMIN), 'color' => ThemeColorTypes::ERROR->value],
         );
         $role->syncPermissions($allPermissions);
     }
@@ -56,13 +57,13 @@ class RoleAndPermissionSeeder extends Seeder
      */
     private function createAdminRole(): void
     {
-        $role = Role::firstOrCreate(
+        $role = Role::updateOrCreate(
             ['name' => Roles::ADMIN],
-            ['display_name' => Str::headline(Roles::ADMIN)],
+            ['display_name' => Str::headline(Roles::ADMIN), 'color' => ThemeColorTypes::PRIMARY->value],
         );
 
         // Define admin permissions (everything except telescope/horizon/security settings)
-        $adminPermissions = array_filter(Permissions::all(), function ($permission) {
+        $adminPermissions = \array_filter(Permissions::all(), function ($permission) {
             return ! \str_contains($permission, 'telescope') &&
                    ! \str_contains($permission, 'horizon') &&
                    ! \str_contains($permission, 'error_logs');
@@ -76,9 +77,9 @@ class RoleAndPermissionSeeder extends Seeder
      */
     private function createMemberRole(): void
     {
-        Role::firstOrCreate(
+        Role::updateOrCreate(
             ['name' => Roles::MEMBER],
-            ['display_name' => Str::headline(Roles::MEMBER)],
+            ['display_name' => Str::headline(Roles::MEMBER), 'color' => ThemeColorTypes::NEUTRAL->value],
         );
         // Members typically have no administrative permissions by default
     }

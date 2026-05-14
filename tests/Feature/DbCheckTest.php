@@ -13,5 +13,7 @@ test('it uses the correct database', function () {
 
     expect(\str_starts_with($dbName, 'laravel_testing'))->toBeTrue();
     expect($centralDbName)->toBe($dbName);
-    expect($tenantPrefix)->toBe("testing_{$dbName}_tenant_");
+    expect($tenantPrefix)->toStartWith('testing_');
+    expect($tenantPrefix)->toEndWith('_tenant_');
+    expect(\strlen($tenantPrefix))->toBeLessThanOrEqual(64);
 });

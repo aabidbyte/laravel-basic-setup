@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Constants\Auth\Permissions;
 use App\Constants\Auth\Roles;
 use App\Enums\Ui\PlaceholderType;
+use App\Enums\Ui\ThemeColorTypes;
 use App\Livewire\Bases\BasePageComponent;
 use App\Models\Permission;
 use App\Models\Role;
@@ -12,6 +13,7 @@ use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Enum;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 
@@ -36,6 +38,7 @@ new class extends BasePageComponent {
     public ?string $display_name = null;
 
     public ?string $description = null;
+    public string $color = 'neutral';
 
     /** @var array<string> */
     public array $selectedPermissions = [];
@@ -80,6 +83,7 @@ new class extends BasePageComponent {
         $this->name = $role->name;
         $this->display_name = $role->display_name;
         $this->description = $role->description;
+        $this->color = $role->color ?? 'neutral';
         $this->selectedPermissions = $role->permissions->pluck('uuid')->toArray();
     }
 
@@ -146,12 +150,13 @@ new class extends BasePageComponent {
         return [
             'display_name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:1000'],
+            'color' => ['required', new Enum(ThemeColorTypes::class)],
             'selectedPermissions' => ['array'],
             'selectedPermissions.*' => [
                 'exists:permissions,uuid',
                 function ($attribute, $value, $fail) {
                     $permission = Permission::where('uuid', $value)->first();
-                    if ($permission && !in_array($permission->name, Permissions::all())) {
+                    if ($permission && ! \in_array($permission->name, Permissions::all(), true)) {
                         $fail("The selected permission {$permission->name} is invalid.");
                     }
                 }
@@ -194,6 +199,7 @@ new class extends BasePageComponent {
             'name' => $generatedName,
             'display_name' => $this->display_name,
             'description' => $this->description,
+            'color' => $this->color,
         ]);
 
         $this->syncPermissions($role);
@@ -223,6 +229,7 @@ new class extends BasePageComponent {
             'name' => $newName,
             'display_name' => $this->display_name,
             'description' => $this->description,
+            'color' => $this->color,
         ]);
 
         $this->syncPermissions($this->model);
@@ -235,7 +242,7 @@ new class extends BasePageComponent {
      */
     protected function syncPermissions(Role $role): void
     {
-        if (!empty($this->selectedPermissions)) {
+        if (! empty($this->selectedPermissions)) {
             $permissionIds = Permission::whereIn('uuid', $this->selectedPermissions)->pluck('id')->toArray();
             $role->syncPermissions($permissionIds);
         } else {
@@ -260,18 +267,38 @@ new class extends BasePageComponent {
     {
         return $this->name === Roles::SUPER_ADMIN;
     }
+
+    /**
+     * Get theme color options for color picker component.
+     */
+    #[Computed]
+    public function colorOptions(): array
+    {
+        return ThemeColorTypes::options();
+    }
 }; ?>
 
 <x-layouts.page :backHref="$this->cancelUrl">
     <x-slot:bottomActions>
-        <x-ui.button type="submit"
-                     form="role-form"
-                     variant="primary">
-            <x-ui.loading wire:loading
-                          wire:target="{{ $this->submitAction }}"
-                          size="sm" />
-            {{ $this->submitButtonText }}
-        </x-ui.button>
+        <div class="flex items-center justify-end gap-3">
+            <x-ui.button :href="$this->cancelUrl"
+                         wire:navigate
+                         variant="ghost"
+                         size="sm">
+                <x-ui.icon name="x-mark"
+                           size="sm" />
+                {{ __('actions.cancel') }}
+            </x-ui.button>
+
+            <x-ui.button type="submit"
+                         form="role-form"
+                         color="primary"
+                         size="sm">
+                <x-ui.icon name="check"
+                           size="sm" />
+                {{ $this->submitButtonText }}
+            </x-ui.button>
+        </div>
     </x-slot:bottomActions>
 
     <div class="mx-auto w-full max-w-4xl">
@@ -296,6 +323,11 @@ new class extends BasePageComponent {
                                 name="description"
                                 :label="__('roles.description')"
                                 rows="3" />
+
+                    <x-ui.color-picker label="{{ __('fields.color') }}"
+                                       wire:model="color"
+                                       :options="$this->colorOptions"
+                                       required />
                 </div>
 
                 {{-- Permissions --}}

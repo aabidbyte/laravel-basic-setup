@@ -23,11 +23,12 @@ class TenantService
                 'id' => $data['id'],
                 'name' => $data['name'],
                 'plan' => $data['plan'] ?? null,
+                'color' => $data['color'] ?? 'neutral',
                 'should_seed' => $data['should_seed'] ?? true,
             ]);
 
             $tenant->domains()->create([
-                'domain' => $data['id'] . '.' . config('tenancy.central_domains.0'),
+                'domain' => $data['domain'] ?? $data['id'] . '.' . config('tenancy.central_domains.0'),
             ]);
 
             if (! empty($userIds)) {
@@ -47,10 +48,21 @@ class TenantService
             $tenant->update([
                 'name' => $data['name'],
                 'plan' => $data['plan'] ?? $tenant->plan,
+                'color' => $data['color'] ?? $tenant->color,
             ]);
 
             // Note: tenant ID change is not supported by standard tenancy package easily
             // as it's the primary key and linked to database names, etc.
+
+            if (isset($data['domain'])) {
+                $domain = $tenant->domains()->oldest()->first();
+
+                if ($domain) {
+                    $domain->update(['domain' => $data['domain']]);
+                } else {
+                    $tenant->domains()->create(['domain' => $data['domain']]);
+                }
+            }
 
             if (! empty($userIds)) {
                 $tenant->users()->sync($userIds);

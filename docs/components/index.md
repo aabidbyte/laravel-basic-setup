@@ -23,6 +23,7 @@ This documentation is organized into sections for easy navigation. Each section 
 - [Icon](icon.md)
 - [Dropdown](dropdown.md)
 - [Badge](badge.md)
+- [Tabs](tabs.md)
 - [Title](title.md)
 - [Avatar](avatar.md)
 - [Link](link.md)

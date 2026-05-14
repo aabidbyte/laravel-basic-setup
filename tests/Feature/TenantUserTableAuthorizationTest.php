@@ -60,3 +60,26 @@ it('detaches when executeAction is invoked by an authorized tenant editor', func
 
     expect($after)->toBe(0);
 });
+
+it('assigns and detaches users from the tenant assignment table', function (): void {
+    $unassignedUser = User::factory()->create();
+
+    Livewire::actingAs($this->member)
+        ->test('tables.tenant-user-assignment-table', ['tenantId' => $this->tenant->id])
+        ->call('executeAction', 'select', $unassignedUser->uuid);
+
+    expect(DB::connection('central')->table('tenant_user')
+        ->where('tenant_id', $this->tenant->id)
+        ->where('user_id', $unassignedUser->id)
+        ->exists())->toBeTrue();
+
+    Livewire::actingAs($this->member)
+        ->test('tables.tenant-user-assignment-table', ['tenantId' => $this->tenant->id])
+        ->set('selected', [$unassignedUser->uuid])
+        ->call('executeBulkAction', 'detach');
+
+    expect(DB::connection('central')->table('tenant_user')
+        ->where('tenant_id', $this->tenant->id)
+        ->where('user_id', $unassignedUser->id)
+        ->exists())->toBeFalse();
+});

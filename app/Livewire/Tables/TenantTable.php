@@ -4,15 +4,20 @@ declare(strict_types=1);
 
 namespace App\Livewire\Tables;
 
+use App\Constants\Auth\PolicyAbilities;
 use App\Constants\Auth\Roles;
 use App\Livewire\DataTable\Datatable;
 use App\Models\Tenant;
+use App\Models\User;
 use App\Services\DataTable\Builders\Action;
 use App\Services\DataTable\Builders\Column;
 use App\Services\DataTable\Builders\Filter;
+use App\Services\Notifications\NotificationBuilder;
+use App\Services\Tenancy\UserImpersonationService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
 class TenantTable extends Datatable
 {
@@ -32,6 +37,11 @@ class TenantTable extends Datatable
     public bool $showHeader = false;
 
     /**
+     * Whether this table is used in the tenant switcher.
+     */
+    public bool $isSwitcher = false;
+
+    /**
      * Get the base query.
      */
     public function baseQuery(): Builder
@@ -42,7 +52,7 @@ class TenantTable extends Datatable
             return Tenant::query()->whereRaw('1 = 0');
         }
 
-        $query = Tenant::query();
+        $query = Tenant::query()->with(['planModel']);
 
         // If user is not a super admin, only show tenants they belong to
         if (! $user->hasRole(Roles::SUPER_ADMIN)) {
@@ -54,7 +64,9 @@ class TenantTable extends Datatable
             $query->where('id', '!=', tenant('id'));
         }
 
-        return $query->select(['tenants.id', 'tenants.name', 'tenants.plan', 'tenants.id as uuid']);
+        return $query
+            ->select(['tenants.id', 'tenants.name', 'tenants.plan', 'tenants.color', 'tenants.id as uuid'])
+            ->withCount('users');
     }
 
     /**
@@ -75,7 +87,24 @@ class TenantTable extends Datatable
                 ->class('text-xs text-base-content/50'),
 
             Column::make(__('tenancy.plan'), 'plan')
-                ->format(fn ($value) => $value ?? __('tenancy.free_plan')),
+                ->format(fn ($value, $row) => $row->planModel?->name ?? __('tenancy.free_plan')),
+
+            Column::make(__('fields.color'), 'color')
+                ->format(fn ($value) => view('components.ui.badge', [
+                    'color' => $value,
+                    'size' => 'sm',
+                    'text' => __("fields.colors.{$value}"),
+                ])->render())
+                ->html(),
+
+            Column::make(__('tenancy.users_count'), 'users_count')
+                ->sortable()
+                ->format(fn ($value) => view('components.ui.badge', [
+                    'color' => 'primary',
+                    'size' => 'sm',
+                    'text' => (string) $value,
+                ])->render())
+                ->html(),
         ];
     }
 
@@ -102,11 +131,11 @@ class TenantTable extends Datatable
      */
     protected function findModelByUuid(string $uuid): ?Model
     {
-        if (tenant('id') === $uuid) {
-            return Tenant::find($uuid);
-        }
-
-        return parent::findModelByUuid($uuid);
+        return Tenant::query()
+            ->with(['planModel'])
+            ->withCount('users')
+            ->whereKey($uuid)
+            ->first();
     }
 
     /**
@@ -114,7 +143,47 @@ class TenantTable extends Datatable
      */
     protected function rowActions(): array
     {
-        return [];
+        $actions = [];
+
+        $actions[] = Action::make('switch', __('tenancy.switch'))
+            ->icon('arrow-path')
+            ->color('success')
+            ->variant('ghost')
+            ->execute(fn ($tenant) => $this->switchTo($tenant->id));
+
+        if (Route::has('tenants.show')) {
+            $actions[] = Action::make('view', __('actions.view'))
+                ->icon('eye')
+                ->route(fn ($tenant) => route('tenants.show', $tenant->id))
+                ->variant('ghost')
+                ->color('info')
+                ->can(PolicyAbilities::VIEW);
+        }
+
+        if (Route::has('tenants.settings.edit')) {
+            $actions[] = Action::make('edit', __('actions.edit'))
+                ->icon('pencil')
+                ->route(fn ($tenant) => route('tenants.settings.edit', $tenant->id))
+                ->variant('ghost')
+                ->color('primary')
+                ->can(PolicyAbilities::UPDATE);
+        }
+
+        $actions[] = Action::make('delete', __('actions.delete'))
+            ->icon('trash')
+            ->variant('ghost')
+            ->color('error')
+            ->confirm(__('actions.confirm_delete'))
+            ->execute(function (Tenant $tenant) {
+                $tenant->delete();
+                NotificationBuilder::make()
+                    ->title('actions.deleted_successfully', ['tenant' => $tenant->label()])
+                    ->success()
+                    ->send();
+            })
+            ->can(PolicyAbilities::DELETE);
+
+        return $actions;
     }
 
     /**
@@ -122,18 +191,28 @@ class TenantTable extends Datatable
      */
     public function rowClick(string $uuid): ?Action
     {
-        return Action::make('switch')
-            ->execute(fn ($tenant) => $this->switchTo($tenant->id));
+        if ($this->isSwitcher) {
+            return Action::make('switch', __('tenancy.switch'))
+                ->execute(fn ($tenant) => $this->switchTo($tenant->id));
+        }
+
+        if (Route::has('tenants.show')) {
+            return Action::make('view', __('actions.view'))
+                ->route(fn ($tenant) => route('tenants.show', $tenant->id))
+                ->can(PolicyAbilities::VIEW);
+        }
+
+        return null;
     }
 
     /**
      * Switch to a different tenant.
      */
-    protected function switchTo(string $tenantId): void
+    public function switchTo(string $tenantId): void
     {
         $user = Auth::user();
 
-        if (! $user) {
+        if (! $user instanceof User) {
             return;
         }
 
@@ -158,19 +237,15 @@ class TenantTable extends Datatable
             return;
         }
 
-        $domain = $tenant->domains()->first();
+        // Use Impersonation for seamless switch without re-login
+        $impersonation = app(UserImpersonationService::class)->execute($user, $user, $tenant);
 
-        if (! $domain) {
-            $this->dispatch('notify', [
-                'type' => 'error',
-                'message' => __('tenancy.domain_not_found'),
-            ]);
+        if ($impersonation['type'] === 'tenant') {
+            $this->redirect($impersonation['url']);
 
             return;
         }
 
-        // Redirect to the tenant domain
-        $url = (request()->secure() ? 'https://' : 'http://') . $domain->domain . '/dashboard';
-        $this->redirect($url);
+        $this->redirect('/dashboard');
     }
 }

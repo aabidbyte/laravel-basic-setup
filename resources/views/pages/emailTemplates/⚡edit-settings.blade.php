@@ -222,24 +222,38 @@ new class extends BasePageComponent {
 <x-layouts.page :backHref="$this->cancelUrl"
                 backLabel="{{ __('actions.cancel') }}">
     <x-slot:bottomActions>
-        @if (!$isCreateMode && !$isLayout)
-            @can(Permissions::EDIT_BUILDER_EMAIL_TEMPLATES())
-                <x-ui.button href="{{ route('emailTemplates.builder.edit', $model) }}"
-                             variant="outline"
-                             wire:navigate>
-                    {{ __('email_templates.edit.edit_builder') }}
-                </x-ui.button>
-            @endcan
-        @endif
+        <div class="flex items-center justify-end gap-3">
+            <x-ui.button :href="$this->cancelUrl"
+                         wire:navigate
+                         variant="ghost"
+                         size="sm">
+                <x-ui.icon name="x-mark"
+                           size="sm" />
+                {{ __('actions.cancel') }}
+            </x-ui.button>
 
-        <x-ui.button type="submit"
-                     form="settings-form"
-                     color="primary">
-            <x-ui.loading wire:loading
-                          wire:target="{{ $this->submitAction }}"
-                          size="sm"></x-ui.loading>
-            {{ $this->submitButtonText }}
-        </x-ui.button>
+            @if (!$isCreateMode && !$isLayout)
+                @can(Permissions::EDIT_BUILDER_EMAIL_TEMPLATES())
+                    <x-ui.button href="{{ route('emailTemplates.builder.edit', $model) }}"
+                                 variant="outline"
+                                 wire:navigate
+                                 size="sm">
+                        <x-ui.icon name="pencil-square"
+                                   size="sm" />
+                        {{ __('email_templates.edit.edit_builder') }}
+                    </x-ui.button>
+                @endcan
+            @endif
+
+            <x-ui.button type="submit"
+                         form="settings-form"
+                         color="primary"
+                         size="sm">
+                <x-ui.icon name="check"
+                           size="sm" />
+                {{ $this->submitButtonText }}
+            </x-ui.button>
+        </div>
     </x-slot:bottomActions>
 
     <section class="mx-auto w-full max-w-4xl">

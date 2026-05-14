@@ -23,4 +23,16 @@ enum ThemeColorTypes: string
     {
         return \array_column(self::cases(), 'value');
     }
+
+    /**
+     * Get translated color options for form controls.
+     *
+     * @return array<string, string>
+     */
+    public static function options(): array
+    {
+        return \collect(self::cases())
+            ->mapWithKeys(fn (self $color): array => [$color->value => __("fields.colors.{$color->value}")])
+            ->toArray();
+    }
 }

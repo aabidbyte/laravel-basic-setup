@@ -30,6 +30,7 @@ class Role extends BaseModel
         'name',
         'display_name',
         'description',
+        'color',
     ];
 
     /**

@@ -41,6 +41,7 @@
         <env name="DB_USERNAME" value="root"/>
         <env name="DB_PASSWORD" value="rootpassword"/>
         <env name="TENANCY_TEST_DATABASE_PREFIX" value="testing"/>
+        <env name="TENANCY_TEST_DATABASE_SUFFIX" value="_test"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
         <env name="DEBUGBAR_ENABLED" value="false"/>
