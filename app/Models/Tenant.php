@@ -161,6 +161,14 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     }
 
     /**
+     * Get custom feature overrides for the tenant.
+     */
+    public function featureOverrides(): HasMany
+    {
+        return $this->hasMany(TenantFeatureOverride::class, 'tenant_id', 'tenant_id');
+    }
+
+    /**
      * Get the current active subscription for the tenant.
      */
     public function currentSubscription(): HasOne

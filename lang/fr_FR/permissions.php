@@ -20,6 +20,10 @@ return [
         'email_templates' => 'Modèles d\'email',
         'email_layouts' => 'Mises en page d\'email',
         'tenants' => 'Locataires',
+        'plans' => 'Plans',
+        'subscriptions' => 'Abonnements',
+        'domains' => 'Domaines',
+        'trash' => 'Corbeille',
     ],
     'actions' => [
         'view' => 'Voir',
@@ -36,5 +40,6 @@ return [
         'configure' => 'Configurer',
         'generate_activation' => 'Générer l\'activation',
         'edit_builder' => 'Modifier le constructeur',
+        'impersonate' => 'Impersonnaliser',
     ],
 ];

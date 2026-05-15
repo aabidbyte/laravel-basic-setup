@@ -22,6 +22,7 @@ return [
         'current_password_label' => 'Mot de passe actuel',
         'new_password_label' => 'Nouveau mot de passe',
         'confirm_password_label' => 'Confirmer le mot de passe',
+        'current_password_mismatch' => 'Le mot de passe fourni ne correspond pas à votre mot de passe actuel.',
         'save_success' => 'Enregistré.',
     ],
     'two_factor' => [

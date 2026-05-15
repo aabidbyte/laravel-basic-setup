@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Models\Domain;
 use App\Models\Tenant;
+use App\Tenancy\Bootstrappers\TenantRuntimeBootstrapper;
 use Illuminate\Support\Str;
 use Stancl\Tenancy\Bootstrappers\CacheTenancyBootstrapper;
 use Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper;
@@ -28,6 +29,7 @@ use Stancl\Tenancy\TenantDatabaseManagers\SQLiteDatabaseManager;
  */
 $bootstrappers = [
     DatabaseTenancyBootstrapper::class,
+    TenantRuntimeBootstrapper::class,
     CacheTenancyBootstrapper::class,
     FilesystemTenancyBootstrapper::class,
     QueueTenancyBootstrapper::class,

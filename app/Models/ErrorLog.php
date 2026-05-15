@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\ErrorHandling\ErrorActorType;
 use App\Models\Base\BaseModel;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -23,9 +24,22 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $stack_trace
  * @property string|null $url
  * @property string|null $method
+ * @property string|null $tenant_id
+ * @property string|null $tenant_name
+ * @property string|null $tenant_domain
  * @property int|null $user_id
+ * @property string|null $user_uuid
+ * @property ErrorActorType|null $actor_type
+ * @property string|null $actor_name
+ * @property string|null $actor_email
+ * @property int|null $impersonator_id
+ * @property string|null $impersonator_name
+ * @property string|null $impersonator_email
  * @property string|null $ip
  * @property string|null $user_agent
+ * @property string|null $runtime_context
+ * @property string|null $command
+ * @property string|null $job_id
  * @property array|null $context
  * @property array|null $resolved_data
  * @property Carbon|null $resolved_at
@@ -48,9 +62,22 @@ class ErrorLog extends BaseModel
         'stack_trace',
         'url',
         'method',
+        'tenant_id',
+        'tenant_name',
+        'tenant_domain',
         'user_id',
+        'user_uuid',
+        'actor_type',
+        'actor_name',
+        'actor_email',
+        'impersonator_id',
+        'impersonator_name',
+        'impersonator_email',
         'ip',
         'user_agent',
+        'runtime_context',
+        'command',
+        'job_id',
         'context',
         'resolved_data',
         'resolved_at',
@@ -64,6 +91,7 @@ class ErrorLog extends BaseModel
     protected function casts(): array
     {
         return [
+            'actor_type' => ErrorActorType::class,
             'context' => 'array',
             'resolved_data' => 'array',
             'resolved_at' => 'datetime',
@@ -88,6 +116,16 @@ class ErrorLog extends BaseModel
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the tenant associated with this error log.
+     *
+     * @return BelongsTo<Tenant, ErrorLog>
+     */
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class, 'tenant_id', 'tenant_id');
     }
 
     /**
@@ -168,5 +206,27 @@ class ErrorLog extends BaseModel
     public function getShortExceptionClassAttribute(): string
     {
         return class_basename($this->exception_class);
+    }
+
+    public function actorLabel(): string
+    {
+        if ($this->actor_name) {
+            return $this->actor_name;
+        }
+
+        if ($this->actor_type instanceof ErrorActorType) {
+            return $this->actor_type->label();
+        }
+
+        return __('errors.management.guest');
+    }
+
+    public function runtimeContextLabel(): string
+    {
+        return match ($this->runtime_context ?: 'http') {
+            'console' => __('errors.management.runtime_contexts.console'),
+            'queue' => __('errors.management.runtime_contexts.queue'),
+            default => __('errors.management.runtime_contexts.http'),
+        };
     }
 }

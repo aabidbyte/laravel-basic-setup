@@ -50,6 +50,9 @@ return new class extends Migration {
             $table->timestampTz('created_at')->nullable();
         });
 
+        $this->createSessionTable();
+        $this->createQueueTables();
+
         Schema::create('roles', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
@@ -233,9 +236,22 @@ return new class extends Migration {
             $table->longText('stack_trace');
             $table->string('url')->nullable();
             $table->string('method')->nullable();
+            $table->string('tenant_id')->nullable()->index();
+            $table->string('tenant_name')->nullable();
+            $table->string('tenant_domain')->nullable();
             $table->unsignedBigInteger('user_id')->nullable();
+            $table->string('user_uuid')->nullable();
+            $table->string('actor_type')->nullable()->index();
+            $table->string('actor_name')->nullable();
+            $table->string('actor_email')->nullable();
+            $table->unsignedBigInteger('impersonator_id')->nullable()->index();
+            $table->string('impersonator_name')->nullable();
+            $table->string('impersonator_email')->nullable();
             $table->string('ip')->nullable();
             $table->text('user_agent')->nullable();
+            $table->string('runtime_context')->nullable()->index();
+            $table->string('command')->nullable();
+            $table->string('job_id')->nullable()->index();
             $table->json('context')->nullable();
             $table->json('resolved_data')->nullable();
             $table->timestampTz('resolved_at')->nullable()->index();
@@ -265,7 +281,88 @@ return new class extends Migration {
         Schema::dropIfExists('role_user');
         Schema::dropIfExists('permissions');
         Schema::dropIfExists('roles');
+        Schema::dropIfExists('failed_jobs');
+        Schema::dropIfExists('job_batches');
+        Schema::dropIfExists('jobs');
+        Schema::dropIfExists('sessions');
         Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('users');
+    }
+
+    /**
+     * Create the tenant database sessions table.
+     */
+    private function createSessionTable(): void
+    {
+        Schema::create('sessions', function (Blueprint $table) {
+            $table->string('id')->primary();
+            $table->uuid('uuid')->nullable()->unique()->index();
+            $table->foreignId('user_id')->nullable()->index();
+            $table->string('ip_address', 45)->nullable();
+            $table->text('user_agent')->nullable();
+            $table->longText('payload');
+            $table->integer('last_activity')->index();
+        });
+    }
+
+    /**
+     * Create queue runtime tables.
+     */
+    private function createQueueTables(): void
+    {
+        $this->createJobsTable();
+        $this->createJobBatchesTable();
+        $this->createFailedJobsTable();
+    }
+
+    /**
+     * Create the database queue jobs table.
+     */
+    private function createJobsTable(): void
+    {
+        Schema::create('jobs', function (Blueprint $table) {
+            $table->id();
+            $table->string('queue')->index();
+            $table->longText('payload');
+            $table->unsignedTinyInteger('attempts');
+            $table->unsignedInteger('reserved_at')->nullable();
+            $table->unsignedInteger('available_at');
+            $table->unsignedInteger('created_at');
+        });
+    }
+
+    /**
+     * Create the queued job batches table.
+     */
+    private function createJobBatchesTable(): void
+    {
+        Schema::create('job_batches', function (Blueprint $table) {
+            $table->string('id')->primary();
+            $table->string('name');
+            $table->integer('total_jobs');
+            $table->integer('pending_jobs');
+            $table->integer('failed_jobs');
+            $table->longText('failed_job_ids');
+            $table->mediumText('options')->nullable();
+            $table->integer('cancelled_at')->nullable();
+            $table->integer('created_at');
+            $table->integer('finished_at')->nullable();
+        });
+    }
+
+    /**
+     * Create the failed queue jobs table.
+     */
+    private function createFailedJobsTable(): void
+    {
+        Schema::create('failed_jobs', function (Blueprint $table) {
+            $table->id();
+            $table->string('uuid')->unique();
+            $table->text('connection');
+            $table->text('queue');
+            $table->longText('payload');
+            $table->longText('exception');
+            $table->timestamp('failed_at')->useCurrent();
+        });
     }
 };

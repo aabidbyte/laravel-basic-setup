@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
+use App\Models\Feature;
+use App\Models\Plan;
 use App\Models\PlanFeature;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -18,7 +22,10 @@ class PlanFeatureFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'plan_id' => Plan::factory(),
+            'feature_id' => Feature::factory(),
+            'value' => $this->faker->word(),
+            'enabled' => true,
         ];
     }
 }

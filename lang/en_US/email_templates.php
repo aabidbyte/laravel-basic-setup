@@ -82,5 +82,6 @@ return [
         'restored_from_published' => 'Content restored from published version',
         'draft_saved' => 'Draft saved successfully.',
         'published' => 'Template published successfully.',
+        'test_placeholder' => 'Test value',
     ],
 ];

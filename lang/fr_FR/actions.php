@@ -64,4 +64,5 @@ return [
     'hide_password' => 'Masquer le mot de passe',
     'select_at_least_one' => 'Veuillez sélectionner au moins un élément.',
     'stop_impersonating' => 'Arrêter l\'impersonnation',
+    'view_trash' => 'Voir la corbeille',
 ];

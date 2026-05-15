@@ -18,4 +18,5 @@ return [
         'basic_info' => 'Basic Information',
     ],
     'super_admin_all_permissions' => 'Super Admin has all permissions by default.',
+    'name' => 'Name',
 ];

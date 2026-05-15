@@ -26,6 +26,14 @@
 -   **Namespace Alignment**: The namespace should match the folder structure (e.g., `App\Http\Responses\Fortify\EmailVerificationNotificationSentResponse`)
 -   **Benefits**: This structure improves code organization, makes it easier to find related files, and scales better as the application grows
 
+### Runtime Base Classes
+
+-   **Queued Jobs**: Application jobs that should run asynchronously MUST extend `App\Jobs\Base\BaseJob` so the default queue connection and queue name remain centralized.
+-   **Queued Listeners**: Application listeners that should be queued MUST extend `App\Listeners\Base\BaseQueuedListener` instead of implementing queue connection methods locally.
+-   **Events**: Application events SHOULD extend `App\Events\Base\BaseEvent` unless they require a framework-specific base contract that prevents inheritance.
+-   **Tenant Runtime Configuration**: Tenant runtime table names and queue connection names MUST come from `App\Support\Tenancy\TenantRuntime`; do not hardcode `sessions`, `jobs`, `job_batches`, `failed_jobs`, or queue connection names in new runtime code.
+-   **Tenancy Runtime Switching**: Session, queue, batch, and failed-job database switching belongs in `App\Tenancy\Bootstrappers\TenantRuntimeBootstrapper`, not in controllers, middleware, jobs, or listeners.
+
 ### Documentation Structure Rule
 
 -   **Large Documentation Files**: Documentation files over 1000 lines must be split into index-based structure

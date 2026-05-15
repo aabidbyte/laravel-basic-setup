@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Enums\Feature\FeatureKey;
 use App\Enums\Plan\PlanTier;
+use App\Models\Feature;
 use App\Models\Plan;
+use App\Models\PlanFeature;
 use Illuminate\Database\Seeder;
 
 class PlanSeeder extends Seeder
@@ -76,22 +79,22 @@ class PlanSeeder extends Seeder
         ];
 
         foreach ($plans as $plan) {
-            // Find by name in English or current locale
+            $features = $plan['features'];
             $existing = Plan::query()
                 ->where('name->en_US', $plan['name']['en_US'])
                 ->first();
 
             if ($existing) {
                 $existing->update($plan);
+                $this->syncPlanFeatures($existing, $features);
             } else {
-                Plan::create($plan);
+                $this->syncPlanFeatures(Plan::create($plan), $features);
             }
         }
 
-        // Seed some random plans if in development
         if (! \app()->environment('production')) {
             for ($i = 1; $i <= 5; $i++) {
-                Plan::create([
+                $plan = Plan::create([
                     'name' => [
                         'en_US' => "Dev Plan {$i}",
                         'fr_FR' => "Plan Dev {$i}",
@@ -102,7 +105,54 @@ class PlanSeeder extends Seeder
                     'features' => [['key' => 'dev_feature', 'value' => 'True']],
                     'is_active' => true,
                 ]);
+
+                $this->syncPlanFeatures($plan, [['key' => 'dev_feature', 'value' => 'True']]);
             }
         }
+    }
+
+    /**
+     * @param  array<int, array{key: string, value: mixed}>  $features
+     */
+    private function syncPlanFeatures(Plan $plan, array $features): void
+    {
+        foreach ($features as $feature) {
+            $featureModel = $this->featureForKey((string) $feature['key']);
+
+            PlanFeature::query()->updateOrCreate([
+                'plan_id' => $plan->id,
+                'feature_id' => $featureModel->id,
+            ], [
+                'value' => $this->normalizedValue($featureModel, $feature['value'] ?? null),
+                'enabled' => true,
+            ]);
+        }
+    }
+
+    private function featureForKey(string $key): Feature
+    {
+        $featureKey = FeatureKey::tryFrom($key);
+
+        return Feature::query()->updateOrCreate([
+            'key' => $key,
+        ], [
+            'name' => $featureKey?->nameTranslations() ?? [
+                'en_US' => str($key)->replace('_', ' ')->title()->toString(),
+                'fr_FR' => str($key)->replace('_', ' ')->title()->toString(),
+            ],
+            'type' => $featureKey?->valueType()?->value ?? 'string',
+            'default_value' => $featureKey?->defaultValue(),
+            'is_active' => true,
+        ]);
+    }
+
+    private function normalizedValue(Feature $feature, mixed $value): mixed
+    {
+        return match ($feature->type?->value) {
+            'boolean' => \in_array(\strtolower((string) $value), ['1', 'true', 'yes', 'on', 'enabled'], true),
+            'integer' => \is_numeric($value) ? (int) $value : $value,
+            'decimal' => \is_numeric($value) ? (float) $value : $value,
+            default => $value,
+        };
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 class CentralUser extends User
@@ -10,4 +12,11 @@ class CentralUser extends User
      * @var string|null
      */
     protected $connection = 'central';
+
+    /**
+     * The table associated with the model.
+     *
+     * @var string|null
+     */
+    protected $table = 'users';
 }

@@ -1,18 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Events\Notifications;
 
+use App\Events\Base\BaseEvent;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
-use Illuminate\Foundation\Events\Dispatchable;
-use Illuminate\Queue\SerializesModels;
 
-class DatabaseNotificationChanged implements ShouldBroadcastNow
+class DatabaseNotificationChanged extends BaseEvent implements ShouldBroadcastNow
 {
-    use Dispatchable;
     use InteractsWithSockets;
-    use SerializesModels;
 
     public function __construct(
         public string $userUuid,

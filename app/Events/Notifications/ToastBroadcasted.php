@@ -4,19 +4,16 @@ declare(strict_types=1);
 
 namespace App\Events\Notifications;
 
+use App\Events\Base\BaseEvent;
 use App\Services\Notifications\ToastPayload;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
-use Illuminate\Foundation\Events\Dispatchable;
-use Illuminate\Queue\SerializesModels;
 
-class ToastBroadcasted implements ShouldBroadcastNow
+class ToastBroadcasted extends BaseEvent implements ShouldBroadcastNow
 {
-    use Dispatchable;
     use InteractsWithSockets;
-    use SerializesModels;
 
     /**
      * Create a new event instance.

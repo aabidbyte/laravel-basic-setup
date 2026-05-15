@@ -82,6 +82,7 @@ return [
         'created_at' => 'Created At',
     ],
     'email_templates' => [
+        'key' => 'Key',
         'name' => 'Name',
         'kind' => 'Kind',
         'type' => 'Type',

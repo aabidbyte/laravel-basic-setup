@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Constants\Auth\Permissions;
+use App\Enums\ErrorHandling\ErrorActorType;
 use App\Models\ErrorLog;
+use App\Models\Permission;
 use App\Models\User;
 use App\Services\ErrorHandling\Channels\DatabaseChannel;
 use App\Services\ErrorHandling\Channels\LogChannel;
@@ -11,6 +14,7 @@ use App\Services\ErrorHandling\ErrorHandler;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Livewire\Livewire;
 
 /**
  * Tests for the ErrorHandler service.
@@ -109,6 +113,42 @@ describe('ErrorHandler', function () {
 
         $log = ErrorLog::first();
         expect($log->user_id)->toBe($user->id);
+    });
+
+    test('includes impersonation actor metadata when authenticated through impersonation', function () {
+        config(['error-handling.channels.database.enabled' => true]);
+
+        /** @var User $impersonator */
+        $impersonator = User::factory()->create([
+            'name' => 'Support Admin',
+            'email' => 'support@example.test',
+        ]);
+
+        /** @var User $impersonatedUser */
+        $impersonatedUser = User::factory()->create([
+            'name' => 'Tenant User',
+            'email' => 'tenant-user@example.test',
+        ]);
+
+        $this->actingAs($impersonatedUser);
+
+        $exception = new Exception('Impersonated error');
+        $request = Request::create('/test-url', 'GET');
+        $request->setLaravelSession(app('session.store'));
+        $request->session()->put('impersonator_id', $impersonator->id);
+
+        $handler = new ErrorHandler();
+        $handler->report($exception, $request);
+
+        $log = ErrorLog::first();
+
+        expect($log->user_id)->toBe($impersonatedUser->id)
+            ->and($log->actor_type)->toBe(ErrorActorType::IMPERSONATED_USER)
+            ->and($log->actor_name)->toBe('Tenant User')
+            ->and($log->actor_email)->toBe('tenant-user@example.test')
+            ->and($log->impersonator_id)->toBe($impersonator->id)
+            ->and($log->impersonator_name)->toBe('Support Admin')
+            ->and($log->impersonator_email)->toBe('support@example.test');
     });
 
     test('sanitizes sensitive request data', function () {
@@ -259,6 +299,39 @@ describe('ErrorLog Model', function () {
     });
 });
 
+describe('ErrorLogTable', function () {
+    test('shows tenant actor and runtime columns for central operations', function () {
+        Permission::firstOrCreate(['name' => Permissions::VIEW_ERROR_LOGS()]);
+
+        /** @var User $viewer */
+        $viewer = User::factory()->create();
+        $viewer->assignPermission(Permissions::VIEW_ERROR_LOGS());
+
+        ErrorLog::create([
+            'reference_id' => 'ERR-UI-001',
+            'exception_class' => Exception::class,
+            'message' => 'Central table metadata',
+            'stack_trace' => 'Trace',
+            'tenant_id' => 'tenant-ui',
+            'tenant_name' => 'UI Tenant',
+            'tenant_domain' => 'ui.example.test',
+            'actor_type' => ErrorActorType::IMPERSONATED_USER,
+            'actor_name' => 'Impersonated User',
+            'actor_email' => 'impersonated@example.test',
+            'runtime_context' => 'queue',
+        ]);
+
+        Livewire::actingAs($viewer)
+            ->test('tables.error-log-table')
+            ->assertSee(__('errors.management.tenant'))
+            ->assertSee(__('errors.management.actor'))
+            ->assertSee(__('errors.management.runtime'))
+            ->assertSee('UI Tenant')
+            ->assertSee('Impersonated User')
+            ->assertSee(__('errors.management.runtime_contexts.queue'));
+    });
+});
+
 describe('PruneErrorLogsCommand', function () {
     test('prunes old error logs', function () {
         // Create old error log
@@ -329,11 +402,15 @@ describe('Error Channels', function () {
             'stack_trace' => 'Test trace',
             'url' => 'http://localhost/test',
             'method' => 'GET',
+            'actor_type' => ErrorActorType::SYSTEM->value,
         ];
 
         $channel->send($exception, $context);
 
-        expect(ErrorLog::count())->toBe(1);
+        $log = ErrorLog::first();
+
+        expect(ErrorLog::count())->toBe(1)
+            ->and($log->actor_type)->toBe(ErrorActorType::SYSTEM);
     });
 
     test('log channel logs to configured channel', function () {

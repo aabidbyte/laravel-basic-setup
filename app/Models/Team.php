@@ -41,7 +41,7 @@ class Team extends BaseModel
      */
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'team_user')
+        return $this->belongsToMany(User::class, 'team_user', 'team_id', 'user_id')
             ->using(TeamUser::class)
             ->withPivot('role', 'team_role_id')
             ->withTimestamps();
@@ -52,7 +52,7 @@ class Team extends BaseModel
      */
     public function roles(): BelongsToMany
     {
-        return $this->belongsToMany(TeamRole::class, 'team_user')
+        return $this->belongsToMany(TeamRole::class, 'team_user', 'team_id', 'team_role_id')
             ->using(TeamUser::class)
             ->withTimestamps();
     }

@@ -17,8 +17,6 @@ return [
     'switch_to_central' => 'Switch to Central Platform',
     'switch_to_central_description' => 'Return to the administration workspace.',
     'central_access_denied' => 'You do not have permission to switch to the central platform.',
-
-    // Impersonation
     'impersonate_user' => 'Impersonate User',
     'impersonate_user_description' => 'Select a user to sign in as. You will be redirected to their session.',
     'select_target_tenant' => 'Select Target Tenant',
@@ -27,10 +25,6 @@ return [
     'tenant' => 'Tenant',
     'permission_denied' => 'You do not have permission to impersonate users.',
     'cannot_impersonate_self' => 'You cannot impersonate yourself.',
-
-    // Management
-    'tenant' => 'Tenant',
-    'tenants' => 'Tenants',
     'tenants_management' => 'Tenants Management',
     'tenants_management_description' => 'Manage all tenants and their settings in the system.',
     'create_tenant' => 'Create Tenant',
@@ -57,14 +51,11 @@ return [
     'user_assignment_updated' => 'User assignment updated successfully.',
     'users_assigned_successfully' => 'Selected users assigned successfully.',
     'users_detached_successfully' => 'Selected users removed from tenant successfully.',
-
     'plans' => [
         'free' => 'Free',
         'pro' => 'Pro',
         'enterprise' => 'Enterprise',
     ],
-
-    // Actions & Feedback
     'tenant_created' => 'Tenant created successfully.',
     'tenant_updated' => 'Tenant updated successfully.',
     'tenant_deleted' => 'Tenant deleted successfully.',
@@ -86,8 +77,6 @@ return [
     'with_roles' => 'with roles: :roles',
     'stop_impersonating' => 'Stop Impersonating',
     'system_override_mode' => 'System Override Mode',
-
-    // Domains
     'domains' => 'Domains',
     'manage_domains' => 'Manage Domains',
     'domain_name' => 'Domain Name',
@@ -113,4 +102,7 @@ return [
     'ends_at' => 'Ends At',
     'no_expiry' => 'No Expiry',
     'switch' => 'Switch',
+    'active' => 'Active',
+    'basic_info' => 'Basic Information',
+    'initial_configuration' => 'Initial Configuration',
 ];

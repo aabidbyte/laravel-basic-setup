@@ -36,7 +36,7 @@ return [
         'activation_hint' => 'Si activé, l\'utilisateur recevra un e-mail pour définir son mot de passe. Sinon, vous devez définir le mot de passe maintenant.',
         'preferences' => 'Préférences',
         'roles_teams' => 'Rôles et équipes',
-        'password' => '',
+        'password' => 'Mot de passe',
     ],
     'edit' => [
         'basic_info' => 'Informations de base',

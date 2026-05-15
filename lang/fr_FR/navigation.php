@@ -21,8 +21,9 @@ return [
     'user' => 'Utilisateur',
     'settings' => 'Paramètres',
     'email_templates_group' => 'Modèles d\'e-mail',
-
     'email_templates' => 'Modèles',
     'email_layouts' => 'Mises en page',
     'trashed' => 'Corbeille',
+    'site' => 'Site',
+    'switch_context' => 'Changer de contexte',
 ];

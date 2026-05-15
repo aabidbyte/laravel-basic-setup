@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\Tenancy\TenantRuntime;
 use Illuminate\Support\Str;
 
 return [
@@ -72,7 +73,7 @@ return [
     |
     */
 
-    'connection' => 'central',
+    'connection' => TenantRuntime::CENTRAL_DATABASE_CONNECTION,
 
     /*
     |--------------------------------------------------------------------------
@@ -85,7 +86,7 @@ return [
     |
     */
 
-    'table' => 'sessions',
+    'table' => TenantRuntime::SESSIONS_TABLE,
 
     /*
     |--------------------------------------------------------------------------

@@ -21,8 +21,9 @@ return [
     'user' => 'User',
     'settings' => 'Settings',
     'email_templates_group' => 'Email Templates',
-
     'email_templates' => 'Templates',
     'email_layouts' => 'Layouts',
     'trashed' => 'Trashed',
+    'site' => 'Site',
+    'switch_context' => 'Switch Context',
 ];

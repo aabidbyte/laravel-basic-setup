@@ -17,4 +17,5 @@ return [
     'email_contents' => 'Email Contents',
     'master' => 'Master',
     'tenant' => 'Tenant',
+    'plan' => 'Plan',
 ];

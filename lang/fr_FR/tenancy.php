@@ -17,8 +17,6 @@ return [
     'switch_to_central' => 'Basculer vers la plateforme centrale',
     'switch_to_central_description' => 'Retourner à l\'espace d\'administration.',
     'central_access_denied' => 'Vous n\'avez pas la permission de basculer vers la plateforme centrale.',
-
-    // Impersonation
     'impersonate_user' => 'Impersonner un utilisateur',
     'impersonate_user_description' => 'Sélectionnez un utilisateur pour vous connecter en son nom. Vous serez redirigé vers sa session.',
     'select_target_tenant' => 'Sélectionner le locataire cible',
@@ -27,10 +25,6 @@ return [
     'tenant' => 'Locataire',
     'permission_denied' => 'Vous n\'avez pas la permission d\'impersonner des utilisateurs.',
     'cannot_impersonate_self' => 'Vous ne pouvez pas vous impersonner vous-même.',
-
-    // Management
-    'tenant' => 'Locataire',
-    'tenants' => 'Locataires',
     'tenants_management' => 'Gestion des locataires',
     'tenants_management_description' => 'Gérez tous les locataires et leurs paramètres dans le système.',
     'create_tenant' => 'Créer un locataire',
@@ -57,14 +51,11 @@ return [
     'user_assignment_updated' => 'Assignation utilisateur mise à jour avec succès.',
     'users_assigned_successfully' => 'Utilisateurs sélectionnés assignés avec succès.',
     'users_detached_successfully' => 'Utilisateurs sélectionnés retirés du locataire avec succès.',
-
     'plans' => [
         'free' => 'Gratuit',
         'pro' => 'Pro',
         'enterprise' => 'Entreprise',
     ],
-
-    // Actions & Feedback
     'tenant_created' => 'Locataire créé avec succès.',
     'tenant_updated' => 'Locataire mis à jour avec succès.',
     'tenant_deleted' => 'Locataire supprimé avec succès.',
@@ -86,8 +77,6 @@ return [
     'with_roles' => 'avec les rôles : :roles',
     'stop_impersonating' => 'Arrêter l\'impersonnalisation',
     'system_override_mode' => 'Mode d\'écrasement du système',
-
-    // Domains
     'domains' => 'Domaines',
     'manage_domains' => 'Gérer les domaines',
     'domain_name' => 'Nom de domaine',
@@ -113,4 +102,7 @@ return [
     'ends_at' => 'Se termine le',
     'no_expiry' => 'Pas d\'expiration',
     'switch' => 'Basculer',
+    'active' => 'Actif',
+    'basic_info' => 'Informations de base',
+    'initial_configuration' => 'Configuration initiale',
 ];

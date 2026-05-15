@@ -104,7 +104,7 @@ class User extends BaseUserModel implements MustVerifyEmail
      */
     public function teams(): BelongsToMany
     {
-        return $this->belongsToMany(Team::class, 'team_user')
+        return $this->belongsToMany(Team::class, 'team_user', 'user_id', 'team_id')
             ->using(TeamUser::class)
             ->withPivot('role', 'team_role_id')
             ->withTimestamps();

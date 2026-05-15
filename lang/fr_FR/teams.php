@@ -13,4 +13,5 @@ return [
     'show' => [
         'basic_info' => 'Informations de base',
     ],
+    'uuid' => 'UUID',
 ];

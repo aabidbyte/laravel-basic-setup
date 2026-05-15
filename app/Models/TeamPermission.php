@@ -22,7 +22,7 @@ class TeamPermission extends BaseModel
 
     public function roles(): BelongsToMany
     {
-        return $this->belongsToMany(TeamRole::class)
+        return $this->belongsToMany(TeamRole::class, 'team_permission_team_role', 'team_permission_id', 'team_role_id')
             ->withPivot('uuid');
     }
 

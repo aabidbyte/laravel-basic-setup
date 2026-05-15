@@ -4,16 +4,13 @@ declare(strict_types=1);
 
 namespace App\Events\EmailTemplate;
 
+use App\Events\Base\BaseEvent;
 use App\Models\EmailTemplate\EmailTemplate;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Foundation\Events\Dispatchable;
-use Illuminate\Queue\SerializesModels;
 
-class EmailTemplatePublished
+class EmailTemplatePublished extends BaseEvent
 {
-    use Dispatchable;
     use InteractsWithSockets;
-    use SerializesModels;
 
     /**
      * Create a new event instance.

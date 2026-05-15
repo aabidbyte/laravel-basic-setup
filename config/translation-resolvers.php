@@ -6,6 +6,10 @@ use App\Constants\Auth\PermissionAction;
 use App\Constants\Auth\PermissionEntity;
 use App\Enums\EmailTemplate\EmailTemplateStatus;
 use App\Enums\EmailTemplate\EmailTemplateType;
+use App\Enums\Feature\FeatureKey;
+use App\Enums\Feature\FeatureValueType;
+use App\Enums\Tenancy\TenantPlan;
+use App\Enums\Ui\ThemeColorTypes;
 use App\Services\EmailTemplate\EntityTypeRegistry;
 use App\Services\I18nService;
 
@@ -50,6 +54,35 @@ return [
         'email_templates.status.{$template->status}' => fn () => array_map(
             fn ($case) => $case->value,
             EmailTemplateStatus::cases(),
+        ),
+
+        // Feature catalog keys (enum)
+        'features.keys.{$this->value}' => fn () => array_map(
+            fn ($case) => $case->value,
+            FeatureKey::cases(),
+        ),
+
+        // Feature value types (enum)
+        'features.value_types.{$this->value}' => fn () => array_map(
+            fn ($case) => $case->value,
+            FeatureValueType::cases(),
+        ),
+
+        // DaisyUI theme color names
+        'fields.colors.{$color->value}' => fn () => ThemeColorTypes::values(),
+        'fields.colors.{$value}' => fn () => ThemeColorTypes::values(),
+        'fields.colors.{$role->color}' => fn () => ThemeColorTypes::values(),
+        'fields.colors.{$team->color}' => fn () => ThemeColorTypes::values(),
+        'fields.colors.{$tenant->color}' => fn () => ThemeColorTypes::values(),
+
+        // Plan billing cycles
+        'plans.cycles.{$value}' => fn () => ['monthly', 'yearly', 'one_time', 'lifetime'],
+        'plans.cycles.{$plan->billing_cycle}' => fn () => ['monthly', 'yearly', 'one_time', 'lifetime'],
+
+        // Tenant plans
+        'tenancy.plans.{$currentTenant->plan}' => fn () => array_map(
+            fn ($case) => $case->value,
+            TenantPlan::cases(),
         ),
 
         // Entity types

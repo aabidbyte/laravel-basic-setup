@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Constants\Auth\Permissions;
+use App\Enums\Feature\FeatureKey;
 use App\Models\ErrorLog;
 use App\Models\User;
+use App\Services\Features\FeatureResolver;
 
 /**
  * Policy for ErrorLog model authorization.
@@ -35,7 +37,8 @@ class ErrorLogPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo(Permissions::VIEW_ERROR_LOGS());
+        return $user->hasPermissionTo(Permissions::VIEW_ERROR_LOGS())
+            || $this->tenantHasErrorLogsFeature();
     }
 
     /**
@@ -43,7 +46,8 @@ class ErrorLogPolicy
      */
     public function view(User $user, ErrorLog $errorLog): bool
     {
-        return $user->hasPermissionTo(Permissions::VIEW_ERROR_LOGS());
+        return ($user->hasPermissionTo(Permissions::VIEW_ERROR_LOGS()) || $this->tenantHasErrorLogsFeature())
+            && $this->belongsToCurrentTenant($errorLog);
     }
 
     /**
@@ -51,7 +55,8 @@ class ErrorLogPolicy
      */
     public function resolve(User $user, ErrorLog $errorLog): bool
     {
-        return $user->hasPermissionTo(Permissions::RESOLVE_ERROR_LOGS());
+        return $user->hasPermissionTo(Permissions::RESOLVE_ERROR_LOGS())
+            && $this->belongsToCurrentTenant($errorLog);
     }
 
     /**
@@ -59,6 +64,27 @@ class ErrorLogPolicy
      */
     public function delete(User $user, ErrorLog $errorLog): bool
     {
-        return $user->hasPermissionTo(Permissions::DELETE_ERROR_LOGS());
+        return $user->hasPermissionTo(Permissions::DELETE_ERROR_LOGS())
+            && $this->belongsToCurrentTenant($errorLog);
+    }
+
+    protected function belongsToCurrentTenant(ErrorLog $errorLog): bool
+    {
+        if (tenant() === null) {
+            return true;
+        }
+
+        return $errorLog->tenant_id === null || $errorLog->tenant_id === tenant()->getTenantKey();
+    }
+
+    protected function tenantHasErrorLogsFeature(): bool
+    {
+        $tenant = tenant();
+
+        if ($tenant === null) {
+            return false;
+        }
+
+        return app(FeatureResolver::class)->allows($tenant, FeatureKey::ERROR_LOGS);
     }
 }

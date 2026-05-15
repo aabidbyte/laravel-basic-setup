@@ -6,8 +6,10 @@ namespace App\Livewire\Tables;
 
 use App\Constants\Auth\PolicyAbilities;
 use App\Constants\DataTable\DataTableUi;
+use App\Enums\ErrorHandling\ErrorActorType;
 use App\Livewire\DataTable\Datatable;
 use App\Models\ErrorLog;
+use App\Models\Tenant;
 use App\Services\DataTable\Builders\Action;
 use App\Services\DataTable\Builders\BulkAction;
 use App\Services\DataTable\Builders\Column;
@@ -38,7 +40,18 @@ class ErrorLogTable extends Datatable
      */
     public function baseQuery(): Builder
     {
-        return ErrorLog::query()->with('user')->select('error_logs.*');
+        $query = ErrorLog::query()
+            ->with(['tenant', 'user'])
+            ->select('error_logs.*');
+
+        if (tenant() !== null) {
+            $query->where(function (Builder $query): void {
+                $query->where('tenant_id', tenant()->getTenantKey())
+                    ->orWhereNull('tenant_id');
+            });
+        }
+
+        return $query;
     }
 
     /**
@@ -60,16 +73,30 @@ class ErrorLogTable extends Datatable
                 ->format(fn ($value) => class_basename($value))
                 ->class('text-base-content/80'),
 
+            Column::make(__('errors.management.tenant'), 'tenant_name')
+                ->sortable()
+                ->searchable()
+                ->format(fn ($value, ErrorLog $row) => $this->formatTenant($row))
+                ->html(),
+
             Column::make(__('errors.management.message'), 'message')
                 ->searchable()
-                ->width('200px'),
+                ->width('240px'),
 
             Column::make(__('errors.management.url'), 'url')
                 ->format(fn ($value, $row) => $this->formatUrl($value, $row->method))
                 ->html(),
 
-            Column::make(__('errors.management.user'), 'user_name')
-                ->label(fn ($row) => $row->user?->name ?? __('errors.management.guest'))
+            Column::make(__('errors.management.actor'), 'actor_name')
+                ->sortable()
+                ->searchable()
+                ->format(fn ($value, ErrorLog $row) => $this->formatActor($row))
+                ->html(),
+
+            Column::make(__('errors.management.runtime'), 'runtime_context')
+                ->sortable()
+                ->format(fn ($value, ErrorLog $row) => $this->formatRuntime($row))
+                ->html()
                 ->class('text-base-content/70'),
 
             Column::make(__('errors.management.status'), 'resolved_at')
@@ -105,6 +132,35 @@ class ErrorLogTable extends Datatable
         return $methodBadge . '<span class="text-xs">' . e($displayUrl) . '</span>';
     }
 
+    protected function formatTenant(ErrorLog $errorLog): string
+    {
+        if (! $errorLog->tenant_id) {
+            return DataTableUi::renderComponent(DataTableUi::UI_BADGE, __('errors.management.central'), ['variant' => 'ghost', 'size' => 'sm']);
+        }
+
+        $label = $errorLog->tenant_name ?: $errorLog->tenant?->label() ?: $errorLog->tenant_id;
+        $domain = $errorLog->tenant_domain ? '<span class="text-base-content/50 block text-[10px]">' . e($errorLog->tenant_domain) . '</span>' : '';
+
+        return '<span class="text-sm font-medium">' . e($label) . '</span>' . $domain;
+    }
+
+    protected function formatActor(ErrorLog $errorLog): string
+    {
+        $actorType = $errorLog->actor_type;
+        $label = $errorLog->actorLabel();
+        $email = $errorLog->actor_email ? '<span class="text-base-content/50 block text-[10px]">' . e($errorLog->actor_email) . '</span>' : '';
+        $badge = $actorType instanceof ErrorActorType
+            ? DataTableUi::renderComponent(DataTableUi::UI_BADGE, $actorType->label(), ['color' => $actorType->color(), 'size' => 'xs', 'class' => 'mb-1'])
+            : '';
+
+        return $badge . '<span class="block text-sm font-medium">' . e($label) . '</span>' . $email;
+    }
+
+    protected function formatRuntime(ErrorLog $errorLog): string
+    {
+        return DataTableUi::renderComponent(DataTableUi::UI_BADGE, $errorLog->runtimeContextLabel(), ['variant' => 'ghost', 'size' => 'sm']);
+    }
+
     /**
      * Get filter definitions
      *
@@ -125,7 +181,7 @@ class ErrorLogTable extends Datatable
                     : $query->whereNotNull('resolved_at')),
 
             Filter::make('date_range', __('errors.management.date_range'))
-                ->placeholder(__('errors.management.all_status'))
+                ->placeholder(__('errors.management.all_dates'))
                 ->type('select')
                 ->options([
                     'today' => __('errors.management.today'),
@@ -143,6 +199,26 @@ class ErrorLogTable extends Datatable
                 ->placeholder(__('errors.management.all_exceptions'))
                 ->type('select')
                 ->options($this->getExceptionTypeOptions()),
+
+            Filter::make('tenant_id', __('errors.management.tenant'))
+                ->placeholder(__('errors.management.all_tenants'))
+                ->type('select')
+                ->options($this->getTenantOptions())
+                ->show(fn () => tenant() === null),
+
+            Filter::make('actor_type', __('errors.management.actor_type'))
+                ->placeholder(__('errors.management.all_actor_types'))
+                ->type('select')
+                ->options($this->getActorTypeOptions()),
+
+            Filter::make('runtime_context', __('errors.management.runtime'))
+                ->placeholder(__('errors.management.all_runtimes'))
+                ->type('select')
+                ->options([
+                    'http' => __('errors.management.runtime_contexts.http'),
+                    'console' => __('errors.management.runtime_contexts.console'),
+                    'queue' => __('errors.management.runtime_contexts.queue'),
+                ]),
         ];
     }
 
@@ -158,6 +234,28 @@ class ErrorLogTable extends Datatable
             ->pluck('exception_class')
             ->mapWithKeys(fn ($class) => [$class => class_basename($class)])
             ->toArray());
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function getTenantOptions(): array
+    {
+        return $this->memoize('filter:tenants', fn () => Tenant::query()
+            ->orderBy('name')
+            ->get(['tenant_id', 'name'])
+            ->mapWithKeys(fn (Tenant $tenant) => [$tenant->tenant_id => $tenant->label()])
+            ->toArray());
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function getActorTypeOptions(): array
+    {
+        return collect(ErrorActorType::cases())
+            ->mapWithKeys(fn (ErrorActorType $actorType) => [$actorType->value => $actorType->label()])
+            ->toArray();
     }
 
     /**

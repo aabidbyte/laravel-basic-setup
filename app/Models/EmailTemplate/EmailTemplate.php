@@ -114,7 +114,7 @@ class EmailTemplate extends BaseModel
      */
     public function teams(): BelongsToMany
     {
-        return $this->belongsToMany(Team::class, 'email_template_team')
+        return $this->belongsToMany(Team::class, 'email_template_team', 'email_template_id', 'team_id')
             ->using(EmailTemplateTeam::class)
             ->withTimestamps();
     }

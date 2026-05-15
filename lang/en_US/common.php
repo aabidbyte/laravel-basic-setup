@@ -20,4 +20,5 @@ return [
     ],
     'select' => 'Select...',
     'created_at' => 'Created At',
+    'no_records_found' => 'No records found.',
 ];

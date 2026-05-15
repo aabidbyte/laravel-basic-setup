@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\User;
+use Illuminate\Support\Facades\Route;
 
 beforeEach(function () {
     asTenant();
@@ -27,13 +28,7 @@ test('authenticated user preference update without csrf token follows testing mi
     $response->assertRedirect();
 });
 
-test('registration request without csrf token follows testing middleware behavior', function () {
-    $response = $this->post(route('register.store'), [
-        'name' => 'John Doe',
-        'email' => 'john@example.com',
-        'password' => 'Password123!',
-        'password_confirmation' => 'Password123!',
-    ]);
-
-    $response->assertRedirect();
+test('registration routes are unavailable for csrf-sensitive requests', function () {
+    expect(Route::has('register'))->toBeFalse()
+        ->and(Route::has('register.store'))->toBeFalse();
 });

@@ -3,6 +3,8 @@
 return [
     'title' => 'Settings',
     'description' => 'Manage your profile and account settings',
+    'error_log' => 'Error Log',
+    'error_logs' => 'Error Logs',
     'tabs' => [
         'account' => 'Account',
         'security' => 'Security',
@@ -30,6 +32,7 @@ return [
         'current_password_label' => 'Current password',
         'new_password_label' => 'New password',
         'confirm_password_label' => 'Confirm Password',
+        'current_password_mismatch' => 'The provided password does not match your current password.',
         'save_success' => 'Password updated successfully.',
     ],
     'security' => [
@@ -49,6 +52,7 @@ return [
     'two_factor' => [
         'title' => 'Two Factor Authentication',
         'description' => 'Manage your two-factor authentication settings',
+        'trashed' => 'Trash',
         'enabled' => 'Enabled',
         'enabled_description' => 'With two-factor authentication enabled, you will be prompted for a secure, random pin during login, which you can retrieve from the TOTP-supported application on your phone.',
         'enabled_success' => 'Two-factor authentication has been enabled.',

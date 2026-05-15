@@ -21,7 +21,7 @@ trait HasRolesAndPermissions
      */
     public function roles(): BelongsToMany
     {
-        return $this->belongsToMany(Role::class, 'role_user')
+        return $this->belongsToMany(Role::class, 'role_user', 'user_id', 'role_id')
             ->using(RoleUser::class);
     }
 
@@ -30,7 +30,7 @@ trait HasRolesAndPermissions
      */
     public function permissions(): BelongsToMany
     {
-        return $this->belongsToMany(Permission::class, 'permission_user')
+        return $this->belongsToMany(Permission::class, 'permission_user', 'user_id', 'permission_id')
             ->using(PermissionUser::class);
     }
 

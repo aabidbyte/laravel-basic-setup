@@ -2,7 +2,10 @@
 
 use App\Models\User;
 use Database\Seeders\TenantSeeders\Production\EmailTemplateSeeder;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
+use Laravel\Fortify\Contracts\UpdatesUserPasswords;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -55,4 +58,25 @@ test('email must be unique', function () {
         ->set('username', 'testuser')
         ->call('updateProfileInformation')
         ->assertHasErrors(['email']);
+});
+
+test('current password validation uses semantic translation key', function () {
+    $user = User::factory()->create([
+        'password' => Hash::make('correct-password'),
+    ]);
+
+    try {
+        app(UpdatesUserPasswords::class)->update($user, [
+            'current_password' => 'wrong-password',
+            'password' => 'New-password-123!',
+            'password_confirmation' => 'New-password-123!',
+        ]);
+    } catch (ValidationException $exception) {
+        expect($exception->errors()['current_password'][0])
+            ->toBe(__('settings.password.current_password_mismatch'));
+
+        return;
+    }
+
+    $this->fail('Expected current password validation to fail.');
 });

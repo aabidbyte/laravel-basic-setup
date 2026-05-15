@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Constants\Auth\Permissions;
+use App\Enums\Feature\FeatureKey;
+use App\Services\Features\FeatureResolver;
 use App\Services\Navigation\NavigationBuilder;
 use App\Services\Navigation\NavigationItem;
 use Illuminate\Support\Facades\Auth;
@@ -119,7 +121,7 @@ class SideBarMenuService
                             ->route('admin.errors.index')
                             ->activeRoutes('admin.errors.*')
                             ->icon('exclamation-triangle')
-                            ->show(Auth::user()?->can(Permissions::VIEW_ERROR_LOGS()) ?? false),
+                            ->show($this->canViewErrorLogs()),
                     ),
 
                 // Trashed items group (collapsible)
@@ -147,7 +149,7 @@ class SideBarMenuService
                             ->title(__('types.error_logs'))
                             ->route('trash.index', ['entityType' => 'error-logs'])
                             ->active(fn () => request()->route('entityType') === 'error-logs' && request()->routeIs('trash.*'))
-                            ->show(Auth::user()?->can(Permissions::VIEW_ERROR_LOGS()) ?? false),
+                            ->show($this->canViewErrorLogs()),
                     ),
             )
             ->toArray();
@@ -187,7 +189,7 @@ class SideBarMenuService
             || $user->can(Permissions::VIEW_USERS())
             || $user->can(Permissions::VIEW_ROLES())
             || $user->can(Permissions::VIEW_TEAMS())
-            || $user->can(Permissions::VIEW_ERROR_LOGS());
+            || $this->canViewErrorLogs();
     }
 
     /**
@@ -202,5 +204,22 @@ class SideBarMenuService
 
         return $user->can(Permissions::VIEW_EMAIL_TEMPLATES())
             || $user->can(Permissions::VIEW_EMAIL_LAYOUTS());
+    }
+
+    protected function canViewErrorLogs(): bool
+    {
+        $user = Auth::user();
+
+        if ($user?->can(Permissions::VIEW_ERROR_LOGS())) {
+            return true;
+        }
+
+        $tenant = tenant();
+
+        if ($tenant === null) {
+            return false;
+        }
+
+        return app(FeatureResolver::class)->allows($tenant, FeatureKey::ERROR_LOGS);
     }
 }

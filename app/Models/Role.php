@@ -31,7 +31,7 @@ class Role extends BaseModel
      */
     public function permissions(): BelongsToMany
     {
-        return $this->belongsToMany(Permission::class)
+        return $this->belongsToMany(Permission::class, 'permission_role', 'role_id', 'permission_id')
             ->using(PermissionRole::class);
     }
 
@@ -40,7 +40,7 @@ class Role extends BaseModel
      */
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class)
+        return $this->belongsToMany(User::class, 'role_user', 'role_id', 'user_id')
             ->using(RoleUser::class);
     }
 

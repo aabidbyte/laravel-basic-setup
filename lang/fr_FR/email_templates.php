@@ -82,6 +82,6 @@ return [
         'restored_from_published' => 'Contenu restauré à partir de la version publiée',
         'draft_saved' => 'Brouillon enregistré avec succès.',
         'published' => 'Modèle publié avec succès.',
-        'test_placeholder' => '',
+        'test_placeholder' => 'Valeur de test',
     ],
 ];

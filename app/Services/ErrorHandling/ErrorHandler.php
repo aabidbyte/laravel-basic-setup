@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Services\ErrorHandling;
 
 use App\Constants\ErrorHandling\ErrorChannels;
+use App\Enums\ErrorHandling\ErrorActorType;
+use App\Models\User;
 use App\Services\ErrorHandling\Channels\ChannelInterface;
 use App\Services\ErrorHandling\Channels\DatabaseChannel;
 use App\Services\ErrorHandling\Channels\EmailChannel;
@@ -306,6 +308,8 @@ class ErrorHandler
     protected function buildContext(Throwable $e, Request $request): array
     {
         $stackTrace = $e->getTraceAsString();
+        $tenantContext = $this->buildTenantContext();
+        $actorContext = $this->buildActorContext($request);
 
         // Basic masking for stack trace (mask passwords and secrets)
         $sensitivePatterns = [
@@ -326,14 +330,135 @@ class ErrorHandler
             'stack_trace' => $stackTrace,
             'url' => $request->fullUrl(),
             'method' => $request->method(),
-            'user_id' => Auth::id(),
-            'user_uuid' => Auth::user()?->uuid,
-            'tenant_id' => tenant()?->getTenantKey(),
+            'tenant_id' => $tenantContext['tenant_id'],
+            'tenant_name' => $tenantContext['tenant_name'],
+            'tenant_domain' => $tenantContext['tenant_domain'],
+            'user_id' => $actorContext['user_id'],
+            'user_uuid' => $actorContext['user_uuid'],
+            'actor_type' => $actorContext['actor_type'],
+            'actor_name' => $actorContext['actor_name'],
+            'actor_email' => $actorContext['actor_email'],
+            'impersonator_id' => $actorContext['impersonator_id'],
+            'impersonator_name' => $actorContext['impersonator_name'],
+            'impersonator_email' => $actorContext['impersonator_email'],
             'ip' => $request->ip(),
             'user_agent' => $request->userAgent(),
+            'runtime_context' => $this->runtimeContext(),
+            'command' => $this->commandContext(),
+            'job_id' => $this->jobContext($request),
             'request_data' => $this->sanitizeRequestData($request),
             'is_production' => app()->isProduction(),
         ];
+    }
+
+    /**
+     * @return array{tenant_id: string|null, tenant_name: string|null, tenant_domain: string|null}
+     */
+    protected function buildTenantContext(): array
+    {
+        $tenant = tenant();
+
+        if ($tenant === null) {
+            return [
+                'tenant_id' => null,
+                'tenant_name' => null,
+                'tenant_domain' => null,
+            ];
+        }
+
+        return [
+            'tenant_id' => $tenant->getTenantKey(),
+            'tenant_name' => $tenant->name,
+            'tenant_domain' => $tenant->domains()->first()?->domain,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function buildActorContext(Request $request): array
+    {
+        $user = Auth::user();
+        $impersonatorId = $request->hasSession() ? $request->session()->get('impersonator_id') : null;
+        $impersonator = $impersonatorId ? User::query()->find($impersonatorId) : null;
+
+        if ($user !== null) {
+            $actorType = $impersonator !== null
+                ? ErrorActorType::IMPERSONATED_USER
+                : ErrorActorType::USER;
+
+            return [
+                'user_id' => $user->id,
+                'user_uuid' => $user->uuid,
+                'actor_type' => $actorType->value,
+                'actor_name' => $user->name,
+                'actor_email' => $user->email,
+                'impersonator_id' => $impersonator?->id,
+                'impersonator_name' => $impersonator?->name,
+                'impersonator_email' => $impersonator?->email,
+            ];
+        }
+
+        $actorType = match (true) {
+            $this->isQueueRuntime() => ErrorActorType::QUEUE,
+            app()->runningInConsole() => ErrorActorType::SYSTEM,
+            default => ErrorActorType::GUEST,
+        };
+
+        return [
+            'user_id' => null,
+            'user_uuid' => null,
+            'actor_type' => $actorType->value,
+            'actor_name' => null,
+            'actor_email' => null,
+            'impersonator_id' => null,
+            'impersonator_name' => null,
+            'impersonator_email' => null,
+        ];
+    }
+
+    protected function runtimeContext(): string
+    {
+        if ($this->isQueueRuntime()) {
+            return 'queue';
+        }
+
+        return app()->runningInConsole() ? 'console' : 'http';
+    }
+
+    protected function isQueueRuntime(): bool
+    {
+        $argv = $_SERVER['argv'] ?? [];
+
+        foreach ($argv as $argument) {
+            if (\is_string($argument) && \str_starts_with($argument, 'queue:')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function commandContext(): ?string
+    {
+        if (! app()->runningInConsole()) {
+            return null;
+        }
+
+        $command = \implode(' ', \array_map('strval', $_SERVER['argv'] ?? []));
+
+        return $command === '' ? null : \mb_substr($command, 0, 255);
+    }
+
+    protected function jobContext(Request $request): ?string
+    {
+        $jobId = $request->attributes->get('job_id');
+
+        if (\is_string($jobId) && $jobId !== '') {
+            return \mb_substr($jobId, 0, 255);
+        }
+
+        return null;
     }
 
     /**

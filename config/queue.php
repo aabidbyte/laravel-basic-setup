@@ -1,5 +1,7 @@
 <?php
 
+use App\Support\Tenancy\TenantRuntime;
+
 return [
     /*
     |--------------------------------------------------------------------------
@@ -12,7 +14,7 @@ return [
     |
     */
 
-    'default' => env('QUEUE_CONNECTION', 'redis'),
+    'default' => env('QUEUE_CONNECTION', TenantRuntime::DATABASE_QUEUE_CONNECTION),
 
     /*
     |--------------------------------------------------------------------------
@@ -32,12 +34,31 @@ return [
             'driver' => 'sync',
         ],
 
+        'database' => [
+            'driver' => 'database',
+            'connection' => env('QUEUE_DATABASE_CONNECTION', TenantRuntime::CENTRAL_DATABASE_CONNECTION),
+            'table' => TenantRuntime::JOBS_TABLE,
+            'queue' => env('QUEUE_NAME', TenantRuntime::DEFAULT_QUEUE),
+            'retry_after' => (int) env('QUEUE_RETRY_AFTER', 90),
+            'after_commit' => true,
+        ],
+
+        'central_database' => [
+            'driver' => 'database',
+            'connection' => TenantRuntime::CENTRAL_DATABASE_CONNECTION,
+            'table' => TenantRuntime::JOBS_TABLE,
+            'queue' => env('CENTRAL_QUEUE_NAME', TenantRuntime::DEFAULT_QUEUE),
+            'retry_after' => (int) env('CENTRAL_QUEUE_RETRY_AFTER', 90),
+            'after_commit' => true,
+            'central' => true,
+        ],
+
         'redis' => [
             'driver' => 'redis',
-            'connection' => 'default',
-            'queue' => 'default',
-            'retry_after' => 90,
-            'block_for' => 5,
+            'connection' => 'queue',
+            'queue' => env('REDIS_QUEUE_NAME', TenantRuntime::DEFAULT_QUEUE),
+            'retry_after' => (int) env('REDIS_QUEUE_RETRY_AFTER', 90),
+            'block_for' => (int) env('REDIS_QUEUE_BLOCK_FOR', 5),
             'after_commit' => true,
         ],
     ],
@@ -54,9 +75,9 @@ return [
     */
 
     'batching' => [
-        'driver' => 'redis',
-        'connection' => 'default',
-        'queue' => 'batch_jobs',
+        'driver' => env('QUEUE_BATCHING_DRIVER', 'database'),
+        'database' => env('QUEUE_BATCHING_DATABASE', TenantRuntime::CENTRAL_DATABASE_CONNECTION),
+        'table' => TenantRuntime::JOB_BATCHES_TABLE,
     ],
 
     /*
@@ -71,8 +92,8 @@ return [
     */
 
     'failed' => [
-        'driver' => 'redis',
-        'connection' => 'default',
-        'queue' => 'failed_jobs',
+        'driver' => env('QUEUE_FAILED_DRIVER', 'database-uuids'),
+        'database' => env('QUEUE_FAILED_DATABASE', TenantRuntime::CENTRAL_DATABASE_CONNECTION),
+        'table' => TenantRuntime::FAILED_JOBS_TABLE,
     ],
 ];

@@ -225,6 +225,65 @@ new class extends BasePageComponent {
                         </div>
 
                         <div>
+                            <span class="text-base-content/60 text-sm">{{ __('errors.management.actor_type') }}</span>
+                            <p class="font-medium">
+                                @if ($errorLog->actor_type)
+                                    <x-ui.badge :color="$errorLog->actor_type->color()"
+                                                size="sm">
+                                        {{ $errorLog->actor_type->label() }}
+                                    </x-ui.badge>
+                                @else
+                                    -
+                                @endif
+                            </p>
+                        </div>
+
+                        <div>
+                            <span class="text-base-content/60 text-sm">{{ __('errors.management.actor') }}</span>
+                            <p class="font-medium">
+                                {{ $errorLog->actorLabel() }}
+                                @if ($errorLog->actor_email)
+                                    <span class="text-base-content/60 block text-sm">{{ $errorLog->actor_email }}</span>
+                                @endif
+                            </p>
+                        </div>
+
+                        <div>
+                            <span class="text-base-content/60 text-sm">{{ __('errors.management.tenant') }}</span>
+                            <p class="font-medium">
+                                {{ $errorLog->tenant_name ?? $errorLog->tenant?->label() ?? __('errors.management.central') }}
+                                @if ($errorLog->tenant_domain)
+                                    <span class="text-base-content/60 block text-sm">{{ $errorLog->tenant_domain }}</span>
+                                @endif
+                            </p>
+                        </div>
+
+                        <div>
+                            <span class="text-base-content/60 text-sm">{{ __('errors.management.runtime') }}</span>
+                            <p class="font-medium">
+                                {{ $errorLog->runtimeContextLabel() }}
+                                @if ($errorLog->command)
+                                    <span class="text-base-content/60 block break-all font-mono text-xs">{{ $errorLog->command }}</span>
+                                @endif
+                                @if ($errorLog->job_id)
+                                    <span class="text-base-content/60 block break-all font-mono text-xs">{{ __('errors.management.job_id') }}: {{ $errorLog->job_id }}</span>
+                                @endif
+                            </p>
+                        </div>
+
+                        @if ($errorLog->impersonator_id)
+                            <div>
+                                <span class="text-base-content/60 text-sm">{{ __('errors.management.impersonator') }}</span>
+                                <p class="font-medium">
+                                    {{ $errorLog->impersonator_name ?? $errorLog->impersonator_id }}
+                                    @if ($errorLog->impersonator_email)
+                                        <span class="text-base-content/60 block text-sm">{{ $errorLog->impersonator_email }}</span>
+                                    @endif
+                                </p>
+                            </div>
+                        @endif
+
+                        <div>
                             <span class="text-base-content/60 text-sm">{{ __('errors.management.ip_address') }}</span>
                             <p class="font-mono text-sm">{{ $errorLog->ip ?? '-' }}</p>
                         </div>

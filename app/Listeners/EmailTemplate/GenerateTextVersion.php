@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Listeners\EmailTemplate;
 
 use App\Events\EmailTemplate\EmailTemplateSaved;
-use Illuminate\Contracts\Queue\ShouldQueue;
+use App\Listeners\Base\BaseQueuedListener;
 use Illuminate\Support\Str;
 
-class GenerateTextVersion implements ShouldQueue
+class GenerateTextVersion extends BaseQueuedListener
 {
     /**
      * Handle the event.

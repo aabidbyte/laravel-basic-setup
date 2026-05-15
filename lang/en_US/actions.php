@@ -64,4 +64,5 @@ return [
     'hide_password' => 'Hide Password',
     'select_at_least_one' => 'Please select at least one item.',
     'stop_impersonating' => 'Stop Impersonation',
+    'view_trash' => 'View Trash',
 ];

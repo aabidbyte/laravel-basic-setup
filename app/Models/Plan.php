@@ -68,6 +68,14 @@ class Plan extends BaseModel
     }
 
     /**
+     * Get the feature entitlements for the plan.
+     */
+    public function planFeatures(): HasMany
+    {
+        return $this->hasMany(PlanFeature::class);
+    }
+
+    /**
      * Get a human-readable label for this model.
      */
     public function label(): string
