@@ -638,7 +638,7 @@ For central database models that relate to tenants through a `tenants()` relatio
 - `App\Services\Tenancy\TenantMembershipQuery::apply()` applies that slice to a `tenants()` relationship.
 - `App\Services\Tenancy\TenantMembershipQuery::applyToTenantKey()` applies that slice to a direct `tenant_id` column, which is used by Error Logs and tenant-aware Trash tables.
 - "All Tenants" means records attached to at least one tenant, excluding protected central accounts. Central-only records are intentionally separate and should be requested with `TenantAudience::centralOnly()` or the `TenantMembershipQuery::CENTRAL_RECORDS_FILTER` datatable option.
-- For users, the protected platform account is user ID `1`, guarded by the MySQL session trigger workflow. It is central even if local/development seeders attach it to a tenant.
+- For users, Super Admin accounts are protected central platform accounts. They are seeded from `SUPER_ADMIN_EMAILS` by the production central Super Admin seeder and must remain central-only.
 - Non-super-admin actors only see records attached to tenants they belong to. They do not see central-only records through this workflow.
 - Use this same workflow for future charts and analytics so dashboard totals, chart datasets, datatables, exports, and reports all use identical tenant visibility rules.
 

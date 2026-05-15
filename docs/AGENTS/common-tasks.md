@@ -23,6 +23,7 @@ php artisan livewire:convert pages.example
 -   **Optional**: Add `public string $pageSubtitle = 'ui.pages.example.description';` for subtitle text (displayed below title in header)
 -   **Translations**: Use translation keys like `'ui.pages.dashboard'` - they are automatically translated
 -   **Tabbed Livewire Content**: Tab panels that contain nested Livewire components MUST be rendered only when visible using server-side conditionals (`@if` / `@elseif`). Add `lazy` to expensive nested Livewire components in tab panels so they mount only after the tab is selected and enters the viewport. Avoid CSS-only hiding (`x-show`, `hidden`, `display: none`) for hidden tab panels with Livewire children.
+-   **Tabbed Show Pages**: Use the tenant show page pattern for show/detail pages with three or more independent sections, multiple management surfaces, or nested datatables. Put summary fields in the first overview tab and move secondary workflows such as assignments, subscriptions, users, or history into separate tabs.
 -   **No `parent::mount()` needed** - title and subtitle sharing happens automatically via `boot()` lifecycle hook
 -   Full-page components are created in `resources/views/pages/` and use `pages::` namespace in routes
 -   Nested/reusable Livewire components are created in `resources/views/components/` and are referenced directly (e.g., `livewire:ui.example-component`)
@@ -404,7 +405,7 @@ The application uses a Livewire-based DataTable component system. See `docs/comp
 -   No service layer needed - all logic is in the component
 -   User/member datatables that need tenant visibility MUST use `App\Services\Tenancy\TenantMembershipQuery` with `App\Support\Tenancy\TenantAudience` instead of hand-written `whereHas('tenants')` access rules.
 -   In tenant membership filters, "All Tenants" means records attached to at least one tenant, excluding protected central accounts. Central-only records are a separate explicit filter option for super admins.
--   For user/member tables, user ID `1` is the protected central platform account guarded by the MySQL session trigger workflow. It belongs in the central audience even if seeders attach it to a tenant.
+-   For user/member tables, Super Admin users are protected central platform accounts. They belong in the central audience and seeders MUST NOT attach them to tenants.
 -   Related datatables that display opposite sides of the same relationship MUST refresh together after any mutation. Dispatch a scoped Livewire event from assign/remove actions and listen with `#[On('event.{publicUuid}')]` in every related table so the edited table and sibling tables refresh in the same workflow.
 -   If a datatable row has exactly one visible row action after conditional visibility is applied, expose it through `rowClick()` instead of rendering a separate row action button. Keep row action buttons for rows with multiple row-level choices.
 
@@ -434,6 +435,7 @@ Implemented Spatie Permissions recommended Super-Admin pattern using `Gate::befo
 -   **Gate Updates**: Enhanced existing Gate definitions in `TelescopeServiceProvider`, `HorizonServiceProvider`, and `LogViewerServiceProvider` to explicitly check for Super Admin role for clarity
 -   **Important Note**: Direct calls to `hasPermissionTo()`, `hasAnyPermission()`, etc. bypass the Gate and won't get Super Admin access - always use `can()` methods instead
 -   **Constants**: Uses `Roles::SUPER_ADMIN` constant (no hardcoded strings)
+-   **Seeding**: Super Admin accounts are created by `Database\Seeders\CentralSeeders\Production\SuperAdminSeeder` from `SUPER_ADMIN_EMAILS` and `SUPER_ADMIN_PASSWORD` via `config/seeder.php`. Production central seeders run in all environments before development seeders, so development Super Admin access must use the same config path. Development seeders must not hardcode or tenant-attach Super Admin accounts.
 -   **Testing**: Use `Event::fake([Login::class])` to test preferences without triggering login sync
 
 ### Frontend Preferences System

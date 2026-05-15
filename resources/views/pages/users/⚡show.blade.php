@@ -23,6 +23,8 @@ new class extends BasePageComponent {
     #[Locked]
     public ?User $user = null;
 
+    public string $activeTab = 'overview';
+
     public ?string $activationLink = null;
 
     public bool $showActivationModal = false;
@@ -66,6 +68,30 @@ new class extends BasePageComponent {
     {
         $subtitle = parent::getPageSubtitle();
         return $subtitle ? __($subtitle, ['type' => __($this->modelTypeLabel)]) : null;
+    }
+
+    /**
+     * Get tabs for the user detail page.
+     */
+    public function tabs(): array
+    {
+        return [
+            [
+                'key' => 'overview',
+                'label' => __('tenancy.overview'),
+                'icon' => 'information-circle',
+            ],
+            [
+                'key' => 'access',
+                'label' => __('users.access'),
+                'icon' => 'shield-check',
+            ],
+            [
+                'key' => 'preferences',
+                'label' => __('users.preferences'),
+                'icon' => 'cog-6-tooth',
+            ],
+        ];
     }
 
     /**
@@ -206,154 +232,160 @@ new class extends BasePageComponent {
             </div>
         </div>
 
-        {{-- User details --}}
-        <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
-            {{-- Personal Information --}}
-            <x-ui.card title="{{ __('users.personal_info') }}">
-                <div class="space-y-4">
-                    <div>
-                        <span class="text-base-content/60 text-sm">{{ __('users.name') }}</span>
-                        <p class="font-medium">{{ $user->name }}</p>
-                    </div>
+        <x-ui.tabs :tabs="$this->tabs()"
+                   :active="$activeTab"
+                   class="mb-6" />
 
-                    <div>
-                        <span class="text-base-content/60 text-sm">{{ __('users.email') }}</span>
-                        <p class="font-medium">{{ $user->email ?? '—' }}</p>
-                        @if ($user->hasPendingEmailChange())
-                            <div class="alert alert-warning mt-2 p-2">
-                                <x-ui.icon name="clock"
-                                           size="sm" />
+        @if($activeTab === 'overview')
+            {{-- User details --}}
+            <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+                {{-- Personal Information --}}
+                <x-ui.card title="{{ __('users.personal_info') }}">
+                    <div class="space-y-4">
+                        <div>
+                            <span class="text-base-content/60 text-sm">{{ __('users.name') }}</span>
+                            <p class="font-medium">{{ $user->name }}</p>
+                        </div>
+
+                        <div>
+                            <span class="text-base-content/60 text-sm">{{ __('users.email') }}</span>
+                            <p class="font-medium">{{ $user->email ?? '—' }}</p>
+                            @if ($user->hasPendingEmailChange())
+                                <div class="alert alert-warning mt-2 p-2">
+                                    <x-ui.icon name="clock"
+                                               size="sm" />
+                                    <span
+                                          class="text-sm">{{ __('users.show.pending_email', ['email' => $user->pending_email]) }}</span>
+                                    @can(App\Constants\Auth\Permissions::EDIT_USERS())
+                                        <x-ui.button x-on:click="confirmModal({
+                                                                 title: @js(__('actions.cancel')),
+                                                                 message: @js(__('users.show.confirm_cancel_pending')),
+                                                                 callback: 'confirm-cancel-pending-email'
+                                                             })"
+                                                     variant="ghost"
+                                                     size="xs">
+                                            {{ __('actions.cancel') }}
+                                        </x-ui.button>
+                                    @endcan
+                                </div>
+                            @endif
+                        </div>
+
+                        <div>
+                            <span class="text-base-content/60 text-sm">{{ __('users.username') }}</span>
+                            <p class="font-medium">{{ $user->username ?? '—' }}</p>
+                        </div>
+                    </div>
+                </x-ui.card>
+
+                {{-- Account Information --}}
+                <x-ui.card title="{{ __('users.account_info') }}">
+                    <div class="space-y-4">
+                        <div>
+                            <span class="text-base-content/60 text-sm">{{ __('users.uuid') }}</span>
+                            <p class="font-mono text-sm">{{ $user->uuid }}</p>
+                        </div>
+
+                        <div>
+                            <span class="text-base-content/60 text-sm">{{ __('users.created_at') }}</span>
+                            <p class="font-medium">
+                                {{ $user->created_at->diffForHumans() }}
                                 <span
-                                      class="text-sm">{{ __('users.show.pending_email', ['email' => $user->pending_email]) }}</span>
-                                @can(App\Constants\Auth\Permissions::EDIT_USERS())
-                                    <x-ui.button x-on:click="confirmModal({
-                                                             title: @js(__('actions.cancel')),
-                                                             message: @js(__('users.show.confirm_cancel_pending')),
-                                                             callback: 'confirm-cancel-pending-email'
-                                                         })"
-                                                 variant="ghost"
-                                                 size="xs">
-                                        {{ __('actions.cancel') }}
-                                    </x-ui.button>
-                                @endcan
+                                      class="text-base-content/60 text-xs">({{ $user->created_at->format('Y-m-d H:i') }})</span>
+                            </p>
+                        </div>
+
+                        <div>
+                            <span class="text-base-content/60 text-sm">{{ __('users.email_verified_at') }}</span>
+                            <p class="font-medium">
+                                @if ($user->email_verified_at)
+                                    {{ $user->email_verified_at->diffForHumans() }}
+                                    <span
+                                          class="text-base-content/60 text-xs">({{ $user->email_verified_at->format('Y-m-d H:i') }})</span>
+                                @else
+                                    <span class="text-error italic">{{ __('users.not_verified') }}</span>
+                                @endif
+                            </p>
+                        </div>
+
+                        @if ($user->last_login_at)
+                            <div>
+                                <span class="text-base-content/60 text-sm">{{ __('users.last_login_at') }}</span>
+                                <p class="font-medium">
+                                    {{ $user->last_login_at->diffForHumans() }}
+                                    <span
+                                          class="text-base-content/60 text-xs">({{ $user->last_login_at->format('Y-m-d H:i') }})</span>
+                                </p>
                             </div>
                         @endif
                     </div>
-
-                    <div>
-                        <span class="text-base-content/60 text-sm">{{ __('users.username') }}</span>
-                        <p class="font-medium">{{ $user->username ?? '—' }}</p>
-                    </div>
-                </div>
-            </x-ui.card>
-
-            {{-- Account Information --}}
-            <x-ui.card title="{{ __('users.account_info') }}">
-                <div class="space-y-4">
-                    <div>
-                        <span class="text-base-content/60 text-sm">{{ __('users.uuid') }}</span>
-                        <p class="font-mono text-sm">{{ $user->uuid }}</p>
-                    </div>
-
-                    <div>
-                        <span class="text-base-content/60 text-sm">{{ __('users.created_at') }}</span>
-                        <p class="font-medium">
-                            {{ $user->created_at->diffForHumans() }}
-                            <span
-                                  class="text-base-content/60 text-xs">({{ $user->created_at->format('Y-m-d H:i') }})</span>
-                        </p>
-                    </div>
-
-                    <div>
-                        <span class="text-base-content/60 text-sm">{{ __('users.email_verified_at') }}</span>
-                        <p class="font-medium">
-                            @if ($user->email_verified_at)
-                                {{ $user->email_verified_at->diffForHumans() }}
-                                <span
-                                      class="text-base-content/60 text-xs">({{ $user->email_verified_at->format('Y-m-d H:i') }})</span>
-                            @else
-                                <span class="text-error italic">{{ __('users.not_verified') }}</span>
-                            @endif
-                        </p>
-                    </div>
-
-                    @if ($user->last_login_at)
-                        <div>
-                            <span class="text-base-content/60 text-sm">{{ __('users.last_login_at') }}</span>
-                            <p class="font-medium">
-                                {{ $user->last_login_at->diffForHumans() }}
-                                <span
-                                      class="text-base-content/60 text-xs">({{ $user->last_login_at->format('Y-m-d H:i') }})</span>
-                            </p>
-                        </div>
-                    @endif
-                </div>
-            </x-ui.card>
-        </div>
-
-        {{-- Roles, Teams & Permissions --}}
-        <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
-            {{-- Roles --}}
-            <x-ui.card title="{{ __('users.roles') }}"
-                       class="h-full">
-                @if ($user->roles->count() > 0)
-                    <div class="flex flex-wrap gap-2">
-                        @foreach ($user->roles as $role)
-                            <x-ui.badge variant="primary"
-                                        size="md">{{ $role->display_name }}</x-ui.badge>
-                        @endforeach
-                    </div>
-                @else
-                    <p class="text-base-content/60 italic">{{ __('common.none') }}</p>
-                @endif
-            </x-ui.card>
-
-            {{-- Teams --}}
-            <x-ui.card title="{{ __('users.teams') }}"
-                       class="h-full">
-                @if ($user->teams->count() > 0)
-                    <div class="flex flex-wrap gap-2">
-                        @foreach ($user->teams as $team)
-                            <x-ui.badge variant="secondary"
-                                        size="md">{{ $team->name }}</x-ui.badge>
-                        @endforeach
-                    </div>
-                @else
-                    <p class="text-base-content/60 italic">{{ __('common.none') }}</p>
-                @endif
-            </x-ui.card>
-
-            {{-- Direct Permissions --}}
-            <x-ui.card title="{{ __('users.direct_permissions') }}"
-                       class="h-full">
-                @if ($user->permissions->count() > 0)
-                    <div class="flex flex-wrap gap-2">
-                        @foreach ($user->permissions as $permission)
-                            <x-ui.badge variant="info"
-                                        size="md">{{ $permission->display_name ?? $permission->name }}</x-ui.badge>
-                        @endforeach
-                    </div>
-                @else
-                    <p class="text-base-content/60 italic">{{ __('common.none') }}</p>
-                @endif
-            </x-ui.card>
-        </div>
-
-        {{-- Preferences --}}
-        <x-ui.card title="{{ __('users.preferences') }}">
-            <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
-                <div>
-                    <span class="text-base-content/60 text-sm">{{ __('users.timezone') }}</span>
-                    <p class="font-medium">{{ $user->timezone ?? __('users.not_set') }}
-                    </p>
-                </div>
-
-                <div>
-                    <span class="text-base-content/60 text-sm">{{ __('users.locale') }}</span>
-                    <p class="font-medium">{{ $user->locale ?? __('users.not_set') }}</p>
-                </div>
+                </x-ui.card>
             </div>
-        </x-ui.card>
+        @elseif($activeTab === 'access')
+            {{-- Roles, Teams & Permissions --}}
+            <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
+                {{-- Roles --}}
+                <x-ui.card title="{{ __('users.roles') }}"
+                           class="h-full">
+                    @if ($user->roles->count() > 0)
+                        <div class="flex flex-wrap gap-2">
+                            @foreach ($user->roles as $role)
+                                <x-ui.badge variant="primary"
+                                            size="md">{{ $role->display_name }}</x-ui.badge>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="text-base-content/60 italic">{{ __('common.none') }}</p>
+                    @endif
+                </x-ui.card>
+
+                {{-- Teams --}}
+                <x-ui.card title="{{ __('users.teams') }}"
+                           class="h-full">
+                    @if ($user->teams->count() > 0)
+                        <div class="flex flex-wrap gap-2">
+                            @foreach ($user->teams as $team)
+                                <x-ui.badge variant="secondary"
+                                            size="md">{{ $team->name }}</x-ui.badge>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="text-base-content/60 italic">{{ __('common.none') }}</p>
+                    @endif
+                </x-ui.card>
+
+                {{-- Direct Permissions --}}
+                <x-ui.card title="{{ __('users.direct_permissions') }}"
+                           class="h-full">
+                    @if ($user->permissions->count() > 0)
+                        <div class="flex flex-wrap gap-2">
+                            @foreach ($user->permissions as $permission)
+                                <x-ui.badge variant="info"
+                                            size="md">{{ $permission->display_name ?? $permission->name }}</x-ui.badge>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="text-base-content/60 italic">{{ __('common.none') }}</p>
+                    @endif
+                </x-ui.card>
+            </div>
+        @elseif($activeTab === 'preferences')
+            {{-- Preferences --}}
+            <x-ui.card title="{{ __('users.preferences') }}">
+                <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+                    <div>
+                        <span class="text-base-content/60 text-sm">{{ __('users.timezone') }}</span>
+                        <p class="font-medium">{{ $user->timezone ?? __('users.not_set') }}
+                        </p>
+                    </div>
+
+                    <div>
+                        <span class="text-base-content/60 text-sm">{{ __('users.locale') }}</span>
+                        <p class="font-medium">{{ $user->locale ?? __('users.not_set') }}</p>
+                    </div>
+                </div>
+            </x-ui.card>
+        @endif
 
         {{-- Activation Link Modal --}}
         @if ($showActivationModal && $activationLink)

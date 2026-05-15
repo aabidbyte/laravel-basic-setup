@@ -2,11 +2,9 @@
 
 namespace Database\Seeders\CentralSeeders\Development;
 
-use App\Constants\Auth\Roles;
 use App\Enums\Ui\ThemeColorTypes;
 use App\Models\CentralUser;
 use App\Models\Plan;
-use App\Models\Role;
 use App\Models\Tenant;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Eloquent\Collection;
@@ -37,22 +35,6 @@ class CentralUserSeeder extends Seeder
             DB::statement('SET @laravel_user_id_1_self_edit = 1');
         }
 
-        // Create Super Admin if it doesn't exist
-        $admin = $this->updateOrCreateUser('admin@example.com', [
-            'name' => 'Super Admin',
-            'username' => 'admin',
-            'password' => Hash::make('password'),
-            'is_active' => true,
-            'is_super_admin' => true,
-            'email_verified_at' => now(),
-        ]);
-
-        // Assign Super Admin role
-        $superAdminRole = Role::where('name', Roles::SUPER_ADMIN)->first();
-        if ($superAdminRole) {
-            $this->attachRole($admin, $superAdminRole);
-        }
-
         // Create a regular user for testing
         $this->updateOrCreateUser('user@example.com', [
             'name' => 'Test User',
@@ -80,7 +62,7 @@ class CentralUserSeeder extends Seeder
      *     username: string,
      *     password: string,
      *     is_active: bool,
-     *     is_super_admin: bool,
+     *     is_super_admin?: bool,
      *     email_verified_at: mixed,
      * }  $attributes
      */
@@ -96,17 +78,6 @@ class CentralUserSeeder extends Seeder
         $user->save();
 
         return $user;
-    }
-
-    private function attachRole(CentralUser $user, Role $role): void
-    {
-        if ($user->roles()->whereKey($role->id)->exists()) {
-            return;
-        }
-
-        $user->roles()->attach($role->id, [
-            'uuid' => (string) Str::uuid(),
-        ]);
     }
 
     /**
@@ -241,10 +212,7 @@ class CentralUserSeeder extends Seeder
             return;
         }
 
-        $superAdmin = CentralUser::where('email', 'admin@example.com')->first();
-        $superAdmin?->tenants()->syncWithoutDetaching([$firstTenant->tenant_id]);
-
-        CentralUser::where('email', '!=', 'admin@example.com')->get()->each(function (CentralUser $user) use ($tenants): void {
+        CentralUser::where('is_super_admin', false)->get()->each(function (CentralUser $user) use ($tenants): void {
             $tenantIds = $tenants
                 ->random(\random_int(1, $tenants->count()))
                 ->pluck('tenant_id')

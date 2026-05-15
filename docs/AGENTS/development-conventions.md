@@ -469,6 +469,7 @@ it('tests something', function () {
     -   **Example**: `new class extends BasePageComponent { public ?string $pageTitle = 'pages.dashboard'; public string $pageSubtitle = 'pages.dashboard.description'; }`
     -   **Rule**: Never extend `Livewire\Component` directly for full-page components - always use `BasePageComponent`
 -   **Translations**: Always add translation keys to all supported languages (e.g., `en_US` and `fr_FR`) when introducing new keys. Do not leave keys missing or with placeholders in any language.
+-   **Tabbed Show Pages**: Show/detail pages with three or more independent sections, multiple management surfaces, or nested datatables MUST use `<x-ui.tabs>` following the tenant show pattern. Keep an overview tab first, render tab panels with server-side conditionals, and lazy-load nested Livewire components inside non-default tabs.
 -   **Strict Typing**: Use `declare(strict_types=1);` in all PHP files.
 -   **Naming**: Use descriptive names (e.g., `isRegisteredForDiscounts`, not `discount()`)
 -   **DataTable Components**:
@@ -479,7 +480,7 @@ it('tests something', function () {
     -   **Tabs & Lazy Loading**: When a datatable lives inside a tab, render the tab panel with server-side conditionals (`@if` / `@elseif`) so hidden panels are not mounted. Add `lazy` to expensive nested Livewire tables. Do not keep hidden tab panels in the DOM with `x-show`, `hidden`, or CSS-only visibility when they contain Livewire children.
     -   **Related Table Refresh**: When multiple datatables represent the same relationship from different perspectives (for example assigned vs available users), every mutation MUST dispatch a scoped Livewire event and every related table MUST listen and refresh. Use public UUID keys in the event name, never numeric IDs.
     -   **Single Row Action Rule**: If a table row has only one visible row action after conditional visibility is applied, implement it as the `rowClick()` action instead of rendering a dedicated row action button. Render row action buttons only when there are multiple row-level choices.
-    -   **Tenant Membership Filters**: User/member datatables with tenant visibility MUST use `App\Services\Tenancy\TenantMembershipQuery` and `App\Support\Tenancy\TenantAudience`. "All Tenants" means tenant-attached records excluding protected central accounts; user ID `1` is always central because it is guarded by the MySQL session trigger workflow.
+    -   **Tenant Membership Filters**: User/member datatables with tenant visibility MUST use `App\Services\Tenancy\TenantMembershipQuery` and `App\Support\Tenancy\TenantAudience`. "All Tenants" means tenant-attached records excluding protected central accounts. Super Admin users are central-only accounts and MUST NOT be attached to tenants by seeders.
 -   **Plain Blade Pages**:
     -   **Title/Subtitle**: MUST use `setPageTitle()` helper at the top of the Blade file to set `$pageTitle` and `$pageSubtitle`.
     -   **Reason**: Abstraction over `view()->share()` for cleaner code.
@@ -794,6 +795,7 @@ public function getSubmitButtonTextProperty(): string
     -   **PHPDoc Generation**: Run `php artisan permissions:generate-phpdoc` after modifying the matrix to update IDE support
     -   **Documentation**: See `docs/AGENTS/rbac-system.md` for full details
 -   **Super Admin Pattern**: Implemented via `Gate::before()` in `AppServiceProvider::boot()` - Users with `Roles::SUPER_ADMIN` role automatically have all permissions granted. This allows using permission-based controls (`@can()`, `$user->can()`) throughout the app without checking for Super Admin status. The pattern follows Spatie Permissions best practices. **Important**: Direct calls to `hasPermissionTo()`, `hasAnyPermission()`, etc. bypass the Gate and won't get Super Admin access - always use `can()` methods instead.
+-   **Super Admin Seeding**: Super Admin accounts are seeded only by `Database\Seeders\CentralSeeders\Production\SuperAdminSeeder`, which reads `SUPER_ADMIN_EMAILS` and `SUPER_ADMIN_PASSWORD` through `config/seeder.php`. Production central seeders run before development seeders in every environment, so local/dev super admins still come from the production seeder. Do not hardcode Super Admin users in development seeders, and do not attach Super Admin users to tenants.
 
 ### Testing
 

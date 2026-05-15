@@ -10,6 +10,7 @@ return [
     'status' => 'Statut',
     'active' => 'Actif',
     'inactive' => 'Inactif',
+    'access' => 'Accès',
     'created_at' => 'Créé le',
     'updated_at' => 'Mis à jour le',
     'email_verified_at' => 'E-mail vérifié le',

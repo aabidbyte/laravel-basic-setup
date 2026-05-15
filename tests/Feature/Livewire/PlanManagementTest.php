@@ -92,14 +92,27 @@ it('can render the edit plan page', function () {
         ->assertDontSeeLivewire('tables.plan-assignable-feature-table');
 });
 
-it('can render plan feature assignment tables on the show page', function () {
+it('renders plan show sections behind tabs', function () {
     $plan = Plan::factory()->create();
 
     $this->get(route('plans.show', $plan))
         ->assertOk()
         ->assertSee($plan->name)
+        ->assertSee(__('plans.overview'))
+        ->assertSee(__('plans.features'))
+        ->assertSee(__('plans.subscriptions'))
+        ->assertDontSeeLivewire('tables.plan-feature-assignment-table')
+        ->assertDontSeeLivewire('tables.plan-assignable-feature-table')
+        ->assertDontSeeLivewire('tables.subscription-table');
+
+    Livewire::test('pages::plans.show', ['plan' => $plan])
+        ->set('activeTab', 'features')
         ->assertSeeLivewire('tables.plan-feature-assignment-table')
         ->assertSeeLivewire('tables.plan-assignable-feature-table');
+
+    Livewire::test('pages::plans.show', ['plan' => $plan])
+        ->set('activeTab', 'subscriptions')
+        ->assertSeeLivewire('tables.subscription-table');
 });
 
 it('can update an existing plan', function () {

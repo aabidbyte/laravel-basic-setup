@@ -88,7 +88,7 @@ Central models that expose a `tenants()` relationship or a direct `tenant_id` co
 
 For user/member tables, "All Tenants" means records attached to at least one tenant, excluding protected central accounts. Central-only records are not included by default; expose them with the explicit `TenantMembershipQuery::CENTRAL_RECORDS_FILTER` option when super admins need it.
 
-User ID `1` is the protected central platform account guarded by the MySQL session trigger workflow. Treat it as central even when development seeders attach it to a tenant for convenience. Do not infer central users only from missing `tenant_user` rows.
+Super Admin users are protected central platform accounts. Treat them as central-only records and do not attach them to tenants in seeders. Do not infer central users only from missing `tenant_user` rows; use the shared tenant membership query workflow.
 
 Tenant filters that can switch between "all tenant members", "specific tenant", and "central only" should be read by `baseQuery()`. Their `Filter::execute()` callback should remain a no-op, because the generic datatable filter pass runs after `baseQuery()` and would otherwise intersect central-only filters with the default tenant-member scope.
 

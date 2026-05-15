@@ -10,6 +10,7 @@ return [
     'status' => 'Status',
     'active' => 'Active',
     'inactive' => 'Inactive',
+    'access' => 'Access',
     'created_at' => 'Created At',
     'updated_at' => 'Updated At',
     'email_verified_at' => 'Email Verified At',

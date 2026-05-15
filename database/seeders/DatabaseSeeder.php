@@ -6,6 +6,7 @@ use Database\Seeders\CentralSeeders\Development\CentralUserSeeder;
 use Database\Seeders\CentralSeeders\Development\SubscriptionSeeder;
 use Database\Seeders\CentralSeeders\Production\CentralTeamSeeder;
 use Database\Seeders\CentralSeeders\Production\RoleAndPermissionSeeder;
+use Database\Seeders\CentralSeeders\Production\SuperAdminSeeder;
 use Database\Seeders\CentralSeeders\Production\TeamRoleAndPermissionSeeder;
 use Database\Seeders\TenantSeeders\Production\EmailTemplateSeeder;
 use Database\Seeders\TenantSeeders\Production\TenantRoleAndPermissionSeeder;
@@ -39,6 +40,7 @@ class DatabaseSeeder extends Seeder
         // These run everywhere (local, testing, production)
         $this->call([
             RoleAndPermissionSeeder::class,
+            SuperAdminSeeder::class,
             TeamRoleAndPermissionSeeder::class,
             PlanSeeder::class,
             CentralTeamSeeder::class,

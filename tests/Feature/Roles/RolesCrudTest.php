@@ -43,6 +43,26 @@ test('authorized user can list roles', function () {
         ->assertSee(__('navigation.roles'));
 });
 
+test('authorized user can navigate role show page tabs', function () {
+    $user = User::factory()->create();
+    $permission = Permission::firstOrCreate(['name' => Permissions::VIEW_ROLES()]);
+    $role = Role::firstOrCreate(['name' => 'role-show-viewer']);
+    $role->givePermissionTo($permission);
+    $user->assignRole($role);
+
+    $targetRole = Role::firstOrCreate(['name' => 'target-role', 'display_name' => 'Target Role']);
+
+    Livewire::actingAs($user)
+        ->test('pages::roles.show', ['role' => $targetRole])
+        ->assertSee(__('tenancy.overview'))
+        ->assertSee(__('roles.permissions'))
+        ->assertSee(__('roles.users_with_role'))
+        ->set('activeTab', 'permissions')
+        ->assertSee(__('roles.permissions'))
+        ->set('activeTab', 'users')
+        ->assertSeeLivewire('tables.role-user-table');
+});
+
 test('authorized user can create role', function () {
     $user = User::factory()->create();
     $permission = Permission::firstOrCreate(['name' => Permissions::CREATE_ROLES()]);

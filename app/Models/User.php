@@ -44,6 +44,7 @@ class User extends BaseUserModel implements MustVerifyEmail
         'password',
         'created_by_user_id',
         'is_active',
+        'is_super_admin',
         'last_login_at',
         'frontend_preferences',
         'notification_preferences',
@@ -75,6 +76,7 @@ class User extends BaseUserModel implements MustVerifyEmail
             'frontend_preferences' => 'array',
             'notification_preferences' => 'array',
             'is_active' => 'boolean',
+            'is_super_admin' => 'boolean',
             'last_login_at' => 'datetime',
         ];
     }

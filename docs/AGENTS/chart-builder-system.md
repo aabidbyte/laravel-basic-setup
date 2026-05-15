@@ -127,7 +127,7 @@ Charts and metrics that aggregate central models with tenant membership should u
 - Use `App\Services\Tenancy\TenantMembershipQuery` to apply that audience to the Eloquent query before aggregating.
 - This keeps dashboards, analytics, datatables, exports, and reports aligned on the same tenant visibility semantics.
 - "All Tenants" means records attached to at least one tenant, excluding protected central accounts. Central-only records are an explicit audience, not part of the default all-tenant dataset.
-- For user analytics, user ID `1` is the protected central platform account guarded by the MySQL session trigger workflow. Count it with the central audience even when seeders attach it to a tenant.
+- For user analytics, Super Admin users are protected central platform accounts. Count them with the central audience and do not model them as tenant members.
 
 This is especially useful for future charts and analytics because the same audience object can power a datatable row list and the metric/chart totals shown beside it.
 

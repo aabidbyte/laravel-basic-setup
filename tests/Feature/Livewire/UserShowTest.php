@@ -40,12 +40,27 @@ test('authorized user can see all user details on show page', function () {
     Livewire::actingAs($this->admin)
         ->test('pages::users.show', ['user' => $this->targetUser])
         ->assertSee(__('actions.delete'))
+        ->assertSee(__('tenancy.overview'))
+        ->assertSee(__('users.access'))
+        ->assertSee(__('users.preferences'))
         ->assertSee(__('users.created_at'))
         ->assertSee(__('users.email_verified_at'))
         ->assertSee($this->targetUser->created_at->diffForHumans())
         ->assertSee($this->targetUser->email_verified_at->diffForHumans());
 
     Carbon::setTestNow();
+});
+
+test('authorized user can navigate show page tabs', function () {
+    Livewire::actingAs($this->admin)
+        ->test('pages::users.show', ['user' => $this->targetUser])
+        ->set('activeTab', 'access')
+        ->assertSee(__('users.roles'))
+        ->assertSee(__('users.teams'))
+        ->assertSee(__('users.direct_permissions'))
+        ->set('activeTab', 'preferences')
+        ->assertSee(__('users.timezone'))
+        ->assertSee(__('users.locale'));
 });
 
 test('authorized user can delete a user from show page', function () {

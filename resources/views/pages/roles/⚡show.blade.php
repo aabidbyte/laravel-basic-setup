@@ -23,6 +23,8 @@ new class extends BasePageComponent {
     #[Locked]
     public ?Role $role = null;
 
+    public string $activeTab = 'overview';
+
     /**
      * Mount the component and authorize access.
      */
@@ -67,6 +69,30 @@ new class extends BasePageComponent {
     {
         $subtitle = parent::getPageSubtitle();
         return $subtitle ? __($subtitle, ['type' => __($this->modelTypeLabel)]) : null;
+    }
+
+    /**
+     * Get tabs for the role detail page.
+     */
+    public function tabs(): array
+    {
+        return [
+            [
+                'key' => 'overview',
+                'label' => __('tenancy.overview'),
+                'icon' => 'information-circle',
+            ],
+            [
+                'key' => 'permissions',
+                'label' => __('roles.permissions'),
+                'icon' => 'shield-check',
+            ],
+            [
+                'key' => 'users',
+                'label' => __('roles.users_with_role'),
+                'icon' => 'users',
+            ],
+        ];
     }
 
     /**
@@ -128,57 +154,63 @@ new class extends BasePageComponent {
 
     <div class="max-col-6xl mx-auto w-full space-y-8"
          x-on:confirm-delete-role.window="$wire.deleteRole()">
-        {{-- Role Details Card --}}
-        <x-ui.card title="{{ __('roles.show.basic_info') }}">
-            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <div>
-                    <span class="text-base-content/60 text-sm">{{ __('roles.display_name') }}</span>
-                    <p class="font-medium">{{ $role->display_name ?? '-' }}</p>
-                </div>
-                <div>
-                    <span class="text-base-content/60 text-sm">{{ __('roles.name') }}</span>
-                    <p class="font-mono text-sm">{{ $role->name }}</p>
-                </div>
-                <div class="md:col-span-2">
-                    <span class="text-base-content/60 text-sm">{{ __('roles.description') }}</span>
-                    <p class="text-base-content">{{ $role->description ?? '-' }}</p>
-                </div>
-                <div>
-                    <span class="text-base-content/60 text-sm">{{ __('fields.color') }}</span>
-                    <div class="mt-1">
-                        <x-ui.badge :color="$role->color"
-                                    size="sm">{{ __("fields.colors.{$role->color}") }}</x-ui.badge>
+        <x-ui.tabs :tabs="$this->tabs()"
+                   :active="$activeTab"
+                   class="mb-6" />
+
+        @if($activeTab === 'overview')
+            {{-- Role Details Card --}}
+            <x-ui.card title="{{ __('roles.show.basic_info') }}">
+                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <div>
+                        <span class="text-base-content/60 text-sm">{{ __('roles.display_name') }}</span>
+                        <p class="font-medium">{{ $role->display_name ?? '-' }}</p>
+                    </div>
+                    <div>
+                        <span class="text-base-content/60 text-sm">{{ __('roles.name') }}</span>
+                        <p class="font-mono text-sm">{{ $role->name }}</p>
+                    </div>
+                    <div class="md:col-span-2">
+                        <span class="text-base-content/60 text-sm">{{ __('roles.description') }}</span>
+                        <p class="text-base-content">{{ $role->description ?? '-' }}</p>
+                    </div>
+                    <div>
+                        <span class="text-base-content/60 text-sm">{{ __('fields.color') }}</span>
+                        <div class="mt-1">
+                            <x-ui.badge :color="$role->color"
+                                        size="sm">{{ __("fields.colors.{$role->color}") }}</x-ui.badge>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </x-ui.card>
+            </x-ui.card>
+        @elseif($activeTab === 'permissions')
+            {{-- Permissions --}}
+            <x-ui.card>
+                <x-slot:title>
+                    <div class="flex items-center justify-between">
+                        <span>{{ __('roles.permissions') }}</span>
+                        <x-ui.badge variant="info">{{ $role->permissions->count() }}</x-ui.badge>
+                    </div>
+                </x-slot:title>
 
-        {{-- Permissions --}}
-        <x-ui.card>
-            <x-slot:title>
-                <div class="flex items-center justify-between">
-                    <span>{{ __('roles.permissions') }}</span>
-                    <x-ui.badge variant="info">{{ $role->permissions->count() }}</x-ui.badge>
-                </div>
-            </x-slot:title>
-
-            @if ($role->name === Roles::SUPER_ADMIN)
-                <div class="alert alert-info">
-                    <x-ui.icon name="shield-check"
-                               class="h-6 w-6" />
-                    <span>{{ __('roles.super_admin_all_permissions') }}</span>
-                </div>
-            @else
-                <x-ui.permission-matrix :permissions="$this->permissions"
-                                        :selectedPermissions="$role->permissions->pluck('uuid')->toArray()"
-                                        readonly />
-            @endif
-        </x-ui.card>
-
-        {{-- Users with this Role --}}
-        <x-ui.card title="{{ __('roles.users_with_role') }}">
-            <livewire:tables.role-user-table :role-uuid="$role->uuid"
-                                             lazy />
-        </x-ui.card>
+                @if ($role->name === Roles::SUPER_ADMIN)
+                    <div class="alert alert-info">
+                        <x-ui.icon name="shield-check"
+                                   class="h-6 w-6" />
+                        <span>{{ __('roles.super_admin_all_permissions') }}</span>
+                    </div>
+                @else
+                    <x-ui.permission-matrix :permissions="$this->permissions"
+                                            :selectedPermissions="$role->permissions->pluck('uuid')->toArray()"
+                                            readonly />
+                @endif
+            </x-ui.card>
+        @elseif($activeTab === 'users')
+            {{-- Users with this Role --}}
+            <x-ui.card title="{{ __('roles.users_with_role') }}">
+                <livewire:tables.role-user-table :role-uuid="$role->uuid"
+                                                 lazy />
+            </x-ui.card>
+        @endif
     </div>
 </x-layouts.page>
