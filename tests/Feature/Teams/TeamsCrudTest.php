@@ -43,6 +43,42 @@ test('authorized user can list teams', function () {
         ->assertSee(__('navigation.teams'));
 });
 
+test('authorized user can navigate team show page tabs', function () {
+    $user = User::factory()->create();
+    $permission = Permission::firstOrCreate(['name' => Permissions::VIEW_TEAMS()]);
+    $role = Role::firstOrCreate(['name' => 'team-show-viewer']);
+    $role->givePermissionTo($permission);
+    $user->assignRole($role);
+
+    $targetTeam = Team::create(['name' => 'Target Team', 'description' => 'Team Description']);
+
+    Livewire::actingAs($user)
+        ->test('pages::teams.show', ['team' => $targetTeam])
+        ->assertSee(__('tenancy.overview'))
+        ->assertSee(__('teams.members'))
+        ->assertDontSeeLivewire('tables.team-user-table')
+        ->set('activeTab', 'members')
+        ->assertSeeLivewire('tables.team-user-table');
+});
+
+test('authorized user can navigate trashed team show page tabs', function () {
+    $user = User::factory()->create();
+    $permission = Permission::firstOrCreate(['name' => Permissions::VIEW_TEAMS()]);
+    $role = Role::firstOrCreate(['name' => 'trashed-team-show-viewer']);
+    $role->givePermissionTo($permission);
+    $user->assignRole($role);
+
+    $targetTeam = Team::create(['name' => 'Archived Team', 'description' => 'Archived Description']);
+    $targetTeam->delete();
+
+    Livewire::actingAs($user)
+        ->test('pages::trash.show', ['entityType' => 'teams', 'uuid' => $targetTeam->uuid])
+        ->assertSee(__('pages.trash.show.item_details'))
+        ->assertSee(__('pages.trash.show.metadata'))
+        ->set('activeTab', 'metadata')
+        ->assertSee(__('fields.deleted_at'));
+});
+
 test('authorized user can create team', function () {
     $user = User::factory()->create();
     $permission = Permission::firstOrCreate(['name' => Permissions::CREATE_TEAMS()]);

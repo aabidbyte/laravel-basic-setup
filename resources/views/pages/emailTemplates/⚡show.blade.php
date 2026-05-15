@@ -19,6 +19,8 @@ new class extends BasePageComponent {
 
     public ?EmailTemplate $template = null;
 
+    public string $activeTab = 'overview';
+
     /**
      * Mount the component and authorize access.
      */
@@ -33,6 +35,25 @@ new class extends BasePageComponent {
     public function getPageTitle(): string
     {
         return $this->template?->name ?? __('types.email_template');
+    }
+
+    /**
+     * Get tabs for the email template detail page.
+     */
+    public function tabs(): array
+    {
+        return [
+            [
+                'key' => 'overview',
+                'label' => __('tenancy.overview'),
+                'icon' => 'information-circle',
+            ],
+            [
+                'key' => 'translations',
+                'label' => __('email_templates.show.translations'),
+                'icon' => 'language',
+            ],
+        ];
     }
 
     public function archive(): void
@@ -185,86 +206,94 @@ new class extends BasePageComponent {
 
     <section class="mx-auto w-full max-w-6xl space-y-6">
         @if ($template)
-            {{-- Info Card --}}
-            <div class="card bg-base-100 shadow-xl">
-                <div class="card-body">
-                    <x-ui.title level="3"
-                                class="mb-4">{{ __('common.details') }}</x-ui.title>
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <div>
-                            <span class="text-base-content/70 block text-sm font-medium">{{ __('fields.name') }}</span>
-                            <span class="block text-lg">{{ $template->name }}</span>
-                        </div>
+            <x-ui.tabs :tabs="$this->tabs()"
+                       :active="$activeTab"
+                       class="mb-6" />
 
-                        <div>
-                            <span class="text-base-content/70 block text-sm font-medium">{{ __('fields.type') }}</span>
-                            <x-ui.badge :text="$template->type->label()"
-                                        color="neutral"
-                                        size="sm"></x-ui.badge>
-                        </div>
-
-                        @if (!$template->is_layout)
+            @if($activeTab === 'overview')
+                {{-- Info Card --}}
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body">
+                        <x-ui.title level="3"
+                                    class="mb-4">{{ __('common.details') }}</x-ui.title>
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div>
                                 <span
-                                      class="text-base-content/70 block text-sm font-medium">{{ __('email_templates.form.layout') }}</span>
-                                <span class="block">{{ $template->layout->name ?? __('common.none') }}</span>
+                                      class="text-base-content/70 block text-sm font-medium">{{ __('fields.name') }}</span>
+                                <span class="block text-lg">{{ $template->name }}</span>
                             </div>
+
                             <div>
                                 <span
-                                      class="text-base-content/70 block text-sm font-medium">{{ __('fields.status') }}</span>
-                                <x-ui.badge :text="$template->status->label()"
-                                            :color="$template->status->color()"
+                                      class="text-base-content/70 block text-sm font-medium">{{ __('fields.type') }}</span>
+                                <x-ui.badge :text="$template->type->label()"
+                                            color="neutral"
                                             size="sm"></x-ui.badge>
                             </div>
-                        @else
-                            <div>
-                                <span
-                                      class="text-base-content/70 block text-sm font-medium">{{ __('email_templates.form.is_default') }}</span>
-                                <x-ui.badge :text="$template->is_default ? __('common.yes') : __('common.no')"
-                                            :color="$template->is_default ? 'success' : 'neutral'"
-                                            size="sm"></x-ui.badge>
-                            </div>
-                        @endif
 
-                        <div class="col-span-1 md:col-span-2">
-                            <span
-                                  class="text-base-content/70 block text-sm font-medium">{{ __('fields.description') }}</span>
-                            <p class="text-base-content/80">{{ $template->description ?? '—' }}</p>
+                            @if (!$template->is_layout)
+                                <div>
+                                    <span
+                                          class="text-base-content/70 block text-sm font-medium">{{ __('email_templates.form.layout') }}</span>
+                                    <span class="block">{{ $template->layout->name ?? __('common.none') }}</span>
+                                </div>
+                                <div>
+                                    <span
+                                          class="text-base-content/70 block text-sm font-medium">{{ __('fields.status') }}</span>
+                                    <x-ui.badge :text="$template->status->label()"
+                                                :color="$template->status->color()"
+                                                size="sm"></x-ui.badge>
+                                </div>
+                            @else
+                                <div>
+                                    <span
+                                          class="text-base-content/70 block text-sm font-medium">{{ __('email_templates.form.is_default') }}</span>
+                                    <x-ui.badge :text="$template->is_default ? __('common.yes') : __('common.no')"
+                                                :color="$template->is_default ? 'success' : 'neutral'"
+                                                size="sm"></x-ui.badge>
+                                </div>
+                            @endif
+
+                            <div class="col-span-1 md:col-span-2">
+                                <span
+                                      class="text-base-content/70 block text-sm font-medium">{{ __('fields.description') }}</span>
+                                <p class="text-base-content/80">{{ $template->description ?? '—' }}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            {{-- Translations Review --}}
-            <div class="card bg-base-100 shadow-xl">
-                <div class="card-body">
-                    <x-ui.title level="3"
-                                class="mb-4">{{ __('email_templates.show.translations') }}</x-ui.title>
-                    <div class="overflow-x-auto">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>{{ __('fields.locale') }}</th>
-                                    <th>{{ __('email_templates.form.subject') }}</th>
-                                    <th>{{ __('email_templates.show.html_length') }}</th>
-                                    <th>{{ __('fields.updated_at') }}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($template->translations as $translation)
+            @elseif($activeTab === 'translations')
+                {{-- Translations Review --}}
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body">
+                        <x-ui.title level="3"
+                                    class="mb-4">{{ __('email_templates.show.translations') }}</x-ui.title>
+                        <div class="overflow-x-auto">
+                            <table class="table">
+                                <thead>
                                     <tr>
-                                        <td><x-ui.badge :text="__('locales.' . $translation->locale)"
-                                                        size="sm"></x-ui.badge></td>
-                                        <td>{{ $translation->subject ?? '—' }}</td>
-                                        <td>{{ strlen($translation->html_content) }} {{ __('common.chars') }}</td>
-                                        <td>{{ $translation->updated_at->diffForHumans() }}</td>
+                                        <th>{{ __('fields.locale') }}</th>
+                                        <th>{{ __('email_templates.form.subject') }}</th>
+                                        <th>{{ __('email_templates.show.html_length') }}</th>
+                                        <th>{{ __('fields.updated_at') }}</th>
                                     </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    @foreach ($template->translations as $translation)
+                                        <tr>
+                                            <td><x-ui.badge :text="__('locales.' . $translation->locale)"
+                                                            size="sm"></x-ui.badge></td>
+                                            <td>{{ $translation->subject ?? '—' }}</td>
+                                            <td>{{ strlen($translation->html_content) }} {{ __('common.chars') }}</td>
+                                            <td>{{ $translation->updated_at->diffForHumans() }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-            </div>
+            @endif
         @else
             <div class="alert alert-error">
                 <x-ui.icon name="exclamation-triangle"

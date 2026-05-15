@@ -23,7 +23,7 @@ php artisan livewire:convert pages.example
 -   **Optional**: Add `public string $pageSubtitle = 'ui.pages.example.description';` for subtitle text (displayed below title in header)
 -   **Translations**: Use translation keys like `'ui.pages.dashboard'` - they are automatically translated
 -   **Tabbed Livewire Content**: Tab panels that contain nested Livewire components MUST be rendered only when visible using server-side conditionals (`@if` / `@elseif`). Add `lazy` to expensive nested Livewire components in tab panels so they mount only after the tab is selected and enters the viewport. Avoid CSS-only hiding (`x-show`, `hidden`, `display: none`) for hidden tab panels with Livewire children.
--   **Tabbed Show Pages**: Use the tenant show page pattern for show/detail pages with three or more independent sections, multiple management surfaces, or nested datatables. Put summary fields in the first overview tab and move secondary workflows such as assignments, subscriptions, users, or history into separate tabs.
+-   **Tabbed Show Pages**: Use the tenant show page pattern for show/detail pages with more than one meaningful content section, multiple management surfaces, or nested datatables. Put summary fields in the first overview tab and move secondary workflows such as assignments, subscriptions, users, or history into separate tabs.
 -   **No `parent::mount()` needed** - title and subtitle sharing happens automatically via `boot()` lifecycle hook
 -   Full-page components are created in `resources/views/pages/` and use `pages::` namespace in routes
 -   Nested/reusable Livewire components are created in `resources/views/components/` and are referenced directly (e.g., `livewire:ui.example-component`)

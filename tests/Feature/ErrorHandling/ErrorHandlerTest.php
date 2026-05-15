@@ -305,6 +305,36 @@ describe('ErrorLog Model', function () {
 });
 
 describe('ErrorLogTable', function () {
+    test('show page renders error details behind tabs', function () {
+        Permission::firstOrCreate(['name' => Permissions::VIEW_ERROR_LOGS()]);
+
+        /** @var User $viewer */
+        $viewer = User::factory()->create();
+        $viewer->assignPermission(Permissions::VIEW_ERROR_LOGS());
+
+        $errorLog = ErrorLog::create([
+            'reference_id' => 'ERR-SHOW-TABS',
+            'exception_class' => Exception::class,
+            'message' => 'Tabbed error details',
+            'stack_trace' => 'Trace',
+            'url' => 'https://example.test/errors',
+            'method' => 'GET',
+            'context' => ['request_id' => 'tabbed-request'],
+        ]);
+
+        Livewire::actingAs($viewer)
+            ->test('pages::error-logs.show', ['errorLog' => $errorLog])
+            ->assertSee(__('tenancy.overview'))
+            ->assertSee(__('errors.management.request_info'))
+            ->assertSee(__('errors.management.diagnostics'))
+            ->assertSee('Tabbed error details')
+            ->set('activeTab', 'request')
+            ->assertSee(__('errors.management.url'))
+            ->set('activeTab', 'diagnostics')
+            ->assertSee(__('errors.management.context'))
+            ->assertSee(__('errors.management.stack_trace'));
+    });
+
     test('shows tenant actor and runtime columns for central operations', function () {
         Permission::firstOrCreate(['name' => Permissions::VIEW_ERROR_LOGS()]);
         Role::firstOrCreate(['name' => Roles::SUPER_ADMIN]);

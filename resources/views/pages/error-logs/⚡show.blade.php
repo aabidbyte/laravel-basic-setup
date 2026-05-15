@@ -22,6 +22,8 @@ new class extends BasePageComponent {
 
     public string $resolveNotes = '';
 
+    public string $activeTab = 'overview';
+
     /**
      * Mount the component and authorize access.
      */
@@ -35,6 +37,40 @@ new class extends BasePageComponent {
     public function getPageTitle(): string
     {
         return __('errors.reference', ['id' => $this->errorLog->reference_id]);
+    }
+
+    /**
+     * Get tabs for the error log detail page.
+     */
+    public function tabs(): array
+    {
+        $tabs = [
+            [
+                'key' => 'overview',
+                'label' => __('tenancy.overview'),
+                'icon' => 'information-circle',
+            ],
+            [
+                'key' => 'request',
+                'label' => __('errors.management.request_info'),
+                'icon' => 'globe-alt',
+            ],
+            [
+                'key' => 'diagnostics',
+                'label' => __('errors.management.diagnostics'),
+                'icon' => 'bug-ant',
+            ],
+        ];
+
+        if ($this->errorLog?->isResolved()) {
+            $tabs[] = [
+                'key' => 'resolution',
+                'label' => __('errors.management.resolution'),
+                'icon' => 'check-circle',
+            ];
+        }
+
+        return $tabs;
     }
 
     /**
@@ -165,191 +201,197 @@ new class extends BasePageComponent {
                 </div>
             </div>
 
-            {{-- Exception Info --}}
-            <div class="card bg-base-100 shadow-xl">
-                <div class="card-body">
-                    <x-ui.title level="3"
-                                class="mb-4 border-b pb-2">{{ __('errors.management.exception_info') }}</x-ui.title>
+            <x-ui.tabs :tabs="$this->tabs()"
+                       :active="$activeTab"
+                       class="mb-6" />
 
-                    <div class="space-y-4">
-                        <div>
-                            <span class="text-base-content/60 text-sm">{{ __('errors.management.exception') }}</span>
-                            <p class="break-all font-mono text-sm">{{ $errorLog->exception_class }}</p>
-                        </div>
+            @if($activeTab === 'overview')
+                {{-- Exception Info --}}
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body">
+                        <x-ui.title level="3"
+                                    class="mb-4 border-b pb-2">{{ __('errors.management.exception_info') }}</x-ui.title>
 
-                        <div>
-                            <span class="text-base-content/60 text-sm">{{ __('errors.management.message') }}</span>
-                            <p class="break-all font-medium">{{ $errorLog->message }}</p>
-                        </div>
-
-                        @if ($fileLine = $this->getFileLineFromStackTrace())
+                        <div class="space-y-4">
                             <div>
-                                <span
-                                      class="text-base-content/60 text-sm">{{ __('errors.management.file_line') }}</span>
-                                <p class="font-mono text-sm">{{ $fileLine }}</p>
+                                <span class="text-base-content/60 text-sm">{{ __('errors.management.exception') }}</span>
+                                <p class="break-all font-mono text-sm">{{ $errorLog->exception_class }}</p>
                             </div>
-                        @endif
+
+                            <div>
+                                <span class="text-base-content/60 text-sm">{{ __('errors.management.message') }}</span>
+                                <p class="break-all font-medium">{{ $errorLog->message }}</p>
+                            </div>
+
+                            @if ($fileLine = $this->getFileLineFromStackTrace())
+                                <div>
+                                    <span
+                                          class="text-base-content/60 text-sm">{{ __('errors.management.file_line') }}</span>
+                                    <p class="font-mono text-sm">{{ $fileLine }}</p>
+                                </div>
+                            @endif
+                        </div>
                     </div>
                 </div>
-            </div>
+            @elseif($activeTab === 'request')
+                {{-- Request Info --}}
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body">
+                        <x-ui.title level="3"
+                                    class="mb-4 border-b pb-2">{{ __('errors.management.request_info') }}</x-ui.title>
 
-            {{-- Request Info --}}
-            <div class="card bg-base-100 shadow-xl">
-                <div class="card-body">
-                    <x-ui.title level="3"
-                                class="mb-4 border-b pb-2">{{ __('errors.management.request_info') }}</x-ui.title>
-
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <div>
-                            <span class="text-base-content/60 text-sm">{{ __('errors.management.url') }}</span>
-                            <p class="break-all font-mono text-sm">
-                                @if ($errorLog->method)
-                                    <x-ui.badge variant="ghost"
-                                                size="xs"
-                                                class="mr-1">{{ $errorLog->method }}</x-ui.badge>
-                                @endif
-                                {{ $errorLog->url ?? '-' }}
-                            </p>
-                        </div>
-
-                        <div>
-                            <span class="text-base-content/60 text-sm">{{ __('errors.management.user') }}</span>
-                            <p class="font-medium">
-                                @if ($errorLog->user)
-                                    <x-ui.link href="{{ route('users.show', $errorLog->user->uuid) }}"
-                                               wire:navigate>{{ $errorLog->user->name }}</x-ui.link>
-                                @else
-                                    {{ __('errors.management.guest') }}
-                                @endif
-                            </p>
-                        </div>
-
-                        <div>
-                            <span class="text-base-content/60 text-sm">{{ __('errors.management.actor_type') }}</span>
-                            <p class="font-medium">
-                                @if ($errorLog->actor_type)
-                                    <x-ui.badge :color="$errorLog->actor_type->color()"
-                                                size="sm">
-                                        {{ $errorLog->actor_type->label() }}
-                                    </x-ui.badge>
-                                @else
-                                    -
-                                @endif
-                            </p>
-                        </div>
-
-                        <div>
-                            <span class="text-base-content/60 text-sm">{{ __('errors.management.actor') }}</span>
-                            <p class="font-medium">
-                                {{ $errorLog->actorLabel() }}
-                                @if ($errorLog->actor_email)
-                                    <span class="text-base-content/60 block text-sm">{{ $errorLog->actor_email }}</span>
-                                @endif
-                            </p>
-                        </div>
-
-                        <div>
-                            <span class="text-base-content/60 text-sm">{{ __('errors.management.tenant') }}</span>
-                            <p class="font-medium">
-                                {{ $errorLog->tenant_name ?? $errorLog->tenant?->label() ?? __('errors.management.central') }}
-                                @if ($errorLog->tenant_domain)
-                                    <span class="text-base-content/60 block text-sm">{{ $errorLog->tenant_domain }}</span>
-                                @endif
-                            </p>
-                        </div>
-
-                        <div>
-                            <span class="text-base-content/60 text-sm">{{ __('errors.management.runtime') }}</span>
-                            <p class="font-medium">
-                                {{ $errorLog->runtimeContextLabel() }}
-                                @if ($errorLog->command)
-                                    <span class="text-base-content/60 block break-all font-mono text-xs">{{ $errorLog->command }}</span>
-                                @endif
-                                @if ($errorLog->job_id)
-                                    <span class="text-base-content/60 block break-all font-mono text-xs">{{ __('errors.management.job_id') }}: {{ $errorLog->job_id }}</span>
-                                @endif
-                            </p>
-                        </div>
-
-                        @if ($errorLog->impersonator_id)
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div>
-                                <span class="text-base-content/60 text-sm">{{ __('errors.management.impersonator') }}</span>
+                                <span class="text-base-content/60 text-sm">{{ __('errors.management.url') }}</span>
+                                <p class="break-all font-mono text-sm">
+                                    @if ($errorLog->method)
+                                        <x-ui.badge variant="ghost"
+                                                    size="xs"
+                                                    class="mr-1">{{ $errorLog->method }}</x-ui.badge>
+                                    @endif
+                                    {{ $errorLog->url ?? '-' }}
+                                </p>
+                            </div>
+
+                            <div>
+                                <span class="text-base-content/60 text-sm">{{ __('errors.management.user') }}</span>
                                 <p class="font-medium">
-                                    {{ $errorLog->impersonator_name ?? $errorLog->impersonator_id }}
-                                    @if ($errorLog->impersonator_email)
-                                        <span class="text-base-content/60 block text-sm">{{ $errorLog->impersonator_email }}</span>
+                                    @if ($errorLog->user)
+                                        <x-ui.link href="{{ route('users.show', $errorLog->user->uuid) }}"
+                                                   wire:navigate>{{ $errorLog->user->name }}</x-ui.link>
+                                    @else
+                                        {{ __('errors.management.guest') }}
                                     @endif
                                 </p>
                             </div>
-                        @endif
 
-                        <div>
-                            <span class="text-base-content/60 text-sm">{{ __('errors.management.ip_address') }}</span>
-                            <p class="font-mono text-sm">{{ $errorLog->ip ?? '-' }}</p>
+                            <div>
+                                <span class="text-base-content/60 text-sm">{{ __('errors.management.actor_type') }}</span>
+                                <p class="font-medium">
+                                    @if ($errorLog->actor_type)
+                                        <x-ui.badge :color="$errorLog->actor_type->color()"
+                                                    size="sm">
+                                            {{ $errorLog->actor_type->label() }}
+                                        </x-ui.badge>
+                                    @else
+                                        -
+                                    @endif
+                                </p>
+                            </div>
+
+                            <div>
+                                <span class="text-base-content/60 text-sm">{{ __('errors.management.actor') }}</span>
+                                <p class="font-medium">
+                                    {{ $errorLog->actorLabel() }}
+                                    @if ($errorLog->actor_email)
+                                        <span class="text-base-content/60 block text-sm">{{ $errorLog->actor_email }}</span>
+                                    @endif
+                                </p>
+                            </div>
+
+                            <div>
+                                <span class="text-base-content/60 text-sm">{{ __('errors.management.tenant') }}</span>
+                                <p class="font-medium">
+                                    {{ $errorLog->tenant_name ?? $errorLog->tenant?->label() ?? __('errors.management.central') }}
+                                    @if ($errorLog->tenant_domain)
+                                        <span class="text-base-content/60 block text-sm">{{ $errorLog->tenant_domain }}</span>
+                                    @endif
+                                </p>
+                            </div>
+
+                            <div>
+                                <span class="text-base-content/60 text-sm">{{ __('errors.management.runtime') }}</span>
+                                <p class="font-medium">
+                                    {{ $errorLog->runtimeContextLabel() }}
+                                    @if ($errorLog->command)
+                                        <span class="text-base-content/60 block break-all font-mono text-xs">{{ $errorLog->command }}</span>
+                                    @endif
+                                    @if ($errorLog->job_id)
+                                        <span class="text-base-content/60 block break-all font-mono text-xs">{{ __('errors.management.job_id') }}: {{ $errorLog->job_id }}</span>
+                                    @endif
+                                </p>
+                            </div>
+
+                            @if ($errorLog->impersonator_id)
+                                <div>
+                                    <span class="text-base-content/60 text-sm">{{ __('errors.management.impersonator') }}</span>
+                                    <p class="font-medium">
+                                        {{ $errorLog->impersonator_name ?? $errorLog->impersonator_id }}
+                                        @if ($errorLog->impersonator_email)
+                                            <span class="text-base-content/60 block text-sm">{{ $errorLog->impersonator_email }}</span>
+                                        @endif
+                                    </p>
+                                </div>
+                            @endif
+
+                            <div>
+                                <span class="text-base-content/60 text-sm">{{ __('errors.management.ip_address') }}</span>
+                                <p class="font-mono text-sm">{{ $errorLog->ip ?? '-' }}</p>
+                            </div>
+
+                            <div>
+                                <span class="text-base-content/60 text-sm">{{ __('errors.management.user_agent') }}</span>
+                                <p class="text-base-content/80 break-all text-sm">{{ $errorLog->user_agent ?? '-' }}</p>
+                            </div>
                         </div>
+                    </div>
+                </div>
+            @elseif($activeTab === 'diagnostics')
+                <div class="space-y-6">
+                    <div x-data="disclosurePanel()"
+                         class="card bg-base-100 shadow-xl">
+                        <div class="card-body">
+                            <x-ui.button @click="toggle()"
+                                         variant="ghost"
+                                         class="flex w-full items-center justify-between px-0 text-left font-bold hover:bg-transparent">
+                                <x-ui.title level="3"
+                                            class="border-b pb-2">{{ __('errors.management.context') }}</x-ui.title>
+                                <x-ui.icon name="chevron-down"
+                                           size="sm"
+                                           class="transition-transform duration-200"
+                                           x-bind:class="isOpen ? 'rotate-180' : ''"></x-ui.icon>
+                            </x-ui.button>
 
-                        <div>
-                            <span class="text-base-content/60 text-sm">{{ __('errors.management.user_agent') }}</span>
-                            <p class="text-base-content/80 break-all text-sm">{{ $errorLog->user_agent ?? '-' }}</p>
+                            <div x-show="isOpen"
+                                 x-collapse
+                                 class="mt-4">
+                                @if ($errorLog->context)
+                                    <pre class="bg-base-200 overflow-x-auto rounded-lg p-4 font-mono text-sm">{{ json_encode($errorLog->context, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) }}</pre>
+                                @else
+                                    <p class="text-base-content/60 italic">{{ __('errors.management.no_context') }}</p>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    <div x-data="disclosurePanel()"
+                         class="card bg-base-100 shadow-xl">
+                        <div class="card-body">
+                            <x-ui.button @click="toggle()"
+                                         variant="ghost"
+                                         class="flex w-full items-center justify-between px-0 text-left font-bold hover:bg-transparent">
+                                <x-ui.title level="3"
+                                            class="border-b pb-2">{{ __('errors.management.stack_trace') }}</x-ui.title>
+                                <x-ui.icon name="chevron-down"
+                                           size="sm"
+                                           class="transition-transform duration-200"
+                                           x-bind:class="isOpen ? 'rotate-180' : ''"></x-ui.icon>
+                            </x-ui.button>
+
+                            <div x-show="isOpen"
+                                 x-collapse
+                                 class="mt-4">
+                                @if ($errorLog->stack_trace)
+                                    <pre class="bg-base-200 max-h-96 overflow-x-auto overflow-y-auto rounded-lg p-4 font-mono text-xs">{{ $errorLog->stack_trace }}</pre>
+                                @else
+                                    <p class="text-base-content/60 italic">{{ __('errors.management.no_stack_trace') }}</p>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <div x-data="disclosurePanel()"
-                 class="card bg-base-100 shadow-xl">
-                <div class="card-body">
-                    <x-ui.button @click="toggle()"
-                                 variant="ghost"
-                                 class="flex w-full items-center justify-between px-0 text-left font-bold hover:bg-transparent">
-                        <x-ui.title level="3"
-                                    class="border-b pb-2">{{ __('errors.management.context') }}</x-ui.title>
-                        <x-ui.icon name="chevron-down"
-                                   size="sm"
-                                   class="transition-transform duration-200"
-                                   :x-bind:class="isOpen ? 'rotate-180' : ''"></x-ui.icon>
-                    </x-ui.button>
-
-                    <div x-show="isOpen"
-                         x-collapse
-                         class="mt-4">
-                        @if ($errorLog->context)
-                            <pre class="bg-base-200 overflow-x-auto rounded-lg p-4 font-mono text-sm">{{ json_encode($errorLog->context, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) }}</pre>
-                        @else
-                            <p class="text-base-content/60 italic">{{ __('errors.management.no_context') }}</p>
-                        @endif
-                    </div>
-                </div>
-            </div>
-
-            <div x-data="disclosurePanel()"
-                 class="card bg-base-100 shadow-xl">
-                <div class="card-body">
-                    <x-ui.button @click="toggle()"
-                                 variant="ghost"
-                                 class="flex w-full items-center justify-between px-0 text-left font-bold hover:bg-transparent">
-                        <x-ui.title level="3"
-                                    class="border-b pb-2">{{ __('errors.management.stack_trace') }}</x-ui.title>
-                        <x-ui.icon name="chevron-down"
-                                   size="sm"
-                                   class="transition-transform duration-200"
-                                   :x-bind:class="isOpen ? 'rotate-180' : ''"></x-ui.icon>
-                    </x-ui.button>
-
-                    <div x-show="isOpen"
-                         x-collapse
-                         class="mt-4">
-                        @if ($errorLog->stack_trace)
-                            <pre class="bg-base-200 max-h-96 overflow-x-auto overflow-y-auto rounded-lg p-4 font-mono text-xs">{{ $errorLog->stack_trace }}</pre>
-                        @else
-                            <p class="text-base-content/60 italic">{{ __('errors.management.no_stack_trace') }}</p>
-                        @endif
-                    </div>
-                </div>
-            </div>
-
-            {{-- Resolution Info (if resolved) --}}
-            @if ($errorLog->isResolved())
+            @elseif($activeTab === 'resolution' && $errorLog->isResolved())
+                {{-- Resolution Info --}}
                 <div class="card bg-success/10 border-success/30 border shadow-xl">
                     <div class="card-body">
                         <x-ui.title level="3"
@@ -384,6 +426,7 @@ new class extends BasePageComponent {
                             @endif
                         </div>
                     </div>
+                </div>
             @endif
         @else
             <div class="alert alert-error">

@@ -28,6 +28,20 @@ return [
     ],
 
     /*
+     * Vendor dashboards often ship precompiled single-page applications that
+     * cannot receive this app's Blade nonce directives. Keep those exceptions
+     * route-scoped so the main application remains under the stricter policy.
+     */
+    'third_party_dashboards' => [
+        // [
+        //     'name' => 'vendor-dashboard',
+        //     'path' => 'admin/system/vendor-dashboard',
+        //     'allow_inline_scripts' => true,
+        //     'allow_unsafe_eval' => false,
+        // ],
+    ],
+
+    /*
      * These presets which will be put in a report-only policy. This is great for testing out
      * a new policy or changes to existing CSP policy without breaking anything.
      */

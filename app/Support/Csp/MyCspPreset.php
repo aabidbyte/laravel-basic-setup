@@ -26,8 +26,7 @@ class MyCspPreset implements Preset
         $this->configureCurrentTenantDomainSources($policy);
         $this->configureScriptsAndStyles($policy);
         $this->configureConnectSources($policy);
-        $this->configureHorizonSources($policy);
-        $this->configureTelescopeSources($policy);
+        $this->configureThirdPartyDashboardSources($policy);
     }
 
     /**
@@ -187,38 +186,88 @@ class MyCspPreset implements Preset
         }
     }
 
-    /**
-     * Configure CSP sources for Laravel Horizon.
-     *
-     * Horizon's dashboard uses JavaScript eval() for its UI functionality,
-     * which requires 'unsafe-eval' in the script-src directive.
-     */
-    protected function configureHorizonSources(Policy $policy): void
+    protected function configureThirdPartyDashboardSources(Policy $policy): void
     {
-        $horizonPath = config('horizon.path', 'horizon');
+        foreach ($this->thirdPartyDashboards() as $dashboard) {
+            if (! \is_array($dashboard) || ! $this->matchesThirdPartyDashboard($dashboard)) {
+                continue;
+            }
 
-        if (! request()->is($horizonPath . '*')) {
+            $this->relaxPolicyForThirdPartyDashboard($policy, $dashboard);
+
             return;
         }
-
-        $policy->add(Directive::SCRIPT, Keyword::UNSAFE_EVAL);
     }
 
     /**
-     * Configure CSP sources for Laravel Telescope.
-     *
-     * Telescope's dashboard uses JavaScript eval() for its UI functionality,
-     * which requires 'unsafe-eval' in the script-src directive.
+     * @return array<int, array<string, mixed>>
      */
-    protected function configureTelescopeSources(Policy $policy): void
+    protected function thirdPartyDashboards(): array
     {
-        $telescopePath = config('telescope.path', 'telescope');
+        return [
+            [
+                'name' => 'horizon',
+                'path' => config('horizon.path', 'horizon'),
+                'allow_inline_scripts' => false,
+                'allow_unsafe_eval' => true,
+            ],
+            [
+                'name' => 'telescope',
+                'path' => config('telescope.path', 'telescope'),
+                'allow_inline_scripts' => false,
+                'allow_unsafe_eval' => true,
+            ],
+            [
+                'name' => 'log-viewer',
+                'path' => config('log-viewer.route_path', 'log-viewer'),
+                'allow_inline_scripts' => true,
+                'allow_unsafe_eval' => true,
+            ],
+            ...config('csp.third_party_dashboards', []),
+        ];
+    }
 
-        if (! request()->is($telescopePath . '*')) {
-            return;
+    /**
+     * @param  array<string, mixed>  $dashboard
+     */
+    protected function matchesThirdPartyDashboard(array $dashboard): bool
+    {
+        $path = $dashboard['path'] ?? null;
+
+        if (! \is_string($path) || \trim($path) === '') {
+            return false;
         }
 
-        $policy->add(Directive::SCRIPT, Keyword::UNSAFE_EVAL);
+        $path = \trim($path, '/');
+
+        return request()->is($path, "{$path}/*");
+    }
+
+    /**
+     * @param  array<string, mixed>  $dashboard
+     */
+    protected function relaxPolicyForThirdPartyDashboard(Policy $policy, array $dashboard): void
+    {
+        $policy
+            ->add(Directive::IMG, Scheme::BLOB)
+            ->add(Directive::MEDIA, Scheme::BLOB)
+            ->add(Directive::WORKER, Scheme::BLOB)
+            ->add(Directive::STYLE, Keyword::UNSAFE_INLINE)
+            ->add(Directive::STYLE_ELEM, Keyword::UNSAFE_INLINE)
+            ->add(Directive::STYLE_ATTR, Keyword::UNSAFE_INLINE);
+
+        if (($dashboard['allow_inline_scripts'] ?? false) === true) {
+            $policy
+                ->add(Directive::SCRIPT, Keyword::UNSAFE_INLINE)
+                ->add(Directive::SCRIPT_ELEM, Keyword::SELF)
+                ->add(Directive::SCRIPT_ELEM, Keyword::UNSAFE_INLINE)
+                ->add(Directive::SCRIPT_ELEM, 'https://unpkg.com')
+                ->add(Directive::SCRIPT_ELEM, 'https://cdn.jsdelivr.net');
+        }
+
+        if (($dashboard['allow_unsafe_eval'] ?? false) === true) {
+            $policy->add(Directive::SCRIPT, Keyword::UNSAFE_EVAL);
+        }
     }
 
     /**

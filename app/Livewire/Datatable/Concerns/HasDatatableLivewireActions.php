@@ -385,7 +385,7 @@ trait HasDatatableLivewireActions
         return $this->baseQuery()
             ->getModel()
             ->newQuery()
-            ->where('uuid', $uuid)
+            ->where($this->rowKeyName(), $uuid)
             ->first();
     }
 
@@ -413,9 +413,12 @@ trait HasDatatableLivewireActions
     private function selectedModels(): Collection
     {
         return $this->baseQuery()
-            ->getModel()
-            ->newQuery()
-            ->whereIn('uuid', $this->selected)
+            ->whereIn($this->rowKeyName(), $this->selected)
             ->get();
+    }
+
+    protected function rowKeyName(): string
+    {
+        return 'uuid';
     }
 }

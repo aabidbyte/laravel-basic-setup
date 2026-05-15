@@ -144,6 +144,7 @@ return new class extends Migration {
             $table->boolean('should_seed')->default(false);
             $table->string('color')->nullable();
             $table->timestampsTz();
+            $table->softDeletesTz();
             $table->json('data')->nullable();
         });
 

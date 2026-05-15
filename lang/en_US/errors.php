@@ -80,6 +80,7 @@ return [
         'request_info' => 'Request Info',
         'context' => 'Context',
         'stack_trace' => 'Stack Trace',
+        'diagnostics' => 'Diagnostics',
         'resolution' => 'Resolution',
         'resolved_at' => 'Resolved at',
         'resolved_by' => 'Resolved by',

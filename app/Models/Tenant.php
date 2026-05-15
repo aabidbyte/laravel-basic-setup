@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Stancl\Tenancy\Contracts\TenantWithDatabase;
@@ -38,6 +39,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     use HasDatabase;
     use HasDomains;
     use HasFactory;
+    use SoftDeletes;
 
     /**
      * Indicates if the model should be timestamped.
@@ -77,6 +79,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
             'plan',
             'color',
             'should_seed',
+            'deleted_at',
         ];
     }
 
@@ -193,6 +196,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
         return [
             'tenant_id' => 'string',
             'should_seed' => 'boolean',
+            'deleted_at' => 'datetime',
         ];
     }
 

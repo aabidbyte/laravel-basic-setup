@@ -27,6 +27,8 @@ new class extends BasePageComponent {
 
     public string $confirmText = '';
 
+    public string $activeTab = 'overview';
+
     /**
      * Mount the component.
      */
@@ -50,7 +52,8 @@ new class extends BasePageComponent {
 
         // Find the trashed model
         $modelClass = $config['model'];
-        $this->model = $modelClass::onlyTrashed()->where('uuid', $uuid)->firstOrFail();
+        $routeKey = \is_string($config['routeKey'] ?? null) ? $config['routeKey'] : 'uuid';
+        $this->model = $modelClass::onlyTrashed()->where($routeKey, $uuid)->firstOrFail();
 
         $this->pageSubtitle = __('pages.trash.show.description');
     }
@@ -58,6 +61,25 @@ new class extends BasePageComponent {
     public function getPageTitle(): string
     {
         return __('pages.trash.show.title', ['name' => $this->model?->label() ?? '']);
+    }
+
+    /**
+     * Get tabs for the trashed item detail page.
+     */
+    public function tabs(): array
+    {
+        return [
+            [
+                'key' => 'overview',
+                'label' => __('pages.trash.show.item_details'),
+                'icon' => 'information-circle',
+            ],
+            [
+                'key' => 'metadata',
+                'label' => __('pages.trash.show.metadata'),
+                'icon' => 'clock',
+            ],
+        ];
     }
 
     /**
@@ -164,11 +186,15 @@ new class extends BasePageComponent {
                         @endcan
                     </div>
                 </div>
+            </div>
 
-                {{-- Model details --}}
-                <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
-                    {{-- Basic Information --}}
-                    <div class="space-y-4">
+            <x-ui.tabs :tabs="$this->tabs()"
+                       :active="$activeTab"
+                       class="mb-6" />
+
+            @if($activeTab === 'overview')
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body space-y-4">
                         <x-ui.title level="3"
                                     class="text-base-content/70 border-b pb-2">{{ __('pages.trash.show.item_details') }}</x-ui.title>
 
@@ -194,15 +220,23 @@ new class extends BasePageComponent {
                                 </div>
                             @endif
 
-                            <div>
-                                <span class="text-base-content/60 text-sm">{{ __('fields.uuid') }}</span>
-                                <p class="font-mono text-sm">{{ $model->uuid }}</p>
-                            </div>
+                            @if (isset($model->uuid))
+                                <div>
+                                    <span class="text-base-content/60 text-sm">{{ __('fields.uuid') }}</span>
+                                    <p class="font-mono text-sm">{{ $model->uuid }}</p>
+                                </div>
+                            @elseif (isset($model->tenant_id))
+                                <div>
+                                    <span class="text-base-content/60 text-sm">{{ __('tenancy.tenant_id') }}</span>
+                                    <p class="font-mono text-sm">{{ $model->tenant_id }}</p>
+                                </div>
+                            @endif
                         </div>
                     </div>
-
-                    {{-- Metadata --}}
-                    <div class="space-y-4">
+                </div>
+            @elseif($activeTab === 'metadata')
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body space-y-4">
                         <x-ui.title level="3"
                                     class="text-base-content/70 border-b pb-2">{{ __('pages.trash.show.metadata') }}</x-ui.title>
 
@@ -236,13 +270,15 @@ new class extends BasePageComponent {
                                 </div>
                             @endif
                         </div>
-        @endif
-    @else
-        <div class="alert alert-error">
-            <x-ui.icon name="exclamation-triangle"
-                       size="sm"></x-ui.icon>
-            <span>{{ __('pages.trash.show.not_found') }}</span>
-        </div>
+                    </div>
+                </div>
+            @endif
+        @else
+            <div class="alert alert-error">
+                <x-ui.icon name="exclamation-triangle"
+                           size="sm"></x-ui.icon>
+                <span>{{ __('pages.trash.show.not_found') }}</span>
+            </div>
         @endif
     </section>
 </x-layouts.page>

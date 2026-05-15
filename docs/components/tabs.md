@@ -30,6 +30,6 @@ A reusable DaisyUI tabs wrapper for Livewire pages. It renders a tab button for 
 
 ## Show Page Pattern
 
-Use tabs on show/detail pages when the page has three or more independent sections, multiple management surfaces, or nested datatables that compete for attention. Keep the first tab as an overview, then split relationship management, assignments, audit/history, and other secondary workflows into separate tabs.
+Use tabs on show/detail pages when the page has more than one meaningful content section, multiple management surfaces, or nested datatables that compete for attention. Keep the first tab as an overview, then split relationship management, assignments, audit/history, and other secondary workflows into separate tabs.
 
 Render tab panels with server-side conditionals (`@if` / `@elseif`) when a panel contains nested Livewire components, and add `lazy` to expensive child components so hidden panels are not mounted on first paint. Avoid CSS-only hiding for inactive tab panels with Livewire children.

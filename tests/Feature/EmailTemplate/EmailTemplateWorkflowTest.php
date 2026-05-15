@@ -96,6 +96,27 @@ test('show page renders preview controls without csp unsafe bindings', function 
         ->assertDontSee(':x-bind:class', false);
 });
 
+test('show page renders email template sections behind tabs', function () {
+    $user = ($this->createUserWithPermissions)([
+        Permissions::VIEW_EMAIL_TEMPLATES(),
+    ]);
+    $this->actingAs($user);
+
+    $template = EmailTemplate::create([
+        'name' => 'Tabbed Template',
+        'status' => EmailTemplateStatus::DRAFT,
+        'is_layout' => false,
+        'type' => EmailTemplateType::TRANSACTIONAL,
+    ]);
+
+    Livewire::test('pages::emailTemplates.show', ['template' => $template])
+        ->assertSee(__('tenancy.overview'))
+        ->assertSee(__('email_templates.show.translations'))
+        ->assertSee(__('common.details'))
+        ->set('activeTab', 'translations')
+        ->assertSee(__('email_templates.show.html_length'));
+});
+
 test('show page can archive template', function () {
     $user = ($this->createUserWithPermissions)([
         Permissions::VIEW_EMAIL_TEMPLATES(),

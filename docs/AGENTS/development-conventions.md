@@ -469,7 +469,7 @@ it('tests something', function () {
     -   **Example**: `new class extends BasePageComponent { public ?string $pageTitle = 'pages.dashboard'; public string $pageSubtitle = 'pages.dashboard.description'; }`
     -   **Rule**: Never extend `Livewire\Component` directly for full-page components - always use `BasePageComponent`
 -   **Translations**: Always add translation keys to all supported languages (e.g., `en_US` and `fr_FR`) when introducing new keys. Do not leave keys missing or with placeholders in any language.
--   **Tabbed Show Pages**: Show/detail pages with three or more independent sections, multiple management surfaces, or nested datatables MUST use `<x-ui.tabs>` following the tenant show pattern. Keep an overview tab first, render tab panels with server-side conditionals, and lazy-load nested Livewire components inside non-default tabs.
+-   **Tabbed Show Pages**: Show/detail pages with more than one meaningful content section, multiple management surfaces, or nested datatables MUST use `<x-ui.tabs>` following the tenant show pattern. Keep an overview tab first, render tab panels with server-side conditionals, and lazy-load nested Livewire components inside non-default tabs.
 -   **Strict Typing**: Use `declare(strict_types=1);` in all PHP files.
 -   **Naming**: Use descriptive names (e.g., `isRegisteredForDiscounts`, not `discount()`)
 -   **DataTable Components**:

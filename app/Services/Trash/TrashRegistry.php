@@ -6,10 +6,14 @@ namespace App\Services\Trash;
 
 use App\Constants\Auth\PermissionEntity;
 use App\Constants\Auth\Permissions;
+use App\Models\EmailTemplate\EmailTemplate;
 use App\Models\ErrorLog;
+use App\Models\Feature;
 use App\Models\Plan;
 use App\Models\Role;
+use App\Models\Subscription;
 use App\Models\Team;
+use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -37,6 +41,7 @@ class TrashRegistry
      *     labelPlural: string,
      *     icon: string,
      *     showRoute: string,
+     *     routeKey?: string,
      *     viewPermission: string,
      *     restorePermission: string,
      *     forceDeletePermission: string,
@@ -117,6 +122,67 @@ class TrashRegistry
                 'columns' => [
                     'name' => __('plans.name'),
                     'tier' => __('plans.tier'),
+                ],
+            ],
+            'features' => [
+                'model' => Feature::class,
+                'entity' => PermissionEntity::FEATURES,
+                'labelSingular' => __('features.singular'),
+                'labelPlural' => __('features.plural'),
+                'icon' => 'sparkles',
+                'showRoute' => 'trash.show',
+                'viewPermission' => Permissions::VIEW_FEATURES(),
+                'restorePermission' => Permissions::RESTORE_FEATURES(),
+                'forceDeletePermission' => Permissions::FORCE_DELETE_FEATURES(),
+                'columns' => [
+                    'name' => __('features.fields.name'),
+                    'key' => __('features.fields.key'),
+                ],
+            ],
+            'subscriptions' => [
+                'model' => Subscription::class,
+                'entity' => PermissionEntity::SUBSCRIPTIONS,
+                'labelSingular' => __('subscriptions.subscription'),
+                'labelPlural' => __('subscriptions.index_title'),
+                'icon' => 'credit-card',
+                'showRoute' => 'trash.show',
+                'viewPermission' => Permissions::VIEW_SUBSCRIPTIONS(),
+                'restorePermission' => Permissions::RESTORE_SUBSCRIPTIONS(),
+                'forceDeletePermission' => Permissions::FORCE_DELETE_SUBSCRIPTIONS(),
+                'columns' => [
+                    'status' => __('subscriptions.status'),
+                    'starts_at' => __('subscriptions.starts_at'),
+                ],
+            ],
+            'tenants' => [
+                'model' => Tenant::class,
+                'entity' => PermissionEntity::TENANTS,
+                'labelSingular' => __('tenancy.tenant'),
+                'labelPlural' => __('tenancy.tenants'),
+                'icon' => 'building-office',
+                'showRoute' => 'trash.show',
+                'routeKey' => 'tenant_id',
+                'viewPermission' => Permissions::VIEW_TENANTS(),
+                'restorePermission' => Permissions::RESTORE_TENANTS(),
+                'forceDeletePermission' => Permissions::FORCE_DELETE_TENANTS(),
+                'columns' => [
+                    'name' => __('tenancy.tenant_name'),
+                    'slug' => __('tenancy.organization_slug'),
+                ],
+            ],
+            'email-templates' => [
+                'model' => EmailTemplate::class,
+                'entity' => PermissionEntity::EMAIL_TEMPLATES,
+                'labelSingular' => __('types.email_template'),
+                'labelPlural' => __('types.email_templates'),
+                'icon' => 'envelope',
+                'showRoute' => 'trash.show',
+                'viewPermission' => Permissions::VIEW_EMAIL_TEMPLATES(),
+                'restorePermission' => Permissions::RESTORE_EMAIL_TEMPLATES(),
+                'forceDeletePermission' => Permissions::FORCE_DELETE_EMAIL_TEMPLATES(),
+                'columns' => [
+                    'name' => __('table.email_templates.name'),
+                    'type' => __('table.email_templates.type'),
                 ],
             ],
         ];

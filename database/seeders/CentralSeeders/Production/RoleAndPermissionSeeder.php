@@ -73,7 +73,7 @@ class RoleAndPermissionSeeder extends Seeder
     }
 
     /**
-     * Create Member role with minimal permissions.
+     * Create Member role with minimal permis sions.
      */
     private function createMemberRole(): void
     {

@@ -19,6 +19,8 @@ new class extends BasePageComponent {
     #[Locked]
     public ?Team $team = null;
 
+    public string $activeTab = 'overview';
+
     /**
      * Mount the component and authorize access.
      */
@@ -58,6 +60,25 @@ new class extends BasePageComponent {
     {
         $subtitle = parent::getPageSubtitle();
         return $subtitle ? __($subtitle, ['type' => __($this->modelTypeLabel)]) : null;
+    }
+
+    /**
+     * Get tabs for the team detail page.
+     */
+    public function tabs(): array
+    {
+        return [
+            [
+                'key' => 'overview',
+                'label' => __('tenancy.overview'),
+                'icon' => 'information-circle',
+            ],
+            [
+                'key' => 'members',
+                'label' => __('teams.members'),
+                'icon' => 'users',
+            ],
+        ];
     }
 
     /**
@@ -104,35 +125,41 @@ new class extends BasePageComponent {
 
     <div class="mx-auto max-w-6xl space-y-8"
          x-on:confirm-delete-team.window="$wire.deleteTeam()">
-        {{-- Team Details Card --}}
-        <x-ui.card title="{{ __('teams.show.basic_info') }}">
-            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <div>
-                    <span class="text-base-content/60 text-sm">{{ __('teams.name') }}</span>
-                    <p class="text-lg font-semibold">{{ $team->name }}</p>
-                </div>
-                <div>
-                    <span class="text-base-content/60 text-sm">{{ __('teams.uuid') }}</span>
-                    <p class="font-mono text-sm">{{ $team->uuid }}</p>
-                </div>
-                <div class="md:col-span-2">
-                    <span class="text-base-content/60 text-sm">{{ __('teams.description') }}</span>
-                    <p class="text-base-content">{{ $team->description ?? '-' }}</p>
-                </div>
-                <div>
-                    <span class="text-base-content/60 text-sm">{{ __('fields.color') }}</span>
-                    <div class="mt-1">
-                        <x-ui.badge :color="$team->color"
-                                    size="sm">{{ __("fields.colors.{$team->color}") }}</x-ui.badge>
+        <x-ui.tabs :tabs="$this->tabs()"
+                   :active="$activeTab"
+                   class="mb-6" />
+
+        @if($activeTab === 'overview')
+            {{-- Team Details Card --}}
+            <x-ui.card title="{{ __('teams.show.basic_info') }}">
+                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <div>
+                        <span class="text-base-content/60 text-sm">{{ __('teams.name') }}</span>
+                        <p class="text-lg font-semibold">{{ $team->name }}</p>
+                    </div>
+                    <div>
+                        <span class="text-base-content/60 text-sm">{{ __('teams.uuid') }}</span>
+                        <p class="font-mono text-sm">{{ $team->uuid }}</p>
+                    </div>
+                    <div class="md:col-span-2">
+                        <span class="text-base-content/60 text-sm">{{ __('teams.description') }}</span>
+                        <p class="text-base-content">{{ $team->description ?? '-' }}</p>
+                    </div>
+                    <div>
+                        <span class="text-base-content/60 text-sm">{{ __('fields.color') }}</span>
+                        <div class="mt-1">
+                            <x-ui.badge :color="$team->color"
+                                        size="sm">{{ __("fields.colors.{$team->color}") }}</x-ui.badge>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </x-ui.card>
-
-        {{-- Team Members --}}
-        <x-ui.card title="{{ __('teams.members') }}">
-            <livewire:tables.team-user-table :team-uuid="$team->uuid"
-                                             lazy />
-        </x-ui.card>
+            </x-ui.card>
+        @elseif($activeTab === 'members')
+            {{-- Team Members --}}
+            <x-ui.card title="{{ __('teams.members') }}">
+                <livewire:tables.team-user-table :team-uuid="$team->uuid"
+                                                 lazy />
+            </x-ui.card>
+        @endif
     </div>
 </x-layouts.page>

@@ -53,7 +53,7 @@ class PlanPolicy
      */
     public function restore(User $user, Plan $plan): bool
     {
-        return false;
+        return $user->hasPermissionTo(Permissions::RESTORE_PLANS());
     }
 
     /**
@@ -61,6 +61,6 @@ class PlanPolicy
      */
     public function forceDelete(User $user, Plan $plan): bool
     {
-        return false;
+        return $user->hasPermissionTo(Permissions::FORCE_DELETE_PLANS());
     }
 }

@@ -167,6 +167,31 @@ class SideBarMenuService
                             ->route('trash.index', ['entityType' => 'error-logs'])
                             ->active(fn () => request()->route('entityType') === 'error-logs' && request()->routeIs('trash.*'))
                             ->show($this->canViewErrorLogs()),
+                        NavigationItem::make()
+                            ->title(__('plans.plural'))
+                            ->route('trash.index', ['entityType' => 'plans'])
+                            ->active(fn () => request()->route('entityType') === 'plans' && request()->routeIs('trash.*'))
+                            ->show(Auth::user()?->can(Permissions::VIEW_PLANS()) ?? false),
+                        NavigationItem::make()
+                            ->title(__('features.plural'))
+                            ->route('trash.index', ['entityType' => 'features'])
+                            ->active(fn () => request()->route('entityType') === 'features' && request()->routeIs('trash.*'))
+                            ->show(Auth::user()?->can(Permissions::VIEW_FEATURES()) ?? false),
+                        NavigationItem::make()
+                            ->title(__('subscriptions.index_title'))
+                            ->route('trash.index', ['entityType' => 'subscriptions'])
+                            ->active(fn () => request()->route('entityType') === 'subscriptions' && request()->routeIs('trash.*'))
+                            ->show(Auth::user()?->can(Permissions::VIEW_SUBSCRIPTIONS()) ?? false),
+                        NavigationItem::make()
+                            ->title(__('tenancy.tenants'))
+                            ->route('trash.index', ['entityType' => 'tenants'])
+                            ->active(fn () => request()->route('entityType') === 'tenants' && request()->routeIs('trash.*'))
+                            ->show(Auth::user()?->can(Permissions::VIEW_TENANTS()) ?? false),
+                        NavigationItem::make()
+                            ->title(__('types.email_templates'))
+                            ->route('trash.index', ['entityType' => 'email-templates'])
+                            ->active(fn () => request()->route('entityType') === 'email-templates' && request()->routeIs('trash.*'))
+                            ->show(Auth::user()?->can(Permissions::VIEW_EMAIL_TEMPLATES()) ?? false),
                     ),
             )
             ->toArray();
@@ -206,6 +231,11 @@ class SideBarMenuService
             || $user->can(Permissions::VIEW_USERS())
             || $user->can(Permissions::VIEW_ROLES())
             || $user->can(Permissions::VIEW_TEAMS())
+            || $user->can(Permissions::VIEW_PLANS())
+            || $user->can(Permissions::VIEW_FEATURES())
+            || $user->can(Permissions::VIEW_SUBSCRIPTIONS())
+            || $user->can(Permissions::VIEW_TENANTS())
+            || $user->can(Permissions::VIEW_EMAIL_TEMPLATES())
             || $this->canViewErrorLogs();
     }
 

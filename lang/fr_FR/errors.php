@@ -80,6 +80,7 @@ return [
         'request_info' => 'Infos sur la requête',
         'context' => 'Contexte',
         'stack_trace' => 'Trace d\'exécution',
+        'diagnostics' => 'Diagnostic',
         'resolution' => 'Résolution',
         'resolved_at' => 'Résolu le',
         'resolved_by' => 'Résolu par',

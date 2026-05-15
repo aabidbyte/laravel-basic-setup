@@ -65,4 +65,22 @@ class TenantPolicy
         return $user->hasPermissionTo(Permissions::DELETE_TENANTS())
             && $user->tenants()->where('tenants.tenant_id', $tenant->getTenantKey())->exists();
     }
+
+    public function restore(User $user, Tenant $tenant): bool
+    {
+        if ($user->hasRole(Roles::SUPER_ADMIN)) {
+            return true;
+        }
+
+        return $user->hasPermissionTo(Permissions::RESTORE_TENANTS());
+    }
+
+    public function forceDelete(User $user, Tenant $tenant): bool
+    {
+        if ($user->hasRole(Roles::SUPER_ADMIN)) {
+            return true;
+        }
+
+        return $user->hasPermissionTo(Permissions::FORCE_DELETE_TENANTS());
+    }
 }

@@ -51,7 +51,7 @@ class TrashDataTable extends Datatable
         // Authorize access
         $config = $this->getEntityConfig();
         if ($config) {
-            $this->authorize('view', $config['model']);
+            $this->authorize($config['viewPermission']);
         }
     }
 
@@ -80,6 +80,11 @@ class TrashDataTable extends Datatable
 
         $model = new $modelClass();
         $query = $modelClass::onlyTrashed()->select($model->getTable() . '.*');
+        $routeKey = $this->routeKeyColumn();
+
+        if ($routeKey !== 'uuid') {
+            $query->addSelect($model->getTable() . '.' . $routeKey . ' as uuid');
+        }
 
         return $this->applyTenantAudience($query, $model);
     }
@@ -169,7 +174,7 @@ class TrashDataTable extends Datatable
                 ->icon('eye')
                 ->route(fn (Model $model) => route('trash.show', [
                     'entityType' => $this->entityType,
-                    'uuid' => $model->uuid,
+                    'uuid' => $this->routeKeyValue($model),
                 ]))
                 ->variant('ghost')
                 ->color('info');
@@ -183,11 +188,13 @@ class TrashDataTable extends Datatable
                 ->color('success')
                 ->confirm(__('actions.confirm_restore'))
                 ->execute(function (Model $model) {
+                    $routeKey = $this->routeKeyValue($model);
                     $model->restore();
                     NotificationBuilder::make()
                         ->title('actions.restored_successfully', ['name' => $model->label()])
                         ->success()
                         ->send();
+                    $this->selected = \array_values(\array_diff($this->selected, [$routeKey]));
                 });
         }
 
@@ -291,7 +298,7 @@ class TrashDataTable extends Datatable
         }
 
         $modelClass = $config['model'];
-        $model = $modelClass::onlyTrashed()->where('uuid', $uuid)->first();
+        $model = $modelClass::onlyTrashed()->where($this->routeKeyColumn(), $uuid)->first();
 
         if ($model) {
             $label = $model->label();
@@ -417,5 +424,22 @@ class TrashDataTable extends Datatable
     protected function tenantMembershipQuery(): TenantMembershipQuery
     {
         return app(TenantMembershipQuery::class);
+    }
+
+    protected function rowKeyName(): string
+    {
+        return $this->routeKeyColumn();
+    }
+
+    protected function routeKeyColumn(): string
+    {
+        $config = $this->getEntityConfig();
+
+        return \is_string($config['routeKey'] ?? null) ? $config['routeKey'] : 'uuid';
+    }
+
+    protected function routeKeyValue(Model $model): string
+    {
+        return (string) $model->getAttribute($this->routeKeyColumn());
     }
 }
