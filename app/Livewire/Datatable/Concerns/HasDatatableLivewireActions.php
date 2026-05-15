@@ -8,6 +8,7 @@ use App\Services\DataTable\Builders\Action;
 use App\Services\DataTable\Builders\BulkAction;
 use App\Services\Notifications\NotificationBuilder;
 use Closure;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -133,12 +134,18 @@ trait HasDatatableLivewireActions
      */
     public function openActionModal(string $actionKey, string $uuid): void
     {
-        $action = collect($this->rowActions())->first(fn (Action $a) => $a->getKey() === $actionKey);
+        $action = $this->findRowAction($actionKey);
         $model = $this->findModelByUuid($uuid);
 
-        if ($action && $model) {
-            $this->openModalForAction($action, $model);
+        if (! $action || ! $model) {
+            return;
         }
+
+        if (! $action->shouldRender($model, $this->cachedUser())) {
+            return;
+        }
+
+        $this->openModalForAction($action, $model);
     }
 
     /**
@@ -148,10 +155,14 @@ trait HasDatatableLivewireActions
      */
     public function getActionConfirmation(string $actionKey, string $uuid): array
     {
-        $action = collect($this->rowActions())->first(fn (Action $a) => $a->getKey() === $actionKey);
+        $action = $this->findRowAction($actionKey);
         $model = $this->findModelByUuid($uuid);
 
         if (! $action || ! $model || ! $action->requiresConfirmation()) {
+            return ['required' => false];
+        }
+
+        if (! $action->shouldRender($model, $this->cachedUser())) {
             return ['required' => false];
         }
 
@@ -168,13 +179,19 @@ trait HasDatatableLivewireActions
      */
     public function getBulkActionConfirmation(string $actionKey): array
     {
-        $action = collect($this->bulkActions())->first(fn (BulkAction $a) => $a->getKey() === $actionKey);
+        $action = $this->findBulkAction($actionKey);
 
         if (! $action || ! $action->requiresConfirmation()) {
             return ['required' => false];
         }
 
-        $models = $this->baseQuery()->whereIn('uuid', $this->selected)->get();
+        $modelClass = $this->baseQuery()->getModel()::class;
+
+        if (! $action->shouldRender($this->cachedUser(), $modelClass)) {
+            return ['required' => false];
+        }
+
+        $models = $this->selectedModels();
 
         return \array_merge(
             ['required' => true],
@@ -263,7 +280,7 @@ trait HasDatatableLivewireActions
      */
     public function executeAction(string $actionKey, string $uuid): void
     {
-        $action = collect($this->rowActions())->first(fn (Action $a) => $a->getKey() === $actionKey);
+        $action = $this->findRowAction($actionKey);
         $model = $this->findModelByUuid($uuid);
 
         if (! $action || ! $model || ! $action->getExecute()) {
@@ -283,7 +300,7 @@ trait HasDatatableLivewireActions
      */
     public function executeBulkAction(string $actionKey): void
     {
-        $action = collect($this->bulkActions())->first(fn (BulkAction $a) => $a->getKey() === $actionKey);
+        $action = $this->findBulkAction($actionKey);
 
         if ($action && $action->getExecute()) {
             $modelClass = $this->baseQuery()->getModel()::class;
@@ -301,7 +318,7 @@ trait HasDatatableLivewireActions
                 return;
             }
 
-            $models = $this->baseQuery()->whereIn('uuid', $this->selected)->get();
+            $models = $this->selectedModels();
             ($action->getExecute())($models);
             $this->clearSelection();
             $this->refreshTable();
@@ -365,7 +382,40 @@ trait HasDatatableLivewireActions
             return $model;
         }
 
-        // Fallback to database query
-        return $this->baseQuery()->where('uuid', $uuid)->first();
+        return $this->baseQuery()
+            ->getModel()
+            ->newQuery()
+            ->where('uuid', $uuid)
+            ->first();
+    }
+
+    /**
+     * Find a row action by its key.
+     */
+    private function findRowAction(string $actionKey): ?Action
+    {
+        return collect($this->rowActions())->first(fn (Action $action) => $action->getKey() === $actionKey);
+    }
+
+    /**
+     * Find a bulk action by its key.
+     */
+    private function findBulkAction(string $actionKey): ?BulkAction
+    {
+        return collect($this->bulkActions())->first(fn (BulkAction $action) => $action->getKey() === $actionKey);
+    }
+
+    /**
+     * Resolve selected rows by UUID without inheriting table visibility filters.
+     *
+     * @return Collection<int, Model>
+     */
+    private function selectedModels(): Collection
+    {
+        return $this->baseQuery()
+            ->getModel()
+            ->newQuery()
+            ->whereIn('uuid', $this->selected)
+            ->get();
     }
 }

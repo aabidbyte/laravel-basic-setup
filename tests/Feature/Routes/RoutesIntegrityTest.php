@@ -196,7 +196,10 @@ it('protected routes have appropriate middleware', function () {
 
         foreach ($protectedPrefixes as $prefix) {
             if (\str_starts_with($uri, $prefix) || \str_starts_with($uri, $prefix . '/')) {
-                if (! \in_array('auth', $middleware, true)) {
+                $hasAuthMiddleware = \in_array('auth', $middleware, true)
+                    || collect($middleware)->contains(fn (string $middleware): bool => \str_starts_with($middleware, 'auth:'));
+
+                if (! $hasAuthMiddleware) {
                     $routeName = $route->getName() ?? $uri;
                     $unprotectedRoutes[] = "{$routeName} ({$uri}) - missing 'auth' middleware";
                 }

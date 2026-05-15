@@ -29,6 +29,7 @@ The `{name}` argument should include only the path and test name, but should not
 - Unit/Feature tests: `tests/Feature` and `tests/Unit` directories.
 - Browser tests: `tests/Browser/` directory.
 - Do NOT remove tests without approval - these are core application code.
+- In multi-database tenancy projects, follow the project's transaction strategy. Do not add `RefreshDatabase`, `DatabaseMigrations`, SQLite, or `:memory:` when the project uses reusable MySQL schemas and transactions.
 
 ### Basic Test Structure
 
@@ -46,6 +47,25 @@ it('is true', function () {
 - Run minimal tests with filter before finalizing: `php artisan test --compact --filter=testName`.
 - Run all tests: `php artisan test --compact`.
 - Run file: `php artisan test --compact tests/Feature/ExampleTest.php`.
+- For projects with Composer test lanes, use the documented lane commands (`composer test`, `composer test:feature`, `composer test:integration`, `composer test:all`) instead of inventing new scripts.
+
+### Laravel Multi-Tenancy Performance Rules
+
+For Laravel projects using stancl/tenancy with multi-database MySQL tenancy:
+
+- Keep the default developer suite fast. Real tenant database provisioning tests should live in an explicit Pest group such as `tenancy-provisioning` or `integration`, and the default local command should exclude that group. If Feature tests all use per-test migrations, the default command may need to target `tests/Unit` only and expose Feature tests through a separate command.
+- Keep the full tenancy integration suite available under a separate command. Do not delete real tenant provisioning tests just to improve local feedback time.
+- Do not switch tenancy tests to SQLite or `:memory:` when the application uses MySQL multi-database tenancy. The test connection type must match the runtime behavior being validated.
+- Do not use `RefreshDatabase` or `DatabaseMigrations` as the reset mechanism for routine Feature tests in large multi-database tenancy suites. Prefer one migrated MySQL schema per test process, transaction rollback for row isolation, and explicit tenant database cleanup for databases created by the tenancy package.
+- For parallel tests, let Laravel suffix the central test database per process, then derive tenant test database names from the active central database. Shared/reusable tenant databases must also be per-process and use a testing-only prefix/suffix.
+- If helper-based tenant tests do not need to verify real tenant provisioning, use a reusable tenant database migrated once per process and wrap tenant writes in transactions.
+- Tests that intentionally create tenant databases, run tenant migrations, or verify stancl lifecycle events belong in the explicit integration/provisioning group.
+- Tests that intentionally drop all testing tenant databases must run in a serial group outside the parallel pool, because they can delete reusable tenant databases that other workers are using.
+- Prefer explicit cleanup for test tenant databases. Use a test-only prefix/suffix, then clean matching databases with the project's cleanup command or teardown helper.
+- Avoid global `Event::fake()` before creating tenants. stancl/tenancy relies on lifecycle events to create and migrate tenant databases. If events must be faked, fake specific events after tenant setup.
+- In parallel MySQL tenancy tests, do not assume seeded IDs exist in every process database. Create the actor/record needed by the test.
+- Avoid mixing writes on one connection with component queries/assertions on another connection inside the same transaction; align the setup connection with the model/component under test.
+- MySQL DDL can implicitly commit open transactions. In tenant provisioning tests, avoid global table-count assertions; assert records scoped to the user, tenant, model, or entity created by the test.
 
 ## Assertions
 
@@ -98,7 +118,7 @@ Browser tests run in real browsers for full integration testing:
 
 - Browser tests live in `tests/Browser/`.
 - Use Laravel features like `Event::fake()`, `assertAuthenticated()`, and model factories.
-- Use `RefreshDatabase` for clean state per test.
+- In standard non-tenancy Laravel apps, `RefreshDatabase` can provide clean state. In MySQL multi-database tenancy projects, follow the host project's test database strategy instead; do not add `RefreshDatabase` or `DatabaseMigrations` when the project forbids per-test migrations.
 - Interact with page: click, type, scroll, select, submit, drag-and-drop, touch gestures.
 - Test on multiple browsers (Chrome, Firefox, Safari) if requested.
 - Test on different devices/viewports (iPhone 14 Pro, tablets) if requested.
@@ -164,3 +184,5 @@ arch('controllers')
 - Deleting tests without approval
 - Forgetting `assertNoJavaScriptErrors()` in browser tests
 - Prefixing `Feature/` or `Unit/` in `{name}` when using `make:test`
+- In parallel MySQL tenancy tests, do not assume seeded IDs exist in every process database. Create the actor/record needed by the test.
+- Avoid mixing writes on one connection with component queries/assertions on another connection inside the same transaction; align the setup connection with the model/component under test.

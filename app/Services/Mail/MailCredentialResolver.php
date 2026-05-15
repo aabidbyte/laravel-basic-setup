@@ -10,6 +10,7 @@ use App\Models\Team;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 /**
  * Hierarchical mail credential resolver.
@@ -85,6 +86,10 @@ class MailCredentialResolver
     {
         // If no team provided, try to get from user's first team
         if ($team === null && $user !== null) {
+            $team = $this->firstTeamForUser($user);
+        }
+
+        if ($team === null && $user !== null) {
             if ($this->centralTeamUserTableExists()) {
                 $teamId = DB::connection('central')->table('team_user')
                     ->where('user_id', $user->id)
@@ -97,6 +102,14 @@ class MailCredentialResolver
         }
 
         // If still no team, try the current authenticated user's first team
+        if ($team === null) {
+            /** @var User|null $authUser */
+            $authUser = Auth::user();
+            if ($authUser instanceof User) {
+                $team = $this->firstTeamForUser($authUser);
+            }
+        }
+
         if ($team === null) {
             /** @var User|null $authUser */
             $authUser = Auth::user();
@@ -116,6 +129,15 @@ class MailCredentialResolver
         }
 
         return MailSettings::getForTeam($team);
+    }
+
+    protected function firstTeamForUser(User $user): ?Team
+    {
+        try {
+            return $user->teams()->first();
+        } catch (Throwable) {
+            return null;
+        }
     }
 
     protected function centralTeamUserTableExists(): bool

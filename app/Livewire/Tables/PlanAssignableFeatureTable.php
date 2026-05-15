@@ -48,26 +48,7 @@ class PlanAssignableFeatureTable extends FeatureTable
      */
     protected function rowActions(): array
     {
-        return [
-            Action::make('assign', __('features.assign_to_plan'))
-                ->icon('plus')
-                ->variant('ghost')
-                ->color('success')
-                ->execute(fn (Feature $feature) => $this->assignBooleanFeature($feature))
-                ->show(fn (Feature $feature) => $feature->type === FeatureValueType::BOOLEAN)
-                ->can(Permissions::EDIT_PLANS(), false),
-
-            Action::make('configure', __('features.configure_for_plan'))
-                ->icon('adjustments-horizontal')
-                ->variant('ghost')
-                ->color('primary')
-                ->livewireModal('plan-features.value-modal', fn (Feature $feature) => [
-                    'planUuid' => $this->planUuid,
-                    'featureUuid' => $feature->uuid,
-                ])
-                ->show(fn (Feature $feature) => $feature->type !== FeatureValueType::BOOLEAN)
-                ->can(Permissions::EDIT_PLANS(), false),
-        ];
+        return [];
     }
 
     /**
@@ -87,7 +68,24 @@ class PlanAssignableFeatureTable extends FeatureTable
 
     public function rowClick(string $uuid): ?Action
     {
-        return null;
+        $feature = $this->baseQuery()->where('uuid', $uuid)->first();
+
+        if (! $feature instanceof Feature) {
+            return null;
+        }
+
+        if ($feature->type === FeatureValueType::BOOLEAN) {
+            return Action::make()
+                ->execute(fn (Feature $clickedFeature) => $this->assignBooleanFeature($clickedFeature))
+                ->can(Permissions::EDIT_PLANS(), false);
+        }
+
+        return Action::make()
+            ->livewireModal('plan-features.value-modal', fn (Feature $clickedFeature) => [
+                'planUuid' => $this->planUuid,
+                'featureUuid' => $clickedFeature->uuid,
+            ])
+            ->can(Permissions::EDIT_PLANS(), false);
     }
 
     #[On('plan-features-updated')]

@@ -406,7 +406,7 @@ The application uses a Livewire-based DataTable component system. See `docs/comp
 -   In tenant membership filters, "All Tenants" means records attached to at least one tenant, excluding protected central accounts. Central-only records are a separate explicit filter option for super admins.
 -   For user/member tables, user ID `1` is the protected central platform account guarded by the MySQL session trigger workflow. It belongs in the central audience even if seeders attach it to a tenant.
 -   Related datatables that display opposite sides of the same relationship MUST refresh together after any mutation. Dispatch a scoped Livewire event from assign/remove actions and listen with `#[On('event.{publicUuid}')]` in every related table so the edited table and sibling tables refresh in the same workflow.
--   If a datatable has exactly one row action, expose it through `rowClick()` instead of rendering a separate row action button. Keep row action buttons for tables with multiple row-level choices.
+-   If a datatable row has exactly one visible row action after conditional visibility is applied, expose it through `rowClick()` instead of rendering a separate row action button. Keep row action buttons for rows with multiple row-level choices.
 
 ### Authentication Code Refactoring (2025-01-XX)
 

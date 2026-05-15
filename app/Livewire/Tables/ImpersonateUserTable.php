@@ -7,6 +7,7 @@ namespace App\Livewire\Tables;
 use App\Constants\Auth\Permissions;
 use App\Constants\Auth\Roles;
 use App\Livewire\DataTable\Datatable;
+use App\Models\CentralUser;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
@@ -44,7 +45,7 @@ class ImpersonateUserTable extends Datatable
     {
         $admin = Auth::user();
 
-        $query = User::query()
+        $query = $this->userQuery()
             ->with(['roles', 'tenants'])
             ->select('users.*');
 
@@ -109,7 +110,7 @@ class ImpersonateUserTable extends Datatable
 
         $filters[] = Filter::make('role', __('roles.role'))
             ->type('select')
-            ->options(Role::where('name', '!=', Roles::SUPER_ADMIN)->pluck('name', 'id')->toArray())
+            ->options($this->roleQuery()->where('name', '!=', Roles::SUPER_ADMIN)->pluck('name', 'id')->toArray())
             ->execute(fn ($q, $value) => $q->whereHas('roles', fn ($inner) => $inner->where('roles.id', $value)));
 
         return $filters;
@@ -149,6 +150,25 @@ class ImpersonateUserTable extends Datatable
     protected function tenantMembershipQuery(): TenantMembershipQuery
     {
         return app(TenantMembershipQuery::class);
+    }
+
+    protected function userQuery(): Builder
+    {
+        return $this->usesTenantConnection()
+            ? CentralUser::query()
+            : User::query();
+    }
+
+    protected function roleQuery(): Builder
+    {
+        return $this->usesTenantConnection()
+            ? Role::on('central')
+            : Role::query();
+    }
+
+    protected function usesTenantConnection(): bool
+    {
+        return \function_exists('tenancy') && tenancy()->initialized;
     }
 
     /**

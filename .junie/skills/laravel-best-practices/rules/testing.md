@@ -41,3 +41,9 @@ Ticket::factory()
     ->recycle(Airline::factory()->create())
     ->create();
 ```
+
+## Respect Multi-Database Test Transactions
+
+In multi-database tenancy projects, do not introduce `RefreshDatabase`, `DatabaseMigrations`, SQLite, or `:memory:` when the project already uses migrated MySQL schemas and transactions.
+
+Avoid cross-connection setup mistakes: if the component queries through the default connection, seed through that connection; if code runs during tenancy but needs central data, use central models or explicit central connections. In parallel tests, create the needed actor instead of assuming seeded IDs exist in every process database.

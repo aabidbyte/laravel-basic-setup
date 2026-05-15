@@ -417,13 +417,13 @@ describe('PruneErrorLogsCommand', function () {
             'stack_trace' => 'Trace',
         ]);
 
-        expect(ErrorLog::count())->toBe(2);
+        expect(ErrorLog::whereIn('reference_id', ['ERR-20260108-OLD001', 'ERR-20260108-NEW001'])->count())->toBe(2);
 
         $this->artisan('errors:prune', ['--days' => 30])
             ->assertSuccessful();
 
-        expect(ErrorLog::count())->toBe(1)
-            ->and(ErrorLog::first()->reference_id)->toBe('ERR-20260108-NEW001');
+        expect(ErrorLog::whereIn('reference_id', ['ERR-20260108-OLD001', 'ERR-20260108-NEW001'])->count())->toBe(1)
+            ->and(ErrorLog::where('reference_id', 'ERR-20260108-NEW001')->exists())->toBeTrue();
     });
 
     test('dry run does not delete anything', function () {
@@ -439,7 +439,7 @@ describe('PruneErrorLogsCommand', function () {
         $this->artisan('errors:prune', ['--days' => 30, '--dry-run' => true])
             ->assertSuccessful();
 
-        expect(ErrorLog::count())->toBe(1);
+        expect(ErrorLog::where('reference_id', 'ERR-20260108-OLD001')->count())->toBe(1);
     });
 });
 
@@ -472,9 +472,9 @@ describe('Error Channels', function () {
 
         $channel->send($exception, $context);
 
-        $log = ErrorLog::first();
+        $log = ErrorLog::where('reference_id', 'ERR-20260108-TEST01')->first();
 
-        expect(ErrorLog::count())->toBe(1)
+        expect(ErrorLog::where('reference_id', 'ERR-20260108-TEST01')->count())->toBe(1)
             ->and($log->actor_type)->toBe(ErrorActorType::SYSTEM);
     });
 

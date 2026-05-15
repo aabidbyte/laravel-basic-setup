@@ -32,18 +32,20 @@ describe('UserService', function () {
     describe('createUser', function () {
         it('creates a user with basic data', function () {
             $userService = app(UserService::class);
+            $email = fake()->unique()->safeEmail();
+            $username = fake()->unique()->userName();
 
             $user = $userService->createUser(UserData::forCreation([
                 'name' => 'Test User',
-                'email' => 'test@example.com',
-                'username' => 'testuser',
+                'email' => $email,
+                'username' => $username,
                 'password' => 'password123',
             ]));
 
             expect($user)->toBeInstanceOf(User::class);
             expect($user->name)->toBe('Test User');
-            expect($user->email)->toBe('test@example.com');
-            expect($user->username)->toBe('testuser');
+            expect($user->email)->toBe($email);
+            expect($user->username)->toBe($username);
             expect($user->is_active)->toBeFalse(); // Users are inactive by default
             expect($user->created_by_user_id)->toBe($this->admin->id);
         });

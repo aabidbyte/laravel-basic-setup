@@ -138,6 +138,8 @@ These things changed in Livewire 4, but may not have been updated in this applic
 - Use `wire:loading` for loading states
 - Use `wire:model.live` for instant updates (default is debounced)
 - Validate and authorize in actions (treat like HTTP requests)
+- Treat public Livewire action methods as directly callable. Do not rely on hidden buttons for security; authorize or check action visibility inside the method or action execution pipeline.
+- For table actions that resolve rows by UUID, perform permission/visibility checks after resolving the model and before executing destructive callbacks.
 
 ## Configuration
 
@@ -173,3 +175,4 @@ Livewire::test(Counter::class)
 - Unclosed component tags → syntax errors in v4
 - Using deprecated config keys or JS hooks
 - Including Alpine.js separately (already bundled in Livewire 4)
+- Assuming a component's rendered UI is the only entry point. Tests and clients can call Livewire methods directly, so server-side guards must enforce the same rules as the UI.

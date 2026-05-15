@@ -4,10 +4,10 @@ namespace Database\Seeders\CentralSeeders\Development;
 
 use App\Constants\Auth\Roles;
 use App\Enums\Ui\ThemeColorTypes;
+use App\Models\CentralUser;
 use App\Models\Plan;
 use App\Models\Role;
 use App\Models\Tenant;
-use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Seeder;
@@ -26,6 +26,11 @@ class CentralUserSeeder extends Seeder
      * Run the database seeds.
      */
     public function run(): void
+    {
+        tenancy()->central(fn (): null => $this->seedCentralUsers());
+    }
+
+    private function seedCentralUsers(): null
     {
         // Handle MySQL trigger for user ID 1
         if (DB::getDriverName() === 'mysql') {
@@ -65,6 +70,8 @@ class CentralUserSeeder extends Seeder
         }
 
         $this->ensureOrganizationDatabasesExist($organizations);
+
+        return null;
     }
 
     /**
@@ -77,9 +84,9 @@ class CentralUserSeeder extends Seeder
      *     email_verified_at: mixed,
      * }  $attributes
      */
-    private function updateOrCreateUser(string $email, array $attributes): User
+    private function updateOrCreateUser(string $email, array $attributes): CentralUser
     {
-        $user = User::firstOrNew(['email' => $email]);
+        $user = CentralUser::firstOrNew(['email' => $email]);
 
         if (! $user->exists) {
             $user->uuid = (string) Str::uuid();
@@ -91,7 +98,7 @@ class CentralUserSeeder extends Seeder
         return $user;
     }
 
-    private function attachRole(User $user, Role $role): void
+    private function attachRole(CentralUser $user, Role $role): void
     {
         if ($user->roles()->whereKey($role->id)->exists()) {
             return;
@@ -234,10 +241,10 @@ class CentralUserSeeder extends Seeder
             return;
         }
 
-        $superAdmin = User::where('email', 'admin@example.com')->first();
+        $superAdmin = CentralUser::where('email', 'admin@example.com')->first();
         $superAdmin?->tenants()->syncWithoutDetaching([$firstTenant->tenant_id]);
 
-        User::where('email', '!=', 'admin@example.com')->get()->each(function (User $user) use ($tenants): void {
+        CentralUser::where('email', '!=', 'admin@example.com')->get()->each(function (CentralUser $user) use ($tenants): void {
             $tenantIds = $tenants
                 ->random(\random_int(1, $tenants->count()))
                 ->pluck('tenant_id')

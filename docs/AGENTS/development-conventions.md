@@ -33,6 +33,7 @@
 -   **Events**: Application events SHOULD extend `App\Events\Base\BaseEvent` unless they require a framework-specific base contract that prevents inheritance.
 -   **Tenant Runtime Configuration**: Tenant runtime table names and queue connection names MUST come from `App\Support\Tenancy\TenantRuntime`; do not hardcode `sessions`, `jobs`, `job_batches`, `failed_jobs`, or queue connection names in new runtime code.
 -   **Tenancy Runtime Switching**: Session, queue, batch, and failed-job database switching belongs in `App\Tenancy\Bootstrappers\TenantRuntimeBootstrapper`, not in controllers, middleware, jobs, or listeners.
+-   **Central Models During Tenancy**: When code runs while tenancy is initialized but must read central data, use central models such as `App\Models\CentralUser` or explicit central connections such as `Role::on('central')`. Do not rely on the default `User` model to remain central after tenancy switches the application connection.
 
 ### Documentation Structure Rule
 
@@ -477,7 +478,7 @@ it('tests something', function () {
     -   **Usage**: Use `<livewire:tables.user-table />` syntax.
     -   **Tabs & Lazy Loading**: When a datatable lives inside a tab, render the tab panel with server-side conditionals (`@if` / `@elseif`) so hidden panels are not mounted. Add `lazy` to expensive nested Livewire tables. Do not keep hidden tab panels in the DOM with `x-show`, `hidden`, or CSS-only visibility when they contain Livewire children.
     -   **Related Table Refresh**: When multiple datatables represent the same relationship from different perspectives (for example assigned vs available users), every mutation MUST dispatch a scoped Livewire event and every related table MUST listen and refresh. Use public UUID keys in the event name, never numeric IDs.
-    -   **Single Row Action Rule**: If a table has only one row action, implement it as the `rowClick()` action instead of rendering a dedicated row action button. Render row action buttons only when there are multiple row-level choices.
+    -   **Single Row Action Rule**: If a table row has only one visible row action after conditional visibility is applied, implement it as the `rowClick()` action instead of rendering a dedicated row action button. Render row action buttons only when there are multiple row-level choices.
     -   **Tenant Membership Filters**: User/member datatables with tenant visibility MUST use `App\Services\Tenancy\TenantMembershipQuery` and `App\Support\Tenancy\TenantAudience`. "All Tenants" means tenant-attached records excluding protected central accounts; user ID `1` is always central because it is guarded by the MySQL session trigger workflow.
 -   **Plain Blade Pages**:
     -   **Title/Subtitle**: MUST use `setPageTitle()` helper at the top of the Blade file to set `$pageTitle` and `$pageSubtitle`.

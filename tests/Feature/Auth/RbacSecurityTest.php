@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Auth;
 
+use App\Constants\Auth\Permissions;
 use App\Constants\Auth\Roles;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -20,13 +21,15 @@ class RbacSecurityTest extends TestCase
 
     public function test_super_admin_can_access_anything()
     {
+        tenancy()->end();
+
         $superAdmin = User::factory()->create();
         $superAdmin->assignRole(Roles::SUPER_ADMIN);
 
         $this->actingAs($superAdmin);
 
         // Should be able to access a random high-privilege permission
-        expect($superAdmin->can('delete tenants'))->toBeTrue();
+        expect(Gate::forUser($superAdmin)->allows(Permissions::DELETE_TENANTS()))->toBeTrue();
         expect($superAdmin->isSuperAdmin())->toBeTrue();
     }
 

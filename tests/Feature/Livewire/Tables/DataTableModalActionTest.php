@@ -1,6 +1,8 @@
 <?php
 
 use App\Constants\Auth\Permissions;
+use App\Constants\Auth\Roles;
+use App\Livewire\Tables\UserTable;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
@@ -14,8 +16,13 @@ beforeEach(function () {
     $viewerRole->givePermissionTo($permission);
     $viewerRole->givePermissionTo($deletePermission);
 
-    $this->admin = User::query()->find(1) ?? User::factory()->create(['id' => 1]);
+    $this->admin = User::factory()->create();
+    $this->admin->assignRole(Roles::SUPER_ADMIN);
     $this->admin->assignRole($viewerRole);
+
+    $this->createVisibleUser = function (array $attributes = []): User {
+        return User::factory()->create($attributes);
+    };
 });
 
 // Note: UserTable's rowActions no longer includes a view_modal action.
@@ -23,7 +30,8 @@ beforeEach(function () {
 
 it('can close the details modal', function () {
     $component = Livewire::actingAs($this->admin)
-        ->test('tables.user-table');
+        ->test('tables.user-table')
+        ->set('filters.tenant_id', UserTable::CENTRAL_USERS_FILTER);
 
     $component->set('modalComponent', 'components.users.view-modal')
         ->set('modalProps', ['user' => User::factory()->make()])
@@ -35,7 +43,7 @@ it('can close the details modal', function () {
 });
 
 it('returns confirmation config for row action', function () {
-    $user = User::factory()->create();
+    $user = ($this->createVisibleUser)();
 
     Livewire::actingAs($this->admin)
         ->test('tables.user-table')
@@ -63,15 +71,17 @@ it('returns confirmation config for bulk action', function () {
 });
 
 it('refreshes rows after row deletion', function () {
-    $user = User::factory()->create(['name' => 'To Be Deleted']);
+    $user = ($this->createVisibleUser)(['name' => 'To Be Deleted']);
 
     Livewire::actingAs($this->admin)
         ->test('tables.user-table')
+        ->set('filters.tenant_id', UserTable::CENTRAL_USERS_FILTER)
         ->assertSee('To Be Deleted')
         ->call('executeAction', 'delete', $user->uuid);
 
     Livewire::actingAs($this->admin)
         ->test('tables.user-table')
+        ->set('filters.tenant_id', UserTable::CENTRAL_USERS_FILTER)
         ->assertDontSee('To Be Deleted');
 
     expect(User::where('uuid', $user->uuid)->exists())->toBeFalse();
@@ -83,6 +93,7 @@ it('refreshes rows after bulk deletion', function () {
 
     $component = Livewire::actingAs($this->admin)
         ->test('tables.user-table')
+        ->set('filters.tenant_id', UserTable::CENTRAL_USERS_FILTER)
         ->set('selected', $uuids)
         ->assertSee('Bulk Delete')
         ->call('executeBulkAction', 'delete');
@@ -96,13 +107,14 @@ it('redirects when row is clicked and route exists', function () {
     // Register a temporary route for testing
     Route::get('/users/{user}', fn () => 'User page')->name('users.show');
 
-    $user = User::factory()->create([
+    $user = ($this->createVisibleUser)([
         'name' => 'Row Click User',
         'email' => 'rowclick@example.com',
     ]);
 
     $component = Livewire::actingAs($this->admin)
-        ->test('tables.user-table');
+        ->test('tables.user-table')
+        ->set('filters.tenant_id', UserTable::CENTRAL_USERS_FILTER);
 
     // rowClick should redirect to the user show page
     $component->call('handleRowClick', $user->uuid)
@@ -113,13 +125,14 @@ it('does nothing when row is clicked but route does not exist', function () {
     // Clear routes to ensure users.show doesn't exist
     Route::getRoutes()->refreshNameLookups();
 
-    $user = User::factory()->create([
+    $user = ($this->createVisibleUser)([
         'name' => 'Row Click User',
         'email' => 'rowclick@example.com',
     ]);
 
     $component = Livewire::actingAs($this->admin)
-        ->test('tables.user-table');
+        ->test('tables.user-table')
+        ->set('filters.tenant_id', UserTable::CENTRAL_USERS_FILTER);
 
     // rowClick should not dispatch anything when route doesn't exist
     $component->call('handleRowClick', $user->uuid)
@@ -128,7 +141,8 @@ it('does nothing when row is clicked but route does not exist', function () {
 
 it('detects rows are clickable when rowClick is overridden', function () {
     $component = Livewire::actingAs($this->admin)
-        ->test('tables.user-table');
+        ->test('tables.user-table')
+        ->set('filters.tenant_id', UserTable::CENTRAL_USERS_FILTER);
 
     expect($component->instance()->rowsAreClickable())->toBeTrue();
 });
@@ -138,7 +152,7 @@ it('detects row click opens modal when action has modal', function () {
     Route::get('/users/{user}', fn () => 'User page')->name('users.show');
 
     // Create at least one user for the sample row check
-    User::factory()->create();
+    ($this->createVisibleUser)();
 
     $component = Livewire::actingAs($this->admin)
         ->test('tables.user-table');

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Constants\Auth\Permissions;
 use App\Enums\Feature\FeatureKey;
+use App\Models\CentralUser;
 use App\Models\ErrorLog;
 use App\Models\Feature;
 use App\Models\Permission;
@@ -11,6 +12,7 @@ use App\Models\Tenant;
 use App\Models\TenantFeatureOverride;
 use App\Models\User;
 use App\Services\ErrorHandling\Channels\DatabaseChannel;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Livewire\Livewire;
 
@@ -73,7 +75,14 @@ test('tenant data isolation', function () {
  */
 test('central model access from tenant context', function () {
     // 1. Create a user (central)
-    $user = User::factory()->create(['name' => 'Global User']);
+    CentralUser::query()->create([
+        'name' => 'Global User',
+        'username' => fake()->unique()->userName(),
+        'email' => fake()->unique()->safeEmail(),
+        'email_verified_at' => now(),
+        'password' => Hash::make('password'),
+        'is_active' => true,
+    ]);
 
     // 2. Create a tenant
     $id = 'isolation-test-' . Str::random(8);
@@ -83,10 +92,10 @@ test('central model access from tenant context', function () {
     tenancy()->initialize($tenant);
 
     // 4. Verify user is still accessible
-    expect(User::where('name', 'Global User')->exists())->toBeTrue();
+    expect(CentralUser::where('name', 'Global User')->exists())->toBeTrue();
 
     // 5. Verify the user is actually on the central connection
-    $userFromDb = User::where('name', 'Global User')->first();
+    $userFromDb = CentralUser::where('name', 'Global User')->first();
     expect($userFromDb->getConnectionName())->toBe('central');
 });
 

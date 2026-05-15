@@ -4,11 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Livewire\DataTable;
 
+use App\Constants\Auth\Permissions;
+use App\Models\Permission;
+use App\Models\Role;
 use App\Models\User;
 use Livewire\Livewire;
 
 beforeEach(function () {
-    asTenant();
+    $viewPermission = Permission::firstOrCreate(['name' => Permissions::VIEW_USERS()]);
+    $deletePermission = Permission::firstOrCreate(['name' => Permissions::DELETE_USERS()]);
+    $adminRole = Role::firstOrCreate(['name' => 'admin']);
+    $adminRole->givePermissionTo($viewPermission);
+    $adminRole->givePermissionTo($deletePermission);
 
     User::factory()->create(['name' => 'Policy Bypass Guard']);
 });

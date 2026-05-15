@@ -50,6 +50,17 @@ Tests that call `asTenant()` without passing a tenant use the reusable tenant da
 
 Tenant provisioning can issue MySQL DDL, which may implicitly commit central database work. Do not assert global table counts in these tests. Assert rows scoped to the model, user, tenant, or record created by the test.
 
+## Central And Tenant Connection Rules
+
+The default `User` model follows the active application connection. In tenant context, use `CentralUser` or an explicit `on('central')` query when the code must read central users, roles, teams, or pivots.
+
+Do not mix writes on one connection with assertions or component queries on another connection inside the same test transaction. In particular:
+
+- If a datatable query uses the default `User::query()` in central context, seed users, tenants, and pivot rows through the same default connection.
+- If a component renders while tenancy is initialized and still needs central data, the component should switch to central models or central connections internally.
+- Avoid assuming seeded central user ID `1` exists in every parallel process database. Create the actor needed by the test unless the test specifically verifies the protected platform account.
+- When a foreign key check would cross the central/default transaction boundary in a test-only setup, prefer aligning the connection first. Use temporary FK disabling only in narrowly scoped tests that directly seed pivot rows for datatable visibility.
+
 ## Required Grouping
 
 Any test that does one of the following must be grouped as `tenancy-provisioning` in `tests/Pest.php`:

@@ -56,7 +56,7 @@ test('authorized user can delete a user from show page', function () {
         ->assertHasNoErrors()
         ->assertRedirect(route('users.index'));
 
-    $this->assertSoftDeleted('users', ['id' => $this->targetUser->id], 'central');
+    $this->assertSoftDeleted('users', ['id' => $this->targetUser->id]);
 });
 
 test('unauthorized user cannot see delete button on show page', function () {

@@ -9,6 +9,7 @@ use App\Constants\Auth\Roles;
 use App\Constants\DataTable\DataTableUi;
 use App\Enums\DataTable\DataTableFilterType;
 use App\Livewire\DataTable\Datatable;
+use App\Models\CentralUser;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\DataTable\Builders\Action;
@@ -48,7 +49,7 @@ class UserTable extends Datatable
             $relations[] = 'teams';
         }
 
-        $query = User::query()
+        $query = $this->userQuery()
             ->with($relations)
             ->select('users.*');
 
@@ -180,8 +181,27 @@ class UserTable extends Datatable
     {
         return $this->memoize(
             'filter:roles',
-            fn () => Role::pluck('name', 'name')->toArray(),
+            fn () => $this->roleQuery()->pluck('name', 'name')->toArray(),
         );
+    }
+
+    protected function userQuery(): Builder
+    {
+        return $this->usesTenantConnection()
+            ? CentralUser::query()
+            : User::query();
+    }
+
+    protected function roleQuery(): Builder
+    {
+        return $this->usesTenantConnection()
+            ? Role::on('central')
+            : Role::query();
+    }
+
+    protected function usesTenantConnection(): bool
+    {
+        return \function_exists('tenancy') && tenancy()->initialized;
     }
 
     protected function tenantAudience(): TenantAudience

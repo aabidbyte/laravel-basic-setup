@@ -15,6 +15,8 @@ use Illuminate\Support\Str;
 use Livewire\Livewire;
 
 beforeEach(function (): void {
+    DB::connection('central')->statement('SET FOREIGN_KEY_CHECKS=0');
+
     Permission::firstOrCreate(['name' => Permissions::VIEW_USERS()]);
     Permission::firstOrCreate(['name' => Permissions::EDIT_TENANTS()]);
     Permission::firstOrCreate(['name' => Permissions::IMPERSONATE_USERS()]);
@@ -32,6 +34,10 @@ beforeEach(function (): void {
 
     $this->tenantUser = User::factory()->create();
     $this->tenant->users()->attach($this->tenantUser->id);
+});
+
+afterEach(function (): void {
+    DB::connection('central')->statement('SET FOREIGN_KEY_CHECKS=1');
 });
 
 it('does not detach when executeAction is invoked without edit tenants permission', function (): void {
@@ -187,7 +193,7 @@ it('limits the main users table to tenant members visible to tenant editors', fu
 });
 
 it('lets super admins browse all tenant users and explicitly filter central users', function (): void {
-    $superAdmin = User::query()->findOrFail(User::PROTECTED_CENTRAL_ACCOUNT_ID);
+    $superAdmin = User::factory()->create();
     $superAdmin->assignRole(Roles::SUPER_ADMIN);
     $superAdmin->assignPermission(Permissions::VIEW_USERS());
 
@@ -197,7 +203,6 @@ it('lets super admins browse all tenant users and explicitly filter central user
     $secondTenantUser = User::factory()->create();
     $centralUser = User::factory()->create();
 
-    $firstTenant->users()->syncWithoutDetaching([$superAdmin->id]);
     $firstTenant->users()->attach($firstTenantUser);
     $secondTenant->users()->attach($secondTenantUser);
 

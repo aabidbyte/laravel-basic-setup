@@ -121,7 +121,8 @@ it('can assign a boolean feature to an existing plan from the available feature 
     ]);
 
     Livewire::test('tables.plan-assignable-feature-table', ['planUuid' => $plan->uuid])
-        ->call('executeAction', 'assign', $feature->uuid);
+        ->assertSet('hasRowActions', false)
+        ->call('handleRowClick', $feature->uuid);
 
     $planFeature = PlanFeature::query()
         ->where('plan_id', $plan->id)

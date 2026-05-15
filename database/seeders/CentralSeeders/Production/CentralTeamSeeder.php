@@ -5,10 +5,10 @@ namespace Database\Seeders\CentralSeeders\Production;
 use App\Constants\Auth\Roles;
 use App\Constants\Teams\TeamRoles;
 use App\Enums\Ui\ThemeColorTypes;
+use App\Models\CentralUser;
 use App\Models\Role;
 use App\Models\Team;
 use App\Models\TeamRole;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -21,6 +21,11 @@ class CentralTeamSeeder extends Seeder
      */
     public function run(): void
     {
+        tenancy()->central(fn (): null => $this->seedCentralTeams());
+    }
+
+    private function seedCentralTeams(): null
+    {
         $adminRole = TeamRole::where('name', TeamRoles::ADMIN)->first();
         $memberRole = TeamRole::where('name', TeamRoles::MEMBER)->first();
 
@@ -30,10 +35,10 @@ class CentralTeamSeeder extends Seeder
         ]);
 
         $superAdmins = $this->superAdmins();
-        $superAdmins->each(fn (User $user): null => $this->attachUser($defaultTeam, $user, $adminRole));
+        $superAdmins->each(fn (CentralUser $user): null => $this->attachUser($defaultTeam, $user, $adminRole));
 
         if (! \app()->environment(['local', 'development'])) {
-            return;
+            return null;
         }
 
         $users = $this->developmentUsers();
@@ -51,10 +56,12 @@ class CentralTeamSeeder extends Seeder
         foreach ($teams as $index => $team) {
             $teamUsers = $users->slice($index * 2, 2)->values();
 
-            $teamUsers->each(function (User $user, int $userIndex) use ($team, $adminRole, $memberRole): void {
+            $teamUsers->each(function (CentralUser $user, int $userIndex) use ($team, $adminRole, $memberRole): void {
                 $this->attachUser($team, $user, $userIndex === 0 ? $adminRole : $memberRole);
             });
         }
+
+        return null;
     }
 
     /**
@@ -78,7 +85,7 @@ class CentralTeamSeeder extends Seeder
     }
 
     /**
-     * @return Collection<int, User>
+     * @return Collection<int, CentralUser>
      */
     private function superAdmins(): Collection
     {
@@ -88,11 +95,11 @@ class CentralTeamSeeder extends Seeder
             return new Collection();
         }
 
-        return User::whereHas('roles', fn ($query) => $query->whereKey($role->id))->get();
+        return CentralUser::whereHas('roles', fn ($query) => $query->whereKey($role->id))->get();
     }
 
     /**
-     * @return Collection<int, User>
+     * @return Collection<int, CentralUser>
      */
     private function developmentUsers(): Collection
     {
@@ -101,7 +108,7 @@ class CentralTeamSeeder extends Seeder
             ['name' => 'Platform Member', 'username' => 'platform_member', 'email' => 'platform-member@example.com'],
             ['name' => 'Success Admin', 'username' => 'success_admin', 'email' => 'success-admin@example.com'],
             ['name' => 'Success Member', 'username' => 'success_member', 'email' => 'success-member@example.com'],
-        ])->map(fn (array $attributes): User => $this->updateOrCreateUser($attributes));
+        ])->map(fn (array $attributes): CentralUser => $this->updateOrCreateUser($attributes));
 
         return new Collection($users->all());
     }
@@ -109,9 +116,9 @@ class CentralTeamSeeder extends Seeder
     /**
      * @param  array{name: string, username: string, email: string}  $attributes
      */
-    private function updateOrCreateUser(array $attributes): User
+    private function updateOrCreateUser(array $attributes): CentralUser
     {
-        $user = User::firstOrNew(['email' => $attributes['email']]);
+        $user = CentralUser::firstOrNew(['email' => $attributes['email']]);
 
         if (! $user->exists) {
             $user->uuid = (string) Str::uuid();
@@ -128,7 +135,7 @@ class CentralTeamSeeder extends Seeder
         return $user;
     }
 
-    private function attachUser(Team $team, User $user, ?TeamRole $teamRole): null
+    private function attachUser(Team $team, CentralUser $user, ?TeamRole $teamRole): null
     {
         if ($team->users()->whereKey($user->id)->exists()) {
             return null;

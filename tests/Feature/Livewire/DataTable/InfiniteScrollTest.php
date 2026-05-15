@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Constants\Auth\Permissions;
+use App\Constants\Auth\Roles;
+use App\Livewire\Tables\UserTable;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
@@ -14,6 +16,7 @@ beforeEach(function () {
     $viewerRole->givePermissionTo($permission);
 
     $this->user = User::factory()->create();
+    $this->user->assignRole(Roles::SUPER_ADMIN);
     $this->user->assignRole($viewerRole);
 });
 
@@ -63,6 +66,7 @@ test('performGotoPage updates page and resets input', function () {
 
     Livewire::actingAs($this->user)
         ->test('tables.user-table')
+        ->set('filters.tenant_id', UserTable::CENTRAL_USERS_FILTER)
         ->set('gotoPageInput', 2)
         ->call('performGotoPage')
         ->assertSet('paginators.page', 2)
@@ -73,7 +77,8 @@ test('performGotoPage validation ignores invalid pages', function () {
     User::factory()->count(30)->create(); // 2 pages
 
     $component = Livewire::actingAs($this->user)
-        ->test('tables.user-table');
+        ->test('tables.user-table')
+        ->set('filters.tenant_id', UserTable::CENTRAL_USERS_FILTER);
 
     $component->set('gotoPageInput', 5) // Invalid page
         ->call('performGotoPage')

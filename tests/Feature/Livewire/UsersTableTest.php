@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Constants\Auth\Permissions;
+use App\Constants\Auth\Roles;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
@@ -11,17 +12,20 @@ use Illuminate\Support\Str;
 use Livewire\Livewire;
 
 beforeEach(function () {
+    DB::connection('central')->statement('SET FOREIGN_KEY_CHECKS=0');
+
     // Create permission and role
     $permission = Permission::firstOrCreate(['name' => Permissions::VIEW_USERS()]);
     $viewerRole = Role::firstOrCreate(['name' => 'viewer']);
     $viewerRole->givePermissionTo($permission);
 
     $this->user = User::factory()->create();
+    $this->user->assignRole(Roles::SUPER_ADMIN);
     $this->user->assignRole($viewerRole);
 
     $this->tenantId = 'tu' . Str::random(4);
 
-    DB::connection('central')->table('tenants')->insert([
+    DB::table('tenants')->insert([
         'tenant_id' => $this->tenantId,
         'slug' => 'users-table-' . Str::random(4),
         'name' => 'Users Table Tenant',
@@ -33,6 +37,10 @@ beforeEach(function () {
     ]);
 
     attachUserToTenantForUsersTableTest($this->user, $this->tenantId);
+});
+
+afterEach(function () {
+    DB::connection('central')->statement('SET FOREIGN_KEY_CHECKS=1');
 });
 
 test('search filters results', function () {
@@ -123,7 +131,7 @@ test('datatable shows status and last login columns', function () {
 
 function attachUserToTenantForUsersTableTest(User $user, string $tenantId): void
 {
-    DB::connection('central')->table('tenant_user')->insert([
+    DB::table('tenant_user')->insert([
         'tenant_id' => $tenantId,
         'user_id' => $user->id,
         'created_at' => now(),

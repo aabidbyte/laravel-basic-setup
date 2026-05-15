@@ -35,6 +35,32 @@ protected function baseQuery(): Builder
 }
 ```
 
+## Central Data In Tenant Context
+
+Datatables that render during tenancy but display central resources must explicitly use central models or central connections. The default model connection can change after tenancy initializes.
+
+```php
+protected function baseQuery(): Builder
+{
+    return tenancy()->initialized
+        ? CentralUser::query()->with(['roles', 'tenants'])->select('users.*')
+        : User::query()->with(['roles', 'tenants'])->select('users.*');
+}
+```
+
+Apply the same rule to filter options and relationship-backed lookups:
+
+```php
+protected function getRoleOptions(): array
+{
+    return tenancy()->initialized
+        ? Role::on('central')->pluck('name', 'name')->toArray()
+        : Role::query()->pluck('name', 'name')->toArray();
+}
+```
+
+Use this pattern for user, impersonation, and assignment tables that remain central while tenant runtime switching is active.
+
 ## Row Click Behavior
 
 Row clicks can be handled by returning an `Action` from the `rowClick()` method. This enables modal dialogs, route navigation, or custom execution using the same fluent API as row actions.
@@ -43,7 +69,7 @@ Row clicks can be handled by returning an `Action` from the `rowClick()` method.
 > For row-click actions, `Action::make()` can be called without arguments since the action key and label aren't displayed.
 
 > [!IMPORTANT]
-> When a datatable has exactly one row action, implement it as `rowClick()` instead of rendering a separate row action button. Add visible row actions only when the row has multiple choices.
+> When a datatable row has exactly one visible row action after conditional visibility is applied, implement it as `rowClick()` instead of rendering a separate row action button. Add visible row actions only when the row has multiple choices.
 
 **Navigate to Route on Row Click (Recommended):**
 

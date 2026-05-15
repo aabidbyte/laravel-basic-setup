@@ -3,7 +3,7 @@
 ## Row Actions
 
 > [!IMPORTANT]
-> If a datatable has exactly one row action, expose that action through `rowClick()` instead of rendering a dedicated row action button. Keep row action buttons for tables with multiple row-level choices.
+> If a datatable row has exactly one visible row action after conditional visibility is applied, expose that action through `rowClick()` instead of rendering a dedicated row action button. Keep row action buttons for rows with multiple row-level choices.
 
 ### Navigate to Route
 
@@ -76,6 +76,17 @@ Action::make('edit', __('Edit'))
     ->route(fn($user) => route('users.edit', $user))
     ->show(fn($user) => Auth::user()?->can('update', $user) ?? false)
 ```
+
+### Direct Livewire Execution Safety
+
+Row and bulk actions can be called directly through Livewire methods, so action execution must not rely on the button being hidden in the rendered HTML. The datatable action pipeline resolves the target model by UUID, then checks the action's visibility/permission callback before executing.
+
+When adding executable actions:
+
+- Always define `can()` or `show()` on destructive or privileged actions.
+- Keep authorization inside the action path, not only in Blade.
+- Expect row actions to resolve a UUID that is not currently visible after filtering; the action still must pass its `shouldRender()` check before execution.
+- Bulk actions receive selected UUIDs and resolve the selected models before confirmation and execution. The bulk action's visibility check must pass for the current user and model class.
 
 ### Styling
 

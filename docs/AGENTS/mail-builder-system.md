@@ -34,7 +34,7 @@ MailBuilder::make()
 The MailBuilder resolves mail credentials in the following priority order:
 
 1. **User Settings** - If the user has the `CONFIGURE_MAIL_SETTINGS` permission and has active mail settings
-2. **Team Settings** - If the user's primary team has active mail settings
+2. **Team Settings** - If an explicit team is provided, or the user's first team has active mail settings
 3. **App Settings** - If there are application-level mail settings configured
 4. **Environment Variables** - Falls back to Laravel's default mail configuration from `.env`
 
@@ -48,6 +48,8 @@ graph TD
     F -->|Yes| G[Use App Settings]
     F -->|No| H[Use Environment]
 ```
+
+When no explicit team is provided, the resolver first checks the supplied user's `teams()` relationship, then falls back to the authenticated user's first team. This keeps team credential resolution aligned with the active connection in tests and tenant-aware requests.
 
 ## Template & Layout Architecture
 
@@ -478,5 +480,4 @@ The editor supports the system's unified merge tags via the `merge-tag-picker` c
 ### Asset Handling
 *   **CSS**: Tailwind and other site styles should be injected into the GrapeJS canvas via the `canvas.styles` configuration in `grape-editor.js`.
 *   **Images**: Currently configured to use Base64 (embedded) images.
-
 

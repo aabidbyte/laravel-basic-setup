@@ -150,7 +150,7 @@ Action::make('edit', __('Edit'))
 
 ### 5. Prefer Row Click for Single Actions
 
-If a datatable has exactly one row-level action, implement it with `rowClick()` instead of a visible row action button. Use visible row actions only when the user needs to choose between multiple row-level actions.
+If a datatable row has exactly one visible row-level action after conditional visibility is applied, implement it with `rowClick()` instead of a visible row action button. Use visible row actions only when the user needs to choose between multiple row-level actions.
 
 ### 6. Optimize Queries
 

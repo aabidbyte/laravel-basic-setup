@@ -112,7 +112,7 @@ it('shows tenant metadata in the tenant switcher trigger', function () {
 it('shows impersonation details in the banner', function () {
     $impersonatedUser = User::factory()->create(['name' => 'Impersonated User']);
 
-    $this->actingAs($this->superAdmin)
+    $this->actingAs($impersonatedUser)
         ->withSession(['impersonator_id' => $this->superAdmin->id])
         ->get('/dashboard')
         ->assertStatus(200)

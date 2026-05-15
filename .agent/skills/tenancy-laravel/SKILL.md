@@ -284,6 +284,8 @@ tenancy()->end();
 
 The central connection is always accessible via models using `CentralConnection` trait, regardless of current context.
 
+When application code runs after tenancy is initialized, the default connection may point at the tenant database. Any model or query that must read central users, roles, teams, or pivots should use a central model/trait or an explicit central connection (`Model::on('central')`, `DB::connection('central')`). Do not assume the default `User` model remains central inside tenant context.
+
 ---
 
 ## TENANCY BOOTSTRAPPERS
