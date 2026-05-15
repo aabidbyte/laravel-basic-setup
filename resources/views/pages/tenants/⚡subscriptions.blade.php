@@ -33,13 +33,13 @@ new class extends BasePageComponent {
         $plan = Plan::find($this->selectedPlanId);
 
         // Deactivate current active subscriptions
-        Subscription::where('tenant_id', $this->tenant->id)
+        Subscription::where('tenant_id', $this->tenant->tenant_id)
             ->where('status', SubscriptionStatus::ACTIVE)
             ->update(['status' => SubscriptionStatus::CANCELED]);
 
         // Create new subscription
         Subscription::create([
-            'tenant_id' => $this->tenant->id,
+            'tenant_id' => $this->tenant->tenant_id,
             'plan_id' => $plan->id,
             'status' => SubscriptionStatus::ACTIVE,
             'starts_at' => now(),

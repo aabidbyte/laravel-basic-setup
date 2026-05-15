@@ -46,20 +46,22 @@ class CreateNewUser implements CreatesNewUsers
             if (function_exists('tenant') && tenant()) {
                 $this->createTeamAndAttachUser($user);
             } else {
+                $slug = Str::slug($user->name) . '-' . Str::lower(Str::random(4));
+
                 // Create a new tenant for the user
                 $tenant = Tenant::create([
-                    'id' => (string) Str::slug($user->name) . '-' . Str::random(4),
+                    'slug' => $slug,
                     'name' => $user->name . "'s Organization",
                 ]);
 
                 // Create a domain for the tenant
                 $centralDomain = parse_url(config('app.url'), PHP_URL_HOST) ?: config('app.url');
                 $tenant->domains()->create([
-                    'domain' => $tenant->id . '.' . $centralDomain,
+                    'domain' => $tenant->slug . '.' . $centralDomain,
                 ]);
 
                 // Associate user with tenant
-                $user->tenants()->attach($tenant->id);
+                $user->tenants()->attach($tenant->tenant_id);
 
                 // Initialize tenancy to create the team in the tenant database
                 $tenant->run(function () use ($user) {

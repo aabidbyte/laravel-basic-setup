@@ -54,7 +54,7 @@ class ImpersonateUserTable extends Datatable
         // UNLESS the user is a super admin who might want to find users from other tenants
         if (tenant() && ! $admin->hasRole(Roles::SUPER_ADMIN)) {
             $query->whereHas('tenants', function ($q) {
-                $q->where('tenants.id', tenant('id'));
+                $q->where('tenants.tenant_id', tenant()?->getTenantKey());
             });
         }
 
@@ -105,8 +105,8 @@ class ImpersonateUserTable extends Datatable
         if (! tenant() || ($admin instanceof User && $admin->hasRole(Roles::SUPER_ADMIN))) {
             $filters[] = Filter::make('tenant_id', __('tenancy.tenant'))
                 ->type('select')
-                ->options(Tenant::pluck('name', 'id')->toArray())
-                ->execute(fn ($q, $value) => $q->whereHas('tenants', fn ($inner) => $inner->where('tenants.id', $value)));
+                ->options(Tenant::pluck('name', 'tenant_id')->toArray())
+                ->execute(fn ($q, $value) => $q->whereHas('tenants', fn ($inner) => $inner->where('tenants.tenant_id', $value)));
         }
 
         $filters[] = Filter::make('role', __('roles.role'))

@@ -37,7 +37,7 @@ class TenantUserAssignmentTable extends UserTable
         return User::query()
             ->with(['roles'])
             ->withExists([
-                'tenants as assigned_to_tenant' => fn (Builder $query) => $query->where('tenants.id', $this->tenantId),
+                'tenants as assigned_to_tenant' => fn (Builder $query) => $query->where('tenants.tenant_id', $this->tenantId),
             ])
             ->select('users.*');
     }
@@ -89,11 +89,11 @@ class TenantUserAssignmentTable extends UserTable
                 ])
                 ->execute(function (Builder $query, string $value): void {
                     if ($value === 'assigned') {
-                        $query->whereHas('tenants', fn (Builder $tenantQuery) => $tenantQuery->where('tenants.id', $this->tenantId));
+                        $query->whereHas('tenants', fn (Builder $tenantQuery) => $tenantQuery->where('tenants.tenant_id', $this->tenantId));
                     }
 
                     if ($value === 'unassigned') {
-                        $query->whereDoesntHave('tenants', fn (Builder $tenantQuery) => $tenantQuery->where('tenants.id', $this->tenantId));
+                        $query->whereDoesntHave('tenants', fn (Builder $tenantQuery) => $tenantQuery->where('tenants.tenant_id', $this->tenantId));
                     }
                 }),
 
@@ -220,6 +220,6 @@ class TenantUserAssignmentTable extends UserTable
 
     protected function tenant(): ?Tenant
     {
-        return Tenant::find($this->tenantId);
+        return Tenant::where('tenant_id', $this->tenantId)->first();
     }
 }

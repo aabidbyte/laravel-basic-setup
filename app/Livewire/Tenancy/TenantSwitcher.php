@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Tenancy;
 
+use App\Constants\Auth\Permissions;
 use App\Livewire\Bases\LivewireBaseComponent;
 use App\Models\Tenant;
 use App\Models\User;
@@ -11,6 +12,7 @@ use App\Services\Tenancy\UserImpersonationService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 use Livewire\Attributes\Computed;
 
 class TenantSwitcher extends LivewireBaseComponent
@@ -46,15 +48,15 @@ class TenantSwitcher extends LivewireBaseComponent
         $this->showSelectionModal = false;
 
         $user = User::where('uuid', $this->selectedUserUuid)->firstOrFail();
-        $tenant = Tenant::find($tenantId);
+        $tenant = Tenant::where('tenant_id', $tenantId)->first();
 
-        if ($tenant === null || ! $user->tenants->contains('id', $tenantId)) {
+        if ($tenant === null || ! $user->tenants->contains('tenant_id', $tenantId)) {
             Log::warning('TenantSwitcher selected tenant denied.', [
                 'selected_user_id' => $user->id,
                 'selected_user_uuid' => $user->uuid,
                 'target_tenant_id' => $tenantId,
                 'tenant_found' => $tenant instanceof Tenant,
-                'selected_user_tenant_ids' => $user->tenants->pluck('id')->all(),
+                'selected_user_tenant_ids' => $user->tenants->pluck('tenant_id')->all(),
             ]);
 
             $this->dispatch('notify', ['type' => 'error', 'message' => __('tenancy.permission_denied')]);
@@ -78,7 +80,7 @@ class TenantSwitcher extends LivewireBaseComponent
             Log::warning('TenantSwitcher selected tenant impersonation denied by service.', [
                 'actor_id' => $actor->id,
                 'selected_user_id' => $user->id,
-                'target_tenant_id' => $tenant->id,
+                'target_tenant_id' => $tenant->tenant_id,
             ]);
 
             $this->dispatch('notify', ['type' => 'error', 'message' => __('tenancy.permission_denied')]);
@@ -93,6 +95,29 @@ class TenantSwitcher extends LivewireBaseComponent
         }
 
         $this->redirect('/dashboard');
+    }
+
+    /**
+     * Switch back to the central platform host.
+     */
+    public function switchToCentral(): void
+    {
+        $user = Auth::user();
+
+        if (! $user instanceof User || ! $user->can(Permissions::IMPERSONATE_TENANTS())) {
+            $this->dispatch('notify', ['type' => 'error', 'message' => __('tenancy.central_access_denied')]);
+
+            return;
+        }
+
+        $path = URL::temporarySignedRoute(
+            'central.impersonate',
+            now()->addMinute(),
+            ['user' => $user],
+            absolute: false,
+        );
+
+        $this->redirect(\rtrim((string) config('app.url'), '/') . $path);
     }
 
     /**

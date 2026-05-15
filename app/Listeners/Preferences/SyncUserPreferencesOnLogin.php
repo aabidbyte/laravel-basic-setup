@@ -39,7 +39,7 @@ class SyncUserPreferencesOnLogin
         if ($user->tenants()->exists()) {
             $firstTenant = $user->tenants()->first();
             if ($firstTenant) {
-                session(['tenant_id' => $firstTenant->id]);
+                session(['tenant_id' => $firstTenant->tenant_id]);
             }
         }
 

@@ -52,7 +52,6 @@ class Plan extends BaseModel
     protected function casts(): array
     {
         return [
-            'uuid' => 'string',
             'tier' => PlanTier::class,
             'price' => 'decimal:2',
             'features' => 'array',

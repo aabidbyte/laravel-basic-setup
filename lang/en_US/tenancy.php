@@ -14,6 +14,9 @@ return [
     'central_platform' => 'Central Platform',
     'platform_initials' => 'P',
     'system_admin' => 'System Administration',
+    'switch_to_central' => 'Switch to Central Platform',
+    'switch_to_central_description' => 'Return to the administration workspace.',
+    'central_access_denied' => 'You do not have permission to switch to the central platform.',
 
     // Impersonation
     'impersonate_user' => 'Impersonate User',
@@ -35,8 +38,10 @@ return [
     'edit_tenant' => 'Edit Tenant',
     'edit_tenant_description' => 'Edit tenant settings for :name.',
     'tenant_name' => 'Tenant Name',
-    'tenant_id' => 'Tenant ID (Slug)',
-    'tenant_id_hint' => 'This will be used for the subdomain (e.g. company.domain.com)',
+    'tenant_id' => 'Tenant UUID',
+    'tenant_uuid' => 'Tenant UUID',
+    'organization_slug' => 'Organization Slug',
+    'organization_slug_hint' => 'Used for readable operations such as domains and log folders (e.g. company.domain.com).',
     'plan' => 'Plan',
     'users_count' => 'Users',
     'domain_configuration' => 'Domain Configuration',

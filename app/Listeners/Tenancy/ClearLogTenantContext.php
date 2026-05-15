@@ -15,5 +15,7 @@ class ClearLogTenantContext
     public function handle(TenancyEnded $event): void
     {
         Context::forget('tenant_id');
+        Context::forget('tenant_slug');
+        Context::forget('tenant_log_key');
     }
 }

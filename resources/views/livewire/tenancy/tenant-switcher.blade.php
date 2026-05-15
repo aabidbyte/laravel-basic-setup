@@ -78,6 +78,31 @@
                 </div>
             </div>
 
+            @if($currentTenant)
+                @can(\App\Constants\Auth\Permissions::IMPERSONATE_TENANTS())
+                    <button type="button"
+                            wire:click="switchToCentral"
+                            class="border-base-content/10 bg-base-100 hover:border-primary/30 hover:bg-base-200/70 focus-visible:ring-primary/35 group flex w-full items-center justify-between gap-3 rounded-lg border p-3 text-left transition focus:outline-none focus-visible:ring-2">
+                        <span class="flex min-w-0 items-center gap-3">
+                            <span class="bg-base-200 text-base-content/70 grid size-9 shrink-0 place-items-center rounded-md">
+                                <x-ui.icon name="globe-alt"
+                                           class="size-4"></x-ui.icon>
+                            </span>
+                            <span class="min-w-0">
+                                <span class="text-base-content block truncate text-sm font-semibold">
+                                    {{ __('tenancy.switch_to_central') }}
+                                </span>
+                                <span class="text-base-content/60 block truncate text-xs">
+                                    {{ __('tenancy.switch_to_central_description') }}
+                                </span>
+                            </span>
+                        </span>
+                        <x-ui.icon name="arrow-right"
+                                   class="text-base-content/30 group-hover:text-base-content/70 size-4 shrink-0 transition-colors"></x-ui.icon>
+                    </button>
+                @endcan
+            @endif
+
             <livewire:tables.tenant-table :is-switcher="true" />
 
             <div class="border-base-content/5 flex justify-end gap-2 border-t pt-4">

@@ -10,6 +10,7 @@ Route::get('/', function () {
 require __DIR__ . '/web/public/preferences.php';
 require __DIR__ . '/web/public/activation.php';
 require __DIR__ . '/web/public/verification.php';
+require __DIR__ . '/web/public/central-impersonation.php';
 
 // Development-only routes
 if (app()->environment('local', 'development')) {

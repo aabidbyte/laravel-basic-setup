@@ -88,7 +88,7 @@ new class extends BasePageComponent {
 
 <x-layouts.page backHref="{{ route('tenants.index') }}">
     <x-slot:topActions>
-        <x-ui.button href="{{ route('tenants.switch', $tenant->id) }}"
+        <x-ui.button href="{{ route('tenants.switch', $tenant->tenant_id) }}"
                      color="success"
                      size="sm">
             <x-ui.icon name="arrow-path"
@@ -97,7 +97,7 @@ new class extends BasePageComponent {
         </x-ui.button>
 
         @can(PolicyAbilities::UPDATE, $tenant)
-            <x-ui.button href="{{ route('tenants.settings.edit', $tenant->id) }}"
+            <x-ui.button href="{{ route('tenants.settings.edit', $tenant->tenant_id) }}"
                          color="primary"
                          size="sm"
                          wire:navigate>
@@ -149,8 +149,13 @@ new class extends BasePageComponent {
                                 </div>
 
                                 <div>
-                                    <p class="text-base-content/60 text-xs font-bold uppercase tracking-wider">{{ __('tenancy.tenant_id') }}</p>
-                                    <p class="mt-1 break-all font-mono text-sm">{{ $tenant->id }}</p>
+                                    <p class="text-base-content/60 text-xs font-bold uppercase tracking-wider">{{ __('tenancy.organization_slug') }}</p>
+                                    <p class="mt-1 break-all font-mono text-sm">{{ $tenant->slug }}</p>
+                                </div>
+
+                                <div>
+                                    <p class="text-base-content/60 text-xs font-bold uppercase tracking-wider">{{ __('tenancy.tenant_uuid') }}</p>
+                                    <p class="mt-1 break-all font-mono text-sm">{{ $tenant->tenant_id }}</p>
                                 </div>
 
                                 <div>
@@ -239,7 +244,7 @@ new class extends BasePageComponent {
 
                         <div class="divider my-0"></div>
 
-                        <livewire:tables.tenant-user-table :tenantId="$tenant->id" />
+                        <livewire:tables.tenant-user-table :tenantId="$tenant->tenant_id" />
                     </div>
                 </x-ui.card>
             @elseif($activeTab === 'domains')
@@ -254,7 +259,7 @@ new class extends BasePageComponent {
 
                         <div class="divider my-0"></div>
 
-                        <livewire:tables.domain-table :tenantId="$tenant->id" />
+                        <livewire:tables.domain-table :tenantId="$tenant->tenant_id" />
                     </div>
                 </x-ui.card>
             @endif

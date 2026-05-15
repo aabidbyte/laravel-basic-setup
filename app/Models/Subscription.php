@@ -55,7 +55,7 @@ class Subscription extends BaseModel
      */
     public function tenant(): BelongsTo
     {
-        return $this->belongsTo(Tenant::class);
+        return $this->belongsTo(Tenant::class, 'tenant_id', 'tenant_id');
     }
 
     /**

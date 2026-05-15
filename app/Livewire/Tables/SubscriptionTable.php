@@ -29,7 +29,7 @@ class SubscriptionTable extends Datatable
         $query = Subscription::query()->select('subscriptions.*');
 
         if ($this->tenant) {
-            $query->where('tenant_id', $this->tenant->id);
+            $query->where('tenant_id', $this->tenant->tenant_id);
         }
 
         if ($this->plan) {

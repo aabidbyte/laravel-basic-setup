@@ -32,7 +32,7 @@ abstract class BaseUserModel extends Authenticatable
 
         // Prevent deletion of SuperAdmin user (ID 1)
         static::deleting(function (BaseUserModel $user) {
-            if ($user->id === 1) {
+            if ((int) $user->id === 1) {
                 throw new Exception('Cannot delete SuperAdmin user with ID 1');
             }
         });

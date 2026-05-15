@@ -11,7 +11,10 @@ use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 use Stancl\JobPipeline\JobPipeline;
+use Stancl\Tenancy\Contracts\Tenant;
+use Stancl\Tenancy\DatabaseConfig;
 use Stancl\Tenancy\Events;
 use Stancl\Tenancy\Jobs;
 use Stancl\Tenancy\Listeners;
@@ -104,10 +107,27 @@ class TenancyServiceProvider extends ServiceProvider
 
     public function boot()
     {
+        $this->configureTenantDatabaseNames();
         $this->bootEvents();
         $this->mapRoutes();
 
         $this->makeTenancyMiddlewareHighestPriority();
+    }
+
+    protected function configureTenantDatabaseNames(): void
+    {
+        DatabaseConfig::generateDatabaseNamesUsing(function (Tenant $tenant): string {
+            $slug = Str::of($tenant->getAttribute('slug') ?: $tenant->getTenantKey())
+                ->lower()
+                ->slug('_')
+                ->limit(20, '')
+                ->whenEmpty(fn () => Str::of('tenant'))
+                ->toString();
+            $shortId = Str::of((string) $tenant->getTenantKey())->before('-')->limit(8, '')->toString();
+            $tenantDatabaseKey = $shortId === '' ? $slug : "{$slug}_{$shortId}";
+
+            return config('tenancy.database.prefix') . $tenantDatabaseKey . config('tenancy.database.suffix');
+        });
     }
 
     protected function bootEvents()

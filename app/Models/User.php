@@ -122,7 +122,7 @@ class User extends BaseUserModel implements MustVerifyEmail
      */
     public function tenants(): BelongsToMany
     {
-        return $this->belongsToMany(Tenant::class, 'tenant_user')
+        return $this->belongsToMany(Tenant::class, 'tenant_user', 'user_id', 'tenant_id', 'id', 'tenant_id')
             ->withTimestamps();
     }
 

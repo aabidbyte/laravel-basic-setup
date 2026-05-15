@@ -2,13 +2,15 @@
 
 namespace App\Logging;
 
+use App\Models\Tenant;
+
 class TenantLogPath
 {
     public static function resolve(string $path): string
     {
-        $tenantId = self::tenantId();
+        $tenantDirectory = self::tenantDirectory();
 
-        if ($tenantId === null) {
+        if ($tenantDirectory === null) {
             return $path;
         }
 
@@ -22,22 +24,28 @@ class TenantLogPath
 
         $relativePath = \substr($normalizedPath, \strlen($normalizedLogsPath));
 
-        return $normalizedLogsPath . self::safeTenantDirectory($tenantId) . DIRECTORY_SEPARATOR . $relativePath;
+        return $normalizedLogsPath . $tenantDirectory . DIRECTORY_SEPARATOR . $relativePath;
     }
 
-    private static function tenantId(): ?string
+    private static function tenantDirectory(): ?string
     {
         if (! \function_exists('tenant')) {
             return null;
         }
 
-        $tenantId = \tenant('id');
+        $tenant = \tenant();
+
+        if ($tenant instanceof Tenant) {
+            return $tenant->logDirectoryName();
+        }
+
+        $tenantId = \tenant()?->getTenantKey();
 
         if (! \is_string($tenantId) || $tenantId === '') {
             return null;
         }
 
-        return $tenantId;
+        return self::safeTenantDirectory($tenantId);
     }
 
     private static function safeTenantDirectory(string $tenantId): string

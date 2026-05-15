@@ -12,7 +12,7 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        // Mail settings (Tenant-specific)
+        // 1. Mail settings (Tenant-specific)
         Schema::create('mail_settings', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
@@ -27,13 +27,13 @@ return new class extends Migration {
             $table->string('from_address')->nullable();
             $table->string('from_name')->nullable();
             $table->boolean('is_active')->default(true);
+            $table->timestampTz('last_used_at')->nullable();
             $table->timestampsTz();
             $table->softDeletesTz();
-
             $table->index(['settable_type', 'settable_id']);
         });
 
-        // Email templates (Tenant-specific)
+        // 2. Email templates (Tenant-specific)
         Schema::create('email_templates', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
@@ -64,19 +64,28 @@ return new class extends Migration {
             $table->longText('html_content');
             $table->longText('text_content')->nullable();
             $table->string('preheader')->nullable();
-
             // Draft columns
             $table->string('draft_subject')->nullable();
             $table->longText('draft_html_content')->nullable();
             $table->longText('draft_text_content')->nullable();
             $table->string('draft_preheader')->nullable();
-
-            $table->unique(['translatable_type', 'translatable_id', 'locale'], 'translatable_locale_unique');
+            $table->unique(['translatable_type', 'translatable_id', 'locale'], 'trans_locale_unique');
             $table->timestampsTz();
             $table->softDeletesTz();
         });
 
-        // Error logs (Tenant-specific)
+        // 3. Email Template Team pivot (Tenant-specific)
+        Schema::create('email_template_team', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->foreignId('email_template_id')->constrained('email_templates')->cascadeOnDelete();
+            $table->unsignedBigInteger('team_id');
+            $table->timestampsTz();
+            $table->unique(['email_template_id', 'team_id']);
+            $table->index('team_id');
+        });
+
+        // 4. Error logs (Tenant-specific)
         Schema::create('error_logs', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
@@ -94,7 +103,6 @@ return new class extends Migration {
             $table->timestampTz('resolved_at')->nullable()->index();
             $table->timestampsTz();
             $table->softDeletesTz();
-
             $table->index('created_at');
         });
     }
@@ -105,6 +113,7 @@ return new class extends Migration {
     public function down(): void
     {
         Schema::dropIfExists('error_logs');
+        Schema::dropIfExists('email_template_team');
         Schema::dropIfExists('email_translations');
         Schema::dropIfExists('email_templates');
         Schema::dropIfExists('mail_settings');

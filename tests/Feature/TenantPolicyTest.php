@@ -57,6 +57,6 @@ it('denies tenant view update and delete outside membership for non-super-admins
 
 it('returns forbidden when a member opens a tenant show page outside membership', function (): void {
     actingAs($this->member)
-        ->get(route('tenants.show', $this->tenantOther->id))
+        ->get(route('tenants.show', $this->tenantOther->tenant_id))
         ->assertForbidden();
 });

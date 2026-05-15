@@ -42,7 +42,7 @@ class TenantUserTable extends Datatable
         return User::query()
             ->with(['roles'])
             ->whereHas('tenants', function ($query) {
-                $query->where('tenants.id', $this->tenantId);
+                $query->where('tenants.tenant_id', $this->tenantId);
             })
             ->select(['users.*']);
     }
@@ -141,7 +141,7 @@ class TenantUserTable extends Datatable
                 ->color('error')
                 ->confirm(__('tenancy.detach_user_confirm'))
                 ->execute(function (User $user) {
-                    $tenant = Tenant::findOrFail($this->tenantId);
+                    $tenant = Tenant::where('tenant_id', $this->tenantId)->firstOrFail();
                     $this->authorize(PolicyAbilities::UPDATE, $tenant);
                     $tenant->users()->detach($user->id);
                     NotificationBuilder::make()

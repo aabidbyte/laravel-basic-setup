@@ -12,9 +12,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Stancl\Tenancy\Database\DatabaseManager;
-use Stancl\Tenancy\Exceptions\TenantDatabaseAlreadyExistsException;
-use Stancl\Tenancy\Jobs\CreateDatabase;
+use Stancl\Tenancy\Database\Models\Domain;
 
 class CentralUserSeeder extends Seeder
 {
@@ -60,80 +58,98 @@ class CentralUserSeeder extends Seeder
             ],
         );
 
-        $tenants = $this->seedTenants();
-        $this->attachSeededUsersToTenants($tenants);
+        $organizations = $this->seedOrganizations();
+        $this->attachSeededUsersToOrganizations($organizations);
     }
 
     /**
-     * Create development tenants and their domains.
+     * Create development organizations and their domains.
      *
      * @return Collection<int, Tenant>
      */
-    private function seedTenants(): Collection
+    private function seedOrganizations(): Collection
     {
         $plans = [
-            'org1' => Plan::where('name->en_US', 'Lifetime')->first()?->uuid,
-            'org2' => Plan::where('name->en_US', 'Pro')->first()?->uuid,
-            'org3' => Plan::where('name->en_US', 'Basic')->first()?->uuid,
+            'acme' => Plan::where('name->en_US', 'Lifetime')->first()?->uuid,
+            'globex' => Plan::where('name->en_US', 'Pro')->first()?->uuid,
+            'initech' => Plan::where('name->en_US', 'Basic')->first()?->uuid,
         ];
 
-        $tenantData = [
+        $organizationData = [
             [
-                'id' => 'org1',
-                'name' => 'Central Organization',
-                'plan' => $plans['org1'],
+                'slug' => 'acme',
+                'domain' => 'acme.laravel-basic-setup.test',
+                'name' => 'Acme Corporation',
+                'plan' => $plans['acme'],
                 'color' => ThemeColorTypes::PRIMARY->value,
             ],
             [
-                'id' => 'org2',
-                'name' => 'Organization 2',
-                'plan' => $plans['org2'],
+                'slug' => 'globex',
+                'domain' => 'globex.laravel-basic-setup.test',
+                'name' => 'Globex Corporation',
+                'plan' => $plans['globex'],
                 'color' => ThemeColorTypes::SECONDARY->value,
             ],
             [
-                'id' => 'org3',
-                'name' => 'Organization 3',
-                'plan' => $plans['org3'],
+                'slug' => 'initech',
+                'domain' => 'initech.laravel-basic-setup.test',
+                'name' => 'Initech',
+                'plan' => $plans['initech'],
                 'color' => ThemeColorTypes::ACCENT->value,
             ],
         ];
 
-        foreach ($tenantData as $tenantAttributes) {
-            $tenant = Tenant::withoutEvents(function () use ($tenantAttributes): Tenant {
-                return Tenant::updateOrCreate(
-                    ['id' => $tenantAttributes['id']],
-                    [
-                        'name' => $tenantAttributes['name'],
-                        'plan' => $tenantAttributes['plan'],
-                        'color' => $tenantAttributes['color'],
-                    ],
-                );
-            });
+        $organizations = new Collection();
 
-            try {
-                (new CreateDatabase($tenant))->handle(app(DatabaseManager::class));
-            } catch (TenantDatabaseAlreadyExistsException) {
-                // Database was already created (e.g. re-seed, or events ran in another code path).
-            }
-
-            if ($tenant->domains()->count() === 0) {
-                $tenant->domains()->create([
-                    'domain' => "{$tenantAttributes['id']}.laravel-basic-setup.test",
-                ]);
-            }
+        foreach ($organizationData as $organizationAttributes) {
+            $organizations->push($this->findOrCreateOrganization($organizationAttributes));
         }
 
-        return Tenant::whereIn('id', ['org1', 'org2', 'org3'])
-            ->orderByRaw("FIELD(id, 'org1', 'org2', 'org3')")
-            ->get();
+        return $organizations;
     }
 
     /**
-     * Attach seeded users to random tenants, keeping user ID 1 on the central tenant.
+     * @param  array{slug: string, domain: string, name: string, plan: string|null, color: string}  $organizationAttributes
+     */
+    private function findOrCreateOrganization(array $organizationAttributes): Tenant
+    {
+        $domain = Domain::where('domain', $organizationAttributes['domain'])->first();
+        $organization = $domain?->tenant;
+
+        if ($organization instanceof Tenant) {
+            $organization->update([
+                'slug' => $organizationAttributes['slug'],
+                'name' => $organizationAttributes['name'],
+                'plan' => $organizationAttributes['plan'],
+                'color' => $organizationAttributes['color'],
+                'should_seed' => false,
+            ]);
+
+            return $organization;
+        }
+
+        $organization = Tenant::create([
+            'tenant_id' => $organizationAttributes['slug'],
+            'slug' => $organizationAttributes['slug'],
+            'name' => $organizationAttributes['name'],
+            'plan' => $organizationAttributes['plan'],
+            'color' => $organizationAttributes['color'],
+            'should_seed' => true,
+        ]);
+
+        $organization->domains()->create([
+            'domain' => $organizationAttributes['domain'],
+        ]);
+
+        return $organization;
+    }
+
+    /**
+     * Attach seeded users to random organizations, keeping the seeded admin on the first organization.
      *
      * @param  Collection<int, Tenant>  $tenants
      */
-    private function attachSeededUsersToTenants(Collection $tenants): void
+    private function attachSeededUsersToOrganizations(Collection $tenants): void
     {
         $firstTenant = $tenants->first();
 
@@ -141,13 +157,13 @@ class CentralUserSeeder extends Seeder
             return;
         }
 
-        $superAdmin = User::find(1);
-        $superAdmin?->tenants()->syncWithoutDetaching([$firstTenant->id]);
+        $superAdmin = User::where('email', 'admin@example.com')->first();
+        $superAdmin?->tenants()->syncWithoutDetaching([$firstTenant->tenant_id]);
 
-        User::where('id', '!=', 1)->get()->each(function (User $user) use ($tenants): void {
+        User::where('email', '!=', 'admin@example.com')->get()->each(function (User $user) use ($tenants): void {
             $tenantIds = $tenants
                 ->random(\random_int(1, $tenants->count()))
-                ->pluck('id')
+                ->pluck('tenant_id')
                 ->all();
 
             $user->tenants()->syncWithoutDetaching($tenantIds);

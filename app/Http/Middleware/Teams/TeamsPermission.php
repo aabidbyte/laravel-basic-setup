@@ -28,9 +28,9 @@ class TeamsPermission
 
             // Set tenant context if not present
             if (! session()->has('tenant_id')) {
-                $firstTenant = $user->tenants()->orderBy('tenants.id')->first();
+                $firstTenant = $user->tenants()->orderBy('tenants.name')->first();
                 if ($firstTenant) {
-                    session(['tenant_id' => $firstTenant->id]);
+                    session(['tenant_id' => $firstTenant->tenant_id]);
                 }
             }
 

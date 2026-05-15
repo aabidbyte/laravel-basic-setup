@@ -29,7 +29,7 @@ class TenantPolicy
         }
 
         return $user->hasPermissionTo(Permissions::VIEW_TENANTS())
-            && $user->tenants()->whereKey($tenant->getKey())->exists();
+            && $user->tenants()->where('tenants.tenant_id', $tenant->getTenantKey())->exists();
     }
 
     /**
@@ -50,7 +50,7 @@ class TenantPolicy
         }
 
         return $user->hasPermissionTo(Permissions::EDIT_TENANTS())
-            && $user->tenants()->whereKey($tenant->getKey())->exists();
+            && $user->tenants()->where('tenants.tenant_id', $tenant->getTenantKey())->exists();
     }
 
     /**
@@ -63,6 +63,6 @@ class TenantPolicy
         }
 
         return $user->hasPermissionTo(Permissions::DELETE_TENANTS())
-            && $user->tenants()->whereKey($tenant->getKey())->exists();
+            && $user->tenants()->where('tenants.tenant_id', $tenant->getTenantKey())->exists();
     }
 }

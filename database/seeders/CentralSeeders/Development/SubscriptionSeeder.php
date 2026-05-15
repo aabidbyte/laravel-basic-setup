@@ -18,7 +18,6 @@ class SubscriptionSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Ensure we have the Lifetime Plan
         $lifetimePlan = Plan::where('tier', PlanTier::LIFETIME)->first();
 
         if (! $lifetimePlan) {
@@ -27,37 +26,36 @@ class SubscriptionSeeder extends Seeder
             return;
         }
 
-        // 2. Find the first tenant (usually org1 from CentralUserSeeder)
-        $firstTenant = Tenant::first();
+        $primaryOrganization = Tenant::whereHas('domains', function ($query): void {
+            $query->where('domain', 'acme.laravel-basic-setup.test');
+        })->first();
 
-        if ($firstTenant) {
-            // Check if it already has a subscription
-            $hasSubscription = Subscription::where('tenant_id', $firstTenant->id)->exists();
+        if ($primaryOrganization) {
+            $hasSubscription = Subscription::where('tenant_id', $primaryOrganization->tenant_id)->exists();
 
             if (! $hasSubscription) {
                 Subscription::create([
-                    'tenant_id' => $firstTenant->id,
+                    'tenant_id' => $primaryOrganization->tenant_id,
                     'plan_id' => $lifetimePlan->id,
                     'status' => SubscriptionStatus::ACTIVE,
                     'starts_at' => now(),
-                    'extras' => ['note' => 'Default lifetime plan for first tenant'],
+                    'extras' => ['note' => 'Default lifetime plan for primary seeded organization'],
                 ]);
 
-                $this->command->info("Assigned Lifetime Plan to tenant: {$firstTenant->name} ({$firstTenant->id})");
+                $this->command->info("Assigned Lifetime Plan to organization: {$primaryOrganization->name} ({$primaryOrganization->tenant_id})");
             }
         } else {
-            $this->command->warn('No tenants found to assign plans to.');
+            $this->command->warn('No primary seeded organization found to assign plans to.');
         }
 
-        // 3. Optionally assign some random plans to other tenants if they exist
-        $otherTenants = Tenant::where('id', '!=', $firstTenant?->id)->get();
+        $otherTenants = Tenant::where('tenant_id', '!=', $primaryOrganization?->tenant_id)->get();
         $randomPlans = Plan::where('tier', '!=', PlanTier::LIFETIME)->get();
 
         if ($otherTenants->isNotEmpty() && $randomPlans->isNotEmpty()) {
             foreach ($otherTenants as $tenant) {
-                if (! Subscription::where('tenant_id', $tenant->id)->exists()) {
+                if (! Subscription::where('tenant_id', $tenant->tenant_id)->exists()) {
                     Subscription::create([
-                        'tenant_id' => $tenant->id,
+                        'tenant_id' => $tenant->tenant_id,
                         'plan_id' => $randomPlans->random()->id,
                         'status' => SubscriptionStatus::ACTIVE,
                         'starts_at' => now(),

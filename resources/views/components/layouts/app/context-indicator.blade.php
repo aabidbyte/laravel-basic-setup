@@ -41,7 +41,7 @@
                 @if ($tier === 'central')
                     {{ config('app.name') }}
                 @else
-                    {{ $tenant->name ?? $tenant->id }}
+                    {{ $tenant->name ?? $tenant->tenant_id }}
                 @endif
             </span>
         </div>

@@ -25,10 +25,8 @@ class TenantFactory extends Factory
      */
     public function definition(): array
     {
-        $id = $this->faker->unique()->slug(1);
-
         return [
-            'id' => $id,
+            'slug' => $this->faker->unique()->slug(2),
             'name' => $this->faker->company(),
             'plan' => $this->faker->randomElement(['free', 'pro', 'enterprise']),
             'color' => $this->faker->randomElement(ThemeColorTypes::values()),
@@ -43,7 +41,7 @@ class TenantFactory extends Factory
     {
         return $this->afterCreating(function (Tenant $tenant) {
             $tenant->domains()->create([
-                'domain' => $tenant->id . '.' . config('tenancy.central_domains.0'),
+                'domain' => "{$tenant->slug}." . config('tenancy.central_domains.0'),
             ]);
         });
     }

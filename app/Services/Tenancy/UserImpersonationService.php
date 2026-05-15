@@ -119,7 +119,7 @@ class UserImpersonationService
                 Log::warning('Central impersonation denied because target belongs to tenants.', [
                     'actor_id' => $actor->id,
                     'target_id' => $target->id,
-                    'target_tenant_ids' => $target->tenants()->pluck('tenants.id')->all(),
+                    'target_tenant_ids' => $target->tenants()->pluck('tenants.tenant_id')->all(),
                 ]);
 
                 throw new AuthorizationException();

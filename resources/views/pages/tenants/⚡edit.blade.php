@@ -25,7 +25,7 @@ new class extends BasePageComponent {
      * Form fields
      */
     public string $name = '';
-    public string $tenant_id = '';
+    public string $slug = '';
     public ?string $plan = null;
     public string $color = 'neutral';
     public string $primary_domain = '';
@@ -66,7 +66,7 @@ new class extends BasePageComponent {
     {
         $this->model = $tenant;
         $this->name = (string) ($tenant->name ?? '');
-        $this->tenant_id = (string) ($tenant->id ?? '');
+        $this->slug = (string) ($tenant->slug ?? '');
         $this->plan = $tenant->getAttribute('plan');
         $this->color = (string) ($tenant->color ?? 'neutral');
         $this->primary_domain = (string) ($tenant->domains()->oldest()->first()?->domain ?? '');
@@ -91,11 +91,11 @@ new class extends BasePageComponent {
     #[Computed]
     public function cancelUrl(): string
     {
-        if ($this->isCreateMode || ! ($this->model?->id)) {
+        if ($this->isCreateMode || ! ($this->model?->tenant_id)) {
             return route('tenants.index');
         }
 
-        return route('tenants.show', $this->model->id);
+        return route('tenants.show', $this->model->tenant_id);
     }
 
     /**
@@ -129,7 +129,7 @@ new class extends BasePageComponent {
         $this->validate();
 
         $data = [
-            'id' => $this->tenant_id,
+            'slug' => $this->slug,
             'name' => $this->name,
             'plan' => $this->plan,
             'color' => $this->color,
@@ -142,7 +142,7 @@ new class extends BasePageComponent {
 
         $this->model = $tenantService->updateTenant($this->model, $data);
         $messageKey = 'tenancy.tenant_updated';
-        $redirectUrl = route('tenants.show', $this->model->id);
+        $redirectUrl = route('tenants.show', $this->model->tenant_id);
 
         $this->sendSuccessNotification($this->model, $messageKey);
         $this->redirect($redirectUrl);
@@ -156,7 +156,7 @@ new class extends BasePageComponent {
         $this->validate();
 
         $data = [
-            'id' => $this->tenant_id,
+            'slug' => $this->slug,
             'name' => $this->name,
             'plan' => $this->plan,
             'color' => $this->color,
@@ -171,7 +171,7 @@ new class extends BasePageComponent {
 
         $this->model = $tenantService->createTenant($data, $userIds);
         $messageKey = 'tenancy.tenant_created';
-        $redirectUrl = route('tenants.show', $this->model->id);
+        $redirectUrl = route('tenants.show', $this->model->tenant_id);
 
         $this->sendSuccessNotification($this->model, $messageKey);
         $this->redirect($redirectUrl);
@@ -197,7 +197,7 @@ new class extends BasePageComponent {
         ];
 
         if ($this->isCreateMode) {
-            $rules['tenant_id'] = ['required', 'string', 'alpha_dash', 'max:255', 'unique:tenants,id'];
+            $rules['slug'] = ['required', 'string', 'alpha_dash', 'max:255', 'unique:tenants,slug'];
             $rules['should_seed'] = ['boolean'];
         }
 
@@ -297,7 +297,7 @@ new class extends BasePageComponent {
     <section class="mx-auto w-full max-w-4xl"
              x-data="tenantEdit({
                  name: $wire.$entangle('name'),
-                 tenantId: $wire.$entangle('tenant_id'),
+                 slug: $wire.$entangle('slug'),
                  primaryDomain: $wire.$entangle('primary_domain'),
                  centralDomain: @js(config('tenancy.central_domains.0')),
                  isCreateMode: @js($isCreateMode)
@@ -322,14 +322,14 @@ new class extends BasePageComponent {
                                             placeholder="My Awesome Company" />
                             </div>
 
-                            <x-ui.input label="{{ __('tenancy.tenant_id') }}"
-                                        wire:model="tenant_id"
-                                        x-model="tenantId"
+                            <x-ui.input label="{{ __('tenancy.organization_slug') }}"
+                                        wire:model="slug"
+                                        x-model="slug"
                                         @input="handleInput()"
                                         required
                                         :disabled="!$isCreateMode"
                                         placeholder="my-company"
-                                        hint="{{ __('tenancy.tenant_id_hint') }}">
+                                        hint="{{ __('tenancy.organization_slug_hint') }}">
                                 <x-slot:prepend>
                                     <x-ui.icon name="at-symbol"
                                                size="sm"
@@ -386,7 +386,7 @@ new class extends BasePageComponent {
                                 </x-ui.button>
                             </div>
 
-                            <livewire:tables.domain-table :tenantId="$model->id" />
+                            <livewire:tables.domain-table :tenantId="$model->tenant_id" />
                         @endif
                     </div>
 
@@ -458,7 +458,7 @@ new class extends BasePageComponent {
                                 @endforelse
                             </div>
                         @else
-                            <livewire:tables.tenant-user-assignment-table :tenantId="$model->id" />
+                            <livewire:tables.tenant-user-assignment-table :tenantId="$model->tenant_id" />
                         @endif
                     </div>
                 </x-ui.form>
@@ -473,7 +473,7 @@ new class extends BasePageComponent {
             const register = () => {
                 Alpine.data('tenantEdit', (config) => ({
                     name: config.name || '',
-                    tenantId: config.tenantId || '',
+                    slug: config.slug || '',
                     primaryDomain: config.primaryDomain || '',
                     centralDomain: config.centralDomain || '',
                     autoSlug: config.isCreateMode || false,
@@ -481,7 +481,7 @@ new class extends BasePageComponent {
                     init() {
                         this.$watch('name', value => {
                             if (this.autoSlug) {
-                                this.tenantId = this.slugify(value);
+                                this.slug = this.slugify(value);
                                 this.syncPrimaryDomain();
                             }
                         });
@@ -502,8 +502,8 @@ new class extends BasePageComponent {
                     },
 
                     syncPrimaryDomain() {
-                        if (!this.primaryDomain && this.tenantId && this.centralDomain) {
-                            this.primaryDomain = `${this.tenantId}.${this.centralDomain}`;
+                        if (!this.primaryDomain && this.slug && this.centralDomain) {
+                            this.primaryDomain = `${this.slug}.${this.centralDomain}`;
                         }
                     }
                 }));

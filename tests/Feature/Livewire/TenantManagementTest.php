@@ -56,8 +56,8 @@ it('shows tenant user counts and supports tenant row clicks', function () {
         ->test('tables.tenant-table')
         ->assertSee('Table Tenant')
         ->assertSee('2')
-        ->call('handleRowClick', $tenant->id)
-        ->assertRedirect(route('tenants.show', $tenant->id));
+        ->call('handleRowClick', $tenant->tenant_id)
+        ->assertRedirect(route('tenants.show', $tenant->tenant_id));
 });
 
 it('can access the tenant show page', function () {
@@ -69,7 +69,7 @@ it('can access the tenant show page', function () {
     ]);
 
     actingAs($this->user)
-        ->get(route('tenants.show', $tenant->id))
+        ->get(route('tenants.show', $tenant->tenant_id))
         ->assertOk()
         ->assertSee('Test Tenant')
         ->assertSee(__('tenancy.overview'))
@@ -88,7 +88,7 @@ it('can render the tenant domains table', function () {
     $tenant->domains()->create(['domain' => "{$tenantId}.test"]);
 
     Livewire::actingAs($this->user)
-        ->test('tables.domain-table', ['tenantId' => $tenant->id])
+        ->test('tables.domain-table', ['tenantId' => $tenant->tenant_id])
         ->assertHasNoErrors();
 });
 
@@ -108,7 +108,7 @@ it('can access the tenant edit page', function () {
     ]);
 
     actingAs($this->user)
-        ->get(route('tenants.settings.edit', $tenant->id))
+        ->get(route('tenants.settings.edit', $tenant->tenant_id))
         ->assertOk()
         ->assertSee(__('tenancy.edit_tenant'))
         ->assertSeeLivewire('tables.tenant-user-assignment-table')
@@ -116,28 +116,27 @@ it('can access the tenant edit page', function () {
 });
 
 it('can create a tenant', function () {
-    $tenantId = 'new-' . Str::random(8);
-    $domain = "{$tenantId}.example.test";
+    $tenantSlug = 'new-' . Str::random(8);
+    $domain = "{$tenantSlug}.example.test";
 
     Livewire::actingAs($this->user)
         ->test('pages::tenants.edit', ['tenant' => null])
-        ->set('tenant_id', $tenantId)
+        ->set('slug', $tenantSlug)
         ->set('name', 'New Tenant')
         ->set('plan', $this->plan->uuid)
         ->set('color', 'primary')
         ->set('primary_domain', $domain)
         ->call('create')
         ->assertHasNoErrors()
-        ->assertRedirect(route('tenants.show', $tenantId));
+        ->assertRedirect();
 
     $this->assertDatabaseHas(Tenant::class, [
-        'id' => $tenantId,
+        'slug' => $tenantSlug,
         'name' => 'New Tenant',
         'plan' => $this->plan->uuid,
         'color' => 'primary',
     ]);
     $this->assertDatabaseHas('domains', [
-        'tenant_id' => $tenantId,
         'domain' => $domain,
     ]);
 });
@@ -160,15 +159,15 @@ it('can update a tenant', function () {
         ->set('primary_domain', $updatedDomain)
         ->call('save')
         ->assertHasNoErrors()
-        ->assertRedirect(route('tenants.show', $tenant->id));
+        ->assertRedirect(route('tenants.show', $tenant->tenant_id));
 
     $this->assertDatabaseHas('tenants', [
-        'id' => $tenantId,
+        'tenant_id' => $tenantId,
         'name' => 'Updated Name',
         'color' => 'secondary',
     ]);
     $this->assertDatabaseHas('domains', [
-        'tenant_id' => $tenantId,
+        'tenant_id' => $tenant->tenant_id,
         'domain' => $updatedDomain,
     ]);
 });
@@ -189,7 +188,7 @@ it('can add a domain from the tenant edit page', function () {
         ->assertHasNoErrors();
 
     $this->assertDatabaseHas('domains', [
-        'tenant_id' => $tenantId,
+        'tenant_id' => $tenant->tenant_id,
         'domain' => "{$tenantId}.extra.test",
     ]);
 });

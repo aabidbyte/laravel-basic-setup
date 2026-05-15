@@ -53,20 +53,20 @@ class TenantTable extends Datatable
             return Tenant::query()->whereRaw('1 = 0');
         }
 
-        $query = Tenant::query()->with(['planModel']);
+        $query = Tenant::query()->with(['domains', 'planModel']);
 
         // If user is not a super admin, only show tenants they belong to
         if (! $user->hasRole(Roles::SUPER_ADMIN)) {
-            $query->whereIn('id', $user->tenants->pluck('id'));
+            $query->whereIn('tenant_id', $user->tenants->pluck('tenant_id'));
         }
 
         // Hide the current tenant if we are in a tenant context
         if (tenant()) {
-            $query->where('id', '!=', tenant('id'));
+            $query->where('tenant_id', '!=', tenant()?->getTenantKey());
         }
 
         return $query
-            ->select(['tenants.id', 'tenants.name', 'tenants.plan', 'tenants.color', 'tenants.id as uuid'])
+            ->select(['tenants.id', 'tenants.tenant_id', 'tenants.slug', 'tenants.name', 'tenants.plan', 'tenants.color', 'tenants.tenant_id as uuid'])
             ->withCount('users');
     }
 
@@ -82,10 +82,14 @@ class TenantTable extends Datatable
                 ->format(fn ($value) => "<strong>{$value}</strong>")
                 ->html(),
 
-            Column::make(__('tenancy.tenant_id'), 'id')
+            Column::make(__('tenancy.organization_slug'), 'slug')
                 ->searchable()
                 ->sortable()
                 ->class('text-xs text-base-content/50'),
+
+            Column::make(__('tenancy.domains'), 'domains')
+                ->format(fn ($value, Tenant $tenant): string => $this->renderDomainsBadge($tenant))
+                ->html(),
 
             Column::make(__('tenancy.plan'), 'plan')
                 ->format(fn ($value, $row) => $row->planModel?->name ?? __('tenancy.free_plan')),
@@ -124,6 +128,24 @@ class TenantTable extends Datatable
         ];
     }
 
+    protected function renderDomainsBadge(Tenant $tenant): string
+    {
+        $firstDomain = $tenant->domains->first()?->domain;
+
+        if (! $firstDomain) {
+            return '<span class="text-base-content/40 text-xs">-</span>';
+        }
+
+        $remainingDomains = \max($tenant->domains->count() - 1, 0);
+        $label = $firstDomain . ($remainingDomains > 0 ? " +{$remainingDomains}" : '');
+
+        return view('components.ui.badge', [
+            'color' => $tenant->color ?: 'neutral',
+            'size' => 'sm',
+            'text' => $label,
+        ])->render();
+    }
+
     /**
      * Find a model by its UUID.
      *
@@ -135,7 +157,7 @@ class TenantTable extends Datatable
         return Tenant::query()
             ->with(['planModel'])
             ->withCount('users')
-            ->whereKey($uuid)
+            ->where('tenant_id', $uuid)
             ->first();
     }
 
@@ -150,12 +172,12 @@ class TenantTable extends Datatable
             ->icon('arrow-path')
             ->color('success')
             ->variant('ghost')
-            ->execute(fn ($tenant) => $this->switchTo($tenant->id));
+            ->execute(fn ($tenant) => $this->switchTo($tenant->tenant_id));
 
         if (Route::has('tenants.show')) {
             $actions[] = Action::make('view', __('actions.view'))
                 ->icon('eye')
-                ->route(fn ($tenant) => route('tenants.show', $tenant->id))
+                ->route(fn ($tenant) => route('tenants.show', $tenant->tenant_id))
                 ->variant('ghost')
                 ->color('info')
                 ->can(PolicyAbilities::VIEW);
@@ -164,7 +186,7 @@ class TenantTable extends Datatable
         if (Route::has('tenants.settings.edit')) {
             $actions[] = Action::make('edit', __('actions.edit'))
                 ->icon('pencil')
-                ->route(fn ($tenant) => route('tenants.settings.edit', $tenant->id))
+                ->route(fn ($tenant) => route('tenants.settings.edit', $tenant->tenant_id))
                 ->variant('ghost')
                 ->color('primary')
                 ->can(PolicyAbilities::UPDATE);
@@ -194,12 +216,12 @@ class TenantTable extends Datatable
     {
         if ($this->isSwitcher) {
             return Action::make('switch', __('tenancy.switch'))
-                ->execute(fn ($tenant) => $this->switchTo($tenant->id));
+                ->execute(fn ($tenant) => $this->switchTo($tenant->tenant_id));
         }
 
         if (Route::has('tenants.show')) {
             return Action::make('view', __('actions.view'))
-                ->route(fn ($tenant) => route('tenants.show', $tenant->id))
+                ->route(fn ($tenant) => route('tenants.show', $tenant->tenant_id))
                 ->can(PolicyAbilities::VIEW);
         }
 
@@ -223,7 +245,7 @@ class TenantTable extends Datatable
         }
 
         // Protection: Don't switch to the current tenant
-        if (tenant('id') === $tenantId) {
+        if (tenant()?->getTenantKey() === $tenantId) {
             $this->dispatch('notify', [
                 'type' => 'info',
                 'message' => __('tenancy.already_in_tenant'),
@@ -232,15 +254,15 @@ class TenantTable extends Datatable
             return;
         }
 
-        $tenant = Tenant::find($tenantId);
+        $tenant = Tenant::where('tenant_id', $tenantId)->first();
 
-        if (! $tenant || (! $user->hasRole(Roles::SUPER_ADMIN) && ! $user->tenants->contains('id', $tenantId))) {
+        if (! $tenant || (! $user->hasRole(Roles::SUPER_ADMIN) && ! $user->tenants->contains('tenant_id', $tenantId))) {
             Log::warning('Tenant switch denied by access check.', [
                 'target_tenant_id' => $tenantId,
                 'tenant_found' => $tenant instanceof Tenant,
                 'user_id' => $user->id,
                 'user_is_super_admin' => $user->hasRole(Roles::SUPER_ADMIN),
-                'user_loaded_tenant_ids' => $user->tenants->pluck('id')->all(),
+                'user_loaded_tenant_ids' => $user->tenants->pluck('tenant_id')->all(),
             ]);
 
             $this->dispatch('notify', [

@@ -25,8 +25,8 @@ test('level specific logs use central path outside tenant context', function ():
 test('level specific logs use tenant path inside tenant context', function (): void {
     config(['tenancy.bootstrappers' => []]);
 
-    $tenant = new Tenant(['id' => 'tenant-alpha']);
-    $tenantPath = storage_path('logs/tenant-alpha/info/laravel-' . now()->format('Y-m-d') . '.log');
+    $tenant = new Tenant(['tenant_id' => '11111111-1111-4111-8111-111111111111', 'slug' => 'tenant-alpha']);
+    $tenantPath = storage_path('logs/tenant-alpha__11111111/info/laravel-' . now()->format('Y-m-d') . '.log');
     $centralPath = storage_path('logs/info/laravel-' . now()->format('Y-m-d') . '.log');
 
     File::delete($tenantPath);
@@ -46,8 +46,8 @@ test('level specific logs use tenant path inside tenant context', function (): v
 test('level specific logs return to central path after tenancy ends', function (): void {
     config(['tenancy.bootstrappers' => []]);
 
-    $tenant = new Tenant(['id' => 'tenant-beta']);
-    $tenantPath = storage_path('logs/tenant-beta/info/laravel-' . now()->format('Y-m-d') . '.log');
+    $tenant = new Tenant(['tenant_id' => '22222222-2222-4222-8222-222222222222', 'slug' => 'tenant-beta']);
+    $tenantPath = storage_path('logs/tenant-beta__22222222/info/laravel-' . now()->format('Y-m-d') . '.log');
     $centralPath = storage_path('logs/info/laravel-' . now()->format('Y-m-d') . '.log');
 
     File::delete($tenantPath);

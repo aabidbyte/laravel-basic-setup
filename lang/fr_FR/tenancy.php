@@ -14,6 +14,9 @@ return [
     'central_platform' => 'Plateforme Centrale',
     'platform_initials' => 'P',
     'system_admin' => 'Administration Système',
+    'switch_to_central' => 'Basculer vers la plateforme centrale',
+    'switch_to_central_description' => 'Retourner à l\'espace d\'administration.',
+    'central_access_denied' => 'Vous n\'avez pas la permission de basculer vers la plateforme centrale.',
 
     // Impersonation
     'impersonate_user' => 'Impersonner un utilisateur',
@@ -35,8 +38,10 @@ return [
     'edit_tenant' => 'Modifier le locataire',
     'edit_tenant_description' => 'Modifier les paramètres du locataire :name.',
     'tenant_name' => 'Nom du locataire',
-    'tenant_id' => 'ID du locataire (Slug)',
-    'tenant_id_hint' => 'Ceci sera utilisé pour le sous-domaine (ex: societe.domaine.com)',
+    'tenant_id' => 'UUID du locataire',
+    'tenant_uuid' => 'UUID du locataire',
+    'organization_slug' => 'Slug de l’organisation',
+    'organization_slug_hint' => 'Utilisé pour les opérations lisibles comme les domaines et les dossiers de logs (ex: societe.domaine.com).',
     'plan' => 'Plan',
     'users_count' => 'Utilisateurs',
     'domain_configuration' => 'Configuration du domaine',

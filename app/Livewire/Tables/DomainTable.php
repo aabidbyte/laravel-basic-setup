@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Livewire\Tables;
 
 use App\Livewire\DataTable\Datatable;
+use App\Models\Domain;
 use App\Models\Tenant;
 use App\Services\DataTable\Builders\Action;
 use App\Services\DataTable\Builders\Column;
 use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Gate;
-use Stancl\Tenancy\Database\Models\Domain;
 
 class DomainTable extends Datatable
 {
@@ -67,7 +67,7 @@ class DomainTable extends Datatable
      */
     public function deleteDomain(Domain $domain): void
     {
-        $tenant = Tenant::find($this->tenantId);
+        $tenant = Tenant::where('tenant_id', $this->tenantId)->first();
 
         if (! $tenant instanceof Tenant) {
             return;

@@ -20,7 +20,7 @@ class TenantService
     {
         return DB::transaction(function () use ($data, $userIds) {
             $tenant = Tenant::create([
-                'id' => $data['id'],
+                'slug' => $data['slug'],
                 'name' => $data['name'],
                 'plan' => $data['plan'] ?? null,
                 'color' => $data['color'] ?? 'neutral',
@@ -28,7 +28,7 @@ class TenantService
             ]);
 
             $tenant->domains()->create([
-                'domain' => $data['domain'] ?? $data['id'] . '.' . config('tenancy.central_domains.0'),
+                'domain' => $data['domain'] ?? $data['slug'] . '.' . config('tenancy.central_domains.0'),
             ]);
 
             if (! empty($userIds)) {
@@ -47,6 +47,7 @@ class TenantService
         return DB::transaction(function () use ($tenant, $data, $userIds) {
             $tenant->update([
                 'name' => $data['name'],
+                'slug' => $data['slug'] ?? $tenant->slug,
                 'plan' => $data['plan'] ?? $tenant->plan,
                 'color' => $data['color'] ?? $tenant->color,
             ]);

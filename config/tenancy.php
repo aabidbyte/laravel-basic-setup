@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Models\Domain;
+use App\Models\Tenant;
 use Illuminate\Support\Str;
 use Stancl\Tenancy\Bootstrappers\CacheTenancyBootstrapper;
 use Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper;
 use Stancl\Tenancy\Bootstrappers\FilesystemTenancyBootstrapper;
 use Stancl\Tenancy\Bootstrappers\QueueTenancyBootstrapper;
 use Stancl\Tenancy\Bootstrappers\RedisTenancyBootstrapper;
-use Stancl\Tenancy\Database\Models\Domain;
-use Stancl\Tenancy\Database\Models\Tenant;
 use Stancl\Tenancy\Features\CrossDomainRedirect;
 use Stancl\Tenancy\Features\TelescopeTags;
 use Stancl\Tenancy\Features\TenantConfig;
@@ -19,7 +19,6 @@ use Stancl\Tenancy\Features\ViteBundler;
 use Stancl\Tenancy\TenantDatabaseManagers\MySQLDatabaseManager;
 use Stancl\Tenancy\TenantDatabaseManagers\PostgreSQLDatabaseManager;
 use Stancl\Tenancy\TenantDatabaseManagers\SQLiteDatabaseManager;
-use Stancl\Tenancy\UUIDGenerator;
 
 /**
  * stancl/tenancy RedisTenancyBootstrapper uses ext-redis (\Redis::OPT_PREFIX).
@@ -39,8 +38,8 @@ if (\extension_loaded('redis') && \env('REDIS_CLIENT', 'phpredis') === 'phpredis
 }
 
 return [
-    'tenant_model' => App\Models\Tenant::class,
-    'id_generator' => UUIDGenerator::class,
+    'tenant_model' => Tenant::class,
+    'id_generator' => null,
 
     'domain_model' => Domain::class,
 
