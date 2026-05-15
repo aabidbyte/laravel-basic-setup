@@ -208,13 +208,13 @@ class MyCspPreset implements Preset
             [
                 'name' => 'horizon',
                 'path' => config('horizon.path', 'horizon'),
-                'allow_inline_scripts' => false,
+                'allow_inline_scripts' => true,
                 'allow_unsafe_eval' => true,
             ],
             [
                 'name' => 'telescope',
                 'path' => config('telescope.path', 'telescope'),
-                'allow_inline_scripts' => false,
+                'allow_inline_scripts' => true,
                 'allow_unsafe_eval' => true,
             ],
             [

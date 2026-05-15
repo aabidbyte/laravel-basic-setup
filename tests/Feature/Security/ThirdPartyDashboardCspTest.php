@@ -13,14 +13,18 @@ it('keeps the default application csp strict for inline scripts and unsafe eval'
         ->not->toContain("'unsafe-eval'");
 });
 
-it('allows unsafe eval only on horizon and telescope dashboards', function (string $path): void {
+it('allows inline dashboard scripts and unsafe eval only on horizon and telescope dashboards', function (string $path): void {
     setRequestPath($path);
 
     $scriptDirective = scriptDirective();
 
     expect($scriptDirective)
         ->toContain("'unsafe-eval'")
-        ->not->toContain("'unsafe-inline'");
+        ->toContain("'unsafe-inline'");
+
+    expect(cspDirective('script-src-elem'))
+        ->toContain("'self'")
+        ->toContain("'unsafe-inline'");
 })->with([
     'horizon' => ['/admin/system/queue-monitor'],
     'telescope' => ['/admin/system/debug/monitoring'],
