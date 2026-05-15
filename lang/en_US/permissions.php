@@ -21,6 +21,7 @@ return [
         'email_layouts' => 'Email Layouts',
         'tenants' => 'Tenants',
         'plans' => 'Plans',
+        'features' => 'Features',
         'subscriptions' => 'Subscriptions',
         'domains' => 'Domains',
         'trash' => 'Trash',

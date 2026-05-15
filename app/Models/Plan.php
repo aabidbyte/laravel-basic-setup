@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\Plan\PlanBillingCycle;
 use App\Enums\Plan\PlanTier;
 use App\Models\Base\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -53,6 +54,7 @@ class Plan extends BaseModel
     {
         return [
             'tier' => PlanTier::class,
+            'billing_cycle' => PlanBillingCycle::class,
             'price' => 'decimal:2',
             'features' => 'array',
             'is_active' => 'boolean',

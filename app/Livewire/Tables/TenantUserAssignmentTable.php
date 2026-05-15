@@ -16,14 +16,23 @@ use App\Services\DataTable\Builders\BulkAction;
 use App\Services\DataTable\Builders\Column;
 use App\Services\DataTable\Builders\Filter;
 use App\Services\Notifications\NotificationBuilder;
+use App\Support\Tenancy\TenantAudience;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Schema;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\On;
 
 class TenantUserAssignmentTable extends UserTable
 {
+    private const ASSIGNMENTS_UPDATED_EVENT = 'tenant-user-assignments-updated';
+
     #[Locked]
     public string $tenantId = '';
+
+    public ?string $queryStringAlias = 'assigned_users';
+
+    protected string $datatableIdentifier = 'assigned-users';
 
     public function mount(string $tenantId = ''): void
     {
@@ -34,12 +43,20 @@ class TenantUserAssignmentTable extends UserTable
 
     public function baseQuery(): Builder
     {
-        return User::query()
-            ->with(['roles'])
-            ->withExists([
-                'tenants as assigned_to_tenant' => fn (Builder $query) => $query->where('tenants.tenant_id', $this->tenantId),
-            ])
+        $relations = ['roles', 'tenants'];
+
+        if (Schema::hasTable('teams')) {
+            $relations[] = 'teams';
+        }
+
+        $query = User::query()
+            ->with($relations)
             ->select('users.*');
+
+        $this->tenantMembershipQuery()->apply($query, $this->tenantAudience());
+        $this->applyAssignmentScope($query);
+
+        return $query;
     }
 
     /**
@@ -47,7 +64,7 @@ class TenantUserAssignmentTable extends UserTable
      */
     public function columns(): array
     {
-        return [
+        $columns = [
             Column::make(__('table.users.name'), 'name')
                 ->sortable()
                 ->searchable()
@@ -66,12 +83,30 @@ class TenantUserAssignmentTable extends UserTable
                     : DataTableUi::renderComponent(DataTableUi::UI_BADGE, __('users.inactive'), ['color' => 'error', 'size' => 'sm']))
                 ->html(),
 
-            Column::make(__('table.users.assignment'), 'assigned_to_tenant')
-                ->format(fn ($value) => $value
-                    ? DataTableUi::renderComponent(DataTableUi::UI_BADGE, __('tenancy.assigned'), ['color' => 'success', 'size' => 'sm'])
-                    : DataTableUi::renderComponent(DataTableUi::UI_BADGE, __('tenancy.not_assigned'), ['color' => 'ghost', 'size' => 'sm']))
-                ->html(),
+            Column::make(__('table.users.roles'), 'roles_for_datatable')
+                ->content(function (User $user) {
+                    $roles = $user->roles->map(fn (Role $role) => $role->display_name ?? $role->name)->toArray();
+
+                    return \count($roles) > 3
+                        ? [trans_choice('users.roles_count', \count($roles))]
+                        : $roles;
+                })
+                ->type(DataTableUi::UI_BADGE, ['color' => 'primary', 'size' => 'sm']),
         ];
+
+        if (Schema::hasTable('teams')) {
+            $columns[] = Column::make(__('table.users.teams'), 'teams_for_datatable')
+                ->content(function (User $user) {
+                    $teams = $user->teams->pluck('name')->toArray();
+
+                    return \count($teams) > 3
+                        ? [trans_choice('users.teams_count', \count($teams))]
+                        : $teams;
+                })
+                ->type(DataTableUi::UI_BADGE, ['color' => 'secondary', 'size' => 'sm']);
+        }
+
+        return $columns;
     }
 
     /**
@@ -79,39 +114,28 @@ class TenantUserAssignmentTable extends UserTable
      */
     protected function getFilterDefinitions(): array
     {
-        return [
-            Filter::make('assignment', __('table.users.filters.assignment'))
-                ->placeholder(__('table.users.filters.all_assignments'))
-                ->type(DataTableFilterType::SELECT)
-                ->options([
-                    'assigned' => __('tenancy.assigned'),
-                    'unassigned' => __('tenancy.not_assigned'),
-                ])
-                ->execute(function (Builder $query, string $value): void {
-                    if ($value === 'assigned') {
-                        $query->whereHas('tenants', fn (Builder $tenantQuery) => $tenantQuery->where('tenants.tenant_id', $this->tenantId));
-                    }
+        $filters = [];
 
-                    if ($value === 'unassigned') {
-                        $query->whereDoesntHave('tenants', fn (Builder $tenantQuery) => $tenantQuery->where('tenants.tenant_id', $this->tenantId));
-                    }
-                }),
+        if ($this->canFilterByTenant()) {
+            $filters[] = $this->tenantFilter();
+        }
 
-            Filter::make('role', __('table.users.filters.role'))
-                ->placeholder(__('table.users.filters.all_roles'))
-                ->type(DataTableFilterType::SELECT)
-                ->relationship('roles', 'name')
-                ->options($this->getRoleOptions()),
+        $filters[] = Filter::make('role', __('table.users.filters.role'))
+            ->placeholder(__('table.users.filters.all_roles'))
+            ->type(DataTableFilterType::SELECT)
+            ->relationship('roles', 'name')
+            ->options($this->getRoleOptions());
 
-            Filter::make('is_active', __('table.users.filters.status'))
-                ->placeholder(__('table.users.filters.all_status'))
-                ->type(DataTableFilterType::SELECT)
-                ->options([
-                    '1' => __('table.users.status_active'),
-                    '0' => __('table.users.status_inactive'),
-                ])
-                ->valueMapping(['1' => true, '0' => false]),
-        ];
+        $filters[] = Filter::make('is_active', __('table.users.filters.status'))
+            ->placeholder(__('table.users.filters.all_status'))
+            ->type(DataTableFilterType::SELECT)
+            ->options([
+                '1' => __('table.users.status_active'),
+                '0' => __('table.users.status_inactive'),
+            ])
+            ->valueMapping(['1' => true, '0' => false]);
+
+        return $filters;
     }
 
     /**
@@ -130,14 +154,19 @@ class TenantUserAssignmentTable extends UserTable
      */
     protected function rowActions(): array
     {
-        return [
-            Action::make('select', __('actions.select'))
-                ->icon('check')
+        return [];
+    }
+
+    protected function rowClickAction(): Action
+    {
+        return
+            Action::make('remove', __('tenancy.detach_user'))
+                ->icon('user-minus')
                 ->variant('ghost')
-                ->color('primary')
-                ->execute(fn (User $user) => $this->toggleAssignment($user))
-                ->can(Permissions::EDIT_TENANTS(), false),
-        ];
+                ->color('error')
+                ->confirm(__('tenancy.detach_user_confirm'))
+                ->execute(fn (User $user) => $this->detachUser($user))
+                ->can(Permissions::EDIT_TENANTS(), false);
     }
 
     /**
@@ -146,14 +175,7 @@ class TenantUserAssignmentTable extends UserTable
     protected function bulkActions(): array
     {
         return [
-            BulkAction::make('assign', __('tenancy.assign_selected_users'))
-                ->icon('user-plus')
-                ->variant('ghost')
-                ->color('success')
-                ->execute(fn (Collection $users) => $this->assignUsers($users))
-                ->can(Permissions::EDIT_TENANTS()),
-
-            BulkAction::make('detach', __('tenancy.detach_selected_users'))
+            BulkAction::make('remove', __('tenancy.detach_selected_users'))
                 ->icon('user-minus')
                 ->variant('ghost')
                 ->color('warning')
@@ -165,12 +187,16 @@ class TenantUserAssignmentTable extends UserTable
 
     public function rowClick(string $uuid): ?Action
     {
-        return Action::make()
-            ->execute(fn (User $user) => $this->toggleAssignment($user))
-            ->can(Permissions::EDIT_TENANTS(), false);
+        return $this->rowClickAction();
     }
 
-    protected function toggleAssignment(User $user): void
+    #[On('tenant-user-assignments-updated.{tenantId}')]
+    public function refreshTenantUserAssignments(): void
+    {
+        $this->refreshTable();
+    }
+
+    protected function assignUser(User $user): void
     {
         $tenant = $this->tenant();
 
@@ -178,10 +204,12 @@ class TenantUserAssignmentTable extends UserTable
             return;
         }
 
-        $tenant->users()->toggle([$user->id]);
+        $this->authorize(PolicyAbilities::UPDATE, $tenant);
+        $tenant->users()->syncWithoutDetaching([$user->id]);
+        $this->dispatchTenantUserAssignmentsUpdated();
 
         NotificationBuilder::make()
-            ->title('tenancy.user_assignment_updated')
+            ->title('tenancy.user_assigned_successfully')
             ->success()
             ->send();
     }
@@ -194,10 +222,30 @@ class TenantUserAssignmentTable extends UserTable
             return;
         }
 
+        $this->authorize(PolicyAbilities::UPDATE, $tenant);
         $tenant->users()->syncWithoutDetaching($users->pluck('id')->all());
+        $this->dispatchTenantUserAssignmentsUpdated();
 
         NotificationBuilder::make()
             ->title('tenancy.users_assigned_successfully')
+            ->success()
+            ->send();
+    }
+
+    protected function detachUser(User $user): void
+    {
+        $tenant = $this->tenant();
+
+        if (! $tenant instanceof Tenant) {
+            return;
+        }
+
+        $this->authorize(PolicyAbilities::UPDATE, $tenant);
+        $tenant->users()->detach($user->id);
+        $this->dispatchTenantUserAssignmentsUpdated();
+
+        NotificationBuilder::make()
+            ->title('tenancy.user_detached_successfully')
             ->success()
             ->send();
     }
@@ -210,7 +258,9 @@ class TenantUserAssignmentTable extends UserTable
             return;
         }
 
+        $this->authorize(PolicyAbilities::UPDATE, $tenant);
         $tenant->users()->detach($users->pluck('id')->all());
+        $this->dispatchTenantUserAssignmentsUpdated();
 
         NotificationBuilder::make()
             ->title('tenancy.users_detached_successfully')
@@ -221,5 +271,32 @@ class TenantUserAssignmentTable extends UserTable
     protected function tenant(): ?Tenant
     {
         return Tenant::where('tenant_id', $this->tenantId)->first();
+    }
+
+    protected function tenantAudience(): TenantAudience
+    {
+        $audience = TenantAudience::forTenant($this->tenantId, $this->currentActor());
+        $tenantFilter = $this->selectedTenantFilter();
+
+        if ($tenantFilter === null || ! $this->canFilterByTenant()) {
+            return $audience;
+        }
+
+        return $this->tenantMembershipQuery()
+            ->audienceFromFilter(TenantAudience::visibleTo($this->currentActor()), $tenantFilter);
+    }
+
+    protected function applyAssignmentScope(Builder $query): void
+    {
+        $query->whereHas('tenants', fn (Builder $tenantQuery) => $tenantQuery->where('tenants.tenant_id', $this->tenantId));
+    }
+
+    protected function dispatchTenantUserAssignmentsUpdated(): void
+    {
+        if ($this->tenantId === '') {
+            return;
+        }
+
+        $this->dispatch(self::ASSIGNMENTS_UPDATED_EVENT . ".{$this->tenantId}");
     }
 }

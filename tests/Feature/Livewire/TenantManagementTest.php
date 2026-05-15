@@ -112,6 +112,7 @@ it('can access the tenant edit page', function () {
         ->assertOk()
         ->assertSee(__('tenancy.edit_tenant'))
         ->assertSeeLivewire('tables.tenant-user-assignment-table')
+        ->assertSeeLivewire('tables.tenant-assignable-user-table')
         ->assertSeeLivewire('tables.domain-table');
 });
 

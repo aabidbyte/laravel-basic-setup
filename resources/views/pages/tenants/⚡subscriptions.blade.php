@@ -11,6 +11,9 @@ use App\Models\PlanFeature;
 use App\Models\Subscription;
 use App\Models\Tenant;
 use App\Models\TenantFeatureOverride;
+use App\Services\Features\FeatureResolver;
+use App\Services\Features\FeatureValueNormalizer;
+use App\Services\Subscriptions\SubscriptionPeriodCalculator;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
@@ -54,12 +57,14 @@ new class extends BasePageComponent {
             ->where('status', SubscriptionStatus::ACTIVE)
             ->update(['status' => SubscriptionStatus::CANCELED]);
 
+        $period = app(SubscriptionPeriodCalculator::class)->forPlan($plan);
+
         Subscription::create([
             'tenant_id' => $this->tenant->tenant_id,
             'plan_id' => $plan->id,
             'status' => SubscriptionStatus::ACTIVE,
-            'starts_at' => now(),
-            'ends_at' => $plan->billing_cycle === 'monthly' ? now()->addMonth() : ($plan->billing_cycle === 'yearly' ? now()->addYear() : null),
+            'starts_at' => $period['starts_at'],
+            'ends_at' => $period['ends_at'],
         ]);
 
         $this->dispatch('notify', [
@@ -160,6 +165,12 @@ new class extends BasePageComponent {
             ->get();
     }
 
+    #[Computed]
+    public function effectiveFeatures(): Collection
+    {
+        return app(FeatureResolver::class)->effectiveFeatures($this->tenant);
+    }
+
     public function getPageSubtitle(): ?string
     {
         return __('subscriptions.subtitle', ['name' => $this->tenant->name]);
@@ -209,7 +220,7 @@ new class extends BasePageComponent {
     private function featureOverrideRules(): array
     {
         return [
-            'selectedFeatureId' => ['required', Rule::exists('features', 'id')],
+            'selectedFeatureId' => ['required', Rule::exists('central.features', 'id')],
             'overrideValue' => ['nullable', 'string', 'max:255'],
             'overrideEnabled' => ['boolean'],
             'overrideStartsAt' => ['nullable', 'date'],
@@ -275,6 +286,28 @@ new class extends BasePageComponent {
                 <livewire:tables.subscription-table :tenant="$tenant" />
             </x-ui.card>
 
+            <x-ui.card title="{{ __('subscriptions.effective_features') }}"
+                       description="{{ __('subscriptions.effective_features_description') }}">
+                <div class="divide-base-200 divide-y">
+                    @foreach ($this->effectiveFeatures as $resolvedFeature)
+                        <div class="grid grid-cols-1 gap-2 py-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center">
+                            <div class="min-w-0">
+                                <p class="truncate font-medium">{{ $resolvedFeature['feature']->label() }}</p>
+                                <p class="text-base-content/60 text-xs">{{ $resolvedFeature['feature']->key }}</p>
+                            </div>
+                            <x-ui.badge :color="$resolvedFeature['enabled'] ? 'success' : 'ghost'"
+                                        size="sm">
+                                {{ app(FeatureValueNormalizer::class)->display($resolvedFeature['value']) }}
+                            </x-ui.badge>
+                            <x-ui.badge variant="outline"
+                                        size="sm">
+                                {{ __("features.sources.{$resolvedFeature['source']}") }}
+                            </x-ui.badge>
+                        </div>
+                    @endforeach
+                </div>
+            </x-ui.card>
+
             <x-ui.card title="{{ __('subscriptions.plan_features') }}"
                        description="{{ __('subscriptions.plan_features_description') }}">
                 @if ($this->currentPlanFeatures->isNotEmpty())
@@ -325,7 +358,7 @@ new class extends BasePageComponent {
                                     <div>
                                         <p class="font-bold">{{ $plan->name }}</p>
                                         <p class="text-base-content/60 text-xs">{{ $plan->price }}
-                                            {{ $plan->currency }} / {{ __("plans.cycles.{$plan->billing_cycle}") }}
+                                            {{ $plan->currency }} / {{ $plan->billing_cycle->label() }}
                                         </p>
                                     </div>
                                 </div>

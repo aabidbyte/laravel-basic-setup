@@ -628,6 +628,26 @@ Sync specific model attributes between tenant databases and the central database
 - A pivot table in the central DB links users ↔ tenants
 - Use `TenantPivot` for the `belongsToMany` pivot model
 
+### Central tenant membership queries
+
+For central database models that relate to tenants through a `tenants()` relationship, use the shared query workflow instead of duplicating access rules:
+
+- `App\Support\Tenancy\TenantAudience` describes the requested slice: all tenant members, a specific tenant, central-only records, or all records.
+- `App\Services\Tenancy\TenantMembershipQuery` applies that slice to an Eloquent builder and intersects it with the actor's tenant memberships unless the actor has the `super_admin` role.
+- "All Tenants" means records attached to at least one tenant. Central-only records are intentionally separate and should be requested with `TenantAudience::centralOnly()` or the `TenantMembershipQuery::CENTRAL_RECORDS_FILTER` datatable option.
+- Non-super-admin actors only see records attached to tenants they belong to. They do not see central-only records through this workflow.
+
+Example:
+
+```php
+$query = User::query()->with('tenants')->select('users.*');
+
+app(TenantMembershipQuery::class)->apply(
+    $query,
+    TenantAudience::visibleTo($actor),
+);
+```
+
 ### Key concepts
 - `getSyncedAttributeNames()` — only these attributes sync between DBs (others are DB-local)
 - Saving a synced model fires `SyncedResourceSaved` → `UpdateSyncedResource` listener syncs all DBs

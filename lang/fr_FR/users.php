@@ -23,10 +23,10 @@ return [
     'password_confirmation' => 'Confirmer le mot de passe',
     'roles' => 'Rôles',
     'teams' => 'Équipes',
-    'tenants' => 'Espaces de travail',
+    'tenants' => 'Locataires',
     'roles_count' => '{1} :count Rôle|[2,*] :count Rôles',
     'teams_count' => '{1} :count Équipe|[2,*] :count Équipes',
-    'tenants_count' => '{1} :count Espace de travail|[2,*] :count Espaces de travail',
+    'tenants_count' => '{1} :count Locataire|[2,*] :count Locataires',
     'primary_team' => 'Équipe principale',
     'no_primary_team' => 'Aucune équipe principale',
     'create' => [

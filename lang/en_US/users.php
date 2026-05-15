@@ -23,10 +23,10 @@ return [
     'password_confirmation' => 'Confirm Password',
     'roles' => 'Roles',
     'teams' => 'Teams',
-    'tenants' => 'Workspaces',
+    'tenants' => 'Tenants',
     'roles_count' => '{1} :count Role|[2,*] :count Roles',
     'teams_count' => '{1} :count Team|[2,*] :count Teams',
-    'tenants_count' => '{1} :count Workspace|[2,*] :count Workspaces',
+    'tenants_count' => '{1} :count Tenant|[2,*] :count Tenants',
     'primary_team' => 'Primary Team',
     'no_primary_team' => 'No Primary Team',
     'create' => [

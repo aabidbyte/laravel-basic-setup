@@ -65,6 +65,13 @@ class SideBarMenuService
                             ->route('teams.index')
                             ->activeRoutes('teams.*')
                             ->show(Auth::user()?->can(Permissions::VIEW_TEAMS()) ?? false),
+                    ),
+
+                // Tenancy group (collapsible)
+                NavigationItem::make()
+                    ->title(__('navigation.tenancy'))
+                    ->icon('building-office')
+                    ->items(
                         NavigationItem::make()
                             ->title(__('navigation.tenants'))
                             ->route('tenants.index')
@@ -75,6 +82,16 @@ class SideBarMenuService
                             ->route('plans.index')
                             ->activeRoutes('plans.*')
                             ->show(Auth::user()?->can(Permissions::VIEW_PLANS()) ?? false),
+                        NavigationItem::make()
+                            ->title(__('navigation.features'))
+                            ->route('features.index')
+                            ->activeRoutes('features.*')
+                            ->show(Auth::user()?->can(Permissions::VIEW_FEATURES()) ?? false),
+                        NavigationItem::make()
+                            ->title(__('navigation.subscriptions'))
+                            ->route('subscriptions.index')
+                            ->activeRoutes('subscriptions.*')
+                            ->show(Auth::user()?->can(Permissions::VIEW_SUBSCRIPTIONS()) ?? false),
                     ),
 
                 // Email Templates (Unified)

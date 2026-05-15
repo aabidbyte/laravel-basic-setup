@@ -4,15 +4,29 @@ declare(strict_types=1);
 
 namespace App\Livewire\Tables;
 
+use App\Constants\Auth\PolicyAbilities;
 use App\Livewire\DataTable\Datatable;
 use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\Tenant;
+use App\Services\DataTable\Builders\Action;
 use App\Services\DataTable\Builders\Column;
+use App\Services\Notifications\NotificationBuilder;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Route;
 
 class SubscriptionTable extends Datatable
 {
+    /**
+     * The table title.
+     */
+    public ?string $title = 'subscriptions.list_title';
+
+    /**
+     * Whether to show the search bar.
+     */
+    public bool $showSearch = true;
+
     public ?Tenant $tenant = null;
 
     public ?Plan $plan = null;
@@ -22,11 +36,21 @@ class SubscriptionTable extends Datatable
     public string $sortDirection = 'desc';
 
     /**
+     * Mount the component and authorize access.
+     */
+    public function mount(): void
+    {
+        $this->authorize(PolicyAbilities::VIEW_ANY, Subscription::class);
+    }
+
+    /**
      * Get the base query.
      */
     public function baseQuery(): Builder
     {
-        $query = Subscription::query()->select('subscriptions.*');
+        $query = Subscription::query()
+            ->select('subscriptions.*')
+            ->with(['plan', 'tenant']);
 
         if ($this->tenant) {
             $query->where('tenant_id', $this->tenant->tenant_id);
@@ -36,7 +60,7 @@ class SubscriptionTable extends Datatable
             $query->where('plan_id', $this->plan->id);
         }
 
-        return $query->with(['plan', 'tenant']);
+        return $query;
     }
 
     /**
@@ -48,13 +72,13 @@ class SubscriptionTable extends Datatable
 
         if (! $this->plan) {
             $columns[] = Column::make(__('subscriptions.plan'), 'plan.name')
-                ->format(fn ($value) => "<strong>{$value}</strong>")
+                ->format(fn ($value) => '<strong>' . ($value ?? __('subscriptions.no_plan')) . '</strong>')
                 ->html();
         }
 
         if (! $this->tenant) {
             $columns[] = Column::make(__('subscriptions.tenant'), 'tenant.name')
-                ->format(fn ($value) => "<strong>{$value}</strong>")
+                ->format(fn ($value) => '<strong>' . ($value ?? __('subscriptions.no_tenant')) . '</strong>')
                 ->html();
         }
 
@@ -74,5 +98,49 @@ class SubscriptionTable extends Datatable
         ]);
 
         return $columns;
+    }
+
+    /**
+     * Define the row actions.
+     */
+    protected function rowActions(): array
+    {
+        return [
+            Action::make('edit', __('actions.edit'))
+                ->icon('pencil')
+                ->variant('ghost')
+                ->color('primary')
+                ->route(fn (Subscription $subscription) => route('subscriptions.edit', $subscription))
+                ->can(PolicyAbilities::UPDATE),
+
+            Action::make('delete', __('actions.delete'))
+                ->icon('trash')
+                ->variant('ghost')
+                ->color('error')
+                ->confirm(__('subscriptions.delete_confirm'))
+                ->execute(function (Subscription $subscription): void {
+                    $subscription->delete();
+
+                    NotificationBuilder::make()
+                        ->title('subscriptions.deleted_successfully', ['name' => $subscription->label()])
+                        ->success()
+                        ->send();
+                })
+                ->can(PolicyAbilities::DELETE),
+        ];
+    }
+
+    /**
+     * Handle row click.
+     */
+    public function rowClick(string $uuid): ?Action
+    {
+        if (Route::has('subscriptions.edit')) {
+            return Action::make()
+                ->route('subscriptions.edit', $uuid)
+                ->can(PolicyAbilities::UPDATE);
+        }
+
+        return null;
     }
 }

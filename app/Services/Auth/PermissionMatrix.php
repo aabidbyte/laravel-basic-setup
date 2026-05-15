@@ -110,6 +110,14 @@ class PermissionMatrix
                 PermissionAction::RESTORE,
                 PermissionAction::FORCE_DELETE,
             ],
+            PermissionEntity::FEATURES => [
+                PermissionAction::VIEW,
+                PermissionAction::CREATE,
+                PermissionAction::EDIT,
+                PermissionAction::DELETE,
+                PermissionAction::RESTORE,
+                PermissionAction::FORCE_DELETE,
+            ],
             PermissionEntity::SUBSCRIPTIONS => [
                 PermissionAction::VIEW,
                 PermissionAction::CREATE,

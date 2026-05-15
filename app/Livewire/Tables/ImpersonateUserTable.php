@@ -13,7 +13,9 @@ use App\Models\User;
 use App\Services\DataTable\Builders\Action;
 use App\Services\DataTable\Builders\Column;
 use App\Services\DataTable\Builders\Filter;
+use App\Services\Tenancy\TenantMembershipQuery;
 use App\Services\Tenancy\UserImpersonationService;
+use App\Support\Tenancy\TenantAudience;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
@@ -43,20 +45,14 @@ class ImpersonateUserTable extends Datatable
         $admin = Auth::user();
 
         $query = User::query()
-            ->with(['tenants'])
+            ->with(['roles', 'tenants'])
             ->select('users.*');
 
         if (! $admin instanceof User) {
             return $query->whereRaw('1 = 0');
         }
 
-        // If we are in a tenant context, only show users belonging to this tenant
-        // UNLESS the user is a super admin who might want to find users from other tenants
-        if (tenant() && ! $admin->hasRole(Roles::SUPER_ADMIN)) {
-            $query->whereHas('tenants', function ($q) {
-                $q->where('tenants.tenant_id', tenant()?->getTenantKey());
-            });
-        }
+        $this->tenantMembershipQuery()->apply($query, $this->tenantAudience());
 
         // Don't show self in the datatable
         $query->where('id', '!=', $admin->id);
@@ -101,12 +97,14 @@ class ImpersonateUserTable extends Datatable
         $filters = [];
         $admin = Auth::user();
 
-        // Only show tenant filter if we are in central context OR if we are a super admin
-        if (! tenant() || ($admin instanceof User && $admin->hasRole(Roles::SUPER_ADMIN))) {
+        if ($admin instanceof User && $admin->hasRole(Roles::SUPER_ADMIN)) {
             $filters[] = Filter::make('tenant_id', __('tenancy.tenant'))
                 ->type('select')
-                ->options(Tenant::pluck('name', 'tenant_id')->toArray())
-                ->execute(fn ($q, $value) => $q->whereHas('tenants', fn ($inner) => $inner->where('tenants.tenant_id', $value)));
+                ->options($this->tenantMembershipQuery()->tenantFilterOptions())
+                ->execute(function (): void {
+                    // Tenant membership selection is applied in baseQuery() so the
+                    // central-only option can replace the default tenant-member scope.
+                });
         }
 
         $filters[] = Filter::make('role', __('roles.role'))
@@ -115,6 +113,42 @@ class ImpersonateUserTable extends Datatable
             ->execute(fn ($q, $value) => $q->whereHas('roles', fn ($inner) => $inner->where('roles.id', $value)));
 
         return $filters;
+    }
+
+    protected function tenantAudience(): TenantAudience
+    {
+        $audience = TenantAudience::visibleTo($this->currentActor());
+        $tenantFilter = $this->selectedTenantFilter();
+
+        if ($tenantFilter === null || ! $this->canFilterByTenant()) {
+            return $audience;
+        }
+
+        return $this->tenantMembershipQuery()->audienceFromFilter($audience, $tenantFilter);
+    }
+
+    protected function canFilterByTenant(): bool
+    {
+        return $this->currentActor()?->hasRole(Roles::SUPER_ADMIN) ?? false;
+    }
+
+    protected function currentActor(): ?User
+    {
+        $user = Auth::user();
+
+        return $user instanceof User ? $user : null;
+    }
+
+    protected function selectedTenantFilter(): ?string
+    {
+        $tenantFilter = $this->filters['tenant_id'] ?? null;
+
+        return \is_string($tenantFilter) && $tenantFilter !== '' ? $tenantFilter : null;
+    }
+
+    protected function tenantMembershipQuery(): TenantMembershipQuery
+    {
+        return app(TenantMembershipQuery::class);
     }
 
     /**
@@ -167,7 +201,10 @@ class ImpersonateUserTable extends Datatable
             // Option A: Prompt for tenant
             $this->dispatch('prompt-tenant-selection', [
                 'user_uuid' => $user->uuid,
-                'tenants' => $tenants->map(fn ($t) => ['id' => $t->id, 'name' => $t->name])->toArray(),
+                'tenants' => $tenants->map(fn (Tenant $tenant) => [
+                    'id' => $tenant->tenant_id,
+                    'name' => $tenant->name,
+                ])->toArray(),
             ]);
         }
     }

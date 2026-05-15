@@ -318,7 +318,14 @@ The project uses the following PSR-4 autoload mappings (defined in `composer.jso
     -   Directory structure must match namespace structure
     -   Example: `app/Models/User.php` → `namespace App\Models;`
 
-2.  **Livewire Components**:
+2.  **Database Factories**:
+
+    -   All factories in `database/factories/` must use the `Database\Factories\` namespace
+    -   Sub-namespaced factories must live in matching subdirectories
+    -   Example: `database/factories/EmailTemplate/EmailTemplateFactory.php` → `namespace Database\Factories\EmailTemplate;`
+    -   Never place a sub-namespaced factory directly in `database/factories/`
+
+3.  **Livewire Components**:
 
     -   **MUST be organized by domain** - never place components directly in `app/Livewire/`
     -   **Required structure**:
@@ -340,7 +347,7 @@ The project uses the following PSR-4 autoload mappings (defined in `composer.jso
     -   **Page components extend `BasePageComponent`** (extends LivewireBaseComponent with title/subtitle handling)
     -   **Use domain-specific `Concerns/` subdirectory** for traits shared within that domain
 
-3.  **Test Support Classes**:
+4.  **Test Support Classes**:
 
     -   **Test models, helpers, and support classes MUST be in `tests/Support/`**
     -   Use namespace `Tests\Support\{Category}` matching directory structure
@@ -348,7 +355,7 @@ The project uses the following PSR-4 autoload mappings (defined in `composer.jso
     -   **Never define classes directly in test files** - always create separate files in `tests/Support/`
     -   Test support classes are automatically autoloaded via the `Tests\` → `tests/` mapping
 
-4.  **Test Files**:
+5.  **Test Files**:
     -   Test files themselves should be in `tests/Feature/` or `tests/Unit/`
     -   Test files don't need namespaces (Pest handles this)
     -   Import test support classes using their full namespace: `use Tests\Support\Models\TestModel;`
@@ -468,6 +475,8 @@ it('tests something', function () {
     -   **Naming**: Must suffix with `Table` (e.g., `UserTable.php`)
     -   **Structure**: Must extend `App\Livewire\DataTableComponent` and provide configuration via methods.
     -   **Usage**: Use `<livewire:tables.user-table />` syntax.
+    -   **Related Table Refresh**: When multiple datatables represent the same relationship from different perspectives (for example assigned vs available users), every mutation MUST dispatch a scoped Livewire event and every related table MUST listen and refresh. Use public UUID keys in the event name, never numeric IDs.
+    -   **Single Row Action Rule**: If a table has only one row action, implement it as the `rowClick()` action instead of rendering a dedicated row action button. Render row action buttons only when there are multiple row-level choices.
 -   **Plain Blade Pages**:
     -   **Title/Subtitle**: MUST use `setPageTitle()` helper at the top of the Blade file to set `$pageTitle` and `$pageSubtitle`.
     -   **Reason**: Abstraction over `view()->share()` for cleaner code.

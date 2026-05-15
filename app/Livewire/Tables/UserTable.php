@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Tables;
 
 use App\Constants\Auth\PolicyAbilities;
+use App\Constants\Auth\Roles;
 use App\Constants\DataTable\DataTableUi;
 use App\Enums\DataTable\DataTableFilterType;
 use App\Livewire\DataTable\Datatable;
@@ -15,12 +16,17 @@ use App\Services\DataTable\Builders\BulkAction;
 use App\Services\DataTable\Builders\Column;
 use App\Services\DataTable\Builders\Filter;
 use App\Services\Notifications\NotificationBuilder;
+use App\Services\Tenancy\TenantMembershipQuery;
+use App\Support\Tenancy\TenantAudience;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 
 class UserTable extends Datatable
 {
+    public const CENTRAL_USERS_FILTER = TenantMembershipQuery::CENTRAL_RECORDS_FILTER;
+
     /**
      * Mount the component and authorize access
      */
@@ -35,14 +41,18 @@ class UserTable extends Datatable
      */
     public function baseQuery(): Builder
     {
-        $relations = ['roles'];
+        $relations = ['roles', 'tenants'];
 
         // Only include teams if we are in a tenant context or the table exists
         if (tenant() || Schema::hasTable('teams')) {
             $relations[] = 'teams';
         }
 
-        return User::query()->with($relations)->select('users.*');
+        $query = User::query()
+            ->with($relations)
+            ->select('users.*');
+
+        return $this->tenantMembershipQuery()->apply($query, $this->tenantAudience());
     }
 
     /**
@@ -80,6 +90,10 @@ class UserTable extends Datatable
                         : $roles;
                 })
                 ->type(DataTableUi::UI_BADGE, ['color' => 'primary', 'size' => 'sm']),
+
+            Column::make(__('table.users.tenants'), 'tenants_for_datatable')
+                ->content(fn (User $user) => $this->tenantMembershipQuery()->tenantLabelsFor($user))
+                ->type(DataTableUi::UI_BADGE, ['color' => 'accent', 'size' => 'sm']),
         ];
 
         // Only add teams column if we are in a tenant context or the table exists
@@ -109,7 +123,14 @@ class UserTable extends Datatable
      */
     protected function getFilterDefinitions(): array
     {
+        $filters = [];
+
+        if ($this->canFilterByTenant()) {
+            $filters[] = $this->tenantFilter();
+        }
+
         return [
+            ...$filters,
             Filter::make('role', __('table.users.filters.role'))
                 ->placeholder(__('table.users.filters.all_roles'))
                 ->type(DataTableFilterType::SELECT)
@@ -141,10 +162,10 @@ class UserTable extends Datatable
                     $to = $value['to'] ?? null;
 
                     if ($from) {
-                        $query->whereDate('created_at', '>=', $from);
+                        $query->whereDate('users.created_at', '>=', $from);
                     }
                     if ($to) {
-                        $query->whereDate('created_at', '<=', $to);
+                        $query->whereDate('users.created_at', '<=', $to);
                     }
                 }),
         ];
@@ -161,6 +182,66 @@ class UserTable extends Datatable
             'filter:roles',
             fn () => Role::pluck('name', 'name')->toArray(),
         );
+    }
+
+    protected function tenantAudience(): TenantAudience
+    {
+        $audience = TenantAudience::visibleTo($this->currentActor());
+        $tenantFilter = $this->selectedTenantFilter();
+
+        if ($tenantFilter === null || ! $this->canFilterByTenant()) {
+            return $audience;
+        }
+
+        return $this->tenantMembershipQuery()->audienceFromFilter($audience, $tenantFilter);
+    }
+
+    protected function tenantFilter(): Filter
+    {
+        return Filter::make('tenant_id', __('table.users.filters.tenant'))
+            ->placeholder(__('table.users.filters.all_tenants'))
+            ->type(DataTableFilterType::SELECT)
+            ->options($this->tenantFilterOptions())
+            ->execute(function (): void {
+                // Tenant membership filtering is applied in baseQuery() so it can
+                // replace the default all-tenant-members audience instead of
+                // being intersected with it by the generic datatable filter pass.
+            });
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function tenantFilterOptions(): array
+    {
+        return $this->memoize(
+            'filter:tenants',
+            fn () => $this->tenantMembershipQuery()->tenantFilterOptions(),
+        );
+    }
+
+    protected function canFilterByTenant(): bool
+    {
+        return $this->currentActor()?->hasRole(Roles::SUPER_ADMIN) ?? false;
+    }
+
+    protected function currentActor(): ?User
+    {
+        $user = Auth::user();
+
+        return $user instanceof User ? $user : null;
+    }
+
+    protected function selectedTenantFilter(): ?string
+    {
+        $tenantFilter = $this->filters['tenant_id'] ?? null;
+
+        return \is_string($tenantFilter) && $tenantFilter !== '' ? $tenantFilter : null;
+    }
+
+    protected function tenantMembershipQuery(): TenantMembershipQuery
+    {
+        return app(TenantMembershipQuery::class);
     }
 
     /**

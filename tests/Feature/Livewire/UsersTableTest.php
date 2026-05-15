@@ -6,6 +6,8 @@ use App\Constants\Auth\Permissions;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -16,11 +18,29 @@ beforeEach(function () {
 
     $this->user = User::factory()->create();
     $this->user->assignRole($viewerRole);
+
+    $this->tenantId = 'tu' . Str::random(4);
+
+    DB::connection('central')->table('tenants')->insert([
+        'tenant_id' => $this->tenantId,
+        'slug' => 'users-table-' . Str::random(4),
+        'name' => 'Users Table Tenant',
+        'plan' => 'free',
+        'color' => 'neutral',
+        'should_seed' => false,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    attachUserToTenantForUsersTableTest($this->user, $this->tenantId);
 });
 
 test('search filters results', function () {
-    User::factory()->create(['name' => 'John Doe', 'email' => 'john@example.com']);
-    User::factory()->create(['name' => 'Jane Smith', 'email' => 'jane@example.com']);
+    $john = User::factory()->create(['name' => 'John Doe', 'email' => 'john@example.com']);
+    $jane = User::factory()->create(['name' => 'Jane Smith', 'email' => 'jane@example.com']);
+
+    attachUserToTenantForUsersTableTest($john, $this->tenantId);
+    attachUserToTenantForUsersTableTest($jane, $this->tenantId);
 
     Livewire::actingAs($this->user)
         ->test('tables.user-table')
@@ -31,8 +51,12 @@ test('search filters results', function () {
 });
 
 test('sort toggles direction', function () {
-    User::factory()->create(['name' => 'Alice']);
-    User::factory()->create(['name' => 'Bob']);
+    $users = User::factory()->count(2)->sequence(
+        ['name' => 'Alice'],
+        ['name' => 'Bob'],
+    )->create();
+
+    $users->each(fn (User $user) => attachUserToTenantForUsersTableTest($user, $this->tenantId));
 
     $component = Livewire::actingAs($this->user)
         ->test('tables.user-table');
@@ -55,6 +79,8 @@ test('sort toggles direction', function () {
 test('bulk select page sets selected to current page UUIDs', function () {
     $users = User::factory()->count(5)->create();
 
+    $users->each(fn (User $user) => attachUserToTenantForUsersTableTest($user, $this->tenantId));
+
     $component = Livewire::actingAs($this->user)
         ->test('tables.user-table')
         ->set('perPage', 3);
@@ -70,6 +96,8 @@ test('bulk select page sets selected to current page UUIDs', function () {
 test('clear selection empties selected array', function () {
     $users = User::factory()->count(3)->create();
     $uuids = $users->pluck('uuid')->toArray();
+
+    $users->each(fn (User $user) => attachUserToTenantForUsersTableTest($user, $this->tenantId));
 
     Livewire::actingAs($this->user)
         ->test('tables.user-table')
@@ -92,3 +120,13 @@ test('datatable shows status and last login columns', function () {
         ->assertSee(__('users.active'))
         ->assertSee('1 day ago');
 });
+
+function attachUserToTenantForUsersTableTest(User $user, string $tenantId): void
+{
+    DB::connection('central')->table('tenant_user')->insert([
+        'tenant_id' => $tenantId,
+        'user_id' => $user->id,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+}

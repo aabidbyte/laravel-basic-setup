@@ -7,11 +7,13 @@ The full documentation is now organized into sections for easier navigation and 
 ## ⚠️ Critical Rules (Always Check First)
 
 ### CSP-Safe Alpine.js (MANDATORY)
+
 **All Alpine.js components with methods/functions MUST be extracted to registered components.**
 
 See [CSP Safety Guide](docs/AGENTS/csp-safety.md) and [Important Patterns](docs/AGENTS/important-patterns.md#csp-safe-alpinejs-development-critical) for full CSP documentation.
 
 ### Mandatory CSP Nonces (CRITICAL)
+
 **All inline `<script>` and `<style>` tags MUST include the `@cspNonce` directive.** This includes scripts colocated within `@assets` blocks.
 
 ```html
@@ -21,21 +23,25 @@ See [CSP Safety Guide](docs/AGENTS/csp-safety.md) and [Important Patterns](docs/
 ```
 
 ### Colocated Scripts (MANDATORY)
+
 **Component-specific JavaScript logic MUST be colocated with the Blade component using the `@assets` directive.** Do not create new global JS files for single components.
 
 See [Colocated Scripts Pattern](docs/AGENTS/colocated-scripts.md) for details.
- 
+
 ### No Blade Directives in Component Tags (CRITICAL)
+
 **NEVER use Blade directives (e.g., `@if`, `@foreach`) inside component opening tags.** This causes syntax errors in the Blade compiler. Use conditional attribute binding (`:attr="$val ?: null"`) instead.
 
 See [Development Conventions](docs/AGENTS/development-conventions.md#no-directives-in-component-tags) for details.
 
 ### Component Attribute Forwarding (CRITICAL)
+
 **Always promote Alpine attributes (`x-data`, etc.) to the root container in composite components.** This ensures slots share the same Alpine scope.
 
 See [Attribute Forwarding Patterns](docs/AGENTS/development-conventions.md#component-attribute-forwarding--alpinejs-scope-critical) for details.
 
 ### No Leading Import Slashes (PHP/Blade)
+
 **Avoid leading slashes (`\`) in `use` statements and class references.** Use full namespaces in `use` statements and short names in the code.
 
 ```php
@@ -51,6 +57,7 @@ catch (Exception $e)
 See [Development Conventions](docs/AGENTS/development-conventions.md#no-leading-import-slashes) for details.
 
 ### Global Namespace for Built-in Functions
+
 **All PHP built-in functions MUST be called in the global namespace (prefix with `\`) when inside a namespaced file.**
 
 ```php
@@ -67,29 +74,40 @@ if (\is_array($data)) {
 
 See [Development Conventions](docs/AGENTS/development-conventions.md#global-namespace-for-built-in-functions) for details.
 
+### PSR-4 Autoloading (CRITICAL)
+
+**All classes MUST live in a path that matches their Composer PSR-4 namespace.** For example, `Database\Factories\EmailTemplate\EmailTemplateFactory` must be located at `database/factories/EmailTemplate/EmailTemplateFactory.php`, not directly under `database/factories/`.
+
+See [Development Conventions](docs/AGENTS/development-conventions.md#psr-4-autoloading-standards) for details.
+
 ### Mandatory Translations
+
 **When adding new translation keys, you MUST add them to all supported language directories in the `lang/` folder (currently `en_US` and `fr_FR`).** Never leave keys missing or with placeholders in any language.
 
 **Locale Display Rule**: Always use `lang/xx_XX/locales.php` to define and display language names (e.g., `__('locales.en_US')`). Do NOT hardcode "English" or rely on config Native Name for user-facing UI.
 
 **Locale Translation Format**: When translating locale codes (en_US, fr_FR, es_ES, etc.) in `locales.php`, always use the format: `[Language Name] ([Country Code])`. Examples:
- -   `en_US` => "English (US)"
- -   `fr_FR` => "Français (FR)" 
- -   `fr_CA` => "Français (CA)"
- -   `es_ES` => "Espagnol (ES)" (in French locale)
+
+- `en_US` => "English (US)"
+- `fr_FR` => "Français (FR)"
+- `fr_CA` => "Français (CA)"
+- `es_ES` => "Espagnol (ES)" (in French locale)
 
 This ensures consistency and clarity across all locale displays.
 
 See [Development Conventions](docs/AGENTS/development-conventions.md#translations) for details.
 
 ### Enums Over Constants (CRITICAL)
+
 **Always use PHP enums instead of class constants for fixed value sets.** Enums provide type safety, Laravel integration, and automatic translation resolution.
 
 **Examples:**
+
 - ✅ `EmailTemplateStatus::DRAFT` (backed enum)
 - ❌ `EmailTemplateConstants::STATUS_DRAFT` (class constant)
 
 **When creating new value sets:**
+
 1. Create a backed enum in `app/Enums/[Domain]/` (e.g., `app/Enums/EmailTemplate/`)
 2. Add `color()` method for badge colors (if applicable)
 3. Add `label()` method for translations
@@ -100,9 +118,11 @@ See [Development Conventions](docs/AGENTS/development-conventions.md#translation
 See [Development Conventions](docs/AGENTS/development-conventions.md#enum-usage) for detailed enum patterns.
 
 ### Livewire Route Model Binding (CRITICAL)
+
 **Always use the model name (singular, lowercase) as the route parameter for Livewire routes**, not `{uuid}` or `{id}`.
 
 **Examples:**
+
 - ✅ `Route::livewire('/users/{user}', ...)` with `mount(User $user)`
 - ✅ `Route::livewire('/{template}/edit', ...)` with `mount(EmailTemplate $template)`
 - ❌ `Route::livewire('/{uuid}', ...)` - breaks automatic binding
@@ -112,6 +132,7 @@ See [Development Conventions](docs/AGENTS/development-conventions.md#enum-usage)
 See [Livewire Route Model Binding](docs/AGENTS/livewire-route-model-binding.md) for complete documentation.
 
 ### No Layout Wrapper (Livewire Components Only)
+
 **Do NOT wrap full-page Livewire components in `<x-layouts.app>`.**
 Configuration `config/livewire.php` sets `'component_layout' => 'layouts::app'`, so Livewire wraps them automatically.
 
@@ -119,6 +140,7 @@ Configuration `config/livewire.php` sets `'component_layout' => 'layouts::app'`,
 Standard Blade views (controlled by Controllers/Routes returning `view()`) **MUST** still include `<x-layouts.app>`.
 
 **Example (Livewire Component):**
+
 ```blade
 {{-- ❌ WRONG --}}
 <x-layouts.app>
@@ -130,9 +152,11 @@ Standard Blade views (controlled by Controllers/Routes returning `view()`) **MUS
 ```
 
 ### Parameter Limit & DTO Pattern (MANDATORY)
+
 **A function MUST NOT have more than 3 parameters.** If a method or function requires more than 3 parameters, they MUST be encapsulated into a dedicated **Data Object** or **DTO**.
 
 **Examples:**
+
 - ❌ `public function createUser(array $data, array $roles, array $teams, bool $sendActivation)` (4 parameters)
 - ✅ `public function createUser(UserData $userData)` (1 parameter)
 
@@ -141,11 +165,13 @@ Standard Blade views (controlled by Controllers/Routes returning `view()`) **MUS
 See [Development Conventions](docs/AGENTS/development-conventions.md#parameter-limit) for details.
 
 ### Testing Performance & Tenancy Isolation (CRITICAL)
+
 **Feature tests MUST NOT use per-test `RefreshDatabase` or `DatabaseMigrations`.**
 
 This project uses MySQL for tests, one migrated central schema per PHP process, one reusable tenant database per process, and transactions for row cleanup.
 
 **Required commands:**
+
 - `composer test` - fast Unit lane, must stay under 30 seconds
 - `composer test:feature` - parallel non-provisioning Feature lane
 - `composer test:integration` - real tenancy provisioning lane
@@ -189,7 +215,6 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - laravel/sanctum (SANCTUM) - v4
 - laravel/telescope (TELESCOPE) - v5
 - livewire/livewire (LIVEWIRE) - v4
-- livewire/volt (VOLT) - v1
 - laravel/boost (BOOST) - v2
 - laravel/mcp (MCP) - v0
 - laravel/pail (PAIL) - v1
@@ -269,7 +294,7 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 - Execute PHP in app context for debugging and testing code. Do not create models without user approval, prefer tests with factories instead. Prefer existing Artisan commands over custom tinker code.
 - Always use single quotes to prevent shell expansion: `php artisan tinker --execute 'Your::code();'`
-  - Double quotes for PHP strings inside: `php artisan tinker --execute 'User::where("active", true)->count();'`
+    - Double quotes for PHP strings inside: `php artisan tinker --execute 'User::where("active", true)->count();'`
 
 === php rules ===
 

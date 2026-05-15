@@ -3,9 +3,14 @@
 declare(strict_types=1);
 
 use App\Constants\Auth\PolicyAbilities;
+use App\Enums\Plan\PlanBillingCycle;
 use App\Enums\Plan\PlanTier;
 use App\Livewire\Bases\BasePageComponent;
+use App\Models\Feature;
 use App\Models\Plan;
+use App\Models\PlanFeature;
+use App\Services\Features\FeatureValueNormalizer;
+use App\Services\Plans\PlanFeatureSyncer;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 
@@ -54,20 +59,8 @@ new class extends BasePageComponent {
         $this->tier = $plan->tier?->value;
         $this->price = (float) $plan->price;
         $this->currency = (string) $plan->currency;
-        $this->billing_cycle = (string) $plan->billing_cycle;
-        $this->features = $plan->features ?? [];
-        // Ensure features are in the correct [key, value] format for the form
-        if (! empty($this->features) && ! isset($this->features[0]['key'])) {
-            $formattedFeatures = [];
-            foreach ($this->features as $key => $value) {
-                if (is_array($value) && isset($value['key'])) {
-                    $formattedFeatures[] = $value;
-                } else {
-                    $formattedFeatures[] = ['key' => (string) $key, 'value' => (string) $value];
-                }
-            }
-            $this->features = $formattedFeatures;
-        }
+        $this->billing_cycle = $plan->billing_cycle?->value ?? PlanBillingCycle::MONTHLY->value;
+        $this->features = $this->featureRowsForPlan($plan);
         $this->is_active = (bool) $plan->is_active;
     }
 
@@ -77,7 +70,7 @@ new class extends BasePageComponent {
     protected function prepareNewPlan(): void
     {
         $this->model = new Plan();
-        $this->features = [['key' => 'max_users', 'value' => '5'], ['key' => 'storage', 'value' => '1GB']];
+        $this->features = [];
     }
 
     /**
@@ -108,10 +101,11 @@ new class extends BasePageComponent {
             'tier' => ['required', 'string', Rule::in(collect(PlanTier::cases())->pluck('value')->toArray())],
             'price' => ['required', 'numeric', 'min:0'],
             'currency' => ['required', 'string', 'size:3'],
-            'billing_cycle' => ['required', 'string', Rule::in(['monthly', 'yearly', 'one_time', 'lifetime'])],
+            'billing_cycle' => ['required', 'string', Rule::in(collect(PlanBillingCycle::cases())->pluck('value')->toArray())],
             'features' => ['array'],
-            'features.*.key' => ['required_with:features.*.value', 'string'],
-            'features.*.value' => ['required_with:features.*.key', 'string'],
+            'features.*.feature_id' => ['required', 'integer', 'distinct', Rule::exists('central.features', 'id')],
+            'features.*.value' => ['nullable', 'string', 'max:255'],
+            'features.*.enabled' => ['boolean'],
             'is_active' => ['boolean'],
         ];
     }
@@ -127,7 +121,7 @@ new class extends BasePageComponent {
             'price' => $this->price,
             'currency' => $this->currency,
             'billing_cycle' => $this->billing_cycle,
-            'features' => array_values(array_filter($this->features, fn ($f) => !empty($f['key']))),
+            'features' => $this->isCreateMode ? $this->legacyFeatureRows() : $this->model->features,
             'is_active' => $this->is_active,
         ];
     }
@@ -140,6 +134,7 @@ new class extends BasePageComponent {
         $this->validate();
 
         $this->model = Plan::create($this->prepareData());
+        $this->syncPlanFeatures();
 
         $this->sendSuccessNotification($this->model, 'pages.common.create.success');
         $this->redirect($this->cancelUrl, navigate: true);
@@ -153,6 +148,7 @@ new class extends BasePageComponent {
         $this->validate();
 
         $this->model->update($this->prepareData());
+        app(PlanFeatureSyncer::class)->syncLegacyFeatures($this->model->fresh());
 
         $this->sendSuccessNotification($this->model, 'pages.common.edit.success');
         $this->redirect($this->cancelUrl, navigate: true);
@@ -163,7 +159,7 @@ new class extends BasePageComponent {
      */
     public function addFeature(): void
     {
-        $this->features[] = ['key' => '', 'value' => ''];
+        $this->features[] = ['feature_id' => null, 'value' => null, 'enabled' => true];
     }
 
     /**
@@ -182,9 +178,105 @@ new class extends BasePageComponent {
     }
 
     #[Computed]
+    public function billingCycleOptions(): array
+    {
+        return collect(PlanBillingCycle::cases())->mapWithKeys(fn ($cycle) => [$cycle->value => $cycle->label()])->toArray();
+    }
+
+    #[Computed]
+    public function featureOptions(): array
+    {
+        return Feature::query()
+            ->where('is_active', true)
+            ->orderBy('key')
+            ->get()
+            ->mapWithKeys(fn (Feature $feature) => [$feature->id => $feature->label()])
+            ->toArray();
+    }
+
+    #[Computed]
     public function cancelUrl(): string
     {
         return route('plans.index');
+    }
+
+    protected function featureRowsForPlan(Plan $plan): array
+    {
+        $rows = $plan->planFeatures()
+            ->with('feature')
+            ->get()
+            ->map(fn (PlanFeature $planFeature) => [
+                'feature_id' => $planFeature->feature_id,
+                'value' => $planFeature->value === null ? null : (string) $planFeature->value,
+                'enabled' => $planFeature->enabled,
+            ])
+            ->values()
+            ->toArray();
+
+        if ($rows !== []) {
+            return $rows;
+        }
+
+        return collect($plan->features ?? [])
+            ->map(function (array $feature) {
+                $featureModel = Feature::query()->where('key', $feature['key'] ?? null)->first();
+
+                return $featureModel ? [
+                    'feature_id' => $featureModel->id,
+                    'value' => $feature['value'] ?? null,
+                    'enabled' => true,
+                ] : null;
+            })
+            ->filter()
+            ->values()
+            ->toArray();
+    }
+
+    protected function syncPlanFeatures(): void
+    {
+        $featureIds = [];
+
+        foreach ($this->features as $featureRow) {
+            $feature = Feature::query()->find($featureRow['feature_id'] ?? null);
+
+            if (! $feature) {
+                continue;
+            }
+
+            $featureIds[] = $feature->id;
+
+            app(PlanFeatureSyncer::class)->assign([
+                'plan' => $this->model,
+                'feature' => $feature,
+                'value' => app(FeatureValueNormalizer::class)->normalize($feature, $featureRow['value'] ?? null),
+                'enabled' => (bool) ($featureRow['enabled'] ?? true),
+            ]);
+        }
+
+        PlanFeature::query()
+            ->where('plan_id', $this->model->id)
+            ->whereNotIn('feature_id', $featureIds)
+            ->delete();
+    }
+
+    protected function legacyFeatureRows(): array
+    {
+        return collect($this->features)
+            ->map(function (array $featureRow) {
+                $feature = Feature::query()->find($featureRow['feature_id'] ?? null);
+
+                if (! $feature) {
+                    return null;
+                }
+
+                return [
+                    'key' => $feature->key,
+                    'value' => app(FeatureValueNormalizer::class)->normalize($feature, $featureRow['value'] ?? null),
+                ];
+            })
+            ->filter()
+            ->values()
+            ->toArray();
     }
 }; ?>
 
@@ -232,12 +324,7 @@ new class extends BasePageComponent {
                     <div>
                         <x-ui.select label="{{ __('plans.billing_cycle') }}"
                                      wire:model="billing_cycle"
-                                     :options="[
-                                         'monthly' => __('plans.cycles.monthly'),
-                                         'yearly' => __('plans.cycles.yearly'),
-                                         'one_time' => __('plans.cycles.one_time'),
-                                         'lifetime' => __('plans.cycles.lifetime'),
-                                     ]"
+                                     :options="$this->billingCycleOptions"
                                      required />
                     </div>
 
@@ -269,50 +356,81 @@ new class extends BasePageComponent {
                     </div>
 
                     <div class="space-y-4 md:col-span-2">
-                        <div class="flex items-center justify-between">
-                            <x-ui.title level="4"
-                                        class="text-base-content/70">
-                                {{ __('plans.features') }}
-                            </x-ui.title>
-                            <x-ui.button variant="ghost"
-                                         size="sm"
-                                         wire:click="addFeature"
-                                         type="button">
-                                <x-ui.icon name="plus"
-                                           size="xs" />
-                                {{ __('plans.add_feature') }}
-                            </x-ui.button>
-                        </div>
+                        @if ($this->isCreateMode || ! $model?->uuid)
+                            <div class="flex items-center justify-between">
+                                <x-ui.title level="4"
+                                            class="text-base-content/70">
+                                    {{ __('plans.features') }}
+                                </x-ui.title>
+                                <x-ui.button variant="ghost"
+                                             size="sm"
+                                             wire:click="addFeature"
+                                             type="button">
+                                    <x-ui.icon name="plus"
+                                               size="xs" />
+                                    {{ __('plans.add_feature') }}
+                                </x-ui.button>
+                            </div>
 
-                        <div class="space-y-3">
-                            @foreach ($features as $index => $feature)
-                                <div class="bg-base-200/50 border-base-300 flex items-center gap-3 rounded-lg border p-3"
-                                     wire:key="feature-{{ $index }}">
-                                    <x-ui.input placeholder="{{ __('plans.feature_key_placeholder') }}"
-                                                wire:model="features.{{ $index }}.key"
-                                                class="flex-1" />
-                                    <x-ui.input placeholder="{{ __('plans.feature_value_placeholder') }}"
-                                                wire:model="features.{{ $index }}.value"
-                                                class="flex-1" />
-                                    <x-ui.button variant="ghost"
-                                                 size="sm"
-                                                 color="error"
-                                                 wire:click="removeFeature({{ $index }})"
-                                                 type="button"
-                                                 class="btn-square">
-                                        <x-ui.icon name="trash"
-                                                   size="xs" />
-                                    </x-ui.button>
-                                </div>
-                            @endforeach
+                            <div class="space-y-3">
+                                @foreach ($features as $index => $feature)
+                                    <div class="bg-base-200/50 border-base-300 grid grid-cols-1 gap-3 rounded-lg border p-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto_auto]"
+                                         wire:key="feature-{{ $index }}">
+                                        <x-ui.select label="{{ __('plans.feature') }}"
+                                                     wire:model="features.{{ $index }}.feature_id"
+                                                     :options="$this->featureOptions"
+                                                     :searchable="false" />
+                                        <x-ui.input placeholder="{{ __('plans.feature_value_placeholder') }}"
+                                                    label="{{ __('plans.feature_value') }}"
+                                                    wire:model="features.{{ $index }}.value" />
+                                        <x-ui.toggle label="{{ __('plans.feature_enabled') }}"
+                                                     wire:model="features.{{ $index }}.enabled" />
+                                        <x-ui.button variant="ghost"
+                                                     size="sm"
+                                                     color="error"
+                                                     wire:click="removeFeature({{ $index }})"
+                                                     type="button"
+                                                     class="btn-square">
+                                            <x-ui.icon name="trash"
+                                                       size="xs" />
+                                        </x-ui.button>
+                                    </div>
+                                @endforeach
 
-                            @if (empty($features))
-                                <div
-                                     class="text-base-content/40 border-base-300 rounded-lg border-2 border-dashed py-6 text-center">
-                                    {{ __('plans.no_features_added') }}
-                                </div>
-                            @endif
-                        </div>
+                                @if (empty($features))
+                                    <div
+                                         class="text-base-content/40 border-base-300 rounded-lg border-2 border-dashed py-6 text-center">
+                                        {{ __('plans.no_features_added') }}
+                                    </div>
+                                @endif
+                            </div>
+                        @else
+                            <div class="space-y-2">
+                                <x-ui.title level="4"
+                                            class="text-base-content/70">
+                                    {{ __('plans.assigned_features') }}
+                                </x-ui.title>
+                                <p class="text-base-content/60 text-sm">
+                                    {{ __('plans.assigned_features_description') }}
+                                </p>
+                            </div>
+
+                            <livewire:tables.plan-feature-assignment-table :planUuid="$model->uuid"
+                                                                           :key="'plan-'.$model->uuid.'-assigned-features'" />
+
+                            <div class="space-y-2 pt-2">
+                                <x-ui.title level="4"
+                                            class="text-base-content/70">
+                                    {{ __('plans.available_features') }}
+                                </x-ui.title>
+                                <p class="text-base-content/60 text-sm">
+                                    {{ __('plans.available_features_description') }}
+                                </p>
+                            </div>
+
+                            <livewire:tables.plan-assignable-feature-table :planUuid="$model->uuid"
+                                                                           :key="'plan-'.$model->uuid.'-available-features'" />
+                        @endif
                     </div>
                 </div>
             </x-ui.form>

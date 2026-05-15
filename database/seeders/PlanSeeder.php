@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Enums\Feature\FeatureKey;
+use App\Enums\Plan\PlanBillingCycle;
 use App\Enums\Plan\PlanTier;
 use App\Models\Feature;
 use App\Models\Plan;
 use App\Models\PlanFeature;
+use App\Services\Features\FeatureValueNormalizer;
 use Illuminate\Database\Seeder;
 
 class PlanSeeder extends Seeder
@@ -26,7 +28,7 @@ class PlanSeeder extends Seeder
                 ],
                 'tier' => PlanTier::BASIC,
                 'price' => 0.00,
-                'billing_cycle' => 'monthly',
+                'billing_cycle' => PlanBillingCycle::MONTHLY,
                 'features' => [
                     ['key' => 'max_users', 'value' => '5'],
                     ['key' => 'storage', 'value' => '1GB'],
@@ -39,7 +41,7 @@ class PlanSeeder extends Seeder
                 ],
                 'tier' => PlanTier::PRO,
                 'price' => 29.00,
-                'billing_cycle' => 'monthly',
+                'billing_cycle' => PlanBillingCycle::MONTHLY,
                 'features' => [
                     ['key' => 'max_users', 'value' => '20'],
                     ['key' => 'storage', 'value' => '10GB'],
@@ -53,7 +55,7 @@ class PlanSeeder extends Seeder
                 ],
                 'tier' => PlanTier::ENTERPRISE,
                 'price' => 99.00,
-                'billing_cycle' => 'monthly',
+                'billing_cycle' => PlanBillingCycle::MONTHLY,
                 'features' => [
                     ['key' => 'max_users', 'value' => 'Unlimited'],
                     ['key' => 'storage', 'value' => '100GB'],
@@ -68,7 +70,7 @@ class PlanSeeder extends Seeder
                 ],
                 'tier' => PlanTier::LIFETIME,
                 'price' => 499.00,
-                'billing_cycle' => 'lifetime',
+                'billing_cycle' => PlanBillingCycle::LIFETIME,
                 'features' => [
                     ['key' => 'max_users', 'value' => 'Unlimited'],
                     ['key' => 'storage', 'value' => '1TB'],
@@ -101,7 +103,7 @@ class PlanSeeder extends Seeder
                     ],
                     'tier' => \fake()->randomElement(PlanTier::cases()),
                     'price' => \fake()->randomFloat(2, 10, 200),
-                    'billing_cycle' => \fake()->randomElement(['monthly', 'yearly']),
+                    'billing_cycle' => \fake()->randomElement([PlanBillingCycle::MONTHLY, PlanBillingCycle::YEARLY]),
                     'features' => [['key' => 'dev_feature', 'value' => 'True']],
                     'is_active' => true,
                 ]);
@@ -148,11 +150,6 @@ class PlanSeeder extends Seeder
 
     private function normalizedValue(Feature $feature, mixed $value): mixed
     {
-        return match ($feature->type?->value) {
-            'boolean' => \in_array(\strtolower((string) $value), ['1', 'true', 'yes', 'on', 'enabled'], true),
-            'integer' => \is_numeric($value) ? (int) $value : $value,
-            'decimal' => \is_numeric($value) ? (float) $value : $value,
-            default => $value,
-        };
+        return app(FeatureValueNormalizer::class)->normalize($feature, $value);
     }
 }

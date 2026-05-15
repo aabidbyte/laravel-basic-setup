@@ -78,6 +78,17 @@ Filter::make('created_at', __('Created'))
     )
 ```
 
+## Tenant Membership Filters
+
+Central models that expose a `tenants()` relationship should not duplicate tenant visibility logic in each table. Use:
+
+- `App\Support\Tenancy\TenantAudience` to describe the desired audience.
+- `App\Services\Tenancy\TenantMembershipQuery` to apply that audience to the Eloquent query.
+
+For user/member tables, "All Tenants" means records attached to at least one tenant. Central-only records are not included by default; expose them with the explicit `TenantMembershipQuery::CENTRAL_RECORDS_FILTER` option when super admins need it.
+
+Tenant filters that can switch between "all tenant members", "specific tenant", and "central only" should be read by `baseQuery()`. Their `Filter::execute()` callback should remain a no-op, because the generic datatable filter pass runs after `baseQuery()` and would otherwise intersect central-only filters with the default tenant-member scope.
+
 ## Conditional Visibility
 
 ```php

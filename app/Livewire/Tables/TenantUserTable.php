@@ -16,7 +16,10 @@ use App\Services\DataTable\Builders\Action;
 use App\Services\DataTable\Builders\Column;
 use App\Services\DataTable\Builders\Filter;
 use App\Services\Notifications\NotificationBuilder;
+use App\Services\Tenancy\TenantMembershipQuery;
+use App\Support\Tenancy\TenantAudience;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Livewire\Attributes\Locked;
 
@@ -39,12 +42,14 @@ class TenantUserTable extends Datatable
      */
     public function baseQuery(): Builder
     {
-        return User::query()
-            ->with(['roles'])
-            ->whereHas('tenants', function ($query) {
-                $query->where('tenants.tenant_id', $this->tenantId);
-            })
+        $query = User::query()
+            ->with(['roles', 'tenants'])
             ->select(['users.*']);
+
+        return $this->tenantMembershipQuery()->apply(
+            $query,
+            TenantAudience::forTenant((string) $this->tenantId, $this->currentActor()),
+        );
     }
 
     /**
@@ -149,7 +154,7 @@ class TenantUserTable extends Datatable
                         ->success()
                         ->send();
                 })
-                ->show(fn () => auth()->user()?->hasPermissionTo(Permissions::EDIT_TENANTS()) ?? false),
+                ->show(fn () => Auth::user()?->can(Permissions::EDIT_TENANTS()) ?? false),
         ];
     }
 
@@ -165,5 +170,17 @@ class TenantUserTable extends Datatable
         }
 
         return null;
+    }
+
+    protected function currentActor(): ?User
+    {
+        $user = Auth::user();
+
+        return $user instanceof User ? $user : null;
+    }
+
+    protected function tenantMembershipQuery(): TenantMembershipQuery
+    {
+        return app(TenantMembershipQuery::class);
     }
 }

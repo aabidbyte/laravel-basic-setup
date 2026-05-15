@@ -98,7 +98,7 @@ new class extends BasePageComponent {
                                       class="text-base-content/60 text-sm font-normal">{{ $plan->currency }}</span>
                             </div>
                             <div class="text-base-content/60 text-sm">
-                                {{ __("plans.cycles.{$plan->billing_cycle}") }}
+                                {{ $plan->billing_cycle->label() }}
                             </div>
                         </div>
                     </div>

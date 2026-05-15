@@ -41,6 +41,8 @@ class PermissionEntity
 
     public const PLANS = 'plans';
 
+    public const FEATURES = 'features';
+
     public const SUBSCRIPTIONS = 'subscriptions';
 
     public const DOMAINS = 'domains';
@@ -66,6 +68,7 @@ class PermissionEntity
             self::EMAIL_LAYOUTS,
             self::TENANTS,
             self::PLANS,
+            self::FEATURES,
             self::SUBSCRIPTIONS,
             self::DOMAINS,
             self::TRASH,

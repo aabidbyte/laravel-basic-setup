@@ -397,10 +397,14 @@ The application uses a Livewire-based DataTable component system. See `docs/comp
 
 **Key Points**:
 
--   All DataTable components extend `App\Livewire\Datatable`
+-   All DataTable components extend `App\Livewire\DataTable\Datatable`
 -   State is managed directly in Livewire component properties (search, sort, filters, pagination)
 -   Uses `DataTableQueryBuilder` for query building with automatic relationship joins
 -   No service layer needed - all logic is in the component
+-   User/member datatables that need tenant visibility MUST use `App\Services\Tenancy\TenantMembershipQuery` with `App\Support\Tenancy\TenantAudience` instead of hand-written `whereHas('tenants')` access rules.
+-   In tenant membership filters, "All Tenants" means records attached to at least one tenant. Central-only records are a separate explicit filter option for super admins.
+-   Related datatables that display opposite sides of the same relationship MUST refresh together after any mutation. Dispatch a scoped Livewire event from assign/remove actions and listen with `#[On('event.{publicUuid}')]` in every related table so the edited table and sibling tables refresh in the same workflow.
+-   If a datatable has exactly one row action, expose it through `rowClick()` instead of rendering a separate row action button. Keep row action buttons for tables with multiple row-level choices.
 
 ### Authentication Code Refactoring (2025-01-XX)
 

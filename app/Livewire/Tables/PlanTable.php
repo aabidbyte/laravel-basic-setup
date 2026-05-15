@@ -63,7 +63,7 @@ class PlanTable extends Datatable
                 ->format(fn ($value, $row) => "{$value} {$row->currency}"),
 
             Column::make(__('plans.billing_cycle'), 'billing_cycle')
-                ->format(fn ($value) => __("plans.cycles.{$value}")),
+                ->format(fn ($value) => $value->label()),
 
             Column::make(__('plans.status'), 'is_active')
                 ->format(fn ($value) => $value ? __('plans.active') : __('plans.inactive'))

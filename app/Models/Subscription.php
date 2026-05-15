@@ -32,6 +32,7 @@ class Subscription extends BaseModel
         'extras',
         'starts_at',
         'ends_at',
+        'trial_ends_at',
     ];
 
     /**
@@ -71,7 +72,10 @@ class Subscription extends BaseModel
      */
     public function label(): string
     {
-        return "{$this->tenant->name} - {$this->plan->name}";
+        $tenantName = $this->tenant?->name ?? $this->tenant_id;
+        $planName = $this->plan?->name ?? __('subscriptions.no_plan');
+
+        return "{$tenantName} - {$planName}";
     }
 
     /**
@@ -80,7 +84,7 @@ class Subscription extends BaseModel
     public function isActive(): bool
     {
         return $this->status === SubscriptionStatus::ACTIVE
-            && $this->starts_at->isPast()
+            && ($this->starts_at === null || $this->starts_at->isPast())
             && ($this->ends_at === null || $this->ends_at->isFuture());
     }
 }

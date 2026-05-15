@@ -21,6 +21,7 @@ return [
         'email_layouts' => 'Mises en page d\'email',
         'tenants' => 'Locataires',
         'plans' => 'Plans',
+        'features' => 'Fonctionnalités',
         'subscriptions' => 'Abonnements',
         'domains' => 'Domaines',
         'trash' => 'Corbeille',

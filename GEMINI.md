@@ -18,51 +18,56 @@
 
 ## 2. Technology Stack
 
-*   **Backend:** PHP 8.4+, Laravel 12.0
-*   **Frontend:** Livewire 4.0 (SFC), Tailwind CSS 4.x, DaisyUI 5.x, Alpine.js (CSP-safe)
-*   **Database:** Supports MySQL/PostgreSQL/SQLite (uses UUIDs for primary keys)
-*   **Real-time:** Laravel Reverb (WebSocket)
-*   **Authentication:** Laravel Fortify (Backend), Sanctum (API), Spatie Permission (RBAC)
-*   **Dev Tools:** Vite 7.x, Pest (Testing), Pint (Formatting), Laravel Boost
+- **Backend:** PHP 8.4+, Laravel 12.0
+- **Frontend:** Livewire 4.0 (SFC), Tailwind CSS 4.x, DaisyUI 5.x, Alpine.js (CSP-safe)
+- **Database:** Supports MySQL/PostgreSQL/SQLite (uses UUIDs for primary keys)
+- **Real-time:** Laravel Reverb (WebSocket)
+- **Authentication:** Laravel Fortify (Backend), Sanctum (API), Spatie Permission (RBAC)
+- **Dev Tools:** Vite 7.x, Pest (Testing), Pint (Formatting), Laravel Boost
 
 ## 3. Operational Directives (CRITICAL)
 
 ### Code & Style
-*   **UUIDs:** All models **must** extend `App\Models\Base\BaseModel` or `App\Models\Base\BaseUserModel` to automatically handle UUID generation.
-*   **Enums:** Use **backed Enums** instead of class constants for status/types. Located in `app/Enums/`.
-*   **Translations:** **Mandatory** for all user-facing text. Add keys to both `en_US` and `fr_FR` in `lang/`.
-*   **Imports:** No leading slashes in `use` statements (e.g., `use App\Models\User;` not `use \App\Models\User;`).
-*   **Global Namespace for Built-in Functions:** Prefix all PHP built-in functions with `\` when inside a namespaced file (e.g., `\count()`, `\is_array()`).
-*   **Parameter Limit & DTOs:** A function MUST NOT have more than **3 parameters**. Use dedicated **DTO classes** (placed in `app/Support/[Domain]/`) for multiple parameters.
+
+- **UUIDs:** All models **must** extend `App\Models\Base\BaseModel` or `App\Models\Base\BaseUserModel` to automatically handle UUID generation.
+- **Enums:** Use **backed Enums** instead of class constants for status/types. Located in `app/Enums/`.
+- **Translations:** **Mandatory** for all user-facing text. Add keys to both `en_US` and `fr_FR` in `lang/`.
+- **Imports:** No leading slashes in `use` statements (e.g., `use App\Models\User;` not `use \App\Models\User;`).
+- **Global Namespace for Built-in Functions:** Prefix all PHP built-in functions with `\` when inside a namespaced file (e.g., `\count()`, `\is_array()`).
+- **Parameter Limit & DTOs:** A function MUST NOT have more than **3 parameters**. Use dedicated **DTO classes** (placed in `app/Support/[Domain]/`) for multiple parameters.
 
 ### Frontend (Blade/Livewire/Alpine)
-*   **CSP Safety:** All Alpine.js logic must be extracted to registered components. **Avoid inline event handlers** that violate CSP.
-*   **JSON in x-data:** When passing JSON to `x-data`, use **Single Quotes** for the HTML attribute and **Double Quotes** for the inner JSON string.
-    *   **Right:** `x-data='{!! json_encode(["key" => "val"]) !!}'` or `x-data='myComponent({!! json_encode(...) !!})'`
-    *   **Wrong:** `x-data="{!! json_encode(...) !!}"` (Breaks on inner double quotes, causes "Unexpected Token: EOF")
-    *   Ensure any single quotes in data are escaped (`JSON_HEX_APOS`) so they don't break the outer attribute.
-*   **Livewire Routing:** Use the **singular model name** for route parameters to enable automatic binding (e.g., `/users/{user}`), never `{id}` or `{uuid}`.
-*   **Blade Components:** Do **not** use Blade directives (like `@if`) inside component opening tags. Use conditional attribute binding instead (`:attr="$condition ? 'val' : null"`).
-*   **Layouts:** Full-page Livewire components are automatically wrapped in the layout. **Do not** manually wrap them in `<x-layouts.app>`.
-*   **Alpine Component Nesting:** Avoid using generic variable names (like `open`) in both parent and child components (e.g., `Select` and `Sheet`). This causes scope shadowing that breaks `x-model`. Use distinct names (`selectOpen` vs `open`).
-*   **Livewire Entangle:** When entangling nested array keys (`$wire.entangle('filters.role')`), the key MUST exist in the backend array initialization (e.g., in `mount()`). Use `mountHasDatatableLivewireFilters` for DataTables.
+
+- **CSP Safety:** All Alpine.js logic must be extracted to registered components. **Avoid inline event handlers** that violate CSP.
+- **JSON in x-data:** When passing JSON to `x-data`, use **Single Quotes** for the HTML attribute and **Double Quotes** for the inner JSON string.
+    - **Right:** `x-data='{!! json_encode(["key" => "val"]) !!}'` or `x-data='myComponent({!! json_encode(...) !!})'`
+    - **Wrong:** `x-data="{!! json_encode(...) !!}"` (Breaks on inner double quotes, causes "Unexpected Token: EOF")
+    - Ensure any single quotes in data are escaped (`JSON_HEX_APOS`) so they don't break the outer attribute.
+- **Livewire Routing:** Use the **singular model name** for route parameters to enable automatic binding (e.g., `/users/{user}`), never `{id}` or `{uuid}`.
+- **Blade Components:** Do **not** use Blade directives (like `@if`) inside component opening tags. Use conditional attribute binding instead (`:attr="$condition ? 'val' : null"`).
+- **Layouts:** Full-page Livewire components are automatically wrapped in the layout. **Do not** manually wrap them in `<x-layouts.app>`.
+- **Alpine Component Nesting:** Avoid using generic variable names (like `open`) in both parent and child components (e.g., `Select` and `Sheet`). This causes scope shadowing that breaks `x-model`. Use distinct names (`selectOpen` vs `open`).
+- **Livewire Entangle:** When entangling nested array keys (`$wire.entangle('filters.role')`), the key MUST exist in the backend array initialization (e.g., in `mount()`). Use `mountHasDatatableLivewireFilters` for DataTables.
 
 ### Testing
-*   **Framework:** Pest (v4) MUST BE USED EXCLUSIVELY.
-    *   **ALL tests MUST use Pest's functional API** (`it()` or `test()`).
-    *   **Class-based tests extending `TestCase` are STRICTLY FORBIDDEN.**
-*   **Location:** `tests/Feature` and `tests/Unit`
-*   **Command:** `php artisan test --parallel` or `composer run test`
-**When to Run Tests:**
-- After **major updates** or **big implementations**
-- After **significant architectural changes**
-- When **explicitly requested** by the user
-- Before committing breaking changes
-- **Not** required for minor tweaks, styling changes, or small bug fixes
+
+- **Framework:** Pest (v4) MUST BE USED EXCLUSIVELY.
+    - **ALL tests MUST use Pest's functional API** (`it()` or `test()`).
+    - **Class-based tests extending `TestCase` are STRICTLY FORBIDDEN.**
+- **Location:** `tests/Feature` and `tests/Unit`
+- **Command:** `php artisan test --parallel` or `composer run test`
+  **When to Run Tests:**
+
+* After **major updates** or **big implementations**
+* After **significant architectural changes**
+* When **explicitly requested** by the user
+* Before committing breaking changes
+* **Not** required for minor tweaks, styling changes, or small bug fixes
 
 ## 4. Build & Run Commands
 
 ### Setup
+
 ```bash
 composer run setup
 # OR manual:
@@ -75,12 +80,14 @@ npm run build
 ```
 
 ### Development
+
 ```bash
 # Runs Server, Horizon, Pail, Vite, and Reverb concurrently
 composer run dev
 ```
 
 ### Testing & Quality
+
 ```bash
 # Run Tests
 php artisan test --parallel
@@ -93,16 +100,18 @@ npm run format:all
 ```
 
 ## 5. File Structure Highlights
-*   `app/Models/Base/`: Base classes for models (UUID logic).
-*   `app/Livewire/`: Livewire components (Standard & SFC).
-*   `app/Actions/Fortify/`: Authentication logic.
-*   `docs/AGENTS/`: Detailed agent-specific documentation.
-*   `lang/`: Localization files (Strictly enforced).
+
+- `app/Models/Base/`: Base classes for models (UUID logic).
+- `app/Livewire/`: Livewire components (Standard & SFC).
+- `app/Actions/Fortify/`: Authentication logic.
+- `docs/AGENTS/`: Detailed agent-specific documentation.
+- `lang/`: Localization files (Strictly enforced).
 
 ## 6. Agent Behavior
-*   **Reference:** Always consult `docs/AGENTS/` for specific patterns before implementation.
-*   **Safety:** Do not assume "standard" Laravel conventions if a specific base class or trait is provided (e.g., `BaseModel`).
-*   **Verification:** Always run `php artisan test --parallel` after changes.
+
+- **Reference:** Always consult `docs/AGENTS/` for specific patterns before implementation.
+- **Safety:** Do not assume "standard" Laravel conventions if a specific base class or trait is provided (e.g., `BaseModel`).
+- **Verification:** Always run `php artisan test --parallel` after changes.
 
 ===
 
@@ -126,7 +135,6 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - laravel/sanctum (SANCTUM) - v4
 - laravel/telescope (TELESCOPE) - v5
 - livewire/livewire (LIVEWIRE) - v4
-- livewire/volt (VOLT) - v1
 - laravel/boost (BOOST) - v2
 - laravel/mcp (MCP) - v0
 - laravel/pail (PAIL) - v1
@@ -206,7 +214,7 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 - Execute PHP in app context for debugging and testing code. Do not create models without user approval, prefer tests with factories instead. Prefer existing Artisan commands over custom tinker code.
 - Always use single quotes to prevent shell expansion: `php artisan tinker --execute 'Your::code();'`
-  - Double quotes for PHP strings inside: `php artisan tinker --execute 'User::where("active", true)->count();'`
+    - Double quotes for PHP strings inside: `php artisan tinker --execute 'User::where("active", true)->count();'`
 
 === php rules ===
 
