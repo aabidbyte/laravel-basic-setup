@@ -8,14 +8,20 @@ use App\Models\Plan;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Stancl\Tenancy\Database\DatabaseManager;
 use Stancl\Tenancy\Database\Models\Domain;
+use Stancl\Tenancy\Jobs\CreateDatabase;
 
 class CentralUserSeeder extends Seeder
 {
+    use WithoutModelEvents;
+
     /**
      * Run the database seeds.
      */
@@ -27,39 +33,73 @@ class CentralUserSeeder extends Seeder
         }
 
         // Create Super Admin if it doesn't exist
-        $admin = User::updateOrCreate(
-            ['email' => 'admin@example.com'],
-            [
-                'name' => 'Super Admin',
-                'username' => 'admin',
-                'password' => Hash::make('password'),
-                'is_active' => true,
-                'is_super_admin' => true,
-                'email_verified_at' => now(),
-            ],
-        );
+        $admin = $this->updateOrCreateUser('admin@example.com', [
+            'name' => 'Super Admin',
+            'username' => 'admin',
+            'password' => Hash::make('password'),
+            'is_active' => true,
+            'is_super_admin' => true,
+            'email_verified_at' => now(),
+        ]);
 
         // Assign Super Admin role
         $superAdminRole = Role::where('name', Roles::SUPER_ADMIN)->first();
         if ($superAdminRole) {
-            $admin->roles()->syncWithoutDetaching([$superAdminRole->id]);
+            $this->attachRole($admin, $superAdminRole);
         }
 
         // Create a regular user for testing
-        User::updateOrCreate(
-            ['email' => 'user@example.com'],
-            [
-                'name' => 'Test User',
-                'username' => 'user',
-                'password' => Hash::make('password'),
-                'is_active' => true,
-                'is_super_admin' => false,
-                'email_verified_at' => now(),
-            ],
-        );
+        $this->updateOrCreateUser('user@example.com', [
+            'name' => 'Test User',
+            'username' => 'user',
+            'password' => Hash::make('password'),
+            'is_active' => true,
+            'is_super_admin' => false,
+            'email_verified_at' => now(),
+        ]);
 
         $organizations = $this->seedOrganizations();
-        $this->attachSeededUsersToOrganizations($organizations);
+
+        if (! app()->runningUnitTests()) {
+            $this->attachSeededUsersToOrganizations($organizations);
+        }
+
+        $this->ensureOrganizationDatabasesExist($organizations);
+    }
+
+    /**
+     * @param  array{
+     *     name: string,
+     *     username: string,
+     *     password: string,
+     *     is_active: bool,
+     *     is_super_admin: bool,
+     *     email_verified_at: mixed,
+     * }  $attributes
+     */
+    private function updateOrCreateUser(string $email, array $attributes): User
+    {
+        $user = User::firstOrNew(['email' => $email]);
+
+        if (! $user->exists) {
+            $user->uuid = (string) Str::uuid();
+        }
+
+        $user->fill($attributes);
+        $user->save();
+
+        return $user;
+    }
+
+    private function attachRole(User $user, Role $role): void
+    {
+        if ($user->roles()->whereKey($role->id)->exists()) {
+            return;
+        }
+
+        $user->roles()->attach($role->id, [
+            'uuid' => (string) Str::uuid(),
+        ]);
     }
 
     /**
@@ -114,7 +154,12 @@ class CentralUserSeeder extends Seeder
     private function findOrCreateOrganization(array $organizationAttributes): Tenant
     {
         $domain = Domain::where('domain', $organizationAttributes['domain'])->first();
-        $organization = $domain?->tenant;
+        $organization = Tenant::query()
+            ->where('tenant_id', $organizationAttributes['slug'])
+            ->orWhere('slug', $organizationAttributes['slug'])
+            ->first();
+
+        $organization ??= $domain?->tenant;
 
         if ($organization instanceof Tenant) {
             $organization->update([
@@ -124,6 +169,8 @@ class CentralUserSeeder extends Seeder
                 'color' => $organizationAttributes['color'],
                 'should_seed' => false,
             ]);
+
+            $this->ensureOrganizationDomain($organization, $organizationAttributes['domain']);
 
             return $organization;
         }
@@ -142,6 +189,36 @@ class CentralUserSeeder extends Seeder
         ]);
 
         return $organization;
+    }
+
+    private function ensureOrganizationDomain(Tenant $organization, string $domain): void
+    {
+        if ($organization->domains()->where('domain', $domain)->exists()) {
+            return;
+        }
+
+        $organization->domains()->create([
+            'domain' => $domain,
+        ]);
+    }
+
+    private function ensureOrganizationDatabaseExists(Tenant $organization): void
+    {
+        if ($organization->database()->manager()->databaseExists($organization->database()->getName())) {
+            return;
+        }
+
+        (new CreateDatabase($organization))->handle(app(DatabaseManager::class));
+    }
+
+    /**
+     * @param  Collection<int, Tenant>  $organizations
+     */
+    private function ensureOrganizationDatabasesExist(Collection $organizations): void
+    {
+        $organizations->each(function (Tenant $organization): void {
+            $this->ensureOrganizationDatabaseExists($organization);
+        });
     }
 
     /**

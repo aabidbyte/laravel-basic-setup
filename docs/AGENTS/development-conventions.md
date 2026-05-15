@@ -787,14 +787,22 @@ public function getSubmitButtonTextProperty(): string
     -   Unit tests (for isolated logic)
     -   Browser tests (for complex interactions)
 -   **Test Location**: `tests/Feature/` and `tests/Unit/`
--   **Test Command**: `php artisan test --filter=testName` or `php artisan test --parallel`
+-   **Test Commands**:
+    -   `composer test` — fast Unit lane; must stay under 30 seconds.
+    -   `composer test:feature` — parallel non-provisioning Feature lane.
+    -   `composer test:integration` — real tenancy provisioning lane.
+    -   `composer test:all` — full green-suite verification.
+    -   Scoped debugging: `php artisan test --compact tests/Feature/ExampleTest.php` or `php artisan test --compact --filter=testName`.
 -   **Coverage**: Every change must be tested
 -   **Factories**: Use model factories in tests
 -   **Testing Performance**:
-    -   **Avoid `RefreshDatabase` in Unit Tests**: Unit tests must be isolated from the database. Only use `RefreshDatabase` or `InteractsWithTenancy` in `Feature` tests.
-    -   **Disable Global Seeding**: Seeding is expensive. Set `protected $seed = false;` in `TestCase` and manually seed only what is needed in specific tests via `$this->seed()`.
+    -   **MySQL Only**: Do not switch tests to SQLite or `:memory:`. Tenancy behavior must be validated with the same MySQL connection type used by the app.
+    -   **No Per-Test Migrations**: Routine Feature tests must not use `RefreshDatabase` or `DatabaseMigrations`. `Tests\TestCase` migrates once per PHP process, prepares one reusable tenant database per process, and uses transactions for row cleanup.
+    -   **Tenancy Groups**: Tests that create, migrate, inspect, or initialize real tenant databases must be in `tenancy-provisioning`. Tests that drop all test databases must also be in `serial-database-cleanup`.
+    -   **Scoped Assertions**: Tenant provisioning can issue MySQL DDL and implicitly commit transactions. Avoid global table-count assertions; assert rows scoped to the user, tenant, model, or record created by the test.
     -   **Pest Configuration**: Use granular `pest()->extend()->in()` calls in `tests/Pest.php` to apply traits only where they are needed (e.g., `in('Feature')`).
-    -   **Parallel Testing**: Run tests with `--parallel` for faster execution, but ensure your environment supports non-interactive TTY output.
+    -   **Parallel Testing**: Use the Composer lanes for parallel execution so the correct Pest groups are included/excluded.
+    -   **Full Rules**: See `docs/AGENTS/testing-performance.md`.
 
 ### Frontend Development
 
@@ -992,4 +1000,3 @@ Entry points in `vite.config.js`:
 1. Create a new JS file (e.g., `resources/js/feature.js`)
 2. Add as Vite entry point in `vite.config.js`
 3. Include only in app head partial: `@vite([..., 'resources/js/feature.js'])`
-

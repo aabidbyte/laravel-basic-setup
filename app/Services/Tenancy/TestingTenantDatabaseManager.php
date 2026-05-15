@@ -5,12 +5,18 @@ declare(strict_types=1);
 namespace App\Services\Tenancy;
 
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Stancl\Tenancy\Bootstrappers\RedisTenancyBootstrapper;
 
 class TestingTenantDatabaseManager
 {
+    /**
+     * @var array<string, bool>
+     */
+    private static array $preparedReusableTenantDatabases = [];
+
     /**
      * Configure central and tenant database names for the active testing database.
      */
@@ -45,7 +51,7 @@ class TestingTenantDatabaseManager
 
         return $this->dropMatchingDatabases([
             $this->likePattern($this->tenantDatabasePrefix($database)),
-        ]);
+        ], [$this->reusableTenantDatabaseName($database)]);
     }
 
     /**
@@ -57,9 +63,13 @@ class TestingTenantDatabaseManager
             return 0;
         }
 
-        return $this->dropMatchingDatabases([
+        $droppedDatabases = $this->dropMatchingDatabases([
             $this->allTestingTenantDatabasesPattern(),
         ]);
+
+        self::$preparedReusableTenantDatabases = [];
+
+        return $droppedDatabases;
     }
 
     /**
@@ -95,6 +105,51 @@ class TestingTenantDatabaseManager
     public function tenantDatabaseSuffix(): string
     {
         return \env('TENANCY_TEST_DATABASE_SUFFIX', '_test');
+    }
+
+    /**
+     * Create and migrate the reusable tenant database for the active test process.
+     */
+    public function prepareReusableTenantDatabase(?string $database = null): string
+    {
+        if (! $this->canManageTestingDatabases()) {
+            return '';
+        }
+
+        $database ??= $this->activeDatabaseName();
+        $tenantDatabase = $this->reusableTenantDatabaseName($database);
+
+        if ((self::$preparedReusableTenantDatabases[$tenantDatabase] ?? false) && $this->databaseExists($tenantDatabase)) {
+            $this->configureTenantConnection($tenantDatabase);
+
+            return $tenantDatabase;
+        }
+
+        $this->createDatabaseIfMissing($tenantDatabase);
+        $this->configureTenantConnection($tenantDatabase);
+
+        Artisan::call('migrate:fresh', [
+            '--database' => 'tenant',
+            '--path' => \database_path('migrations/tenant'),
+            '--realpath' => true,
+            '--force' => true,
+        ]);
+
+        DB::purge('tenant');
+
+        self::$preparedReusableTenantDatabases[$tenantDatabase] = true;
+
+        return $tenantDatabase;
+    }
+
+    /**
+     * Return the reusable tenant database name for the active test process.
+     */
+    public function reusableTenantDatabaseName(?string $database = null): string
+    {
+        $database ??= $this->activeDatabaseName();
+
+        return $this->tenantDatabasePrefix($database) . 'shared' . $this->tenantDatabaseSuffix();
     }
 
     /**
@@ -140,14 +195,49 @@ class TestingTenantDatabaseManager
         ));
     }
 
+    private function createDatabaseIfMissing(string $database): void
+    {
+        if ($this->databaseExists($database)) {
+            return;
+        }
+
+        $escapedDatabase = \str_replace('`', '``', $database);
+        $charset = \config('database.connections.mysql.charset', 'utf8mb4');
+        $collation = \config('database.connections.mysql.collation', 'utf8mb4_unicode_ci');
+
+        DB::connection('mysql')->statement(
+            "CREATE DATABASE `{$escapedDatabase}` CHARACTER SET `{$charset}` COLLATE `{$collation}`",
+        );
+    }
+
+    private function configureTenantConnection(string $database): void
+    {
+        $connection = \config('database.connections.central');
+        $connection['database'] = $database;
+
+        \config(['database.connections.tenant' => $connection]);
+
+        DB::purge('tenant');
+    }
+
+    private function databaseExists(string $database): bool
+    {
+        return DB::connection('mysql')
+            ->table('information_schema.SCHEMATA')
+            ->where('SCHEMA_NAME', $database)
+            ->exists();
+    }
+
     /**
      * @param  array<int, string>  $patterns
+     * @param  array<int, string>  $except
      */
-    private function dropMatchingDatabases(array $patterns): int
+    private function dropMatchingDatabases(array $patterns, array $except = []): int
     {
         $droppedDatabases = 0;
 
         $this->matchingDatabases($patterns)
+            ->reject(fn (string $database): bool => \in_array($database, $except, true))
             ->each(function (string $database) use (&$droppedDatabases): void {
                 $escapedDatabase = \str_replace('`', '``', $database);
 

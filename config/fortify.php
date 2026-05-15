@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\Auth\UseDomainAuthGuard;
 use Laravel\Fortify\Features;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 
@@ -101,7 +102,7 @@ return [
     |
     */
 
-    'middleware' => ['web', 'universal', InitializeTenancyByDomain::class],
+    'middleware' => ['web', 'universal', InitializeTenancyByDomain::class, UseDomainAuthGuard::class],
 
     /*
     |--------------------------------------------------------------------------

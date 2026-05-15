@@ -14,7 +14,7 @@ beforeEach(function () {
     $viewerRole->givePermissionTo($permission);
     $viewerRole->givePermissionTo($deletePermission);
 
-    $this->admin = User::query()->find(1) ?? User::factory()->create();
+    $this->admin = User::query()->find(1) ?? User::factory()->create(['id' => 1]);
     $this->admin->assignRole($viewerRole);
 });
 

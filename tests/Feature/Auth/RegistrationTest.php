@@ -102,8 +102,11 @@ test('creates team and attaches user on registration', function () {
 
     asTenant($tenant);
 
-    // User should have a team in this tenant
-    $teams = Team::all();
+    // User should have a team.
+    $teams = Team::query()
+        ->where('created_by_user_id', $user->id)
+        ->get();
+
     expect($teams)->toHaveCount(1);
 
     // Team should exist and have the user

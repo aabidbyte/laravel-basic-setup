@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\CentralUser;
 use App\Models\User;
 
 return [
@@ -39,7 +40,12 @@ return [
     'guards' => [
         'web' => [
             'driver' => 'session',
-            'provider' => 'users',
+            'provider' => 'central_users',
+        ],
+
+        'tenant' => [
+            'driver' => 'session',
+            'provider' => 'tenant_users',
         ],
     ],
 
@@ -61,9 +67,14 @@ return [
     */
 
     'providers' => [
-        'users' => [
+        'central_users' => [
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', User::class),
+            'model' => env('AUTH_MODEL', CentralUser::class),
+        ],
+
+        'tenant_users' => [
+            'driver' => 'eloquent',
+            'model' => User::class,
         ],
 
         // 'users' => [
@@ -93,7 +104,14 @@ return [
 
     'passwords' => [
         'users' => [
-            'provider' => 'users',
+            'provider' => 'central_users',
+            'table' => 'password_reset_tokens',
+            'expire' => 15,
+            'throttle' => 60,
+        ],
+
+        'tenant_users' => [
+            'provider' => 'tenant_users',
             'table' => 'password_reset_tokens',
             'expire' => 15,
             'throttle' => 60,

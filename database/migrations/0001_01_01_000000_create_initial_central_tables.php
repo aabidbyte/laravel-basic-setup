@@ -217,6 +217,7 @@ return new class extends Migration {
         Schema::create('teams', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
+            $table->string('tenant_id')->nullable()->index();
             $table->string('name');
             $table->text('description')->nullable();
             $table->string('color')->nullable();
@@ -226,11 +227,48 @@ return new class extends Migration {
             $table->foreign('created_by_user_id')->references('id')->on('users')->nullOnDelete();
         });
 
+        Schema::create('team_permissions', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->string('name')->unique();
+            $table->string('display_name')->nullable();
+            $table->string('description')->nullable();
+            $table->string('entity')->nullable();
+            $table->string('action')->nullable();
+            $table->timestampsTz();
+            $table->softDeletesTz();
+        });
+
+        Schema::create('team_roles', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->string('tenant_id')->nullable()->index();
+            $table->string('name');
+            $table->string('display_name')->nullable();
+            $table->string('description')->nullable();
+            $table->string('color')->nullable();
+            $table->boolean('is_admin')->default(false);
+            $table->boolean('is_default')->default(false);
+            $table->unsignedSmallInteger('sort_order')->default(0);
+            $table->timestampsTz();
+            $table->softDeletesTz();
+            $table->unique(['tenant_id', 'name']);
+        });
+
+        Schema::create('team_permission_team_role', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->foreignId('team_permission_id')->constrained('team_permissions')->cascadeOnDelete();
+            $table->foreignId('team_role_id')->constrained('team_roles')->cascadeOnDelete();
+            $table->unique(['team_permission_id', 'team_role_id'], 'team_permission_role_unique');
+        });
+
         Schema::create('team_user', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
             $table->unsignedBigInteger('user_id');
             $table->foreignId('team_id')->constrained('teams')->cascadeOnDelete();
+            $table->foreignId('team_role_id')->nullable()->constrained('team_roles')->nullOnDelete();
             $table->string('role')->nullable()->default('member');
             $table->timestampsTz();
             $table->index('user_id');
@@ -341,6 +379,9 @@ return new class extends Migration {
         Schema::dropIfExists('subscriptions');
         Schema::dropIfExists('plans');
         Schema::dropIfExists('team_user');
+        Schema::dropIfExists('team_permission_team_role');
+        Schema::dropIfExists('team_roles');
+        Schema::dropIfExists('team_permissions');
         Schema::dropIfExists('teams');
         Schema::dropIfExists('telescope_monitoring');
         Schema::dropIfExists('telescope_entries_tags');

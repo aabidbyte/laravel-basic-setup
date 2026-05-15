@@ -4,8 +4,13 @@ namespace Database\Seeders;
 
 use Database\Seeders\CentralSeeders\Development\CentralUserSeeder;
 use Database\Seeders\CentralSeeders\Development\SubscriptionSeeder;
+use Database\Seeders\CentralSeeders\Production\CentralTeamSeeder;
 use Database\Seeders\CentralSeeders\Production\RoleAndPermissionSeeder;
+use Database\Seeders\CentralSeeders\Production\TeamRoleAndPermissionSeeder;
 use Database\Seeders\TenantSeeders\Production\EmailTemplateSeeder;
+use Database\Seeders\TenantSeeders\Production\TenantRoleAndPermissionSeeder;
+use Database\Seeders\TenantSeeders\Production\TenantTeamRoleAndPermissionSeeder;
+use Database\Seeders\TenantSeeders\Production\TenantUserAndTeamSeeder;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\App;
 
@@ -34,7 +39,9 @@ class DatabaseSeeder extends Seeder
         // These run everywhere (local, testing, production)
         $this->call([
             RoleAndPermissionSeeder::class,
+            TeamRoleAndPermissionSeeder::class,
             PlanSeeder::class,
+            CentralTeamSeeder::class,
         ]);
 
         // --- B. DEVELOPMENT CENTRAL SEEDERS ---
@@ -42,6 +49,7 @@ class DatabaseSeeder extends Seeder
         if (! App::environment(['production', 'testing'])) {
             $this->call([
                 CentralUserSeeder::class,
+                CentralTeamSeeder::class,
                 SubscriptionSeeder::class,
             ]);
         }
@@ -56,6 +64,9 @@ class DatabaseSeeder extends Seeder
         // --- A. PRODUCTION TENANT SEEDERS ---
         // Essential tenant setup
         $this->call([
+            TenantRoleAndPermissionSeeder::class,
+            TenantTeamRoleAndPermissionSeeder::class,
+            TenantUserAndTeamSeeder::class,
             EmailTemplateSeeder::class,
         ]);
 

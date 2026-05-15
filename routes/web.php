@@ -18,7 +18,7 @@ if (app()->environment('local', 'development')) {
 }
 
 // Authenticated routes
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth:web'])->group(function () {
     require __DIR__ . '/web/auth/tenancy.php';
     require __DIR__ . '/web/auth/dashboard.php';
     require __DIR__ . '/web/auth/notifications.php';

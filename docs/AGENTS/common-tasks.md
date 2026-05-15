@@ -65,7 +65,7 @@ php artisan make:model Product --factory --migration
 ### Creating a Feature Test
 
 ```bash
-php artisan make:test --pest Feature/ExampleTest
+php artisan make:test --pest ExampleTest
 ```
 
 ### Creating a Form Request

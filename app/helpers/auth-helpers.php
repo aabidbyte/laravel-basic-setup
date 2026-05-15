@@ -24,6 +24,12 @@ function getIdentifierFromRequest(Request $request): ?string
  */
 function setTenantSessionForUser(User $user): void
 {
+    if (\function_exists('tenant') && tenant()) {
+        session(['tenant_id' => tenant('tenant_id') ?? tenant('id')]);
+
+        return;
+    }
+
     $firstTenant = $user->tenants()->orderBy('tenants.name')->first();
     if ($firstTenant) {
         session(['tenant_id' => $firstTenant->tenant_id]);

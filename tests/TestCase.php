@@ -9,13 +9,16 @@ use App\Services\Tenancy\TestingTenantDatabaseManager;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Application;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Tests\Concerns\InteractsWithTenancy;
+use Tests\Concerns\UsesMigratedTestDatabases;
 
 abstract class TestCase extends BaseTestCase
 {
-    use DatabaseMigrations;
+    use DatabaseTransactions, UsesMigratedTestDatabases {
+        UsesMigratedTestDatabases::connectionsToTransact insteadof DatabaseTransactions;
+    }
     use InteractsWithTenancy;
 
     /**
@@ -27,13 +30,9 @@ abstract class TestCase extends BaseTestCase
 
     protected $seed = true;
 
-    public function runDatabaseMigrations(): void
+    public function beginDatabaseTransaction(): void
     {
-        $this->beforeRefreshingDatabase();
-        $this->refreshTestDatabase();
-        $this->afterRefreshingDatabase();
-
-        $this->app[Kernel::class]->setArtisan(null);
+        //
     }
 
     public function createApplication()
@@ -86,6 +85,12 @@ abstract class TestCase extends BaseTestCase
         Tenant::query()
             ->get()
             ->each(function (Tenant $tenant): void {
+                if ($tenant->getInternal('db_name') === $this->testing_databases()->reusableTenantDatabaseName()) {
+                    Tenant::withoutEvents(fn (): ?bool => $tenant->delete());
+
+                    return;
+                }
+
                 try {
                     $tenant->delete();
                 } catch (QueryException $exception) {
@@ -98,16 +103,20 @@ abstract class TestCase extends BaseTestCase
             });
     }
 
-    private function testing_databases(): TestingTenantDatabaseManager
+    protected function testing_databases(): TestingTenantDatabaseManager
     {
         return $this->app->make(TestingTenantDatabaseManager::class);
     }
 
     protected function tearDown(): void
     {
+        $this->finishTestingTenantTransaction();
+
         if (\function_exists('tenancy')) {
             tenancy()->end();
         }
+
+        $this->cleanUpTestingTenancy();
 
         parent::tearDown();
     }

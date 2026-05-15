@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 
 beforeEach(function () {
-    asTenant();
     Mail::fake();
 });
 

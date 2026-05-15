@@ -27,13 +27,6 @@ class User extends BaseUserModel implements MustVerifyEmail
     use TwoFactorAuthenticatable;
 
     /**
-     * The connection name for the model.
-     *
-     * @var string|null
-     */
-    protected $connection = 'central';
-
-    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
@@ -113,7 +106,7 @@ class User extends BaseUserModel implements MustVerifyEmail
     {
         return $this->belongsToMany(Team::class, 'team_user')
             ->using(TeamUser::class)
-            ->withPivot('role')
+            ->withPivot('role', 'team_role_id')
             ->withTimestamps();
     }
 

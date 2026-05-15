@@ -59,5 +59,4 @@
     -   Development: Predis (pure PHP, no extension)
     -   Production/Staging: PhpRedis (better performance)
     -   Automatic client selection based on environment
--   **Database**: MySQL (default), SQLite (testing)
-
+-   **Database**: MySQL for development, production, and testing. Do not use SQLite or `:memory:` for tenancy tests.

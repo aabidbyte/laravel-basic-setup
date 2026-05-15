@@ -720,49 +720,26 @@ When using multi-database tenancy with domain identification, sessions are autom
 ## TESTING
 
 ### Central app tests
-Write normal Laravel tests — no changes needed.
+Write normal Pest tests and run them through the project Composer lanes. Do not add per-test database migration traits.
 
 ### Tenant app tests
 
-```php
-class TestCase extends \Illuminate\Foundation\Testing\TestCase
-{
-    protected bool $tenancy = false;
+Use the project Pest helper:
 
-    public function setUp(): void
-    {
-        parent::setUp();
-        if ($this->tenancy) {
-            $this->initializeTenancy();
-        }
-    }
-
-    public function initializeTenancy(): void
-    {
-        $tenant = Tenant::create();
-        tenancy()->initialize($tenant);
-    }
-}
-
-class FooTest extends TestCase
-{
-    protected bool $tenancy = true;
-
-    /** @test */
-    public function my_tenant_test(): void
-    {
-        $this->assertTrue(true);
-    }
-}
-```
+- `asTenant()` creates a reusable testing tenant backed by the per-process shared tenant database and wraps tenant writes in a transaction.
+- `asTenant($tenant)` initializes a specific tenant when the test is intentionally validating real tenant provisioning behavior.
+- Tests that create, migrate, inspect, or initialize real tenant databases must be grouped as `tenancy-provisioning` in `tests/Pest.php`.
+- Tests that drop all testing databases must also be grouped as `serial-database-cleanup` and run outside the parallel pool.
 
 ### Important caveats
-- ❌ Cannot use `:memory:` SQLite or `RefreshDatabase` trait with multi-DB + automatic mode (connection switching breaks it).
+- ❌ Cannot use `:memory:` SQLite, SQLite, `RefreshDatabase`, or `DatabaseMigrations` as the routine reset mechanism with this MySQL multi-DB automatic tenancy setup.
 - ❌ `Event::fake()` (without args) breaks tenancy initialization — use selective faking:
   ```php
   Event::fake([MyEvent::class]); // ✅
   Event::fake();                 // ❌ breaks tenancy
   ```
+- ❌ Do not assert global table counts in provisioning tests. MySQL DDL can implicitly commit transactions; assert records scoped to the user, tenant, entity, or model created by the test.
+- ✅ Use `composer test`, `composer test:feature`, `composer test:integration`, and `composer test:all` for suite verification.
 
 ---
 

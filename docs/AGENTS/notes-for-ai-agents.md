@@ -27,3 +27,4 @@
 25. **Respect Custom Password Reset Schema** - The `password_reset_tokens` table uses an `identifier` column instead of `email`. Do NOT attempt to revert this migration. The system uses `IdentifierTokenRepository` to handle this.
 26. **Use Enums for types**: Prefer backed Enums over constants/strings for statuses, types, and colors (e.g., `ThemeColorTypes`).
 27. **Centralized UI Helpers**: Always use `alpineColorClasses($expression, $prefix)` (from `app/helpers/ui-helpers.php`) for dynamic component coloring to maintain compatibility with the Tailwind 4 scanner.
+28. **Respect test lanes** - Use `composer test` for the fast Unit lane, `composer test:feature` for non-provisioning Feature tests, `composer test:integration` for real tenancy provisioning, and `composer test:all` for full verification. Do not add `RefreshDatabase`, `DatabaseMigrations`, SQLite, or `:memory:` to routine Feature tests.

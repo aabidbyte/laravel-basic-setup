@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Middleware\Auth\UseDomainAuthGuard;
 use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Features\UserImpersonation;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
@@ -22,6 +23,7 @@ use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 Route::middleware([
     'web',
     InitializeTenancyByDomain::class,
+    UseDomainAuthGuard::class,
     PreventAccessFromCentralDomains::class,
 ])->group(function () {
     // Public routes (no auth required)
@@ -40,7 +42,7 @@ Route::middleware([
     }
 
     // Authenticated routes
-    Route::middleware(['auth'])->group(function () {
+    Route::middleware(['auth:tenant'])->group(function () {
         require __DIR__ . '/web/auth/dashboard.php';
         require __DIR__ . '/web/auth/notifications.php';
         require __DIR__ . '/web/auth/users.php';

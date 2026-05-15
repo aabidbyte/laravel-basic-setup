@@ -84,7 +84,7 @@
         "migrate-fresh-seed": [
             "@php artisan migrate:fresh --seed",
             "@php artisan tenants:migrate-fresh",
-            "@php artisan tenants:seed --force"
+            "@php artisan tenants:seed"
         ],
         "migrate-fresh": [
             "@php artisan migrate:fresh",
@@ -119,17 +119,19 @@
         "test:feature": [
             "Composer\\Config::disableProcessTimeout",
             "@php artisan config:clear --ansi",
-            "@php artisan test --parallel --exclude-group=tenancy-provisioning"
+            "@php artisan test --parallel --exclude-group=tenancy-provisioning --exclude-group=serial-database-cleanup"
         ],
         "test:integration": [
             "Composer\\Config::disableProcessTimeout",
             "@php artisan config:clear --ansi",
-            "@php artisan test --parallel --group=tenancy-provisioning"
+            "@php artisan test --parallel --group=tenancy-provisioning --exclude-group=serial-database-cleanup",
+            "@php artisan test --group=serial-database-cleanup"
         ],
         "test:all": [
             "Composer\\Config::disableProcessTimeout",
             "@php artisan config:clear --ansi",
-            "@php artisan test --parallel"
+            "@php artisan test --parallel --exclude-group=serial-database-cleanup",
+            "@php artisan test --group=serial-database-cleanup"
         ],
         "test:parallel": [
             "Composer\\Config::disableProcessTimeout",

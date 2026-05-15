@@ -24,6 +24,8 @@ pest()->extend(UnitTestCase::class)
 pest()->extend(MiddlewareTestCase::class)
     ->use(InteractsWithTenancy::class)
     ->afterEach(function () {
+        $this->finishTestingTenantTransaction();
+
         if (\function_exists('tenancy')) {
             tenancy()->end();
         }
@@ -39,6 +41,8 @@ pest()->extend(MiddlewareTestCase::class)
 pest()->extend(UiTestCase::class)
     ->use(InteractsWithTenancy::class)
     ->afterEach(function () {
+        $this->finishTestingTenantTransaction();
+
         if (\function_exists('tenancy')) {
             tenancy()->end();
         }
@@ -54,6 +58,8 @@ pest()->extend(UiTestCase::class)
 pest()->extend(TestCase::class)
     ->use(InteractsWithTenancy::class)
     ->afterEach(function () {
+        $this->finishTestingTenantTransaction();
+
         if (\function_exists('tenancy')) {
             tenancy()->end();
         }
@@ -69,6 +75,7 @@ pest()->extend(TestCase::class)
 pest()->group('tenancy-provisioning')->in(
     'Feature/Admin/EmailContentSystemTest.php',
     'Feature/Auth',
+    'Feature/Console/Commands/CleanTestingTenantDatabasesCommandTest.php',
     'Feature/Consistency/ModelServiceConsistencyTest.php',
     'Feature/DebugTenantTest.php',
     'Feature/EmailTemplate/EmailTemplateSeederTest.php',
@@ -90,6 +97,11 @@ pest()->group('tenancy-provisioning')->in(
     'Feature/Users/UserCrudMailpitTest.php',
     'Feature/Users/UsersListAuthorizationTest.php',
     'Unit/Logging/TenantAwareLoggingTest.php',
+);
+
+pest()->group('serial-database-cleanup')->in(
+    'Feature/Console/Commands/CleanTestingTenantDatabasesCommandTest.php',
+    'Feature/Console/Commands/WipeProjectDatabasesCommandTest.php',
 );
 
 /*

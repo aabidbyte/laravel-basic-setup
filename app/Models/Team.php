@@ -16,19 +16,13 @@ class Team extends BaseModel
     use HasFactory;
 
     /**
-     * The connection name for the model.
-     *
-     * @var string|null
-     */
-    protected $connection = 'central';
-
-    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
     protected $fillable = [
         'name',
+        'tenant_id',
         'description',
         'color',
         'created_by_user_id',
@@ -49,7 +43,17 @@ class Team extends BaseModel
     {
         return $this->belongsToMany(User::class, 'team_user')
             ->using(TeamUser::class)
-            ->withPivot('role')
+            ->withPivot('role', 'team_role_id')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the team roles scoped to this team context.
+     */
+    public function roles(): BelongsToMany
+    {
+        return $this->belongsToMany(TeamRole::class, 'team_user')
+            ->using(TeamUser::class)
             ->withTimestamps();
     }
 

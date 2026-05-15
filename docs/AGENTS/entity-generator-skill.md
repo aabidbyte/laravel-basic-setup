@@ -71,10 +71,16 @@ Activate this skill when the user asks to "create an entity", "build a CRUD", or
 - **Location**: `tests/Feature/Pages/[Entity]Test.php`.
 - **Pattern**: Use `it()` syntax. Test create, edit, list, and authorization.
 - **Workflow**: Activate `pest-testing` skill.
+- **Database Rules**: Do not add `RefreshDatabase`, `DatabaseMigrations`, SQLite, or `:memory:`. This project uses MySQL, one migrated schema per process, reusable tenant databases, and transactions.
+- **Tenancy Groups**: Tests that create, migrate, inspect, or initialize real tenant databases must be in `tenancy-provisioning`. Tests that drop all testing databases must also be in `serial-database-cleanup`.
+- **Assertions**: Avoid global table-count assertions in tenant provisioning tests. Scope assertions to the created user, tenant, entity, or model because MySQL DDL can implicitly commit transactions.
 
 #### 2. Verification
-- **Command**: `php artisan test --parallel`.
-- **Linting**: `vendor/bin/pint --dirty`.
+- **Fast lane**: `composer test`.
+- **Feature lane**: `composer test:feature`.
+- **Integration lane**: `composer test:integration` when the entity changes real tenant provisioning.
+- **Full verification**: `composer test:all` before final handoff when the change scope justifies it.
+- **Linting**: `vendor/bin/pint --dirty --format agent`.
 
 ---
 
@@ -95,3 +101,5 @@ When creating the `PLAN.md` via `project-planner`, ensure it covers:
 2. **CSP SAFETY**: Extract Alpine logic to components.
 3. **PARAMETER LIMIT**: DTOs for methods with >3 params.
 4. **MANDATORY TRANSLATIONS**: Never leave hardcoded strings.
+5. **TEST LANES**: Use the Composer test lanes, not raw `php artisan test --parallel`, for suite verification.
+6. **MYSQL TENANCY TESTS**: Keep tenancy tests on MySQL and follow `docs/AGENTS/testing-performance.md`.

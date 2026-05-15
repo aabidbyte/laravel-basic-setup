@@ -19,13 +19,6 @@ class RoleUser extends BasePivotModel
     use HasUuid;
 
     /**
-     * The database connection that should be used by the model.
-     *
-     * @var string
-     */
-    protected $connection = 'central';
-
-    /**
      * The table associated with the model.
      *
      * @var string

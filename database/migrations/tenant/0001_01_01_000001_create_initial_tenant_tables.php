@@ -12,7 +12,146 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        // 1. Mail settings (Tenant-specific)
+        // 1. Users table (Tenant-specific)
+        Schema::create('users', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->string('name');
+            $table->string('username')->nullable()->unique();
+            $table->string('email')->nullable()->unique();
+            $table->string('pending_email')->nullable();
+            $table->string('pending_email_token')->nullable();
+            $table->timestampTz('pending_email_expires_at')->nullable();
+            $table->timestampTz('email_verified_at')->nullable();
+            $table->string('password')->nullable();
+            $table->boolean('is_active')->default(false);
+            $table->boolean('is_super_admin')->default(false);
+            $table->timestampTz('last_login_at')->nullable();
+            $table->text('two_factor_secret')->nullable();
+            $table->text('two_factor_recovery_codes')->nullable();
+            $table->timestampTz('two_factor_confirmed_at')->nullable();
+            $table->json('frontend_preferences')->nullable();
+            $table->json('notification_preferences')->nullable();
+            $table->rememberToken();
+            $table->unsignedBigInteger('created_by_user_id')->nullable();
+            $table->index('username');
+            $table->index('is_active');
+            $table->index('created_by_user_id');
+            $table->timestampsTz();
+            $table->softDeletesTz();
+            $table->foreign('created_by_user_id')->references('id')->on('users')->nullOnDelete();
+        });
+
+        Schema::create('password_reset_tokens', function (Blueprint $table) {
+            $table->id();
+            $table->string('identifier')->unique();
+            $table->uuid('uuid')->unique()->index();
+            $table->string('token');
+            $table->timestampTz('created_at')->nullable();
+        });
+
+        Schema::create('roles', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->string('name')->unique();
+            $table->string('display_name')->nullable();
+            $table->string('description')->nullable();
+            $table->string('color')->nullable();
+            $table->timestampsTz();
+            $table->softDeletesTz();
+        });
+
+        Schema::create('permissions', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->string('name')->unique();
+            $table->string('display_name')->nullable();
+            $table->string('description')->nullable();
+            $table->string('entity')->nullable();
+            $table->string('action')->nullable();
+            $table->timestampsTz();
+            $table->softDeletesTz();
+        });
+
+        Schema::create('role_user', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->foreignId('role_id')->constrained('roles')->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+        });
+
+        Schema::create('permission_role', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->foreignId('permission_id')->constrained('permissions')->cascadeOnDelete();
+            $table->foreignId('role_id')->constrained('roles')->cascadeOnDelete();
+        });
+
+        Schema::create('permission_user', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->foreignId('permission_id')->constrained('permissions')->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+        });
+
+        Schema::create('teams', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->string('name');
+            $table->text('description')->nullable();
+            $table->string('color')->nullable();
+            $table->unsignedBigInteger('created_by_user_id')->nullable();
+            $table->timestampsTz();
+            $table->softDeletesTz();
+            $table->foreign('created_by_user_id')->references('id')->on('users')->nullOnDelete();
+        });
+
+        Schema::create('team_permissions', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->string('name')->unique();
+            $table->string('display_name')->nullable();
+            $table->string('description')->nullable();
+            $table->string('entity')->nullable();
+            $table->string('action')->nullable();
+            $table->timestampsTz();
+            $table->softDeletesTz();
+        });
+
+        Schema::create('team_roles', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->string('name')->unique();
+            $table->string('display_name')->nullable();
+            $table->string('description')->nullable();
+            $table->string('color')->nullable();
+            $table->boolean('is_admin')->default(false);
+            $table->boolean('is_default')->default(false);
+            $table->unsignedSmallInteger('sort_order')->default(0);
+            $table->timestampsTz();
+            $table->softDeletesTz();
+        });
+
+        Schema::create('team_permission_team_role', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->foreignId('team_permission_id')->constrained('team_permissions')->cascadeOnDelete();
+            $table->foreignId('team_role_id')->constrained('team_roles')->cascadeOnDelete();
+            $table->unique(['team_permission_id', 'team_role_id'], 'team_permission_role_unique');
+        });
+
+        Schema::create('team_user', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('uuid')->unique();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('team_id')->constrained('teams')->cascadeOnDelete();
+            $table->foreignId('team_role_id')->nullable()->constrained('team_roles')->nullOnDelete();
+            $table->string('role')->nullable()->default('member');
+            $table->timestampsTz();
+            $table->unique(['user_id', 'team_id']);
+        });
+
+        // 2. Mail settings (Tenant-specific)
         Schema::create('mail_settings', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
@@ -33,7 +172,7 @@ return new class extends Migration {
             $table->index(['settable_type', 'settable_id']);
         });
 
-        // 2. Email templates (Tenant-specific)
+        // 3. Email templates (Tenant-specific)
         Schema::create('email_templates', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
@@ -74,18 +213,17 @@ return new class extends Migration {
             $table->softDeletesTz();
         });
 
-        // 3. Email Template Team pivot (Tenant-specific)
+        // 4. Email Template Team pivot (Tenant-specific)
         Schema::create('email_template_team', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
             $table->foreignId('email_template_id')->constrained('email_templates')->cascadeOnDelete();
-            $table->unsignedBigInteger('team_id');
+            $table->foreignId('team_id')->constrained('teams')->cascadeOnDelete();
             $table->timestampsTz();
             $table->unique(['email_template_id', 'team_id']);
-            $table->index('team_id');
         });
 
-        // 4. Error logs (Tenant-specific)
+        // 5. Error logs (Tenant-specific)
         Schema::create('error_logs', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
@@ -117,5 +255,17 @@ return new class extends Migration {
         Schema::dropIfExists('email_translations');
         Schema::dropIfExists('email_templates');
         Schema::dropIfExists('mail_settings');
+        Schema::dropIfExists('team_user');
+        Schema::dropIfExists('team_permission_team_role');
+        Schema::dropIfExists('team_roles');
+        Schema::dropIfExists('team_permissions');
+        Schema::dropIfExists('teams');
+        Schema::dropIfExists('permission_user');
+        Schema::dropIfExists('permission_role');
+        Schema::dropIfExists('role_user');
+        Schema::dropIfExists('permissions');
+        Schema::dropIfExists('roles');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('users');
     }
 };

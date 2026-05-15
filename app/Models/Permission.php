@@ -14,13 +14,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Permission extends BaseModel
 {
     /**
-     * The database connection that should be used by the model.
-     *
-     * @var string
-     */
-    protected $connection = 'central';
-
-    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>

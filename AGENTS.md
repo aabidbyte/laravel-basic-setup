@@ -140,6 +140,21 @@ Standard Blade views (controlled by Controllers/Routes returning `view()`) **MUS
 
 See [Development Conventions](docs/AGENTS/development-conventions.md#parameter-limit) for details.
 
+### Testing Performance & Tenancy Isolation (CRITICAL)
+**Feature tests MUST NOT use per-test `RefreshDatabase` or `DatabaseMigrations`.**
+
+This project uses MySQL for tests, one migrated central schema per PHP process, one reusable tenant database per process, and transactions for row cleanup.
+
+**Required commands:**
+- `composer test` - fast Unit lane, must stay under 30 seconds
+- `composer test:feature` - parallel non-provisioning Feature lane
+- `composer test:integration` - real tenancy provisioning lane
+- `composer test:all` - full green-suite verification
+
+Tests that create, migrate, inspect, or initialize real tenant databases MUST be grouped as `tenancy-provisioning`. Tests that drop all test databases MUST also be grouped as `serial-database-cleanup`.
+
+See [Testing Performance Rules](docs/AGENTS/testing-performance.md) for full details.
+
 ## Quick Links
 
 - **[Full Documentation](docs/AGENTS/index.md)** - Complete agent documentation with table of contents
@@ -365,7 +380,9 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 - This project uses Pest for testing. Create tests: `php artisan make:test --pest {name}`.
 - The `{name}` argument should not include the test suite directory. Use `php artisan make:test --pest SomeFeatureTest` instead of `php artisan make:test --pest Feature/SomeFeatureTest`.
-- Run tests: `php artisan test --compact` or filter: `php artisan test --compact --filter=testName`.
+- Run scoped tests: `php artisan test --compact tests/Feature/ExampleTest.php` or `php artisan test --compact --filter=testName`.
+- Use Composer lanes for suite runs: `composer test`, `composer test:feature`, `composer test:integration`, and `composer test:all`.
+- Do NOT use SQLite, `:memory:`, `RefreshDatabase`, or `DatabaseMigrations` for routine Feature tests in this multi-database tenancy project.
 - Do NOT delete tests without approval.
 
 === spatie/guidelines-skills rules ===

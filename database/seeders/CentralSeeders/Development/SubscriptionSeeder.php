@@ -9,10 +9,14 @@ use App\Enums\Subscription\SubscriptionStatus;
 use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\Tenant;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class SubscriptionSeeder extends Seeder
 {
+    use WithoutModelEvents;
+
     /**
      * Run the database seeds.
      */
@@ -34,9 +38,7 @@ class SubscriptionSeeder extends Seeder
             $hasSubscription = Subscription::where('tenant_id', $primaryOrganization->tenant_id)->exists();
 
             if (! $hasSubscription) {
-                Subscription::create([
-                    'tenant_id' => $primaryOrganization->tenant_id,
-                    'plan_id' => $lifetimePlan->id,
+                $this->createSubscription($primaryOrganization, $lifetimePlan, [
                     'status' => SubscriptionStatus::ACTIVE,
                     'starts_at' => now(),
                     'extras' => ['note' => 'Default lifetime plan for primary seeded organization'],
@@ -54,14 +56,31 @@ class SubscriptionSeeder extends Seeder
         if ($otherTenants->isNotEmpty() && $randomPlans->isNotEmpty()) {
             foreach ($otherTenants as $tenant) {
                 if (! Subscription::where('tenant_id', $tenant->tenant_id)->exists()) {
-                    Subscription::create([
-                        'tenant_id' => $tenant->tenant_id,
-                        'plan_id' => $randomPlans->random()->id,
+                    $this->createSubscription($tenant, $randomPlans->random(), [
                         'status' => SubscriptionStatus::ACTIVE,
                         'starts_at' => now(),
                     ]);
                 }
             }
         }
+    }
+
+    /**
+     * @param  array{
+     *     status: SubscriptionStatus,
+     *     starts_at: mixed,
+     *     extras?: array<string, mixed>,
+     * }  $attributes
+     */
+    private function createSubscription(Tenant $tenant, Plan $plan, array $attributes): Subscription
+    {
+        $subscription = new Subscription();
+        $subscription->uuid = (string) Str::uuid();
+        $subscription->tenant_id = $tenant->tenant_id;
+        $subscription->plan_id = $plan->id;
+        $subscription->fill($attributes);
+        $subscription->save();
+
+        return $subscription;
     }
 }

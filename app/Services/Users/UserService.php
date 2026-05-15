@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Services\Users;
 
 use App\Constants\Auth\Roles;
+use App\Constants\Teams\TeamRoles;
 use App\Mail\UserActivationMail;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Team;
+use App\Models\TeamRole;
 use App\Models\User;
 use App\Services\Mail\MailBuilder;
 use App\Support\Users\UserData;
@@ -341,9 +343,13 @@ class UserService
         }
 
         // Add new teams with UUID
+        $memberRole = TeamRole::where('name', TeamRoles::MEMBER)->first();
+
         foreach ($toAdd as $teamId) {
             $user->teams()->attach($teamId, [
                 'uuid' => (string) Str::uuid(),
+                'team_role_id' => $memberRole?->id,
+                'role' => $memberRole?->name ?? TeamRoles::MEMBER,
             ]);
         }
     }

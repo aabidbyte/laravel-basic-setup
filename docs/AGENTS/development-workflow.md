@@ -26,8 +26,11 @@ composer run dev  # Runs server, queue, logs, and vite concurrently
 - **Not** required for minor tweaks, styling changes, or small bug fixes
 
 ```bash
-php artisan test --parallel          # Full test suite (use sparingly)
-php artisan test --filter=testName  # Specific test
+composer test                  # Fast Unit lane; must stay under 30 seconds
+composer test:feature          # Parallel non-provisioning Feature lane
+composer test:integration      # Real tenancy provisioning lane
+composer test:all              # Full green-suite verification
+php artisan test --compact --filter=testName  # Specific test
 ```
 
 ### Code Formatting
@@ -36,4 +39,3 @@ php artisan test --filter=testName  # Specific test
 vendor/bin/pint                    # Format all files
 vendor/bin/pint --dirty            # Format only changed files
 ```
-
