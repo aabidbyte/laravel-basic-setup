@@ -24,10 +24,10 @@ trait InteractsWithTenancy
 
         if (! $this->tenant) {
             $this->tenant = Tenant::factory()->create([
-                'id' => 'test-' . Str::random(12),
+                'id' => 'tenant-' . Str::random(12),
             ]);
             $this->tenant->domains()->create([
-                'domain' => $this->tenant->id . '.test',
+                'domain' => $this->tenant->tenant_id . '.test',
             ]);
         }
 

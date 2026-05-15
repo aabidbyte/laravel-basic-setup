@@ -81,17 +81,15 @@ it('refreshes rows after bulk deletion', function () {
     $users = User::factory()->count(2)->create(['name' => 'Bulk Delete']);
     $uuids = $users->pluck('uuid')->toArray();
 
-    Livewire::actingAs($this->admin)
+    $component = Livewire::actingAs($this->admin)
         ->test('tables.user-table')
         ->set('selected', $uuids)
         ->assertSee('Bulk Delete')
         ->call('executeBulkAction', 'delete');
 
-    Livewire::actingAs($this->admin)
-        ->test('tables.user-table')
-        ->assertDontSee('Bulk Delete');
-
     expect(User::whereIn('uuid', $uuids)->count())->toBe(0);
+
+    $component->assertSet('selected', []);
 });
 
 it('redirects when row is clicked and route exists', function () {

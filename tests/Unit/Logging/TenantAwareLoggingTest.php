@@ -64,3 +64,45 @@ test('level specific logs return to central path after tenancy ends', function (
         ->and(File::exists($centralPath))->toBeTrue()
         ->and(File::get($centralPath))->toContain('central info log after tenancy');
 });
+
+test('single channel uses tenant path inside tenant context', function (): void {
+    config(['tenancy.bootstrappers' => []]);
+
+    $tenant = new Tenant(['tenant_id' => '33333333-3333-4333-8333-333333333333', 'slug' => 'tenant-gamma']);
+    $tenantPath = storage_path('logs/tenant-gamma__33333333/laravel.log');
+    $centralPath = storage_path('logs/laravel.log');
+
+    File::delete($tenantPath);
+    File::delete($centralPath);
+
+    tenancy()->initialize($tenant);
+
+    Log::channel(LogChannels::SINGLE)->info('tenant single log');
+
+    tenancy()->end();
+
+    expect(File::exists($tenantPath))->toBeTrue()
+        ->and(File::get($tenantPath))->toContain('tenant single log')
+        ->and(File::exists($centralPath))->toBeFalse();
+});
+
+test('daily channel uses tenant path inside tenant context', function (): void {
+    config(['tenancy.bootstrappers' => []]);
+
+    $tenant = new Tenant(['tenant_id' => '44444444-4444-4444-8444-444444444444', 'slug' => 'tenant-delta']);
+    $tenantPath = storage_path('logs/tenant-delta__44444444/laravel-' . now()->format('Y-m-d') . '.log');
+    $centralPath = storage_path('logs/laravel-' . now()->format('Y-m-d') . '.log');
+
+    File::delete($tenantPath);
+    File::delete($centralPath);
+
+    tenancy()->initialize($tenant);
+
+    Log::channel(LogChannels::DAILY)->info('tenant daily log');
+
+    tenancy()->end();
+
+    expect(File::exists($tenantPath))->toBeTrue()
+        ->and(File::get($tenantPath))->toContain('tenant daily log')
+        ->and(File::exists($centralPath))->toBeFalse();
+});

@@ -295,8 +295,8 @@ return new class extends Migration {
             $table->string('translatable_type');
             $table->unsignedBigInteger('translatable_id');
             $table->string('locale')->index();
-            $table->string('subject');
-            $table->longText('html_content');
+            $table->string('subject')->nullable();
+            $table->longText('html_content')->nullable();
             $table->longText('text_content')->nullable();
             $table->string('preheader')->nullable();
             $table->string('draft_subject')->nullable();

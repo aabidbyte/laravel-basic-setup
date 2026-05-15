@@ -25,8 +25,8 @@ class ModelServiceConsistencyTest extends TestCase
         $tenant = Tenant::factory()->create();
         $plan = Plan::factory()->create();
 
-        expect($tenant->getCasts()['id'])->toBe('string');
-        expect($plan->getCasts()['uuid'])->toBe('string');
+        expect($tenant->getCasts()['tenant_id'])->toBe('string');
+        expect($plan->uuid)->toBeString();
     }
 
     public function test_delete_user_prevents_deleting_impersonated_user()

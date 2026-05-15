@@ -30,18 +30,18 @@ beforeEach(function (): void {
 
 it('does not detach when executeAction is invoked without edit tenants permission', function (): void {
     $pivotCount = DB::connection('central')->table('tenant_user')
-        ->where('tenant_id', $this->tenant->id)
+        ->where('tenant_id', $this->tenant->tenant_id)
         ->where('user_id', $this->tenantUser->id)
         ->count();
 
     expect($pivotCount)->toBe(1);
 
     Livewire::actingAs($this->viewerOnly)
-        ->test('tables.tenant-user-table', ['tenantId' => $this->tenant->id])
+        ->test('tables.tenant-user-table', ['tenantId' => $this->tenant->tenant_id])
         ->call('executeAction', 'detach', $this->tenantUser->uuid);
 
     $after = DB::connection('central')->table('tenant_user')
-        ->where('tenant_id', $this->tenant->id)
+        ->where('tenant_id', $this->tenant->tenant_id)
         ->where('user_id', $this->tenantUser->id)
         ->count();
 
@@ -50,11 +50,11 @@ it('does not detach when executeAction is invoked without edit tenants permissio
 
 it('detaches when executeAction is invoked by an authorized tenant editor', function (): void {
     Livewire::actingAs($this->member)
-        ->test('tables.tenant-user-table', ['tenantId' => $this->tenant->id])
+        ->test('tables.tenant-user-table', ['tenantId' => $this->tenant->tenant_id])
         ->call('executeAction', 'detach', $this->tenantUser->uuid);
 
     $after = DB::connection('central')->table('tenant_user')
-        ->where('tenant_id', $this->tenant->id)
+        ->where('tenant_id', $this->tenant->tenant_id)
         ->where('user_id', $this->tenantUser->id)
         ->count();
 
@@ -65,21 +65,21 @@ it('assigns and detaches users from the tenant assignment table', function (): v
     $unassignedUser = User::factory()->create();
 
     Livewire::actingAs($this->member)
-        ->test('tables.tenant-user-assignment-table', ['tenantId' => $this->tenant->id])
+        ->test('tables.tenant-user-assignment-table', ['tenantId' => $this->tenant->tenant_id])
         ->call('executeAction', 'select', $unassignedUser->uuid);
 
     expect(DB::connection('central')->table('tenant_user')
-        ->where('tenant_id', $this->tenant->id)
+        ->where('tenant_id', $this->tenant->tenant_id)
         ->where('user_id', $unassignedUser->id)
         ->exists())->toBeTrue();
 
     Livewire::actingAs($this->member)
-        ->test('tables.tenant-user-assignment-table', ['tenantId' => $this->tenant->id])
+        ->test('tables.tenant-user-assignment-table', ['tenantId' => $this->tenant->tenant_id])
         ->set('selected', [$unassignedUser->uuid])
         ->call('executeBulkAction', 'detach');
 
     expect(DB::connection('central')->table('tenant_user')
-        ->where('tenant_id', $this->tenant->id)
+        ->where('tenant_id', $this->tenant->tenant_id)
         ->where('user_id', $unassignedUser->id)
         ->exists())->toBeFalse();
 });

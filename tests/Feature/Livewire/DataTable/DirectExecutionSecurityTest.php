@@ -9,6 +9,8 @@ use Livewire\Livewire;
 
 beforeEach(function () {
     asTenant();
+
+    User::factory()->create(['name' => 'Policy Bypass Guard']);
 });
 
 test('unauthorized user cannot execute row action directly via Livewire', function () {

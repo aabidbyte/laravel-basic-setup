@@ -16,7 +16,7 @@ test('web routes initialize tenancy on tenant domains', function (): void {
     ]);
 
     $user = User::factory()->create();
-    $user->tenants()->attach($tenant->id);
+    $user->tenants()->attach($tenant->tenant_id);
 
     $this->actingAs($user)
         ->withHeader('Host', 'tenant-domain-check.test')

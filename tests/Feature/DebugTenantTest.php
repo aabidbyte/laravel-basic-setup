@@ -12,5 +12,5 @@ it('can persist a tenant', function () {
         'name' => 'Debug Tenant',
         'plan' => $plan->uuid,
     ]);
-    $this->assertDatabaseHas(Tenant::class, ['id' => $tenantId]);
+    $this->assertDatabaseHas(Tenant::class, ['tenant_id' => $tenantId]);
 });

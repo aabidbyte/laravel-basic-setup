@@ -3,6 +3,7 @@
 use App\Constants\Logging\LogChannels;
 use App\Constants\Logging\LogLevels;
 use App\Logging\LevelSpecificLogChannelFactory;
+use App\Logging\TenantAwareLogChannelFactory;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -78,17 +79,22 @@ return [
         ],
 
         LogChannels::SINGLE => [
-            'driver' => 'single',
+            'driver' => 'custom',
+            'via' => TenantAwareLogChannelFactory::class,
+            'name' => LogChannels::SINGLE,
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', LogLevels::DEBUG),
             'replace_placeholders' => true,
         ],
 
         LogChannels::DAILY => [
-            'driver' => 'daily',
+            'driver' => 'custom',
+            'via' => TenantAwareLogChannelFactory::class,
+            'name' => LogChannels::DAILY,
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', LogLevels::DEBUG),
             'days' => env('LOG_DAILY_DAYS', 14),
+            'daily' => true,
             'replace_placeholders' => true,
         ],
 

@@ -25,7 +25,7 @@ test('notification dropdown trigger and content use the same central notificatio
     $user = User::factory()->create();
 
     Notification::query()->create([
-        'id' => (string) Str::uuid(),
+        'uuid' => (string) Str::uuid(),
         'type' => 'App\\Notifications\\GeneralNotification',
         'notifiable_type' => User::class,
         'notifiable_id' => $user->id,

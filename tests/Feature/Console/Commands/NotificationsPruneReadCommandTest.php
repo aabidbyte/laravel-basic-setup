@@ -11,7 +11,7 @@ test('prunes read notifications older than 30 days by default', function () {
 
     // Create old read notification (35 days ago)
     DB::table('notifications')->insert([
-        'id' => Str::uuid()->toString(),
+        'uuid' => Str::uuid()->toString(),
         'type' => 'App\Notifications\GeneralNotification',
         'notifiable_type' => User::class,
         'notifiable_id' => $user->id,
@@ -23,7 +23,7 @@ test('prunes read notifications older than 30 days by default', function () {
 
     // Create recent read notification (10 days ago)
     DB::table('notifications')->insert([
-        'id' => Str::uuid()->toString(),
+        'uuid' => Str::uuid()->toString(),
         'type' => 'App\Notifications\GeneralNotification',
         'notifiable_type' => User::class,
         'notifiable_id' => $user->id,
@@ -35,7 +35,7 @@ test('prunes read notifications older than 30 days by default', function () {
 
     // Create unread notification (should not be pruned)
     DB::table('notifications')->insert([
-        'id' => Str::uuid()->toString(),
+        'uuid' => Str::uuid()->toString(),
         'type' => 'App\Notifications\GeneralNotification',
         'notifiable_type' => User::class,
         'notifiable_id' => $user->id,
@@ -63,7 +63,7 @@ test('allows custom days option', function () {
 
     // Create notification read 15 days ago
     DB::table('notifications')->insert([
-        'id' => Str::uuid()->toString(),
+        'uuid' => Str::uuid()->toString(),
         'type' => 'App\Notifications\GeneralNotification',
         'notifiable_type' => User::class,
         'notifiable_id' => $user->id,

@@ -104,6 +104,10 @@ class TestingTenantDatabaseManager
     {
         $defaultConnection = \config('database.default');
 
+        if ($defaultConnection === 'tenant') {
+            $defaultConnection = \config('tenancy.database.central_connection', 'central');
+        }
+
         return \config("database.connections.{$defaultConnection}.database");
     }
 
@@ -122,7 +126,7 @@ class TestingTenantDatabaseManager
     private function canManageTestingDatabases(): bool
     {
         return \app()->environment('testing')
-            && \config('database.default') === 'mysql';
+            && \config('database.connections.mysql.driver') === 'mysql';
     }
 
     /**

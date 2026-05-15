@@ -28,14 +28,14 @@ test('tenant data isolation', function () {
         'stack_trace' => '...',
     ]);
 
-    expect(tenant('id'))->toBe($id1)
+    expect(tenant()->getTenantKey())->toBe($id1)
         ->and(ErrorLog::where('reference_id', 'ERR-1')->exists())->toBeTrue()
         ->and(ErrorLog::all())->toHaveCount(1);
 
     // 3. Switch to Tenant 2
     tenancy()->initialize($tenant2);
 
-    expect(tenant('id'))->toBe($id2);
+    expect(tenant()->getTenantKey())->toBe($id2);
 
     // 4. Verify Error 1 is NOT visible in Tenant 2
     expect(ErrorLog::where('reference_id', 'ERR-1')->exists())->toBeFalse()

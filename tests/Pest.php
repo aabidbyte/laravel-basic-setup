@@ -66,6 +66,32 @@ pest()->extend(TestCase::class)
     })
     ->in('Feature');
 
+pest()->group('tenancy-provisioning')->in(
+    'Feature/Admin/EmailContentSystemTest.php',
+    'Feature/Auth',
+    'Feature/Consistency/ModelServiceConsistencyTest.php',
+    'Feature/DebugTenantTest.php',
+    'Feature/EmailTemplate/EmailTemplateSeederTest.php',
+    'Feature/Livewire/DataTable/DirectExecutionSecurityTest.php',
+    'Feature/Livewire/SubscriptionManagementTest.php',
+    'Feature/Livewire/TenantManagementTest.php',
+    'Feature/Livewire/TenantSwitcherTest.php',
+    'Feature/MailCredentialResolverTest.php',
+    'Feature/Operational/OperationalConfigurationTest.php',
+    'Feature/ReproductionTest.php',
+    'Feature/Security/CsrfSecurityTest.php',
+    'Feature/Security/ProtectedRoutesTest.php',
+    'Feature/Security/TenantCspPresetTest.php',
+    'Feature/Tenancy',
+    'Feature/TenantPolicyTest.php',
+    'Feature/TenantSwitcherAuthorizationTest.php',
+    'Feature/TenantUserTableAuthorizationTest.php',
+    'Feature/Users/ActivationServiceTest.php',
+    'Feature/Users/UserCrudMailpitTest.php',
+    'Feature/Users/UsersListAuthorizationTest.php',
+    'Unit/Logging/TenantAwareLoggingTest.php',
+);
+
 /*
 |--------------------------------------------------------------------------
 | Expectations

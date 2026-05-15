@@ -20,11 +20,11 @@ beforeEach(function (): void {
     $this->tenantB->domains()->create(['domain' => "tb-{$suffix}.test"]);
 
     $this->victim = User::factory()->create(['name' => 'Victim User']);
-    $this->victim->tenants()->attach([$this->tenantA->id, $this->tenantB->id]);
+    $this->victim->tenants()->attach([$this->tenantA->tenant_id, $this->tenantB->tenant_id]);
 
     $this->impersonator = User::factory()->create(['name' => 'Impersonator']);
     $this->impersonator->assignPermission(Permissions::IMPERSONATE_USERS());
-    $this->impersonator->tenants()->attach($this->tenantA->id);
+    $this->impersonator->tenants()->attach($this->tenantA->tenant_id);
 
     $this->noImpersonateUser = User::factory()->create(['name' => 'No Impersonate']);
     $this->noImpersonateUser->assignPermission(Permissions::VIEW_USERS());
@@ -34,7 +34,7 @@ it('blocks tenant switcher selectTenant when the actor cannot impersonate users'
     Livewire::actingAs($this->noImpersonateUser)
         ->test('tenancy.tenant-switcher')
         ->set('selectedUserUuid', $this->victim->uuid)
-        ->call('selectTenant', $this->tenantA->id)
+        ->call('selectTenant', $this->tenantA->tenant_id)
         ->assertDispatched('notify');
 
     $this->assertAuthenticatedAs($this->noImpersonateUser);
@@ -54,7 +54,7 @@ it('blocks tenant impersonation when the actor is not a member of the selected t
     Livewire::actingAs($this->impersonator)
         ->test('tenancy.tenant-switcher')
         ->set('selectedUserUuid', $this->victim->uuid)
-        ->call('selectTenant', $this->tenantB->id)
+        ->call('selectTenant', $this->tenantB->tenant_id)
         ->assertDispatched('notify');
 
     $this->assertAuthenticatedAs($this->impersonator);

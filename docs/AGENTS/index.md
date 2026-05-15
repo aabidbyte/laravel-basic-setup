@@ -37,6 +37,7 @@ This documentation is organized into sections for easy navigation. Each section 
 - [Colocated Scripts Pattern](colocated-scripts.md)
 - [Sidebar Menu Rules](sidebar-menu-rules.md)
 - [Pint Method Chaining](pint-method-chaining.md)
+- [Testing Performance Rules](testing-performance.md)
 - [Development Workflow](development-workflow.md)
 - [Environment Configuration](environment-configuration.md)
 - [Security Considerations](security-considerations.md)

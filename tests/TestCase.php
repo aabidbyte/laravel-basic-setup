@@ -62,6 +62,25 @@ abstract class TestCase extends BaseTestCase
         $this->testing_databases()->dropForDatabase();
     }
 
+    protected function cleanUpTestingTenancy(): void
+    {
+        if (! $this->hasTestingTenants()) {
+            return;
+        }
+
+        $this->deleteTestingTenants();
+        $this->dropTestingTenantDatabases();
+    }
+
+    protected function hasTestingTenants(): bool
+    {
+        try {
+            return Tenant::query()->exists();
+        } catch (QueryException) {
+            return false;
+        }
+    }
+
     protected function deleteTestingTenants(): void
     {
         Tenant::query()

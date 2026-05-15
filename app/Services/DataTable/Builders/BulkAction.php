@@ -6,6 +6,7 @@ namespace App\Services\DataTable\Builders;
 
 use App\Models\User;
 use Closure;
+use TypeError;
 
 /**
  * Fluent builder for DataTable bulk actions
@@ -341,7 +342,10 @@ class BulkAction
     /**
      * Check if the bulk action is authorized via policy.
      */
-    public function isAuthorized(?User $user = null): bool
+    /**
+     * @param  class-string|null  $modelClass
+     */
+    public function isAuthorized(?User $user = null, ?string $modelClass = null): bool
     {
         if ($this->ability === null) {
             return true;
@@ -351,17 +355,14 @@ class BulkAction
             return false;
         }
 
-        // Bulk actions check against model class, not instance
-        // We need to know the model class.
-        // For now, let's assume class-level abilities (like 'create', 'update', 'delete' on the class)
-        // or abilities that don't need a model instance.
-        // But $user->can('delete', User::class) is valid.
-        // We lack context of the Model class here.
-        // Let's assume the ability is enough for now, or we'd need to inject the model class.
-        // Given existing design, let's rely on simple string ability check if no model context is available,
-        // OR, the caller needs to handle model context.
-        // Actually, we can pass authorization check to the component.
-        // But for consistency:
+        if ($modelClass !== null) {
+            try {
+                return $user->can($this->ability, $modelClass);
+            } catch (TypeError) {
+                return false;
+            }
+        }
+
         return $user->can($this->ability);
     }
 
@@ -369,10 +370,12 @@ class BulkAction
      * Check if bulk action should be rendered.
      *
      * Combines authorization AND visibility.
+     *
+     * @param  class-string|null  $modelClass
      */
-    public function shouldRender(?User $user = null): bool
+    public function shouldRender(?User $user = null, ?string $modelClass = null): bool
     {
-        if (! $this->isAuthorized($user)) {
+        if (! $this->isAuthorized($user, $modelClass)) {
             return false;
         }
 

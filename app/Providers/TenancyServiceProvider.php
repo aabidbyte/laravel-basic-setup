@@ -117,16 +117,19 @@ class TenancyServiceProvider extends ServiceProvider
     protected function configureTenantDatabaseNames(): void
     {
         DatabaseConfig::generateDatabaseNamesUsing(function (Tenant $tenant): string {
+            $suffix = (string) config('tenancy.database.suffix');
             $slug = Str::of($tenant->getAttribute('slug') ?: $tenant->getTenantKey())
                 ->lower()
                 ->slug('_')
                 ->limit(20, '')
+                ->when($suffix !== '', fn ($value) => $value->beforeLast($suffix))
                 ->whenEmpty(fn () => Str::of('tenant'))
                 ->toString();
-            $shortId = Str::of((string) $tenant->getTenantKey())->before('-')->limit(8, '')->toString();
+            $shortId = \substr(\hash('xxh3', (string) $tenant->getTenantKey()), 0, 8);
             $tenantDatabaseKey = $shortId === '' ? $slug : "{$slug}_{$shortId}";
+            $tenantDatabaseSuffix = Str::endsWith($tenantDatabaseKey, $suffix) ? '' : $suffix;
 
-            return config('tenancy.database.prefix') . $tenantDatabaseKey . config('tenancy.database.suffix');
+            return config('tenancy.database.prefix') . $tenantDatabaseKey . $tenantDatabaseSuffix;
         });
     }
 

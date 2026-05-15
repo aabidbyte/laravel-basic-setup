@@ -623,14 +623,13 @@ class NotificationBuilder
             return;
         }
 
-        foreach (array_chunk($userIds->all(), 100) as $chunk) {
+        foreach (\array_chunk($userIds->all(), 100) as $chunk) {
             foreach ($chunk as $userId) {
-                // The 'id' column will be a UUID, generated automatically by the builder or database
+                // The 'uuid' column identifies notifications externally while 'id' auto-increments.
                 $notificationData['notifiable_type'] = User::class;
                 $notificationData['notifiable_id'] = $userId;
-                $notificationData['id'] = (string) Str::uuid();
+                $notificationData['uuid'] = (string) Str::uuid();
 
-                // Manually create the notification
                 Notification::query()->create($notificationData);
             }
         }
@@ -678,7 +677,7 @@ class NotificationBuilder
         }
 
         return [
-            'id' => (string) Str::uuid(),
+            'uuid' => (string) Str::uuid(),
             'type' => 'App\Notifications\GeneralNotification',
             'data' => $data,
             'read_at' => null,
@@ -700,12 +699,12 @@ class NotificationBuilder
             return;
         }
 
-        foreach (array_chunk($userIds->all(), 100) as $chunk) {
+        foreach (\array_chunk($userIds->all(), 100) as $chunk) {
             foreach ($chunk as $userId) {
-                // The 'id' column will be a UUID, generated automatically by the builder or database
+                // The 'uuid' column identifies notifications externally while 'id' auto-increments.
                 $notificationData['notifiable_type'] = User::class;
                 $notificationData['notifiable_id'] = $userId;
-                $notificationData['id'] = (string) Str::uuid();
+                $notificationData['uuid'] = (string) Str::uuid();
 
                 Notification::query()->create($notificationData);
             }

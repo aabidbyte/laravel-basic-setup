@@ -14,7 +14,7 @@ test('notification center shows load more button when there are more than 10 not
 
     for ($i = 0; $i < 11; $i++) {
         Notification::query()->create([
-            'id' => (string) Str::uuid(),
+            'uuid' => (string) Str::uuid(),
             'type' => 'App\\Notifications\\GeneralNotification',
             'notifiable_type' => User::class,
             'notifiable_id' => $user->id,
@@ -37,7 +37,7 @@ test('notification center does not show load more button when there are 10 or fe
 
     for ($i = 0; $i < 10; $i++) {
         Notification::query()->create([
-            'id' => (string) Str::uuid(),
+            'uuid' => (string) Str::uuid(),
             'type' => 'App\\Notifications\\GeneralNotification',
             'notifiable_type' => User::class,
             'notifiable_id' => $user->id,

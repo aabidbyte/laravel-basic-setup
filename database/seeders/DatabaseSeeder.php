@@ -38,8 +38,8 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // --- B. DEVELOPMENT CENTRAL SEEDERS ---
-        // These ONLY run if we are NOT in production
-        if (! App::environment('production')) {
+        // These ONLY run in development-like environments.
+        if (! App::environment(['production', 'testing'])) {
             $this->call([
                 CentralUserSeeder::class,
                 SubscriptionSeeder::class,

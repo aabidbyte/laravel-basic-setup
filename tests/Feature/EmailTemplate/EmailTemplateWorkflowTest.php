@@ -91,7 +91,7 @@ test('show page renders preview controls without csp unsafe bindings', function 
     $this->get(route('emailTemplates.show', $template))
         ->assertOk()
         ->assertSee('x-data="simpleToggle()"', false)
-        ->assertSee('template-uuid="' . $template->uuid . '"', false)
+        ->assertSeeLivewire('emailTemplates.⚡preview')
         ->assertDontSee(':template-uuid="$template->uuid"', false)
         ->assertDontSee(':x-bind:class', false);
 });

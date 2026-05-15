@@ -34,7 +34,7 @@ it('can subscribe a tenant to a plan', function () {
         ->assertHasNoErrors()
         ->assertDispatched('notify');
 
-    $subscription = Subscription::where('tenant_id', $this->tenant->id)->first();
+    $subscription = Subscription::where('tenant_id', $this->tenant->tenant_id)->first();
     expect($subscription)->not->toBeNull()
         ->and($subscription->plan_id)->toBe($this->plan->id)
         ->and($subscription->status)->toBe(SubscriptionStatus::ACTIVE);
@@ -43,7 +43,7 @@ it('can subscribe a tenant to a plan', function () {
 it('deactivates old subscriptions when subscribing to a new one', function () {
     $oldPlan = Plan::factory()->create();
     Subscription::factory()->create([
-        'tenant_id' => $this->tenant->id,
+        'tenant_id' => $this->tenant->tenant_id,
         'plan_id' => $oldPlan->id,
         'status' => SubscriptionStatus::ACTIVE,
     ]);
@@ -52,7 +52,7 @@ it('deactivates old subscriptions when subscribing to a new one', function () {
         ->set('selectedPlanId', $this->plan->id)
         ->call('subscribe');
 
-    expect(Subscription::where('tenant_id', $this->tenant->id)
+    expect(Subscription::where('tenant_id', $this->tenant->tenant_id)
         ->where('plan_id', $oldPlan->id)
         ->first()->status)->toBe(SubscriptionStatus::CANCELED);
 });

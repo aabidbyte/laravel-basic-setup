@@ -107,9 +107,10 @@ trait HasDatatableLivewireActions
     public function getBulkActions(): array
     {
         $user = $this->cachedUser();
+        $modelClass = $this->baseQuery()->getModel()::class;
 
         return collect($this->bulkActions())
-            ->filter(fn (BulkAction $action) => $action->shouldRender($user))
+            ->filter(fn (BulkAction $action) => $action->shouldRender($user, $modelClass))
             ->map(fn (BulkAction $action) => $action->toArray())
             ->values()
             ->all();
@@ -285,7 +286,9 @@ trait HasDatatableLivewireActions
         $action = collect($this->bulkActions())->first(fn (BulkAction $a) => $a->getKey() === $actionKey);
 
         if ($action && $action->getExecute()) {
-            if (! $action->shouldRender($this->cachedUser())) {
+            $modelClass = $this->baseQuery()->getModel()::class;
+
+            if (! $action->shouldRender($this->cachedUser(), $modelClass)) {
                 return;
             }
 
