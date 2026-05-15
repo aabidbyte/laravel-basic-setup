@@ -75,6 +75,10 @@ class TenantUserTable extends Datatable
                 })
                 ->type(DataTableUi::UI_BADGE, ['color' => 'primary', 'size' => 'sm']),
 
+            Column::make(__('table.users.tenants'), 'tenants_for_datatable')
+                ->content(fn (User $user) => $this->tenantMembershipQuery()->tenantLabelsFor($user))
+                ->type(DataTableUi::UI_BADGE, ['color' => 'accent', 'size' => 'sm']),
+
             Column::make(__('common.created_at'), 'created_at')
                 ->sortable()
                 ->format(fn ($value) => formatDateTime($value)),

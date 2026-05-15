@@ -80,12 +80,15 @@ Filter::make('created_at', __('Created'))
 
 ## Tenant Membership Filters
 
-Central models that expose a `tenants()` relationship should not duplicate tenant visibility logic in each table. Use:
+Central models that expose a `tenants()` relationship or a direct `tenant_id` column should not duplicate tenant visibility logic in each table. Use:
 
 - `App\Support\Tenancy\TenantAudience` to describe the desired audience.
-- `App\Services\Tenancy\TenantMembershipQuery` to apply that audience to the Eloquent query.
+- `App\Services\Tenancy\TenantMembershipQuery::apply()` for models with a `tenants()` relationship.
+- `App\Services\Tenancy\TenantMembershipQuery::applyToTenantKey()` for models with a direct `tenant_id` column, such as Error Logs and tenant-scoped Trash entities.
 
-For user/member tables, "All Tenants" means records attached to at least one tenant. Central-only records are not included by default; expose them with the explicit `TenantMembershipQuery::CENTRAL_RECORDS_FILTER` option when super admins need it.
+For user/member tables, "All Tenants" means records attached to at least one tenant, excluding protected central accounts. Central-only records are not included by default; expose them with the explicit `TenantMembershipQuery::CENTRAL_RECORDS_FILTER` option when super admins need it.
+
+User ID `1` is the protected central platform account guarded by the MySQL session trigger workflow. Treat it as central even when development seeders attach it to a tenant for convenience. Do not infer central users only from missing `tenant_user` rows.
 
 Tenant filters that can switch between "all tenant members", "specific tenant", and "central only" should be read by `baseQuery()`. Their `Filter::execute()` callback should remain a no-op, because the generic datatable filter pass runs after `baseQuery()` and would otherwise intersect central-only filters with the default tenant-member scope.
 

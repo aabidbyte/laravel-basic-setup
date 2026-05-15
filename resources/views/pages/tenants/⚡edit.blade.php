@@ -409,17 +409,17 @@ new class extends BasePageComponent {
                         </div>
                     @endif
 
-                    {{-- Assigned Users --}}
-                    <div class="divider"></div>
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between">
-                            <x-ui.title level="3"
-                                        class="text-base-content/70">{{ __('tenancy.assigned_users') }}</x-ui.title>
-                        </div>
+                    @if ($isCreateMode)
+                        {{-- Assigned Users --}}
+                        <div class="divider"></div>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <x-ui.title level="3"
+                                            class="text-base-content/70">{{ __('tenancy.assigned_users') }}</x-ui.title>
+                            </div>
 
-                        <p class="text-base-content/60 text-sm">{{ __('tenancy.assigned_users_description') }}</p>
+                            <p class="text-base-content/60 text-sm">{{ __('tenancy.assigned_users_description') }}</p>
 
-                        @if ($isCreateMode)
                             <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
                                 @forelse ($this->availableUsers as $user)
                                     <label wire:key="user-{{ $user->uuid }}"
@@ -457,25 +457,8 @@ new class extends BasePageComponent {
                                     </div>
                                 @endforelse
                             </div>
-                        @else
-                            <div class="space-y-8">
-                                <div class="space-y-3">
-                                    <x-ui.title level="4"
-                                                class="text-base-content/70">{{ __('tenancy.assigned_users') }}</x-ui.title>
-                                    <livewire:tables.tenant-user-assignment-table :tenantId="$model->tenant_id"
-                                                                                  :key="'tenant-'.$model->tenant_id.'-assigned-users'" />
-                                </div>
-
-                                <div class="space-y-3">
-                                    <x-ui.title level="4"
-                                                class="text-base-content/70">{{ __('tenancy.available_users') }}</x-ui.title>
-                                    <p class="text-base-content/60 text-sm">{{ __('tenancy.available_users_description') }}</p>
-                                    <livewire:tables.tenant-assignable-user-table :tenantId="$model->tenant_id"
-                                                                                  :key="'tenant-'.$model->tenant_id.'-available-users'" />
-                                </div>
-                            </div>
-                        @endif
-                    </div>
+                        </div>
+                    @endif
                 </x-ui.form>
             </div>
         </div>

@@ -10,7 +10,7 @@ use App\Models\Subscription;
 use App\Models\Tenant;
 use App\Models\TenantFeatureOverride;
 use App\Models\User;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 beforeEach(function () {
     $this->admin = User::factory()->create();
@@ -33,7 +33,7 @@ it('can render the tenant subscriptions page', function () {
 });
 
 it('can subscribe a tenant to a plan', function () {
-    Volt::test('pages::tenants.subscriptions', ['tenant' => $this->tenant])
+    Livewire::test('pages::tenants.subscriptions', ['tenant' => $this->tenant])
         ->set('selectedPlanId', $this->plan->id)
         ->call('subscribe')
         ->assertHasNoErrors()
@@ -53,7 +53,7 @@ it('deactivates old subscriptions when subscribing to a new one', function () {
         'status' => SubscriptionStatus::ACTIVE,
     ]);
 
-    Volt::test('pages::tenants.subscriptions', ['tenant' => $this->tenant])
+    Livewire::test('pages::tenants.subscriptions', ['tenant' => $this->tenant])
         ->set('selectedPlanId', $this->plan->id)
         ->call('subscribe');
 
@@ -72,7 +72,7 @@ it('can save a custom feature override for a tenant', function () {
         'is_active' => true,
     ]);
 
-    Volt::test('pages::tenants.subscriptions', ['tenant' => $this->tenant])
+    Livewire::test('pages::tenants.subscriptions', ['tenant' => $this->tenant])
         ->set('selectedFeatureId', $feature->id)
         ->set('overrideValue', 'true')
         ->set('overrideEnabled', true)
@@ -104,7 +104,7 @@ it('can remove a tenant feature override', function () {
         'enabled' => true,
     ]);
 
-    Volt::test('pages::tenants.subscriptions', ['tenant' => $this->tenant])
+    Livewire::test('pages::tenants.subscriptions', ['tenant' => $this->tenant])
         ->call('deleteFeatureOverride', $override->uuid)
         ->assertDispatched('notify');
 

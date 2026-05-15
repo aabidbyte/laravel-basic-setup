@@ -28,7 +28,7 @@ new class extends LivewireBaseComponent {
     {
         $user = $this->authenticatedUser();
         if (! $user) {
-            return new Collection;
+            return new Collection();
         }
 
         return $this->notificationQuery()->allSorted($user);

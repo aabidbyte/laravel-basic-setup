@@ -100,7 +100,7 @@ class TrashRegistry
                 'restorePermission' => Permissions::RESTORE_ERROR_LOGS(),
                 'forceDeletePermission' => Permissions::FORCE_DELETE_ERROR_LOGS(),
                 'columns' => [
-                    'type' => __('table.error_logs.type'),
+                    'exception_class' => __('table.error_logs.type'),
                     'message' => __('table.error_logs.message'),
                 ],
             ],

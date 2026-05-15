@@ -177,6 +177,31 @@ new class extends BasePageComponent {
             </div>
         </div>
 
+        {{-- Feature Assignment --}}
+        <div class="card bg-base-100 border-base-200 border shadow-xl">
+            <div class="card-body space-y-8">
+                <div class="space-y-2">
+                    <x-ui.title level="3">{{ __('plans.assigned_features') }}</x-ui.title>
+                    <p class="text-base-content/60 text-sm">
+                        {{ __('plans.assigned_features_description') }}
+                    </p>
+                </div>
+
+                <livewire:tables.plan-feature-assignment-table :planUuid="$planUuid"
+                                                               :key="'plan-'.$planUuid.'-assigned-features'" />
+
+                <div class="space-y-2">
+                    <x-ui.title level="3">{{ __('plans.available_features') }}</x-ui.title>
+                    <p class="text-base-content/60 text-sm">
+                        {{ __('plans.available_features_description') }}
+                    </p>
+                </div>
+
+                <livewire:tables.plan-assignable-feature-table :planUuid="$planUuid"
+                                                               :key="'plan-'.$planUuid.'-available-features'" />
+            </div>
+        </div>
+
         {{-- Subscriptions with this Plan --}}
         <div class="card bg-base-100 border-base-200 border shadow-xl">
             <div class="card-body">

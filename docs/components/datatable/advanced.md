@@ -42,6 +42,9 @@ Row clicks can be handled by returning an `Action` from the `rowClick()` method.
 > [!TIP]
 > For row-click actions, `Action::make()` can be called without arguments since the action key and label aren't displayed.
 
+> [!IMPORTANT]
+> When a datatable has exactly one row action, implement it as `rowClick()` instead of rendering a separate row action button. Add visible row actions only when the row has multiple choices.
+
 **Navigate to Route on Row Click (Recommended):**
 
 ```php

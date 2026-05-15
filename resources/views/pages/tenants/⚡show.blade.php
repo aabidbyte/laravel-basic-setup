@@ -55,7 +55,7 @@ new class extends BasePageComponent {
             ],
             [
                 'key' => 'users',
-                'label' => __('tenancy.assigned_users'),
+                'label' => __('tenancy.manage_users'),
                 'icon' => 'users',
             ],
             [
@@ -244,7 +244,24 @@ new class extends BasePageComponent {
 
                         <div class="divider my-0"></div>
 
-                        <livewire:tables.tenant-user-table :tenantId="$tenant->tenant_id" />
+                        <div class="space-y-8">
+                            <div class="space-y-3">
+                                <x-ui.title level="4"
+                                            class="text-base-content/70">{{ __('tenancy.assigned_users') }}</x-ui.title>
+                                <livewire:tables.tenant-user-assignment-table :tenantId="$tenant->tenant_id"
+                                                                              :key="'tenant-'.$tenant->tenant_id.'-assigned-users'"
+                                                                              lazy />
+                            </div>
+
+                            <div class="space-y-3">
+                                <x-ui.title level="4"
+                                            class="text-base-content/70">{{ __('tenancy.available_users') }}</x-ui.title>
+                                <p class="text-base-content/60 text-sm">{{ __('tenancy.available_users_description') }}</p>
+                                <livewire:tables.tenant-assignable-user-table :tenantId="$tenant->tenant_id"
+                                                                              :key="'tenant-'.$tenant->tenant_id.'-available-users'"
+                                                                              lazy />
+                            </div>
+                        </div>
                     </div>
                 </x-ui.card>
             @elseif($activeTab === 'domains')
@@ -259,7 +276,8 @@ new class extends BasePageComponent {
 
                         <div class="divider my-0"></div>
 
-                        <livewire:tables.domain-table :tenantId="$tenant->tenant_id" />
+                        <livewire:tables.domain-table :tenantId="$tenant->tenant_id"
+                                                      lazy />
                     </div>
                 </x-ui.card>
             @endif

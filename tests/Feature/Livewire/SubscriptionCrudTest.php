@@ -8,7 +8,6 @@ use App\Models\Subscription;
 use App\Models\Tenant;
 use App\Models\User;
 use Livewire\Livewire;
-use Livewire\Volt\Volt;
 
 beforeEach(function () {
     $this->admin = User::factory()->create();
@@ -36,7 +35,7 @@ it('can render the create subscription page', function () {
 });
 
 it('validates required fields when creating a subscription', function () {
-    Volt::test('pages::subscriptions.edit')
+    Livewire::test('pages::subscriptions.edit')
         ->set('tenant_id', null)
         ->set('plan_id', null)
         ->set('status', '')
@@ -45,7 +44,7 @@ it('validates required fields when creating a subscription', function () {
 });
 
 it('can create a subscription', function () {
-    Volt::test('pages::subscriptions.edit')
+    Livewire::test('pages::subscriptions.edit')
         ->set('tenant_id', $this->tenant->tenant_id)
         ->set('plan_id', $this->plan->id)
         ->set('status', SubscriptionStatus::ACTIVE->value)
@@ -70,7 +69,7 @@ it('sets subscription end date from billing cycle when no end date is provided',
         'billing_cycle' => PlanBillingCycle::MONTHLY,
     ]);
 
-    Volt::test('pages::subscriptions.edit')
+    Livewire::test('pages::subscriptions.edit')
         ->set('tenant_id', $this->tenant->tenant_id)
         ->set('plan_id', $monthlyPlan->id)
         ->set('status', SubscriptionStatus::ACTIVE->value)
@@ -93,7 +92,7 @@ it('keeps one time subscriptions non expiring when no end date is provided', fun
         'billing_cycle' => PlanBillingCycle::ONE_TIME,
     ]);
 
-    Volt::test('pages::subscriptions.edit')
+    Livewire::test('pages::subscriptions.edit')
         ->set('tenant_id', $this->tenant->tenant_id)
         ->set('plan_id', $oneTimePlan->id)
         ->set('status', SubscriptionStatus::ACTIVE->value)
@@ -129,7 +128,7 @@ it('can update a subscription', function () {
         'status' => SubscriptionStatus::TRIAL,
     ]);
 
-    Volt::test('pages::subscriptions.edit', ['subscription' => $subscription])
+    Livewire::test('pages::subscriptions.edit', ['subscription' => $subscription])
         ->set('status', SubscriptionStatus::CANCELED->value)
         ->set('note', 'Canceled by admin')
         ->call('save')

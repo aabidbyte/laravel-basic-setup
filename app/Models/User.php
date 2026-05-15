@@ -26,6 +26,8 @@ class User extends BaseUserModel implements MustVerifyEmail
     use HasRolesAndPermissions;
     use TwoFactorAuthenticatable;
 
+    public const PROTECTED_CENTRAL_ACCOUNT_ID = 1;
+
     /**
      * The attributes that are mass assignable.
      *
@@ -303,6 +305,24 @@ class User extends BaseUserModel implements MustVerifyEmail
             'label' => $tenant->name,
             'color' => 'neutral',
         ])->toArray();
+    }
+
+    /**
+     * User ID 1 is the protected platform account guarded by the MySQL session trigger workflow.
+     */
+    public function isProtectedCentralAccount(): bool
+    {
+        return (int) $this->getKey() === self::PROTECTED_CENTRAL_ACCOUNT_ID;
+    }
+
+    public function scopeProtectedCentralAccount(Builder $query): Builder
+    {
+        return $query->whereKey(self::PROTECTED_CENTRAL_ACCOUNT_ID);
+    }
+
+    public function scopeWithoutProtectedCentralAccount(Builder $query): Builder
+    {
+        return $query->whereKeyNot(self::PROTECTED_CENTRAL_ACCOUNT_ID);
     }
 
     /**

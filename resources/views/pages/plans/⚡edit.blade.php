@@ -355,8 +355,8 @@ new class extends BasePageComponent {
                                      color="success" />
                     </div>
 
-                    <div class="space-y-4 md:col-span-2">
-                        @if ($this->isCreateMode || ! $model?->uuid)
+                    @if ($this->isCreateMode || ! $model?->uuid)
+                        <div class="space-y-4 md:col-span-2">
                             <div class="flex items-center justify-between">
                                 <x-ui.title level="4"
                                             class="text-base-content/70">
@@ -404,34 +404,8 @@ new class extends BasePageComponent {
                                     </div>
                                 @endif
                             </div>
-                        @else
-                            <div class="space-y-2">
-                                <x-ui.title level="4"
-                                            class="text-base-content/70">
-                                    {{ __('plans.assigned_features') }}
-                                </x-ui.title>
-                                <p class="text-base-content/60 text-sm">
-                                    {{ __('plans.assigned_features_description') }}
-                                </p>
-                            </div>
-
-                            <livewire:tables.plan-feature-assignment-table :planUuid="$model->uuid"
-                                                                           :key="'plan-'.$model->uuid.'-assigned-features'" />
-
-                            <div class="space-y-2 pt-2">
-                                <x-ui.title level="4"
-                                            class="text-base-content/70">
-                                    {{ __('plans.available_features') }}
-                                </x-ui.title>
-                                <p class="text-base-content/60 text-sm">
-                                    {{ __('plans.available_features_description') }}
-                                </p>
-                            </div>
-
-                            <livewire:tables.plan-assignable-feature-table :planUuid="$model->uuid"
-                                                                           :key="'plan-'.$model->uuid.'-available-features'" />
-                        @endif
-                    </div>
+                        </div>
+                    @endif
                 </div>
             </x-ui.form>
         </x-ui.card>

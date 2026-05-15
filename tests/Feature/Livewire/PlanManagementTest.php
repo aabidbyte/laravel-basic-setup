@@ -87,7 +87,19 @@ it('can render the edit plan page', function () {
     $this->get(route('plans.edit', $plan))
         ->assertOk()
         ->assertSee($plan->name)
-        ->assertSee(__('plans.edit_title'));
+        ->assertSee(__('plans.edit_title'))
+        ->assertDontSeeLivewire('tables.plan-feature-assignment-table')
+        ->assertDontSeeLivewire('tables.plan-assignable-feature-table');
+});
+
+it('can render plan feature assignment tables on the show page', function () {
+    $plan = Plan::factory()->create();
+
+    $this->get(route('plans.show', $plan))
+        ->assertOk()
+        ->assertSee($plan->name)
+        ->assertSeeLivewire('tables.plan-feature-assignment-table')
+        ->assertSeeLivewire('tables.plan-assignable-feature-table');
 });
 
 it('can update an existing plan', function () {

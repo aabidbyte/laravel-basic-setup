@@ -8,6 +8,7 @@ use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Support\Str;
+use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
 
@@ -75,7 +76,16 @@ it('can access the tenant show page', function () {
         ->assertSee(__('tenancy.overview'))
         ->assertSee(__('tenancy.switch'))
         ->assertSee(__('actions.edit'))
-        ->assertSee(__('actions.delete'));
+        ->assertSee(__('actions.delete'))
+        ->assertDontSeeLivewire('tables.tenant-user-assignment-table')
+        ->assertDontSeeLivewire('tables.tenant-assignable-user-table')
+        ->assertDontSeeLivewire('tables.domain-table');
+
+    Livewire::actingAs($this->user)
+        ->test('pages::tenants.show', ['tenant' => $tenant])
+        ->set('activeTab', 'users')
+        ->assertSeeLivewire('tables.tenant-user-assignment-table')
+        ->assertSeeLivewire('tables.tenant-assignable-user-table');
 });
 
 it('can render the tenant domains table', function () {
@@ -111,8 +121,6 @@ it('can access the tenant edit page', function () {
         ->get(route('tenants.settings.edit', $tenant->tenant_id))
         ->assertOk()
         ->assertSee(__('tenancy.edit_tenant'))
-        ->assertSeeLivewire('tables.tenant-user-assignment-table')
-        ->assertSeeLivewire('tables.tenant-assignable-user-table')
         ->assertSeeLivewire('tables.domain-table');
 });
 

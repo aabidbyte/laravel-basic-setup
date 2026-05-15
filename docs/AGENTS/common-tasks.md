@@ -22,6 +22,7 @@ php artisan livewire:convert pages.example
 -   After creating a full-page component, update it to extend `BasePageComponent` and add `public ?string $pageTitle = 'ui.pages.example';` (use translation keys)
 -   **Optional**: Add `public string $pageSubtitle = 'ui.pages.example.description';` for subtitle text (displayed below title in header)
 -   **Translations**: Use translation keys like `'ui.pages.dashboard'` - they are automatically translated
+-   **Tabbed Livewire Content**: Tab panels that contain nested Livewire components MUST be rendered only when visible using server-side conditionals (`@if` / `@elseif`). Add `lazy` to expensive nested Livewire components in tab panels so they mount only after the tab is selected and enters the viewport. Avoid CSS-only hiding (`x-show`, `hidden`, `display: none`) for hidden tab panels with Livewire children.
 -   **No `parent::mount()` needed** - title and subtitle sharing happens automatically via `boot()` lifecycle hook
 -   Full-page components are created in `resources/views/pages/` and use `pages::` namespace in routes
 -   Nested/reusable Livewire components are created in `resources/views/components/` and are referenced directly (e.g., `livewire:ui.example-component`)
@@ -402,7 +403,8 @@ The application uses a Livewire-based DataTable component system. See `docs/comp
 -   Uses `DataTableQueryBuilder` for query building with automatic relationship joins
 -   No service layer needed - all logic is in the component
 -   User/member datatables that need tenant visibility MUST use `App\Services\Tenancy\TenantMembershipQuery` with `App\Support\Tenancy\TenantAudience` instead of hand-written `whereHas('tenants')` access rules.
--   In tenant membership filters, "All Tenants" means records attached to at least one tenant. Central-only records are a separate explicit filter option for super admins.
+-   In tenant membership filters, "All Tenants" means records attached to at least one tenant, excluding protected central accounts. Central-only records are a separate explicit filter option for super admins.
+-   For user/member tables, user ID `1` is the protected central platform account guarded by the MySQL session trigger workflow. It belongs in the central audience even if seeders attach it to a tenant.
 -   Related datatables that display opposite sides of the same relationship MUST refresh together after any mutation. Dispatch a scoped Livewire event from assign/remove actions and listen with `#[On('event.{publicUuid}')]` in every related table so the edited table and sibling tables refresh in the same workflow.
 -   If a datatable has exactly one row action, expose it through `rowClick()` instead of rendering a separate row action button. Keep row action buttons for tables with multiple row-level choices.
 

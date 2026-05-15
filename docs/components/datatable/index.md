@@ -148,7 +148,11 @@ Action::make('edit', __('Edit'))
     ->show(fn($user) => Auth::user()?->can('update', $user) ?? false)
 ```
 
-### 5. Optimize Queries
+### 5. Prefer Row Click for Single Actions
+
+If a datatable has exactly one row-level action, implement it with `rowClick()` instead of a visible row action button. Use visible row actions only when the user needs to choose between multiple row-level actions.
+
+### 6. Optimize Queries
 
 Use `select()` to only fetch needed columns:
 

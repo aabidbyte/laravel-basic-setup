@@ -92,6 +92,10 @@ class TenantUserAssignmentTable extends UserTable
                         : $roles;
                 })
                 ->type(DataTableUi::UI_BADGE, ['color' => 'primary', 'size' => 'sm']),
+
+            Column::make(__('table.users.tenants'), 'tenants_for_datatable')
+                ->content(fn (User $user) => $this->tenantMembershipQuery()->tenantLabelsFor($user))
+                ->type(DataTableUi::UI_BADGE, ['color' => 'accent', 'size' => 'sm']),
         ];
 
         if (Schema::hasTable('teams')) {

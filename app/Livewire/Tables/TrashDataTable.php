@@ -4,16 +4,23 @@ declare(strict_types=1);
 
 namespace App\Livewire\Tables;
 
+use App\Constants\DataTable\DataTableUi;
 use App\Livewire\DataTable\Datatable;
+use App\Models\Tenant;
+use App\Models\User;
 use App\Services\DataTable\Builders\Action;
 use App\Services\DataTable\Builders\BulkAction;
 use App\Services\DataTable\Builders\Column;
+use App\Services\DataTable\Builders\Filter;
 use App\Services\Notifications\NotificationBuilder;
+use App\Services\Tenancy\TenantMembershipQuery;
 use App\Services\Trash\TrashedContext;
 use App\Services\Trash\TrashRegistry;
+use App\Support\Tenancy\TenantAudience;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Unified DataTable for viewing trashed (soft-deleted) items.
@@ -24,6 +31,8 @@ use Illuminate\Support\Facades\Auth;
  */
 class TrashDataTable extends Datatable
 {
+    public const CENTRAL_RECORDS_FILTER = TenantMembershipQuery::CENTRAL_RECORDS_FILTER;
+
     /**
      * Entity type being viewed (e.g., 'users', 'roles', 'teams').
      */
@@ -69,7 +78,10 @@ class TrashDataTable extends Datatable
 
         $modelClass = $config['model'];
 
-        return $modelClass::onlyTrashed()->select((new $modelClass())->getTable() . '.*');
+        $model = new $modelClass();
+        $query = $modelClass::onlyTrashed()->select($model->getTable() . '.*');
+
+        return $this->applyTenantAudience($query, $model);
     }
 
     /**
@@ -101,12 +113,39 @@ class TrashDataTable extends Datatable
             $columns[] = $column;
         }
 
+        if ($this->isTenantAwareEntity()) {
+            $columns[] = Column::make(__('table.users.tenants'), 'tenant_context_for_datatable')
+                ->content(fn (Model $model) => $this->tenantLabelsFor($model))
+                ->type(DataTableUi::UI_BADGE, ['color' => 'accent', 'size' => 'sm']);
+        }
+
         // Add deleted_at column for all trash tables
         $columns[] = Column::make(__('table.trash.deleted_at'), 'deleted_at')
             ->sortable()
             ->format(fn ($value) => formatDateTime($value));
 
         return $columns;
+    }
+
+    /**
+     * @return array<int, Filter>
+     */
+    protected function getFilterDefinitions(): array
+    {
+        if (! $this->isTenantAwareEntity() || ! $this->currentActor() instanceof User) {
+            return [];
+        }
+
+        return [
+            Filter::make('tenant_id', __('table.users.filters.tenant'))
+                ->placeholder(__('table.users.filters.all_tenants'))
+                ->type('select')
+                ->options($this->tenantFilterOptions())
+                ->execute(function (): void {
+                    // Tenant filtering is handled in baseQuery() so central-only
+                    // replaces the default tenant-member audience.
+                }),
+        ];
     }
 
     /**
@@ -265,5 +304,118 @@ class TrashDataTable extends Datatable
 
             $this->refreshTable();
         }
+    }
+
+    protected function applyTenantAudience(Builder $query, Model $model): Builder
+    {
+        $audience = $this->tenantAudience();
+
+        if ($model instanceof User) {
+            return $this->tenantMembershipQuery()->apply($query, $audience);
+        }
+
+        if ($this->modelHasTenantColumn($model)) {
+            return $this->tenantMembershipQuery()->applyToTenantKey(
+                $query,
+                $audience,
+                $model->getTable() . '.tenant_id',
+            );
+        }
+
+        return $query;
+    }
+
+    protected function tenantAudience(): TenantAudience
+    {
+        $audience = TenantAudience::visibleTo($this->currentActor());
+        $tenantFilter = $this->selectedTenantFilter();
+
+        if ($tenantFilter === null) {
+            return $audience;
+        }
+
+        return $this->tenantMembershipQuery()->audienceFromFilter($audience, $tenantFilter);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function tenantFilterOptions(): array
+    {
+        return $this->memoize('filter:trash-tenants', function (): array {
+            $options = Tenant::query()
+                ->orderBy('name')
+                ->get(['tenant_id', 'name'])
+                ->mapWithKeys(fn (Tenant $tenant) => [$tenant->tenant_id => $tenant->label()])
+                ->toArray();
+
+            if (! $this->currentActor()?->isSuperAdmin()) {
+                $tenantIds = $this->currentActor()?->tenants()->pluck('tenants.tenant_id')->all() ?? [];
+
+                return \array_intersect_key($options, \array_flip($tenantIds));
+            }
+
+            return [self::CENTRAL_RECORDS_FILTER => __('errors.management.central')] + $options;
+        });
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    protected function tenantLabelsFor(Model $model): array
+    {
+        if ($model instanceof User) {
+            return $this->tenantMembershipQuery()->tenantLabelsFor($model);
+        }
+
+        $tenantId = $model->getAttribute('tenant_id');
+
+        if (! \is_string($tenantId) || $tenantId === '') {
+            return [__('errors.management.central')];
+        }
+
+        $tenant = Tenant::query()
+            ->where('tenant_id', $tenantId)
+            ->first(['tenant_id', 'name']);
+
+        return [$tenant?->label() ?? $tenantId];
+    }
+
+    protected function isTenantAwareEntity(): bool
+    {
+        $config = $this->getEntityConfig();
+
+        if (! $config) {
+            return false;
+        }
+
+        $modelClass = $config['model'];
+        $model = new $modelClass();
+
+        return $model instanceof User || $this->modelHasTenantColumn($model);
+    }
+
+    protected function modelHasTenantColumn(Model $model): bool
+    {
+        return Schema::hasColumn($model->getTable(), 'tenant_id');
+    }
+
+    protected function currentActor(): ?User
+    {
+        $user = Auth::user();
+
+        return $user instanceof User ? $user : null;
+    }
+
+    protected function selectedTenantFilter(): ?string
+    {
+        $tenantFilter = $this->filters['tenant_id'] ?? null;
+
+        return \is_string($tenantFilter) && $tenantFilter !== '' ? $tenantFilter : null;
+    }
+
+    protected function tenantMembershipQuery(): TenantMembershipQuery
+    {
+        return app(TenantMembershipQuery::class);
     }
 }

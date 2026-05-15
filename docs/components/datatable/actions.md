@@ -2,6 +2,9 @@
 
 ## Row Actions
 
+> [!IMPORTANT]
+> If a datatable has exactly one row action, expose that action through `rowClick()` instead of rendering a dedicated row action button. Keep row action buttons for tables with multiple row-level choices.
+
 ### Navigate to Route
 
 ```php

@@ -120,7 +120,33 @@ public function getSalesChartProperty()
 }
 ```
 
-### 2. Custom Layout Schema
+### 2. Tenant-Aware Analytics
+Charts and metrics that aggregate central models with tenant membership should use the shared tenant membership query workflow:
+
+- Use `App\Support\Tenancy\TenantAudience` to describe whether the dataset is all tenant members, one tenant, central-only records, or all records.
+- Use `App\Services\Tenancy\TenantMembershipQuery` to apply that audience to the Eloquent query before aggregating.
+- This keeps dashboards, analytics, datatables, exports, and reports aligned on the same tenant visibility semantics.
+- "All Tenants" means records attached to at least one tenant, excluding protected central accounts. Central-only records are an explicit audience, not part of the default all-tenant dataset.
+- For user analytics, user ID `1` is the protected central platform account guarded by the MySQL session trigger workflow. Count it with the central audience even when seeders attach it to a tenant.
+
+This is especially useful for future charts and analytics because the same audience object can power a datatable row list and the metric/chart totals shown beside it.
+
+```php
+use App\Models\User;
+use App\Services\Tenancy\TenantMembershipQuery;
+use App\Support\Tenancy\TenantAudience;
+
+$query = User::query()->select('users.*');
+
+app(TenantMembershipQuery::class)->apply(
+    $query,
+    TenantAudience::visibleTo($actor),
+);
+
+$totalTenantUsers = $query->count();
+```
+
+### 3. Custom Layout Schema
 Override the `schema()` method in your component to define precise grid layouts.
 
 ```php
@@ -134,7 +160,7 @@ protected function schema(): ?array
 }
 ```
 
-### 3. Placeholders
+### 4. Placeholders
 Charts use `PlaceholderType` Enum for skeletons. The default is `CHARTS_STATS` (mixed grid).
 Override `$placeholderType` in your component to change this.
 

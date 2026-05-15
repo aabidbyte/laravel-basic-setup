@@ -34,6 +34,14 @@ class TenantMembershipQuery
         return $query;
     }
 
+    public function applyToTenantKey(Builder $query, TenantAudience $audience, string $tenantColumn = 'tenant_id'): Builder
+    {
+        $this->applyTenantKeyAudienceMode($query, $audience, $tenantColumn);
+        $this->applyTenantKeyActorVisibility($query, $audience, $tenantColumn);
+
+        return $query;
+    }
+
     /**
      * @param  class-string<Model>  $modelClass
      */
@@ -68,6 +76,10 @@ class TenantMembershipQuery
      */
     public function tenantLabelsFor(Model $model, string $tenantRelation = 'tenants'): array
     {
+        if ($model instanceof User && $model->isProtectedCentralAccount()) {
+            return [__('tenancy.central_users')];
+        }
+
         $tenantNames = $model->{$tenantRelation}
             ->pluck('name')
             ->filter()
@@ -93,11 +105,17 @@ class TenantMembershipQuery
     private function applyAudienceMode(Builder $query, TenantAudience $audience, string $tenantRelation): void
     {
         match ($audience->mode) {
-            TenantAudienceMode::AllTenantMembers => $query->whereHas($tenantRelation),
+            TenantAudienceMode::AllTenantMembers => $this->applyAllTenantMembersScope($query, $tenantRelation),
             TenantAudienceMode::AllRecords => null,
             TenantAudienceMode::SpecificTenant => $this->applyTenantScope($query, $tenantRelation, $audience->tenantId),
-            TenantAudienceMode::CentralOnly => $query->whereDoesntHave($tenantRelation),
+            TenantAudienceMode::CentralOnly => $this->applyCentralOnlyScope($query, $tenantRelation),
         };
+    }
+
+    private function applyAllTenantMembersScope(Builder $query, string $tenantRelation): void
+    {
+        $query->whereHas($tenantRelation);
+        $this->excludeProtectedCentralAccount($query);
     }
 
     private function applyTenantScope(Builder $query, string $tenantRelation, ?string $tenantId): void
@@ -112,6 +130,22 @@ class TenantMembershipQuery
             $tenantRelation,
             fn (Builder $tenantQuery): Builder => $tenantQuery->where('tenants.tenant_id', $tenantId),
         );
+        $this->excludeProtectedCentralAccount($query);
+    }
+
+    private function applyCentralOnlyScope(Builder $query, string $tenantRelation): void
+    {
+        if (! $this->queryTargetsUsers($query)) {
+            $query->whereDoesntHave($tenantRelation);
+
+            return;
+        }
+
+        $query->where(function (Builder $centralQuery) use ($tenantRelation): void {
+            $centralQuery
+                ->whereDoesntHave($tenantRelation)
+                ->orWhere($centralQuery->getModel()->getQualifiedKeyName(), User::PROTECTED_CENTRAL_ACCOUNT_ID);
+        });
     }
 
     private function applyActorVisibility(Builder $query, TenantAudience $audience, string $tenantRelation): void
@@ -128,6 +162,12 @@ class TenantMembershipQuery
             return;
         }
 
+        if ($audience->mode === TenantAudienceMode::CentralOnly) {
+            $query->whereRaw('1 = 0');
+
+            return;
+        }
+
         $tenantIds = $actor->tenants()->pluck('tenants.tenant_id')->all();
 
         if (empty($tenantIds)) {
@@ -140,5 +180,71 @@ class TenantMembershipQuery
             $tenantRelation,
             fn (Builder $tenantQuery): Builder => $tenantQuery->whereIn('tenants.tenant_id', $tenantIds),
         );
+    }
+
+    private function excludeProtectedCentralAccount(Builder $query): void
+    {
+        if (! $this->queryTargetsUsers($query)) {
+            return;
+        }
+
+        $query->whereKeyNot(User::PROTECTED_CENTRAL_ACCOUNT_ID);
+    }
+
+    private function queryTargetsUsers(Builder $query): bool
+    {
+        return $query->getModel() instanceof User;
+    }
+
+    private function applyTenantKeyAudienceMode(Builder $query, TenantAudience $audience, string $tenantColumn): void
+    {
+        match ($audience->mode) {
+            TenantAudienceMode::AllTenantMembers => $query->whereNotNull($tenantColumn),
+            TenantAudienceMode::AllRecords => null,
+            TenantAudienceMode::SpecificTenant => $this->applyTenantKeyScope($query, $tenantColumn, $audience->tenantId),
+            TenantAudienceMode::CentralOnly => $query->whereNull($tenantColumn),
+        };
+    }
+
+    private function applyTenantKeyScope(Builder $query, string $tenantColumn, ?string $tenantId): void
+    {
+        if ($tenantId === null || $tenantId === '') {
+            $query->whereRaw('1 = 0');
+
+            return;
+        }
+
+        $query->where($tenantColumn, $tenantId);
+    }
+
+    private function applyTenantKeyActorVisibility(Builder $query, TenantAudience $audience, string $tenantColumn): void
+    {
+        $actor = $audience->actor;
+
+        if (! $actor instanceof User) {
+            $query->whereRaw('1 = 0');
+
+            return;
+        }
+
+        if ($actor->hasRole(Roles::SUPER_ADMIN)) {
+            return;
+        }
+
+        if ($audience->mode === TenantAudienceMode::CentralOnly) {
+            $query->whereRaw('1 = 0');
+
+            return;
+        }
+
+        $tenantIds = $actor->tenants()->pluck('tenants.tenant_id')->all();
+
+        if (empty($tenantIds)) {
+            $query->whereRaw('1 = 0');
+
+            return;
+        }
+
+        $query->whereIn($tenantColumn, $tenantIds);
     }
 }

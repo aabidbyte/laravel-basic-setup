@@ -3,9 +3,13 @@
 declare(strict_types=1);
 
 use App\Constants\Auth\Permissions;
+use App\Constants\Auth\Roles;
 use App\Enums\ErrorHandling\ErrorActorType;
+use App\Livewire\Tables\ErrorLogTable;
 use App\Models\ErrorLog;
 use App\Models\Permission;
+use App\Models\Role;
+use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ErrorHandling\Channels\DatabaseChannel;
 use App\Services\ErrorHandling\Channels\LogChannel;
@@ -13,6 +17,7 @@ use App\Services\ErrorHandling\Channels\ToastChannel;
 use App\Services\ErrorHandling\ErrorHandler;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
 
@@ -302,9 +307,11 @@ describe('ErrorLog Model', function () {
 describe('ErrorLogTable', function () {
     test('shows tenant actor and runtime columns for central operations', function () {
         Permission::firstOrCreate(['name' => Permissions::VIEW_ERROR_LOGS()]);
+        Role::firstOrCreate(['name' => Roles::SUPER_ADMIN]);
 
         /** @var User $viewer */
         $viewer = User::factory()->create();
+        $viewer->assignRole(Roles::SUPER_ADMIN);
         $viewer->assignPermission(Permissions::VIEW_ERROR_LOGS());
 
         ErrorLog::create([
@@ -329,6 +336,64 @@ describe('ErrorLogTable', function () {
             ->assertSee('UI Tenant')
             ->assertSee('Impersonated User')
             ->assertSee(__('errors.management.runtime_contexts.queue'));
+    });
+
+    test('uses tenant audience filters for central error logs table', function () {
+        Permission::firstOrCreate(['name' => Permissions::VIEW_ERROR_LOGS()]);
+        Role::firstOrCreate(['name' => Roles::SUPER_ADMIN]);
+
+        /** @var User $viewer */
+        $viewer = User::factory()->create();
+        $viewer->assignRole(Roles::SUPER_ADMIN);
+        $viewer->assignPermission(Permissions::VIEW_ERROR_LOGS());
+
+        $tenant = Tenant::factory()->create(['id' => 'logs-audience-' . Str::random(8)]);
+        $otherTenant = Tenant::factory()->create(['id' => 'logs-other-' . Str::random(8)]);
+
+        ErrorLog::create([
+            'reference_id' => 'ERR-AUDIENCE-TENANT',
+            'exception_class' => Exception::class,
+            'message' => 'Tenant audience error',
+            'stack_trace' => 'Trace',
+            'tenant_id' => $tenant->tenant_id,
+            'tenant_name' => $tenant->name,
+        ]);
+
+        ErrorLog::create([
+            'reference_id' => 'ERR-AUDIENCE-OTHER',
+            'exception_class' => Exception::class,
+            'message' => 'Other tenant audience error',
+            'stack_trace' => 'Trace',
+            'tenant_id' => $otherTenant->tenant_id,
+            'tenant_name' => $otherTenant->name,
+        ]);
+
+        ErrorLog::create([
+            'reference_id' => 'ERR-AUDIENCE-CENTRAL',
+            'exception_class' => Exception::class,
+            'message' => 'Central audience error',
+            'stack_trace' => 'Trace',
+        ]);
+
+        Livewire::actingAs($viewer)
+            ->test('tables.error-log-table')
+            ->set('search', 'Central audience error')
+            ->assertDontSee('Central audience error');
+
+        Livewire::actingAs($viewer)
+            ->test('tables.error-log-table')
+            ->set('filters.tenant_id', ErrorLogTable::CENTRAL_LOGS_FILTER)
+            ->set('search', 'Central audience error')
+            ->assertSee('Central audience error')
+            ->assertDontSee('Tenant audience error');
+
+        Livewire::actingAs($viewer)
+            ->test('tables.error-log-table')
+            ->set('filters.tenant_id', $tenant->tenant_id)
+            ->set('search', 'Tenant audience error')
+            ->assertSee('Tenant audience error')
+            ->assertDontSee('Other tenant audience error')
+            ->assertDontSee('Central audience error');
     });
 });
 

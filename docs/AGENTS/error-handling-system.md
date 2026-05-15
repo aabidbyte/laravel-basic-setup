@@ -178,6 +178,7 @@ The error handling system includes a web-based admin interface for managing erro
 ### Features
 
 - **DataTable with Filters**: Search by reference ID/message, filter by status/date/exception type
+- **Tenant-Audience Filters**: Central error-log lists use `TenantAudience` with `TenantMembershipQuery::applyToTenantKey()` so "All Tenants" means tenant-scoped logs, central logs are explicit, and non-super-admin actors only see logs for tenants they belong to.
 - **Bulk Actions**: Resolve or delete multiple errors at once
 - **Detail View**: Full error information with collapsible context and stack trace
 - **Resolve with Notes**: Add resolution notes when marking errors as resolved
@@ -208,4 +209,3 @@ The error handling system includes a web-based admin interface for managing erro
 3. **Monitor Slack/Email channels** - Enable in production for immediate awareness
 4. **Prune regularly** - Schedule the prune command to prevent database bloat
 5. **Check rate limiting** - Adjust `ERROR_HANDLING_MAX_PER_MINUTE` if you get too many/few notifications
-

@@ -58,6 +58,10 @@ A dynamic DataTable component that queries any registered entity's trashed items
 - Dynamically generates columns based on entity configuration
 - Shows restore and force-delete actions with permission checks
 - Supports bulk operations
+- Applies the shared tenant-audience workflow to tenant-aware entities:
+  - `users` use the `tenants()` relationship path.
+  - entities with a direct `tenant_id` column, such as `teams` and `error-logs`, use the direct tenant-key path.
+  - "All Tenants" excludes central-only records by default; super admins can choose the explicit Central filter.
 
 ### EnableTrashedContext Middleware
 
@@ -127,6 +131,8 @@ Each entity uses its own restore/force_delete permissions:
        ],
    ],
    ```
+
+5. **Tenant-aware entities:** If the model has a `tenants()` relationship or a direct `tenant_id` column, `TrashDataTable` automatically applies `TenantMembershipQuery` filters. Keep the configured columns mapped to real database columns so search and sorting remain valid.
 
 5. **Update routes:** Add entity type to route constraints in `routes/web/auth/trash.php`
 

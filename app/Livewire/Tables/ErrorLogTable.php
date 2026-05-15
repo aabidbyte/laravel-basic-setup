@@ -10,11 +10,14 @@ use App\Enums\ErrorHandling\ErrorActorType;
 use App\Livewire\DataTable\Datatable;
 use App\Models\ErrorLog;
 use App\Models\Tenant;
+use App\Models\User;
 use App\Services\DataTable\Builders\Action;
 use App\Services\DataTable\Builders\BulkAction;
 use App\Services\DataTable\Builders\Column;
 use App\Services\DataTable\Builders\Filter;
 use App\Services\Notifications\NotificationBuilder;
+use App\Services\Tenancy\TenantMembershipQuery;
+use App\Support\Tenancy\TenantAudience;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -26,6 +29,8 @@ use Illuminate\Support\Facades\Route;
  */
 class ErrorLogTable extends Datatable
 {
+    public const CENTRAL_LOGS_FILTER = TenantMembershipQuery::CENTRAL_RECORDS_FILTER;
+
     /**
      * Mount the component and authorize access
      */
@@ -49,9 +54,15 @@ class ErrorLogTable extends Datatable
                 $query->where('tenant_id', tenant()->getTenantKey())
                     ->orWhereNull('tenant_id');
             });
+
+            return $query;
         }
 
-        return $query;
+        return $this->tenantMembershipQuery()->applyToTenantKey(
+            $query,
+            $this->tenantAudience(),
+            'error_logs.tenant_id',
+        );
     }
 
     /**
@@ -204,7 +215,11 @@ class ErrorLogTable extends Datatable
                 ->placeholder(__('errors.management.all_tenants'))
                 ->type('select')
                 ->options($this->getTenantOptions())
-                ->show(fn () => tenant() === null),
+                ->execute(function (): void {
+                    // Tenant filtering is applied in baseQuery() so central-only
+                    // can replace the default tenant-member audience.
+                })
+                ->show(fn () => tenant() === null && $this->currentActor() instanceof User),
 
             Filter::make('actor_type', __('errors.management.actor_type'))
                 ->placeholder(__('errors.management.all_actor_types'))
@@ -241,11 +256,21 @@ class ErrorLogTable extends Datatable
      */
     protected function getTenantOptions(): array
     {
-        return $this->memoize('filter:tenants', fn () => Tenant::query()
-            ->orderBy('name')
-            ->get(['tenant_id', 'name'])
-            ->mapWithKeys(fn (Tenant $tenant) => [$tenant->tenant_id => $tenant->label()])
-            ->toArray());
+        return $this->memoize('filter:tenants', function (): array {
+            $options = Tenant::query()
+                ->orderBy('name')
+                ->get(['tenant_id', 'name'])
+                ->mapWithKeys(fn (Tenant $tenant) => [$tenant->tenant_id => $tenant->label()])
+                ->toArray();
+
+            if (! $this->currentActor()?->isSuperAdmin()) {
+                $tenantIds = $this->currentActor()?->tenants()->pluck('tenants.tenant_id')->all() ?? [];
+
+                return \array_intersect_key($options, \array_flip($tenantIds));
+            }
+
+            return [self::CENTRAL_LOGS_FILTER => __('errors.management.central')] + $options;
+        });
     }
 
     /**
@@ -369,5 +394,36 @@ class ErrorLogTable extends Datatable
         }
 
         return null;
+    }
+
+    protected function tenantAudience(): TenantAudience
+    {
+        $audience = TenantAudience::visibleTo($this->currentActor());
+        $tenantFilter = $this->selectedTenantFilter();
+
+        if ($tenantFilter === null) {
+            return $audience;
+        }
+
+        return $this->tenantMembershipQuery()->audienceFromFilter($audience, $tenantFilter);
+    }
+
+    protected function currentActor(): ?User
+    {
+        $user = Auth::user();
+
+        return $user instanceof User ? $user : null;
+    }
+
+    protected function selectedTenantFilter(): ?string
+    {
+        $tenantFilter = $this->filters['tenant_id'] ?? null;
+
+        return \is_string($tenantFilter) && $tenantFilter !== '' ? $tenantFilter : null;
+    }
+
+    protected function tenantMembershipQuery(): TenantMembershipQuery
+    {
+        return app(TenantMembershipQuery::class);
     }
 }

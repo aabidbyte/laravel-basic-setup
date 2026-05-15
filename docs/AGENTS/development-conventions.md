@@ -475,8 +475,10 @@ it('tests something', function () {
     -   **Naming**: Must suffix with `Table` (e.g., `UserTable.php`)
     -   **Structure**: Must extend `App\Livewire\DataTableComponent` and provide configuration via methods.
     -   **Usage**: Use `<livewire:tables.user-table />` syntax.
+    -   **Tabs & Lazy Loading**: When a datatable lives inside a tab, render the tab panel with server-side conditionals (`@if` / `@elseif`) so hidden panels are not mounted. Add `lazy` to expensive nested Livewire tables. Do not keep hidden tab panels in the DOM with `x-show`, `hidden`, or CSS-only visibility when they contain Livewire children.
     -   **Related Table Refresh**: When multiple datatables represent the same relationship from different perspectives (for example assigned vs available users), every mutation MUST dispatch a scoped Livewire event and every related table MUST listen and refresh. Use public UUID keys in the event name, never numeric IDs.
     -   **Single Row Action Rule**: If a table has only one row action, implement it as the `rowClick()` action instead of rendering a dedicated row action button. Render row action buttons only when there are multiple row-level choices.
+    -   **Tenant Membership Filters**: User/member datatables with tenant visibility MUST use `App\Services\Tenancy\TenantMembershipQuery` and `App\Support\Tenancy\TenantAudience`. "All Tenants" means tenant-attached records excluding protected central accounts; user ID `1` is always central because it is guarded by the MySQL session trigger workflow.
 -   **Plain Blade Pages**:
     -   **Title/Subtitle**: MUST use `setPageTitle()` helper at the top of the Blade file to set `$pageTitle` and `$pageSubtitle`.
     -   **Reason**: Abstraction over `view()->share()` for cleaner code.

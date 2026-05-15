@@ -187,7 +187,7 @@ it('limits the main users table to tenant members visible to tenant editors', fu
 });
 
 it('lets super admins browse all tenant users and explicitly filter central users', function (): void {
-    $superAdmin = User::factory()->create();
+    $superAdmin = User::query()->findOrFail(User::PROTECTED_CENTRAL_ACCOUNT_ID);
     $superAdmin->assignRole(Roles::SUPER_ADMIN);
     $superAdmin->assignPermission(Permissions::VIEW_USERS());
 
@@ -197,6 +197,7 @@ it('lets super admins browse all tenant users and explicitly filter central user
     $secondTenantUser = User::factory()->create();
     $centralUser = User::factory()->create();
 
+    $firstTenant->users()->syncWithoutDetaching([$superAdmin->id]);
     $firstTenant->users()->attach($firstTenantUser);
     $secondTenant->users()->attach($secondTenantUser);
 
@@ -217,11 +218,23 @@ it('lets super admins browse all tenant users and explicitly filter central user
 
     Livewire::actingAs($superAdmin)
         ->test('tables.user-table')
+        ->set('search', $superAdmin->email)
+        ->assertDontSee($superAdmin->email);
+
+    Livewire::actingAs($superAdmin)
+        ->test('tables.user-table')
         ->set('filters.tenant_id', UserTable::CENTRAL_USERS_FILTER)
         ->set('search', $centralUser->email)
         ->assertSee($centralUser->email)
         ->assertDontSee($firstTenantUser->email)
         ->assertDontSee($secondTenantUser->email);
+
+    Livewire::actingAs($superAdmin)
+        ->test('tables.user-table')
+        ->set('filters.tenant_id', UserTable::CENTRAL_USERS_FILTER)
+        ->set('search', $superAdmin->email)
+        ->assertSee($superAdmin->email)
+        ->assertSee(__('tenancy.central_users'));
 
     Livewire::actingAs($superAdmin)
         ->test('tables.user-table')

@@ -6,7 +6,6 @@ use App\Models\Feature;
 use App\Models\User;
 use Database\Seeders\CentralSeeders\Production\RoleAndPermissionSeeder;
 use Livewire\Livewire;
-use Livewire\Volt\Volt;
 
 beforeEach(function () {
     $this->seed(RoleAndPermissionSeeder::class);
@@ -33,7 +32,7 @@ it('can render the create feature page', function () {
 });
 
 it('validates required fields when creating a feature', function () {
-    Volt::test('pages::features.edit')
+    Livewire::test('pages::features.edit')
         ->set('key', '')
         ->set('name_en_US', '')
         ->set('name_fr_FR', '')
@@ -42,7 +41,7 @@ it('validates required fields when creating a feature', function () {
 });
 
 it('can create a feature', function () {
-    Volt::test('pages::features.edit')
+    Livewire::test('pages::features.edit')
         ->set('key', 'advanced_reports')
         ->set('name_en_US', 'Advanced Reports')
         ->set('name_fr_FR', 'Rapports avancés')
@@ -65,7 +64,7 @@ it('can update a feature', function () {
         'type' => FeatureValueType::STRING,
     ]);
 
-    Volt::test('pages::features.edit', ['feature' => $feature])
+    Livewire::test('pages::features.edit', ['feature' => $feature])
         ->set('name_en_US', 'Updated Feature')
         ->set('name_fr_FR', 'Fonctionnalité mise à jour')
         ->call('save')
