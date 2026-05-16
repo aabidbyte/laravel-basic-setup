@@ -43,17 +43,16 @@ return [
      */
     'excluded_paths' => [
         // Laravel Horizon
-        'horizon/*',
+        ['config' => 'horizon.path', 'suffix' => '/*'],
 
         // Laravel Telescope
-        'telescope/*',
+        ['config' => 'telescope.path', 'suffix' => '/*'],
 
         // Laravel Debugbar
         '_debugbar/*',
 
         // Log Viewer
-        'log-viewer/*',
-        'admin/system/log-viewer/*',
+        ['config' => 'log-viewer.route_path', 'suffix' => '/*'],
 
         // Reverb/Broadcasting
         'broadcasting/*',

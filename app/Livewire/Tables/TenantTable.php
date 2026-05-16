@@ -282,6 +282,6 @@ class TenantTable extends Datatable
             return;
         }
 
-        $this->redirect('/dashboard');
+        $this->redirect(route('dashboard', absolute: false));
     }
 }

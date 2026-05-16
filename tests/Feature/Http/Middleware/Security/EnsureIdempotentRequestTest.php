@@ -121,10 +121,10 @@ test('excluded paths bypass idempotency', function () {
     $this->actingAs($user);
 
     $excludedPaths = [
-        '/horizon/test',
-        '/telescope/test',
         '/_debugbar/test',
-        '/log-viewer/test',
+        '/' . config('horizon.path') . '/test',
+        '/' . config('telescope.path') . '/test',
+        '/' . config('log-viewer.route_path') . '/test',
         '/livewire/test',
     ];
 

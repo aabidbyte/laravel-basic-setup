@@ -53,6 +53,12 @@ if (app()->isProduction()) {
 if (App::environment('production')) {
 ```
 
+## Centralize Route and Package Paths
+
+Do not duplicate application URI strings or package dashboard paths outside their owning route or config file. Use named routes for app URLs, and use package config values such as `config('horizon.path')`, `config('telescope.path')`, or the package equivalent for dashboards. Avoid config load-order traps: when another config file must list package paths, store a declarative config-key reference such as `['config' => 'horizon.path', 'suffix' => '/*']` and resolve it at runtime.
+
+Apply this in navigation, middleware exclusions, CSP exceptions, feature tests, route integrity checks, and docs. When adding a package with a UI path, identify or create one config key first and consume that value everywhere else.
+
 ## Use Constants and Language Files
 
 Use class constants instead of hardcoded magic strings for model states, types, and statuses.

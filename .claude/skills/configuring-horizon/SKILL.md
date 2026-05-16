@@ -70,7 +70,7 @@ protected function gate(): void
 
 ## Verification
 
-1. Run `php artisan horizon` and visit `/horizon`
+1. Run `php artisan horizon` and visit the dashboard path from `config('horizon.path')`
 2. Confirm dashboard access is restricted as expected
 3. Check that metrics populate after scheduling `horizon:snapshot`
 
@@ -79,6 +79,7 @@ protected function gate(): void
 - Horizon only works with the Redis queue driver. Other drivers such as database and SQS are not supported.
 - Redis Cluster is not supported. Horizon requires a standalone Redis connection.
 - Always check `config/horizon.php` before making changes to understand the current supervisor and environment configuration.
+- Do not hardcode the Horizon dashboard URI outside `config/horizon.php`; use `config('horizon.path')` for navigation, middleware exclusions, CSP exceptions, tests, and docs. When another config file needs this path, store a declarative config-key reference such as `['config' => 'horizon.path', 'suffix' => '/*']` and resolve it at runtime to avoid config load-order traps.
 - The `environments` array overrides only the keys you specify. It merges into `defaults` and does not replace it.
 - The timeout chain must be ordered: job `timeout` less than supervisor `timeout` less than `retry_after`. The wrong order can cause jobs to be retried before Horizon finishes timing them out.
 - The metrics dashboard stays blank until `horizon:snapshot` is scheduled. Running `php artisan horizon` alone does not populate metrics.

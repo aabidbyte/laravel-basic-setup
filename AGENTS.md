@@ -131,6 +131,18 @@ See [Development Conventions](docs/AGENTS/development-conventions.md#enum-usage)
 
 See [Livewire Route Model Binding](docs/AGENTS/livewire-route-model-binding.md) for complete documentation.
 
+### Centralized Routes, Paths, and Package URLs (CRITICAL)
+
+**Do NOT duplicate application route paths or package dashboard paths as string literals outside their owning route/config files.**
+
+- Use named routes and `route(..., absolute: false)` for application routes.
+- Use package config keys such as `config('horizon.path')`, `config('telescope.path')`, and `config('log-viewer.route_path')` for package dashboards.
+- Navigation links, middleware exclusions, CSP exceptions, tests, and documentation must reference the centralized source instead of copying default path values.
+- Inside config files, avoid composing another config file's path with `config(...)` during load; use a declarative config-key reference such as `['config' => 'horizon.path', 'suffix' => '/*']` and resolve it at runtime.
+- When adding a package with a UI/dashboard path, identify or create one config key first and consume that value everywhere else.
+
+See [Development Conventions](docs/AGENTS/development-conventions.md#centralized-routes-paths-and-package-urls) for details.
+
 ### No Layout Wrapper (Livewire Components Only)
 
 **Do NOT wrap full-page Livewire components in `<x-layouts.app>`.**

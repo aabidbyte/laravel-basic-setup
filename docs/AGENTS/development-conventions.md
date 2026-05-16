@@ -73,6 +73,15 @@
 -   **Use Enums Whenever Possible**: Always prefer PHP **backed Enums** over class constants or raw strings for type-bound properties (status, type, color, etc.). This ensures type safety and enables better IDE support.
 -   **Dedicated UI Helpers**: Use `alpineColorClasses()` (from `app/helpers/ui-helpers.php`) for all dynamic class bindings in UI components. This helper ensures compatibility with the Tailwind 4 scanner without needing a manual safelist.
 -   **Mandatory CSP Nonces (CRITICAL)**: All inline `<script>` and `<style>` tags MUST include the `@cspNonce` directive. This ensures compatibility with the project's strict Content Security Policy. This rule applies to all Blade templates, including scripts colocated within `@assets` blocks.
+
+### Centralized Routes, Paths, and Package URLs
+
+-   **Do not duplicate URI/path strings** for application routes or package dashboards outside the route/config file that owns them.
+-   **Application routes**: Use named routes and Laravel URL helpers (`route(..., absolute: false)` when a relative path is needed) instead of copying URI strings into tests, services, middleware, or views.
+-   **Package dashboards**: Use the package's configured path value, such as `config('horizon.path')`, `config('telescope.path')`, `config('log-viewer.route_path')`, or the equivalent package config key.
+-   **Consumers must stay centralized**: Navigation links, middleware exclusions, CSP exceptions, feature tests, route integrity checks, and docs must consume or name the centralized config key instead of repeating the current default path.
+-   **Config files must avoid config load-order traps**: When one config file needs another config file's package path, store a declarative config-key reference (for example `['config' => 'horizon.path', 'suffix' => '/*']`) and resolve it at runtime instead of composing the value with `config(...)` while config files are still loading.
+-   **Future packages**: When adding a third-party UI/dashboard package, identify or create one config key for its path first, then reference that key everywhere else.
  
 
  ### Exception Handling

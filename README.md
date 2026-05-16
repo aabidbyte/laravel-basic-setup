@@ -28,9 +28,9 @@ A comprehensive Laravel 12 starter kit with Livewire, UUID-based models, authent
 
 #### Monitoring & Queue Management
 
--   **Laravel Telescope** - Debugging and monitoring tool (path: `admin/system/debug/monitoring`)
--   **Laravel Horizon** - Redis-based queue monitoring (path: `admin/system/queue-monitor`)
--   **Log Viewer** - Fast and beautiful log viewer (path: `admin/system/log-viewer`)
+-   **Laravel Telescope** - Debugging and monitoring tool (path from `config('telescope.path')`)
+-   **Laravel Horizon** - Redis-based queue monitoring (path from `config('horizon.path')`)
+-   **Log Viewer** - Fast and beautiful log viewer (path from `config('log-viewer.route_path')`)
 -   Secure access gates for production environments
 
 #### Real-time Support

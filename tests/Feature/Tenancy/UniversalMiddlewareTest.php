@@ -20,7 +20,7 @@ test('web routes initialize tenancy on tenant domains', function (): void {
 
     $this->actingAs($user)
         ->withHeader('Host', 'tenant-domain-check.test')
-        ->get('/dashboard')
+        ->get(route('dashboard', absolute: false))
         ->assertOk()
         ->assertSee('Tenant Domain Check')
         ->assertSee('Pro');

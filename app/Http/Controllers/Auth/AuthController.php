@@ -21,7 +21,7 @@ class AuthController extends Controller
     {
         $this->performLogout();
 
-        return redirect('/');
+        return redirect()->route('home');
     }
 
     /**

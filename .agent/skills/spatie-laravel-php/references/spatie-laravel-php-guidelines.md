@@ -143,6 +143,8 @@ $condition
 - Use tuple notation: `[Controller::class, 'method']`
 - HTTP verb first for readability
 - No leading slash unless URL is empty
+- Generate application URLs from named routes; use `route(..., absolute: false)` for relative paths
+- Read package dashboard paths from config keys such as `config('horizon.path')` instead of duplicating URI strings
 
 ```php
 Route::get('/', [HomeController::class, 'index'])->name('home');

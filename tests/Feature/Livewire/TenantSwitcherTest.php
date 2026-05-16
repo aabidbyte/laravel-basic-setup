@@ -114,7 +114,7 @@ it('shows impersonation details in the banner', function () {
 
     $this->actingAs($impersonatedUser)
         ->withSession(['impersonator_id' => $this->superAdmin->id])
-        ->get('/dashboard')
+        ->get(route('dashboard', absolute: false))
         ->assertStatus(200)
         ->assertSee('Impersonated User')
         ->assertSee(__('tenancy.system_override_mode'))

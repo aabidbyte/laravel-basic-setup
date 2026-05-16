@@ -21,15 +21,15 @@ function shouldSkipRoute(string $uri, ?string $name = null): bool
     $skipPrefixes = [
         '_debugbar',
         'telescope',
-        'admin/system/debug/monitoring/telescope-api',
+        config('telescope.path') . '/telescope-api',
         'horizon',
         'livewire',
         'sanctum',
         'api/',
         'broadcasting',
         'up',  // Laravel health check
-        'admin/system/queue-monitor',  // Horizon
-        'admin/system/log-viewer',  // Log Viewer
+        config('horizon.path'),  // Horizon
+        config('log-viewer.route_path'),  // Log Viewer
     ];
 
     foreach ($skipPrefixes as $prefix) {

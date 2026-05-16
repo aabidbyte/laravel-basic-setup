@@ -88,8 +88,10 @@ class TenantService
     /**
      * Generate an impersonation URL for a tenant.
      */
-    public function impersonateTenant(Tenant $tenant, string $userId, string $redirectUrl = '/dashboard'): string
+    public function impersonateTenant(Tenant $tenant, string $userId, ?string $redirectUrl = null): string
     {
+        $redirectUrl ??= route('dashboard', absolute: false);
+
         $token = UserImpersonation::createToken($tenant, $userId, $redirectUrl);
 
         return request()->getScheme() . '://' . $tenant->domains()->first()->domain . '/impersonate/' . $token;

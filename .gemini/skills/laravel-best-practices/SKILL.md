@@ -82,6 +82,7 @@ Check sibling files, related controllers, models, or tests for established patte
 - `env()` only inside config files
 - `App::environment()` or `app()->isProduction()`
 - Config, lang files, and constants over hardcoded text
+- Centralize application URLs and package dashboard paths: use named routes for app routes, and package config keys such as `config('horizon.path')`, `config('telescope.path')`, or the package equivalent instead of duplicating URI strings in services, middleware, CSP, tests, navigation, or docs; inside config files, avoid config load-order traps by storing declarative config-key references such as `['config' => 'horizon.path', 'suffix' => '/*']` and resolving them at runtime
 
 ### 8. Testing Patterns → `rules/testing.md`
 
@@ -106,6 +107,7 @@ Check sibling files, related controllers, models, or tests for established patte
 - `Route::resource()` or `apiResource()`
 - Methods under 10 lines — extract to actions/services
 - Type-hint Form Requests for auto-validation
+- Generate links from named routes; when a relative path is needed, use `route(..., absolute: false)` instead of copying the URI string
 
 ### 11. HTTP Client → `rules/http-client.md`
 

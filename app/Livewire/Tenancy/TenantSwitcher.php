@@ -94,7 +94,7 @@ class TenantSwitcher extends LivewireBaseComponent
             return;
         }
 
-        $this->redirect('/dashboard');
+        $this->redirect(route('dashboard', absolute: false));
     }
 
     /**

@@ -51,6 +51,7 @@ Do:
 - Use plural resource names for controllers (`PostsController`).
 - Use array notation for validation rules.
 - Use `config()` helper and avoid `env()` outside config files.
+- Use named routes for application URLs and package config keys for package dashboard paths; do not duplicate URI strings in services, middleware, CSP, tests, navigation, or docs. Avoid config load-order traps inside config files by storing config-key references such as `['config' => 'horizon.path', 'suffix' => '/*']` and resolving them at runtime.
 - Add service configs to `config/services.php`, not new files.
 - Use `__()` for translations instead of `@lang`.
 - Use PascalCase for enum values.

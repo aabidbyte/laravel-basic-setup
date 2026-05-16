@@ -29,7 +29,7 @@ class UserImpersonationService
         $this->assertMayImpersonate($actor, $target, $targetTenant);
 
         if ($targetTenant !== null) {
-            $token = tenancy()->impersonate($targetTenant, $target->id, '/dashboard', 'web');
+            $token = tenancy()->impersonate($targetTenant, $target->id, route('dashboard', absolute: false), 'web');
 
             $domain = $targetTenant->domains()->first();
             if ($domain === null) {

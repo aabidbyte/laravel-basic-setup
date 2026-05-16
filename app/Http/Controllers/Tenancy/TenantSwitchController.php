@@ -37,6 +37,6 @@ class TenantSwitchController extends Controller
             return redirect($impersonation['url']);
         }
 
-        return redirect('/dashboard');
+        return redirect()->route('dashboard');
     }
 }

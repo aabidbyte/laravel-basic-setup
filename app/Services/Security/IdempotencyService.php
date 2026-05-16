@@ -114,14 +114,48 @@ class IdempotencyService
         }
 
         // Skip excluded paths
-        $excludedPaths = config('idempotency.excluded_paths', []);
-        foreach ($excludedPaths as $pattern) {
+        foreach ($this->excludedPaths() as $pattern) {
             if ($request->is($pattern)) {
                 return false;
             }
         }
 
         return true;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function excludedPaths(): array
+    {
+        $excludedPaths = \array_map(
+            fn (array|string $path): ?string => $this->resolveExcludedPath($path),
+            config('idempotency.excluded_paths', []),
+        );
+
+        return \array_values(\array_unique(\array_filter($excludedPaths)));
+    }
+
+    /**
+     * @param  array{config?: string, suffix?: string}|string  $path
+     */
+    private function resolveExcludedPath(array|string $path): ?string
+    {
+        if (\is_string($path)) {
+            return $path;
+        }
+
+        if (! isset($path['config'])) {
+            return null;
+        }
+
+        $resolvedPath = config($path['config']);
+
+        if (! \is_string($resolvedPath) || $resolvedPath === '') {
+            return null;
+        }
+
+        return $resolvedPath . ($path['suffix'] ?? '');
     }
 
     /**

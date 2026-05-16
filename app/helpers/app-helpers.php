@@ -73,5 +73,5 @@ function inEnvironment(string ...$environments): bool
 
 function cspNonce(): string
 {
-    return Vite::cspNonce() ?? '';
+    return Vite::cspNonce() ?? Vite::useCspNonce();
 }

@@ -38,14 +38,14 @@
 ### Monitoring & Queue Management
 
 -   **Laravel Telescope**: v5.16 (debugging and monitoring)
-    -   Path: `admin/system/debug/monitoring`
+    -   Path: `config('telescope.path')`
     -   Storage: Database
     -   All watchers enabled by default
 -   **Laravel Horizon**: v5.40 (queue monitoring)
-    -   Path: `admin/system/queue-monitor`
+    -   Path: `config('horizon.path')`
     -   Redis-based queue management
 -   **Log Viewer**: v3.21.1 (log file viewer)
-    -   Path: `admin/system/log-viewer`
+    -   Path: `config('log-viewer.route_path')`
     -   View Laravel logs and other log types
     -   Secure access gate for production environments
 

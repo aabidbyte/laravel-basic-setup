@@ -40,6 +40,12 @@ Route::resource('posts', PostController::class);
 Route::apiResource('posts', Api\PostController::class);
 ```
 
+## Generate URLs From Named Routes
+
+Use `route()` for links to application routes instead of copying URI strings. When a relative path is needed for assertions or request construction, use `route(..., absolute: false)`.
+
+Package dashboards are the exception because their routes are owned by packages; read their configured path from the package config key instead of duplicating the current URI.
+
 ## Keep Controllers Thin
 
 Aim for under 10 lines per method. Extract business logic to action or service classes.

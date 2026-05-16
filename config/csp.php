@@ -35,7 +35,7 @@ return [
     'third_party_dashboards' => [
         // [
         //     'name' => 'vendor-dashboard',
-        //     'path' => 'admin/system/vendor-dashboard',
+        //     'path' => config('vendor-dashboard.path'),
         //     'allow_inline_scripts' => true,
         //     'allow_unsafe_eval' => false,
         // ],

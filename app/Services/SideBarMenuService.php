@@ -120,17 +120,17 @@ class SideBarMenuService
                     ->items(
                         NavigationItem::make()
                             ->title(__('navigation.telescope'))
-                            ->url(config('app.url') . '/admin/system/debug/monitoring')
+                            ->url($this->dashboardUrl(config('telescope.path')))
                             ->icon('magnifying-glass')
                             ->external(),
                         NavigationItem::make()
                             ->title(__('navigation.horizon'))
-                            ->url(config('app.url') . '/admin/system/queue-monitor')
+                            ->url($this->dashboardUrl(config('horizon.path')))
                             ->icon('queue-list')
                             ->external(),
                         NavigationItem::make()
                             ->title(__('navigation.log_viewer'))
-                            ->url(config('app.url') . '/admin/system/log-viewer')
+                            ->url($this->dashboardUrl(config('log-viewer.route_path')))
                             ->icon('document-text')
                             ->external(),
                         NavigationItem::make()
@@ -268,5 +268,10 @@ class SideBarMenuService
         }
 
         return app(FeatureResolver::class)->allows($tenant, FeatureKey::ERROR_LOGS);
+    }
+
+    protected function dashboardUrl(string $path): string
+    {
+        return \rtrim(config('app.url'), '/') . '/' . \trim($path, '/');
     }
 }

@@ -83,13 +83,12 @@ return [
     // Cache store (must be persistent: redis, memcached)
     'cache_store' => env('IDEMPOTENCY_CACHE_STORE', 'redis'),
     
-    // Paths to exclude
+    // Paths to exclude.
     'excluded_paths' => [
-        'horizon/*',
-        'telescope/*',
+        ['config' => 'horizon.path', 'suffix' => '/*'],
+        ['config' => 'telescope.path', 'suffix' => '/*'],
         '_debugbar/*',
-        'log-viewer/*',
-        'admin/system/log-viewer/*',
+        ['config' => 'log-viewer.route_path', 'suffix' => '/*'],
         'broadcasting/*',
         'reverb/*',
         'livewire/*',
@@ -139,10 +138,10 @@ HTTP Status: `409 Conflict`
 
 The following paths bypass idempotency checks:
 
-- **Laravel Horizon**: `horizon/*`
-- **Laravel Telescope**: `telescope/*`
+- **Laravel Horizon**: `config('horizon.path')`
+- **Laravel Telescope**: `config('telescope.path')`
 - **Laravel Debugbar**: `_debugbar/*`
-- **Log Viewer**: `log-viewer/*`, `admin/system/log-viewer/*`
+- **Log Viewer**: `config('log-viewer.route_path')`
 - **Broadcasting/Reverb**: `broadcasting/*`, `reverb/*`
 - **Livewire**: `livewire/*` (internal requests)
 - **Sanctum**: `sanctum/*` (CSRF cookie)

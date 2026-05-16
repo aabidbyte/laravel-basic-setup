@@ -42,6 +42,30 @@ it('does not add tenant csp sources outside a tenant context', function (): void
     expect($policy->getContents())->not->toContain('inactive-tenant.example.test');
 });
 
+it('renders matching csp nonces on tenant domain responses', function (): void {
+    $tenant = Tenant::factory()->create();
+    $tenant->domains()->create(['domain' => 'tenant-csp-nonce.example.test']);
+
+    $response = $this
+        ->withHeader('Host', 'tenant-csp-nonce.example.test')
+        ->get(route('login', absolute: false));
+
+    $response->assertOk();
+
+    $header = $response->headers->get('Content-Security-Policy', '');
+    $content = $response->getContent();
+
+    \preg_match("/'nonce-([^']+)'/", $header, $headerMatches);
+
+    expect($headerMatches[1] ?? null)
+        ->not->toBeNull()
+        ->not->toBe('');
+
+    expect($content)
+        ->toContain('nonce="' . $headerMatches[1] . '"')
+        ->not->toContain('nonce=""');
+});
+
 it('allows runtime style elements for the email template builder', function (): void {
     $policy = new Policy();
     app(MyCspPreset::class)->configure($policy);

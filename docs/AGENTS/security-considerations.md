@@ -14,9 +14,9 @@
     - Rate limiting on authentication routes
 
 3. **Monitoring Access**:
-    - Telescope: `admin/system/debug/monitoring`
-    - Horizon: `admin/system/queue-monitor`
-    - Log Viewer: `admin/system/log-viewer`
+    - Telescope path is defined by `config('telescope.path')`
+    - Horizon path is defined by `config('horizon.path')`
+    - Log Viewer path is defined by `config('log-viewer.route_path')`
     - All protected by authorization gates
 
 4. **Request Idempotency**:
@@ -26,4 +26,3 @@
     - Redis atomic locks for race condition protection
     - Configurable exclusions for third-party packages
     - See [Idempotency System](idempotency-system.md) for details
-
